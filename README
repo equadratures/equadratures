@@ -1,15 +1,1 @@
-# Optimal Quadratures
-
-Codes for replicating Figures 2 to 4 in:
-"Optimal Quadrature Subsampling for Least Squares Polynomial Approximations"
-Pranay Seshadri, Akil Narayan and Sankaran Mahadevan
-
-Copyright (c) 2016 by Pranay Seshadri
-Email: ps583 <at> cam.ac.uk
-
-To get the exact results in the paper, this code requires the following packages:
-1) Paul Constantine & David Gleich's parameterized matrix package (PMPack). Available at: http://www.mathworks.com/matlabcentral/fileexchange/29228-pmpack-parameterized-matrix-package
-
-2) Raymond Reynold's ciplot package. Available at: http://www.mathworks.com/matlabcentral/fileexchange/13103-plot-confidence-intervals/content/ciplot.m
-
-
+OPTIMAL QUADRATURE SUBSAMPLING

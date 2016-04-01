@@ -85,8 +85,6 @@ def jacobi_recurrence_coefficients(lower, upper, param_A, param_B, order):
     # Inputs
     # Initial setup - check out Walter Gatuschi!
     N = int(order) + 1 # check!!
-    a =
-
     a0 = (param_B - param_A)/(param_A + param_B + 2.0)
     ab = np.zeros((order,2))
     b2a2 = param_B**2 - param_A**2

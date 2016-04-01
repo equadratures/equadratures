@@ -1,7 +1,15 @@
 #!/usr/bin/python
 import numpy as np
+"""
 
+    The PolynomialParam Class
+    Designed to be the base class for all subsequent polynomial / quadrature / optimal quadrature subsampling
+    routines. Coding in progress!
 
+    Pranay Seshadri
+    ps583@cam.ac.uk
+
+"""
 class PolynomialParam(object):
     """ An uncertain parameter.
     Attributes:
@@ -74,7 +82,7 @@ def recurrence_coefficients(self, order):
 
 # Recurrence coefficients for Jacobi type parameters
 def jacobi_recurrence_coefficients(lower, upper, param_A, param_B, order):
-    # Inputs 
+    # Inputs
     # Initial setup - check out Walter Gatuschi!
     N = int(order) + 1 # check!!
     a =

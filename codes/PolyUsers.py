@@ -9,6 +9,12 @@ import numpy as np
 
 
 """
+def main():
+
+
+
+
+
 
 def getPseudospectralCoefficients(stackOfParameters, orders, function, *args):
     # three options:
@@ -144,3 +150,5 @@ def getMultiOrthoPoly(stackOfParameters, index_set, stackOfPoints):
             temp = polynomial[i,:]
 
     return polynomial
+
+main()

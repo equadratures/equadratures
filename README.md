@@ -5,6 +5,7 @@ Collection of tools for generating multivariate polynomial approximants using op
 2. Least squares with QR factorization for polynomial coefficient estimation <br />
 
 # 
-Developers: Pranay Seshadri <br />
-            Akil Narayan <br />
+Developers:  <br />
+Pranay Seshadri <br />
+Akil Narayan <br />
 WARNING: Coding underway!

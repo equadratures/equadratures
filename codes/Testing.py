@@ -11,9 +11,14 @@ import matplotlib.pyplot as plt
 
 def main():
     derivative_flag = 1
-    uq_parameter1 = PolynomialParam("Jacobi", -1, 1, 0, 0, derivative_flag) # Legendre
     order = 5
-    g = PolynomialParam.getRecurrenceCoefficients(uq_parameter1, order)
-    v = PolynomialParam.getOrthoPoly()
+
+
+    uq_parameter1 = PolynomialParam("Jacobi", -1, 1, 0, 0, derivative_flag, order) # Legendre
+    A, C = PolynomialParam.getAmatrix(uq_parameter1)
+    print(A)
+    print(C)
+
+
 
 main()

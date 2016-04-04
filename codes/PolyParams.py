@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import numpy as np
+from scipy.special import gamma
 """
 
     The PolynomialParam Class
@@ -24,14 +25,14 @@ class PolynomialParam(object):
                                 constructor / initializer
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
-    def __init__(self, param_type, lower_bound, upper_bound, shape_parameter_A, shape_parameter_B):
+    def __init__(self, param_type, lower_bound, upper_bound, shape_parameter_A, shape_parameter_B, derivative_flag):
         """ Return a new uncertain parameter object """
         self.param_type = param_type # string
         self.lower_bound = lower_bound # double
         self.upper_bound = upper_bound # double
         self.shape_parameter_A = shape_parameter_A # double
         self.shape_parameter_B = shape_parameter_B # double
-
+        self.derivative_flag = derivative_flag # integer
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 get() methods
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
@@ -60,7 +61,7 @@ class PolynomialParam(object):
         return jacobiEigenvectors(self, order)
 
     def getOrthoPoly(self, order, points):
-        return orthoPolynomial(self, order, points)
+        return orthoPolynomial_and_derivative(self, order, points, derivative_flag)
 
     def getLocalQuadrature(self, order):
         return getlocalquadrature(self, order)
@@ -73,7 +74,7 @@ class PolynomialParam(object):
 # Call different methods depending on the choice of the polynomial parameter
 def recurrence_coefficients(self, order):
     if self.param_type is "Jacobi":
-        ab = jacobi_recurrence_coefficients(self.lower_bound, self.upper_bound, self.shape_parameter_A, self.shape_parameter_B, order)
+        ab = jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, order)
     elif self.param_type == "Custom":
         ab = custom_recurrence_coefficients(self.lower_bound, self.upper_bound, self.shape_parameter_A, self.shape_parameter_B, order)
     elif self.param_type == "Gaussian":
@@ -81,27 +82,25 @@ def recurrence_coefficients(self, order):
     return ab
 
 # Recurrence coefficients for Jacobi type parameters
-def jacobi_recurrence_coefficients(lower, upper, param_A, param_B, order):
-    # Inputs
+def jacobi_recurrence_coefficients(param_A, param_B, order):
+
     # Initial setup - check out Walter Gatuschi!
-    N = int(order) + 1 # check!!
+    order = int(order) # check!!
     a0 = (param_B - param_A)/(param_A + param_B + 2.0)
     ab = np.zeros((order,2))
     b2a2 = param_B**2 - param_A**2
-    span = (upper - lower)/2.0
-    midway = lower + span
 
     if order > 0 :
-        ab[0,0] = (span * a0) + midway
-        ab[0,1] = 1.0
+        ab[0,0] = a0
+        ab[0,1] = 2.0
 
     for k in range(1,order):
         temp = k + 1
-        ab[k,0] = span * b2a2/((2.0 * (temp - 1) + param_A + param_B) * (2.0 * temp + param_A + param_B)) + midway
+        ab[k,0] = b2a2/((2.0 * (temp - 1) + param_A + param_B) * (2.0 * temp + param_A + param_B))
         if(k == 1):
-            ab[k,1] = ( (upper - lower)**2 * (temp - 1) * (temp - 1 + param_A) * (temp - 1 + param_B)) / ( (2 * (temp - 1) + param_A + param_B  )**2 * (2 * (temp - 1) + param_A + param_B + 1))
+            ab[k,1] = ( 4.0 * (temp - 1) * (temp - 1 + param_A) * (temp - 1 + param_B)) / ( (2 * (temp - 1) + param_A + param_B  )**2 * (2 * (temp - 1) + param_A + param_B + 1))
         else:
-            ab[k,1] = ( (upper - lower)**2 * (temp - 1) * (temp - 1 + param_A) * (temp - 1 + param_B) * (temp -1 + param_A + param_B) ) / ((2 * (temp - 1) + param_A + param_B)**2 * (2 *(temp -1) + param_A + param_B + 1) * (2 * (temp - 1) + param_A + param_B -1 ) )
+            ab[k,1] = ( 4.0 * (temp - 1) * (temp - 1 + param_A) * (temp - 1 + param_B) * (temp -1 + param_A + param_B) ) / ((2 * (temp - 1) + param_A + param_B)**2 * (2 *(temp -1) + param_A + param_B + 1) * (2 * (temp - 1) + param_A + param_B -1 ) )
     return ab
 
 # Recurrence coefficients for Hermite type parameters
@@ -184,12 +183,12 @@ def jacobiEigenvectors(self, order):
 
     return V
 
-"""
-    Only if flag is called do we compute the derivatives!
-"""
+
 # Univariate orthogonal polynomial correspoding to the weight of the parameter
 def orthoPolynomial_and_derivative(uncertainParameter, order, gridPoints, derivative_flag):
+
     orthopoly = np.zeros((order, len(gridPoints))) # create a matrix full of zeros
+    derivative_orthopoly = np.zeros((order, len(gridPoints)))
     ab = recurrence_coefficients(uncertainParameter, order)
 
     # Zeroth order
@@ -209,4 +208,21 @@ def orthoPolynomial_and_derivative(uncertainParameter, order, gridPoints, deriva
             # Three-term recurrence rule in action!
             orthopoly[u,:] = ( ((gridPoints - ab[u-1,0])*orthopoly[u-1,:]) - np.sqrt(ab[u-1,1])*orthopoly[u-2,:] )/(1.0 * np.sqrt(ab[u,1]))
 
-    return orthopoly
+    # Only if the derivative flag is on do we compute the derivative polynomial
+    if derivative_flag == 1:
+        if order == 1:
+            return derivative_orthopoly
+
+        derivative_orthopoly[1,:] = ((gridPoints * 0.0) + 1 ) * 1.0/(np.sqrt(ab[0,1]))
+
+        if order == 2:
+            return derivative_orthopoly
+
+        if order >= 3:
+            for u in range(2, order):
+                # Four-term recurrence formula for derivatives of orthogonal polynomials!
+                derivative_orthopoly[u,:] = 1.0/np.sqrt(2)  *  ( ((gridPoints - ab[u-1,0])*derivative_orthopoly[u-1,:]) - np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:]  + orthoPolynomial[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
+        return orthopoly, derivative_orthopoly
+
+    else:
+        return orthopoly

@@ -10,10 +10,10 @@ import matplotlib.pyplot as plt
 """
 
 def main():
-
-    uq_parameter1 = PolynomialParam("Jacobi", -1, 1, 0, 0) # Legendre
+    derivative_flag = 1
+    uq_parameter1 = PolynomialParam("Jacobi", -1, 1, 0, 0, derivative_flag) # Legendre
     order = 5
     g = PolynomialParam.getRecurrenceCoefficients(uq_parameter1, order)
-    print(g)
+    v = PolynomialParam.getOrthoPoly()
 
 main()

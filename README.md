@@ -8,4 +8,9 @@ Collection of tools for generating multivariate polynomial approximants using op
 Developers:  <br />
 Pranay Seshadri <br />
 Akil Narayan <br />
+
+
+ <br />
+  <br />
+   <br />
 WARNING: Coding underway!

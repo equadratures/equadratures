@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import sys
 import numpy as np
 from scipy.special import gamma
 """
@@ -67,9 +68,18 @@ class PolynomialParam(object):
     def getLocalQuadrature(self):
         return getlocalquadrature(self)
 
-    def getAmatrix(self):
-        gridPoints, gridWeights = getlocalquadrature(self)
-        return orthoPolynomial_and_derivative(self, gridPoints)
+    def getAmatrix(self, *argv):
+        # If there is an additional argument, then replace the
+        if (isinstance(argv[0], int)):
+            gridPoints, gridWeights = getlocalquadrature(self, argv[0])
+        else:
+            gridPoints, gridWeights = getlocalquadrature(self)
+
+        A, C = orthoPolynomial_and_derivative(self, gridPoints)
+        A = A.T # Take the temp_transpose
+        C = C.T
+
+        return A, C
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                     function definitions -- outside PolyParam Class
                     (these are all technically private!)
@@ -145,7 +155,11 @@ def jacobiMatrix(self):
 
 # Computes 1D quadrature points and weights
 " I think this is scaled to be between [-1,1] by default --> need to change this!"
-def getlocalquadrature(self):
+def getlocalquadrature(self, *argv):
+
+    # If there is an additional argument, then replace the
+    for arg in argv:
+        self.order = arg
 
     # Get the recurrence coefficients & the jacobi matrix
     recurrence_coeffs = recurrence_coefficients(self)

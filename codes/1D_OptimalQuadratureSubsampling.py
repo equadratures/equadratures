@@ -27,15 +27,15 @@ def main():
     #
     #--------------------------------------------------------------------------------------
     derivative_flag = 1 # derivative flag on=1; off=0
-    evaluations_user_can_afford = 5 # basis_terms = order
+    evaluations_user_can_afford = 8 # basis_terms = order
 
     # Determine the number of basis terms
-    if derivative_flag == 1:
+    if derivative_flag == 0:
         basis_terms = 2 * evaluations_user_can_afford
     else:
         basis_terms = evaluations_user_can_afford
 
-    full_grid_points = 12
+    full_grid_points = 30
     min_value, max_value = -1, 1 # range of uncertainty --> assuming Legendre
     alpha_parameter, beta_parameter = 0, 0 # Jacobi polynomial values for Legendre
     uq_parameter1 = PolynomialParam("Jacobi", -1, 1, 0, 0, derivative_flag, full_grid_points) # Setup uq_parameter
@@ -48,16 +48,23 @@ def main():
 
     # Now compute the "optimal" subsamples from this grid!
     P = matrix.QRColumnPivoting(Atall)
+    P = P[0:evaluations_user_can_afford]
+    print(P)
 
     # Now take the first "evaluations_user_can_afford" rows from P
     Asquare = Atall[P,:]
 
+    # Row normalize the matrix!
+    Asquare_norms = np.sqrt
+
     # Compute function at the corresponding points
-    fun_evals = fun(gaussPoints[P])
-    b
+    b = fun_evals[P,:]
+    print(fun_evals)
+    print('**********')
+    print(b)
 # Simple analytical function
 def fun(x):
-    return np.exp(x)
+    return np.exp(x[:])
 
 
 main()

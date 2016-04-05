@@ -40,6 +40,7 @@ def main():
     alpha_parameter, beta_parameter = 0, 0 # Jacobi polynomial values for Legendre
     uq_parameter1 = PolynomialParam("Jacobi", -1, 1, 0, 0, derivative_flag, full_grid_points) # Setup uq_parameter
 
+    # Compute A and C matrices!
     A, C, gaussPoints = PolynomialParam.getAmatrix(uq_parameter1)
 
     # Pick select columns. This amounts using either a total order or hyperbolic cross

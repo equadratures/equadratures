@@ -212,13 +212,13 @@ def orthoPolynomial_and_derivative(self, gridPoints):
     ab = recurrence_coefficients(self)
 
     # Zeroth order
-    orthopoly[0,:] = (1.0)/(1.0 * np.sqrt(ab[0,1]) ) # all entries are 1.0
+    orthopoly[0,:] = (1.0)/(1.0 * np.sqrt(ab[0,1]) ) # Correct!
 
     # Cases
     if self.order == 1:
         return orthopoly
 
-    orthopoly[1,:] = (gridPoints[:,0] - ab[0,0])/(1.0 * np.sqrt(ab[1,1] ) )
+    orthopoly[1,:] = ((gridPoints[:,0] - ab[0,0]) * orthopoly[0,:] ) * (1.0)/(1.0 * np.sqrt(ab[1,1]) )
 
     if self.order == 2:
         return orthopoly
@@ -233,7 +233,7 @@ def orthoPolynomial_and_derivative(self, gridPoints):
         if self.order == 1:
             return derivative_orthopoly
 
-        derivative_orthopoly[1,:] = ((gridPoints[:,0] * 0.0) + 1 ) * 1.0/(np.sqrt(ab[0,1]))
+        derivative_orthopoly[1,:] = orthopoly[0,:] / (np.sqrt(ab[1,1]))
 
         if self.order == 2:
             return derivative_orthopoly
@@ -241,7 +241,8 @@ def orthoPolynomial_and_derivative(self, gridPoints):
         if self.order >= 3:
             for u in range(2, self.order):
                 # Four-term recurrence formula for derivatives of orthogonal polynomials!
-                derivative_orthopoly[u,:] = 1.0/np.sqrt(2)  *  ( ((gridPoints[:,0] - ab[u-1,0])*derivative_orthopoly[u-1,:]) - np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:]  +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
+                derivative_orthopoly[u,:] = ( ((gridPoints[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
+                print(derivative_orthopoly[u,:])
         return orthopoly, derivative_orthopoly
 
     else:

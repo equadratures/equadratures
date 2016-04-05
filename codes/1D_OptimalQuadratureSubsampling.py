@@ -50,19 +50,32 @@ def main():
     # Now compute the "optimal" subsamples from this grid!
     P = matrix.QRColumnPivoting(Atall)
     P = P[0:evaluations_user_can_afford]
-    print(P)
 
     # Now take the first "evaluations_user_can_afford" rows from P
     Asquare = Atall[P,:]
 
     # Row normalize the matrix!
-    Asquare_norms = np.sqrt
+    Asquare_norms = np.sqrt(np.sum(Asquare**2, axis=1)/ (1.0 * evaluations_user_can_afford) )
+    Anorm_diag = np.diag(1.0/Asquare_norms)
+
+    print(Anorm_diag * Asquare)
+    print(Asquare)
+
+"""
+    Asquare = Anorm_diag * Asquare
 
     # Compute function at the corresponding points
-    b = fun_evals[P,:]
-    print(fun_evals)
-    print('**********')
-    print(b)
+    bsquare = Anorm_diag * fun(gaussPoints[P,:])
+
+    print(Asquare)
+    print('************')
+    print(bsquare)
+    print('~~~~~~~~~~~')
+    # Solve the least squares problem
+    x = matrix.solveLeastSquares(Asquare, bsquare)
+
+    print(x)
+"""
 # Simple analytical function
 def fun(x):
     return np.exp(x[:])

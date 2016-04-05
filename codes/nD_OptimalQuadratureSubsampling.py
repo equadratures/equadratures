@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 """
     Optimal Quadrature Subsampling
+    1D example
 
     Pranay Seshadri
     University of Cambridge
@@ -19,7 +20,7 @@ import matplotlib.pyplot as plt
 
 def main():
 
-
+    #
     derivative_flag = 1
     order, quadrature_points = 5 , 6
     min_value, max_value = -1, 1

@@ -7,6 +7,7 @@ import numpy as np
 
     Copyright (c) 2015 by Pranay Seshadri
 
+    
 
 """
 def getPseudospectralCoefficients(stackOfParameters, orders, function, *args):

@@ -68,10 +68,12 @@ class PolynomialParam(object):
     def getLocalQuadrature(self):
         return getlocalquadrature(self)
 
-    " Might need another getAmatrix function that doesn't store the full matrix!
+    # Might need another getAmatrix function that doesn't store the full matrix!
     def getAmatrix(self, *argv):
+
         # If there is an additional argument, then replace the
-        if (isinstance(argv[0], int)):
+        for arg in argv:
+            self.order = argv[0]
             gridPoints, gridWeights = getlocalquadrature(self, argv[0])
         else:
             gridPoints, gridWeights = getlocalquadrature(self)
@@ -80,7 +82,7 @@ class PolynomialParam(object):
         A = A.T # Take the temp_transpose
         C = C.T
 
-        return A, C
+        return A, C, gridPoints
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                     function definitions -- outside PolyParam Class
                     (these are all technically private!)
@@ -243,7 +245,6 @@ def orthoPolynomial_and_derivative(self, gridPoints):
             for u in range(2, self.order):
                 # Four-term recurrence formula for derivatives of orthogonal polynomials!
                 derivative_orthopoly[u,:] = ( ((gridPoints[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
-                print(derivative_orthopoly[u,:])
         return orthopoly, derivative_orthopoly
 
     else:

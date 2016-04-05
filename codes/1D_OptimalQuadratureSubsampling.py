@@ -3,7 +3,7 @@ import PolyUsers as poly
 from PolyParams import PolynomialParam
 import MatrixRoutines as matrix
 import matplotlib.pyplot as plt
-
+import numpy as np
 """
     Optimal Quadrature Subsampling
     1D Example
@@ -22,8 +22,8 @@ def main():
     #
     #  USER'S NOTES:
     #        1. With the derivative flag on we recommend using 2X basis terms
-    #        2. Input number of points on the "full grid"
-    #        3. Input maximum number of permissible model evaluations
+    #        2. Input maximum number of permissible model evaluations
+    #        3. Input number of points on the "full grid" (3x5 times number in line above)
     #
     #--------------------------------------------------------------------------------------
     derivative_flag = 1 # derivative flag on=1; off=0
@@ -40,10 +40,24 @@ def main():
     alpha_parameter, beta_parameter = 0, 0 # Jacobi polynomial values for Legendre
     uq_parameter1 = PolynomialParam("Jacobi", -1, 1, 0, 0, derivative_flag, full_grid_points) # Setup uq_parameter
 
-    # Compute the A and C matrices
-    A, C = PolynomialParam.getAmatrix(uq_parameter1, quadrature_points)
+    A, C, gaussPoints = PolynomialParam.getAmatrix(uq_parameter1)
+
+    # Pick select columns. This amounts using either a total order or hyperbolic cross
+    # basis set in nD
+    Atall = A[:, 0 : evaluations_user_can_afford]
 
     # Now compute the "optimal" subsamples from this grid!
-    optimalSubsamples = matrix.QR
+    P = matrix.QRColumnPivoting(Atall)
+
+    # Now take the first "evaluations_user_can_afford" rows from P
+    Asquare = Atall[P,:]
+
+    # Compute function at the corresponding points
+    fun_evals = fun(gaussPoints[P])
+    b
+# Simple analytical function
+def fun(x):
+    return np.exp(x)
+
 
 main()

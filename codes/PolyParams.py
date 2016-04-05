@@ -68,6 +68,7 @@ class PolynomialParam(object):
     def getLocalQuadrature(self):
         return getlocalquadrature(self)
 
+    " Might need another getAmatrix function that doesn't store the full matrix!
     def getAmatrix(self, *argv):
         # If there is an additional argument, then replace the
         if (isinstance(argv[0], int)):

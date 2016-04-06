@@ -1,9 +1,38 @@
 #!/usr/bin/python
-from PolyParams import PolynomialParam
 import numpy as np
 import math as mt
+"""
+
+    The IndexSet Class
+    Designed to be the base class for all subsequent multivariate polynomials
+
+    Pranay Seshadri
+    ps583@cam.ac.uk
+
+"""
+class IndexSet(object):
+    """ An index set.
+    Attributes:
+        param_type: The distribution associated with the parameter
+        ...
 
 
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                constructor / initializer
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
+
+    def __init__(self, index_set_type, orders):
+        self.index_set_type = index_set_type # string
+        self.orders = orders # we store order as an array!
+
+    """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                get() methods
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
+    def getIndexSetType(self):
+        return self.index_set_type
+
+    def getOrders(self):
+        return self.orders
 
 def getIndexSet(type, orders, *args):
     dimensions = len(orders)

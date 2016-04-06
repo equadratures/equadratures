@@ -248,4 +248,5 @@ def orthoPolynomial_and_derivative(self, gridPoints):
         return orthopoly, derivative_orthopoly
 
     else:
-        return orthopoly
+        empty = np.mat([0])
+        return orthopoly, empty

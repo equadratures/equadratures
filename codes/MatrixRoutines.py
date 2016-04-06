@@ -20,4 +20,4 @@ def QRColumnPivoting(A):
 
 def solveLeastSquares(A, b):
     x = sc.lstsq(A, b)
-    return x
+    return x[0]

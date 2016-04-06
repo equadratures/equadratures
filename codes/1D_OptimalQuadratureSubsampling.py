@@ -12,8 +12,6 @@ import numpy as np
     University of Cambridge
     ps583 <at> cam.ac.uk
 
-    Write something meaningfull here!
-
 """
 
 # Simple analytical function

@@ -6,32 +6,70 @@ import matplotlib.pyplot as plt
 
 """
     Optimal Quadrature Subsampling
-    1D example
+    3D example
 
     Pranay Seshadri
     University of Cambridge
     ps583 <at> cam.ac.uk
 
-    1) Input function / dimensionality / derivative flag / Maximum number of function evaluations/ Randomized option / Hyperbolic or total order sets?
-    2) Compute the "A" and "C" matrices. If the number of rows & columns exceed a certain threshold automatically use the iterative QR approach
-    3) Depending on whether the random option is selected compute the optimal subsamples -- do this throu
-
 """
+# Simple analytical function
+def fun(x):
+    return np.exp(x[:,0] + x[:,1] + x[:,2])
+
 
 def main():
 
+    #--------------------------------------------------------------------------------------
     #
-    derivative_flag = 1
-    order, quadrature_points = 5 , 6
-    min_value, max_value = -1, 1
-    alpha_parameter, beta_parameter = 0, 0
+    #  USER'S NOTES:
+    #        1. With the derivative flag on we recommend using 2X basis terms
+    #        2. Input maximum number of permissible model evaluations
+    #        3. Input number of points on the "full grid" (3x5 times number in line above)
+    #
+    #--------------------------------------------------------------------------------------
+    derivative_flag = 0 # derivative flag on=1; off=0
+    evaluations_user_can_afford = 8 # basis_terms = order
 
-    uq_parameter1 = PolynomialParam("Jacobi", -1, 1, 0, 0, derivative_flag, order) # Legendre
-    A, C = PolynomialParam.getAmatrix(uq_parameter1, quadrature_points)
-    print(A)
-    print ('****')
-    print(C)
+    # Determine the number of basis terms
+    if derivative_flag == 1:
+        basis_terms = 2 * evaluations_user_can_afford
+    else:
+        basis_terms = evaluations_user_can_afford
 
+    full_grid_points = 8 # full tensor grid
+    min_value, max_value = -1, 1 # range of uncertainty --> assuming Legendre
+    alpha_parameter, beta_parameter = 0, 0 # Jacobi polynomial values for Legendre
+
+    # Three dimensional problem!
+    uq_parameter1 = PolynomialParam("Jacobi", -1, 1, 0, 0, derivative_flag, full_grid_points) # Setup uq_parameter
+    uq_parameter2 = PolynomialParam("Jacobi", -1, 1, 0, 0, derivative_flag, full_grid_points) # Setup uq_parameter
+    uq_parameter3 = PolynomialParam("Jacobi", -1, 1, 0, 0, derivative_flag, full_grid_points) # Setup uq_parameter
+
+
+    # Compute A and C matrices!
+    A, C, gaussPoints = PolynomialParam.getAmatrix(uq_parameter1)
+
+    # Pick select columns. This amounts using either a total order or hyperbolic cross
+    # basis set in nD
+    Atall = A[:, 0 : evaluations_user_can_afford]
+
+    # Now compute the "optimal" subsamples from this grid!
+    P = matrix.QRColumnPivoting(Atall)
+    P = P[0:evaluations_user_can_afford]
+
+    # Now take the first "evaluations_user_can_afford" rows from P
+    Asquare = Atall[P,:]
+
+    # Row normalize the matrix!
+    Asquare_norms = np.sqrt(np.sum(Asquare**2, axis=1)/(1.0 * evaluations_user_can_afford))
+    Normalization_Constant = np.diag(1.0/Asquare_norms)
+    A_LSQ = np.dot(Normalization_Constant, Asquare)
+    b_LSQ = np.dot(Normalization_Constant, fun(gaussPoints[P,:] )  )
+
+    # Solve the least squares problem
+    x = matrix.solveLeastSquares(A_LSQ, b_LSQ)
+    print(x)
 
 
 main()

@@ -21,9 +21,21 @@ class IndexSet(object):
                                 constructor / initializer
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
-    def __init__(self, index_set_type, orders):
+    def __init__(self, index_set_type, orders, level=None, growth_rule=None):
         self.index_set_type = index_set_type # string
-        self.orders = orders # we store order as an array!
+        self.orders =  orders # we store order as an array!
+
+        # Check for the levels
+        if level is None:
+            self.level = []
+        else:
+            self.level = level
+
+        # Check for the growth rule
+        if growth_rule is None:
+            self.growth_rule = []
+        else:
+            self.growth_rule = growth_rule
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 get() methods
@@ -34,26 +46,27 @@ class IndexSet(object):
     def getOrders(self):
         return self.orders
 
-def getIndexSet(type, orders, *args):
-    dimensions = len(orders)
-    if type == "total order":
-        index_set = total_order_index_set(orders)
-    elif type == "sparse grid":
-        index_set = sparse_grid_index_set(dimensions, level, growth_rule) # Note sparse grid rule depends on points!
-    elif type == "tensor grid":
-        index_set = tensor_grid_index_set(orders)
-    elif type == "hyperbolic scheme":
-        index_set = hyperbolic_index_set(orders, q)
-    else:
-        #print 'index set error' # Need to replace this with a formal error statement!
-        index_set = [0]
-    return index_set
+    def getIndexSet(self):
+        dimensions = len(self.orders)
+        name = self.index_set_type
+        if name == "total order":
+            index_set = total_order_index_set(self.orders)
+        elif name == "sparse grid":
+            index_set = sparse_grid_index_set(dimensions, self.level, self.growth_rule) # Note sparse grid rule depends on points!
+        elif name == "tensor grid":
+            index_set = tensor_grid_index_set(self.orders)
+        elif name == "hyperbolic scheme":
+            index_set = hyperbolic_index_set(self.orders)
+        else:
+            #print 'index set error' # Need to replace this with a formal error statement!
+            index_set = [0]
+        return index_set
 
 
-def hyperbolic_index_set(orders, q):
+def hyperbolic_index_set(orders):
 
     # Initialize a few parameters for the setup
-    orders = np.array(orders) - 1
+    q = 1.0
     dimensions = len(orders)
     n_bar = tensor_grid_index_set(orders)
     n_new = []
@@ -82,15 +95,15 @@ def total_order_index_set(orders):
     # order cannot exceed that of the polynomial.
 
     # Initialize a few parameters for the setup
-    orders = np.array(orders) - 1
     dimensions = len(orders)
     n_bar = tensor_grid_index_set(orders) + 1
+    print n_bar
     n_new = [] # list; dynamic array
 
     # Now cycle through each entry, and check the sum
     summation = np.sum(n_bar, axis=1)
     for i in range(0, len(summation)):
-        if(summation[i] <= np.max(n_bar) ):
+        if(summation[i]  <= np.max(n_bar) ):
             value = n_bar[i,:]
             n_new.append(value)
 
@@ -99,7 +112,7 @@ def total_order_index_set(orders):
     for i in range(0, len(n_new)):
         for j in range(0, dimensions):
             r = n_new[i]
-            total_index[i,j] = r[j]
+            total_index[i,j] = r[j] - 1.0
 
     return total_index
 
@@ -170,8 +183,6 @@ def sparse_grid_index_set(dimensions, level, growth_rule):
 def tensor_grid_index_set(orders):
 
     dimensions = len(orders) # number of dimensions
-    orders = np.array(orders) - 1
-
     I = [1.0] # initialize!
 
     # For loop across each dimension

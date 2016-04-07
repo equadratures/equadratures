@@ -3,6 +3,7 @@ import PolyUsers as poly
 from PolyParams import PolynomialParam
 import numpy as np
 import matplotlib.pyplot as plt
+from IndexSets import IndexSet
 
 """
     Optimal Quadrature Subsampling
@@ -40,15 +41,16 @@ def main():
     uq_parameter2 = PolynomialParam("Jacobi", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, full_grid_points) # Setup uq_parameter
     uq_parameter3 = PolynomialParam("Jacobi", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, full_grid_points) # Setup uq_parameter
 
-    # Compute elements of an index set:
-    
+    # Compute elements of an index set:self, index_set_type, orders, level=None, growth_rule=None):
+    iset = IndexSet("total order", [3,3,3])
+    u = IndexSet.getIndexSet(iset)
     # Compute A and C matrices!
-    A, C, gaussPoints = PolynomialParam.getAmatrix(uq_parameter1)
-    b = fun(gaussPoints)
+    #A, C, gaussPoints = PolynomialParam.getAmatrix(uq_parameter1)
+    #b = fun(gaussPoints)
 
     # Compute the full error!
-    x_true = matrix.solveLeastSquares(A, b)
-
+    #x_true = matrix.solveLeastSquares(A, b)
+"""
 
     # Pick select columns. This amounts using either a total order or hyperbolic cross
     # basis set in nD
@@ -93,5 +95,5 @@ def main():
     plt.xlim(2, highest_order-1)
     plt.ylim(2, highest_order-1)
     plt.show()
-
+"""
 main()

@@ -13,8 +13,17 @@ import math as mt
 class IndexSet(object):
     """ An index set.
     Attributes:
-        param_type: The distribution associated with the parameter
-        ...
+        index_set_type: Choose between:
+                        a. Tensor grid
+                        b. Total order index set
+                        c. Hyperbolic cross space
+                        d. Sparse grids
+
+        orders: Maximum orders in each direction
+        level: [For sparse grids only] "density of points"
+        growth_rule: scaling up of points between levels:
+                        a. Linear growth rule
+                        b. Exponential growth rule
 
 
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -25,13 +34,13 @@ class IndexSet(object):
         self.index_set_type = index_set_type # string
         self.orders =  orders # we store order as an array!
 
-        # Check for the levels
+        # Check for the levels (only for sparse grids)
         if level is None:
             self.level = []
         else:
             self.level = level
 
-        # Check for the growth rule
+        # Check for the growth rule (only for sparse grids)
         if growth_rule is None:
             self.growth_rule = []
         else:
@@ -55,7 +64,7 @@ class IndexSet(object):
             index_set = sparse_grid_index_set(dimensions, self.level, self.growth_rule) # Note sparse grid rule depends on points!
         elif name == "tensor grid":
             index_set = tensor_grid_index_set(self.orders)
-        elif name == "hyperbolic scheme":
+        elif name == "hyperbolic cross":
             index_set = hyperbolic_index_set(self.orders)
         else:
             #print 'index set error' # Need to replace this with a formal error statement!

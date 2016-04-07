@@ -44,6 +44,8 @@ def main():
     # Compute elements of an index set:self, index_set_type, orders, level=None, growth_rule=None):
     iset = IndexSet("total order", [3,3,3])
     u = IndexSet.getIndexSet(iset)
+
+    print(u)
     # Compute A and C matrices!
     #A, C, gaussPoints = PolynomialParam.getAmatrix(uq_parameter1)
     #b = fun(gaussPoints)

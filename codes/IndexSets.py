@@ -89,6 +89,7 @@ def hyperbolic_index_set(orders):
 
     return hyperbolic_set
 
+# Double checked April 7th, 2016 --> Works!
 def total_order_index_set(orders):
 
     # For a total order index set, the sum of all the elements of a particular
@@ -96,7 +97,7 @@ def total_order_index_set(orders):
 
     # Initialize a few parameters for the setup
     dimensions = len(orders)
-    n_bar = tensor_grid_index_set(orders) + 1
+    n_bar = tensor_grid_index_set(orders)
     print n_bar
     n_new = [] # list; dynamic array
 
@@ -112,7 +113,7 @@ def total_order_index_set(orders):
     for i in range(0, len(n_new)):
         for j in range(0, dimensions):
             r = n_new[i]
-            total_index[i,j] = r[j] - 1.0
+            total_index[i,j] = r[j]
 
     return total_index
 

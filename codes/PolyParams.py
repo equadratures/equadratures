@@ -63,7 +63,7 @@ class PolynomialParam(object):
         return jacobiEigenvectors(self)
 
     def getOrthoPoly(self, points):
-        return orthoPolynomial_and_derivative(self, points, derivative_flag)
+        return orthoPolynomial_and_derivative(self, points)
 
     def getLocalQuadrature(self):
         return getlocalquadrature(self)
@@ -223,7 +223,7 @@ def orthoPolynomial_and_derivative(self, gridPoints):
     if self.order == 1:
         return orthopoly
 
-    orthopoly[1,:] = ((gridPoints[:,0] - ab[0,0]) * orthopoly[0,:] ) * (1.0)/(1.0 * np.sqrt(ab[1,1]) )
+    orthopoly[1,:] = ((gridPoints - ab[0,0]) * orthopoly[0,:] ) * (1.0)/(1.0 * np.sqrt(ab[1,1]) )
 
     if self.order == 2:
         return orthopoly
@@ -231,7 +231,7 @@ def orthoPolynomial_and_derivative(self, gridPoints):
     if self.order >= 3:
         for u in range(2,self.order):
             # Three-term recurrence rule in action!
-            orthopoly[u,:] = ( ((gridPoints[:,0] - ab[u-1,0])*orthopoly[u-1,:]) - np.sqrt(ab[u-1,1])*orthopoly[u-2,:] )/(1.0 * np.sqrt(ab[u,1]))
+            orthopoly[u,:] = ( ((gridPoints - ab[u-1,0])*orthopoly[u-1,:]) - np.sqrt(ab[u-1,1])*orthopoly[u-2,:] )/(1.0 * np.sqrt(ab[u,1]))
 
     # Only if the derivative flag is on do we compute the derivative polynomial
     if self.derivative_flag == 1:
@@ -246,7 +246,7 @@ def orthoPolynomial_and_derivative(self, gridPoints):
         if self.order >= 3:
             for u in range(2, self.order):
                 # Four-term recurrence formula for derivatives of orthogonal polynomials!
-                derivative_orthopoly[u,:] = ( ((gridPoints[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
+                derivative_orthopoly[u,:] = ( ((gridPoints - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
         return orthopoly, derivative_orthopoly
 
     else:

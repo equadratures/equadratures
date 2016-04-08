@@ -79,8 +79,8 @@ class PolynomialParam(object):
             gridPoints, gridWeights = getlocalquadrature(self)
 
         A, C = orthoPolynomial_and_derivative(self, gridPoints)
-        A = A.T # Take the temp_transpose
-        C = C.T
+        A = sqrt(2) * A.T # Take the temp_transpose
+        C = sqrt(2) * C.T
 
         return A, C, gridPoints
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

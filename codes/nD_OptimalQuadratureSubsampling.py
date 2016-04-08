@@ -1,9 +1,12 @@
 #!/usr/bin/python
-import PolyUsers as poly
 from PolyParams import PolynomialParam
+from PolyParentFile import PolyParent
+from IndexSets import IndexSet
+
+
 import numpy as np
 import matplotlib.pyplot as plt
-from IndexSets import IndexSet
+
 
 """
     Optimal Quadrature Subsampling
@@ -40,12 +43,21 @@ def main():
     uq_parameter1 = PolynomialParam("Jacobi", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, full_grid_points) # Setup uq_parameter
     uq_parameter2 = PolynomialParam("Jacobi", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, full_grid_points) # Setup uq_parameter
     uq_parameter3 = PolynomialParam("Jacobi", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, full_grid_points) # Setup uq_parameter
+    uq_parameters = [uq_parameter1, uq_parameter2, uq_parameter3]
 
     # Compute elements of an index set:self, index_set_type, orders, level=None, growth_rule=None):
-    iset = IndexSet("total order", [3,3,3])
-    u = IndexSet.getIndexSet(iset)
+    indexset_configure = IndexSet("total order", [3,3,3])
+    indices = IndexSet.getIndexSet(indexset_configure)
 
-    print(u)
+    # Create a PolyParent object!
+    vv = PolyParent(uq_parameters, indices)
+    u = PolyParent.getTensorQuadrature(vv)
+
+
+
+
+
+
     # Compute A and C matrices!
     #A, C, gaussPoints = PolynomialParam.getAmatrix(uq_parameter1)
     #b = fun(gaussPoints)

@@ -18,7 +18,10 @@ class PolyParent(object):
                                 constructor / initializer
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
-    def __init__(self, uq_parameters, indexsets):
+    def __init__(self, uq_parameters, indexsets, level=None, growth_rule=None):
+
+        self.uq_parameters = uq_parameters
+        self.indexsets = indexsets
 
         # Check for the levels (only for sparse grids)
         if level is None:
@@ -47,21 +50,23 @@ class PolyParent(object):
         def getOrthoPoly(self, points):
             return orthoPolynomial_and_derivative(self, points, derivative_flag)
 
-        def getMultivariateQuadrature(self):
+        def getTensorQuadrature(self):
             return getlocalquadrature(self)
 
-        # Might need another getAmatrix function that doesn't store the full matrix!
-        def getMultivariateAmatrix(self, *argv):
+        def getMultivariateA(self):
 
-            # For loop for getting the "A" matrix from each parameter
-            # and then
+            # Preliminaries
+            dimensions = len( self.uq_parameters )
 
-        # NOTE: THIS WILL BE SLOW!!!!!!!!!!!
-        def getMultivariateAmatrix_Analytic
+            # Assuming we have no derivatives?
+            A_univariate = {}
+            for i in range(0, dimensions):
+                A_univariate[i] = PolynomialParam.getAmatrix(self.uq_parameters[i])
+                print A_univariate[i]
+            return [1]
 
 def getPseudospectralCoefficients(stackOfParameters, orders, function, *args):
     # three options:
-    # Best to code this up as Paul's function!
 
     dimensions = len(stackOfParameters)
     q0 = [1]

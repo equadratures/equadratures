@@ -73,14 +73,13 @@ class PolynomialParam(object):
 
         # If there is an additional argument, then replace the
         for arg in argv:
-            self.order = argv[0]
-            gridPoints, gridWeights = getlocalquadrature(self, argv[0])
+            gridPoints =  argv[0]
         else:
             gridPoints, gridWeights = getlocalquadrature(self)
 
         A, C = orthoPolynomial_and_derivative(self, gridPoints)
-        A = sqrt(2) * A.T # Take the temp_transpose
-        C = sqrt(2) * C.T
+        A = np.sqrt(2) * A.T # Take the temp_transpose
+        C = np.sqrt(2) * C.T
 
         return A, C, gridPoints
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -163,6 +162,9 @@ def getlocalquadrature(self, *argv):
     # If there is an additional argument, then replace the
     for arg in argv:
         self.order = arg
+        print('~~~~~~~~~~~')
+        print arg
+        print('***********')
 
     # Get the recurrence coefficients & the jacobi matrix
     recurrence_coeffs = recurrence_coefficients(self)

@@ -14,9 +14,9 @@ class PolyParent(object):
     """ An index set.
     Attributes:
 
-       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 constructor / initializer
-       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
     def __init__(self, uq_parameters, indexsets, level=None, growth_rule=None):
 
@@ -35,35 +35,54 @@ class PolyParent(object):
         else:
             self.growth_rule = growth_rule
 
-        """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     get() methods
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-        def getMultivariateParamType(self):
-            return self.param_type
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
+    def getMultivariateParamType(self):
+        return self.param_type
 
-        def getMultivariateLowerBound(self):
-            return self.lower_bound
+    def getMultivariateLowerBound(self):
+        return self.lower_bound
 
-        def getMultivariateUpperBound(self):
-            return self.upper_bound
+    def getMultivariateUpperBound(self):
+        return self.upper_bound
 
-        def getOrthoPoly(self, points):
-            return orthoPolynomial_and_derivative(self, points, derivative_flag)
+    def getOrthoPoly(self, points):
+        return orthoPolynomial_and_derivative(self, points, derivative_flag)
 
-        def getTensorQuadrature(self):
-            return getlocalquadrature(self)
+    def getTensorQuadrature(self):
+        return getGaussianQuadrature(self)
 
-        def getMultivariateA(self):
+    def getMultivariateA(self, points):
 
-            # Preliminaries
-            dimensions = len( self.uq_parameters )
+        # Preliminaries
+        indices = self.indexsets
+        no_of_indices, dimensions = indices.shape
+        A_univariate = {}
+        C_univariate = {}
+        total_quad_pts = 0
 
-            # Assuming we have no derivatives?
-            A_univariate = {}
-            for i in range(0, dimensions):
-                A_univariate[i] = PolynomialParam.getAmatrix(self.uq_parameters[i])
-                print A_univariate[i]
-            return [1]
+        # Assuming we have no derivatives?
+        for i in range(0, dimensions):
+            A, B, C = PolynomialParam.getAmatrix(self.uq_parameters[i], points)
+            A_univariate[i] = A
+            local_rows, local_cols = A_univariate[i].shape
+            total_quad_pts = total_quad_pts + local_rows
+
+        print(total_quad_pts)
+        # Now based on the index set compute the big ortho-poly matrix!
+        A_multivariate = np.zeros((no_of_indices, total_quad_pts))
+        for i in range(0, no_of_indices):
+            temp = np.ones((0, total_quad_pts))
+            print(temp)
+            for j in range(0, dimensions):
+                T = A_univariate[i]
+                ic = indices[j,i] + 1.0
+                A_multivariate[i, :] = T[ic, :] * temp
+                temp = A_multivariate[i, :]
+
+
+        return A_multivariate
 
 def getPseudospectralCoefficients(stackOfParameters, orders, function, *args):
     # three options:
@@ -148,18 +167,22 @@ def efficient_kron_mult(Q, Uc):
     return Uc
 
 # Computes nD quadrature points and weights using a kronecker product
-def getGaussianQuadrature(stackOfParameters, orders):
+def getGaussianQuadrature(self):
 
     # Initialize some temporary variables
     pp = [1.0]
     ww = [1.0]
+    stackOfParameters = self.uq_parameters
     dimensions = int(len(stackOfParameters)) # number of parameters
+    orders = np.zeros((dimensions))
+    for i in range(0, dimensions):
+        orders[i] = stackOfParameters[i].order
 
     # For loop across each dimension
     for u in range(0,dimensions):
 
         # Call to get local quadrature method (for dimension 'u')
-        local_points, local_weights = PolynomialParam.getLocalQuadrature(stackOfParameters[u], orders[u])
+        local_points, local_weights = PolynomialParam.getLocalQuadrature(stackOfParameters[u])
 
         # Tensor product of the weights
         ww = np.kron(ww, local_weights)

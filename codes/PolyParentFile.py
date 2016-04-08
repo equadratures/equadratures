@@ -59,33 +59,32 @@ class PolyParent(object):
         indices = self.indexsets
         no_of_indices, dimensions = indices.shape
         A_univariate = {}
-        C_univariate = {}
-        total_quad_pts = 0
+        total_points = len(points[:,0])
+        #C_univariate = {}
 
         # Assuming we have no derivatives?
         for i in range(0, dimensions):
-            A, B, C = PolynomialParam.getAmatrix(self.uq_parameters[i], points)
-            A_univariate[i] = A
+            P, M = PolynomialParam.getOrthoPoly(self.uq_parameters[i], points[:,i])
+            A_univariate[i] = P.T
             local_rows, local_cols = A_univariate[i].shape
-            total_quad_pts = total_quad_pts + local_rows
 
-        print(total_quad_pts)
         # Now based on the index set compute the big ortho-poly matrix!
-        A_multivariate = np.zeros((no_of_indices, total_quad_pts))
+        "**** BUG BELOW! ******"
+        A_multivariate = np.zeros((no_of_indices, total_points))
         for i in range(0, no_of_indices):
-            temp = np.ones((0, total_quad_pts))
+            temp = np.ones((total_points, 1))
             print(temp)
             for j in range(0, dimensions):
                 T = A_univariate[i]
+                print(T)
                 ic = indices[j,i] + 1.0
-                A_multivariate[i, :] = T[ic, :] * temp
+                A_multivariate[i, :] = np.dot( T[ic, :], temp )
                 temp = A_multivariate[i, :]
 
 
         return A_multivariate
 
 def getPseudospectralCoefficients(stackOfParameters, orders, function, *args):
-    # three options:
 
     dimensions = len(stackOfParameters)
     q0 = [1]

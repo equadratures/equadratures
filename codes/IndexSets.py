@@ -67,7 +67,6 @@ class IndexSet(object):
         elif name == "hyperbolic cross":
             index_set = hyperbolic_index_set(self.orders)
         else:
-            #print 'index set error' # Need to replace this with a formal error statement!
             index_set = [0]
         return index_set
 
@@ -107,7 +106,6 @@ def total_order_index_set(orders):
     # Initialize a few parameters for the setup
     dimensions = len(orders)
     n_bar = tensor_grid_index_set(orders)
-    print n_bar
     n_new = [] # list; dynamic array
 
     # Now cycle through each entry, and check the sum
@@ -171,7 +169,6 @@ def sparse_grid_index_set(dimensions, level, growth_rule):
                 sparse_index[i,j] = int(r[j])
             else:
                 raise KeyboardInterrupt
-                #print 'error!'
 
     # Ok, but sparse_index just has the tensor order sets to be used. Now we need
     # to get all the index sets!

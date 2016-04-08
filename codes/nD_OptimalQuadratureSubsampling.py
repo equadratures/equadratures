@@ -35,7 +35,7 @@ def main():
     derivative_flag = 0 # derivative flag on=1; off=0
 
 
-    full_grid_points = 100 # full tensor grid
+    full_grid_points = 3 # full tensor grid
     min_value, max_value = -1, 1 # range of uncertainty --> assuming Legendre
     alpha_parameter, beta_parameter = 0, 0 # Jacobi polynomial values for Legendre
 
@@ -51,8 +51,8 @@ def main():
 
     # Create a PolyParent object!
     vv = PolyParent(uq_parameters, indices)
-    u = PolyParent.getTensorQuadrature(vv)
-
+    pts, wts = PolyParent.getTensorQuadrature(vv)
+    u = PolyParent.getMultivariateA(vv, pts)
 
 
 

@@ -162,9 +162,6 @@ def getlocalquadrature(self, *argv):
     # If there is an additional argument, then replace the
     for arg in argv:
         self.order = arg
-        print('~~~~~~~~~~~')
-        print arg
-        print('***********')
 
     # Get the recurrence coefficients & the jacobi matrix
     recurrence_coeffs = recurrence_coefficients(self)

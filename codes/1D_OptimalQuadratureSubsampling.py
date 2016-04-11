@@ -38,10 +38,10 @@ def main():
     #
     #--------------------------------------------------------------------------------------
     highest_order = 50 # more for visualization
-    derivative_flag = 1 # derivative flag on=1; off=0
+    derivative_flag = 0 # derivative flag on=1; off=0
 
 
-    full_grid_points = 150 # full tensor grid
+    full_grid_points = 100# full tensor grid
     min_value, max_value = -1, 1 # range of uncertainty --> assuming Legendre
     alpha_parameter, beta_parameter = 0, 0 # Jacobi polynomial values for Legendre
     uq_parameter1 = PolynomialParam("Jacobi", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, full_grid_points) # Setup uq_parameter
@@ -58,8 +58,15 @@ def main():
         # Compute A and C matrices and solve the full least squares problem
         A, C, gaussPoints = PolynomialParam.getAmatrix(uq_parameter1)
         b = fun(gaussPoints, derivative_flag)
-        x_true = matrix.solveLeastSquares(A, b)
 
+        # Normalize these!
+        A_norms = np.sqrt(np.sum(A**2, axis=1)/(1.0 * full_grid_points))
+        Normalization = np.diag(1.0/A_norms)
+        Aweighted = np.dot(Normalization, A)
+        bweighted = np.dot(Normalization, b)
+
+        # "REAL" solution
+        x_true = matrix.solveLeastSquares(Aweighted, bweighted)
 
         # Get the function values at ALL points!
         function_values = fun(gaussPoints, derivative_flag)
@@ -67,27 +74,19 @@ def main():
         for basis_subsamples in range(2,highest_order):
             for quadrature_subsamples in range(2,highest_order):
 
-                # Subselect columns
-                Atall = A[:, 0 : basis_subsamples]
-
                 # Now compute the "optimal" subsamples from this grid!
-                P = matrix.QRColumnPivoting(Atall)
-                P = P[ 0 : quadrature_subsamples]
+                P = matrix.QRColumnPivoting( A[:, 0 : quadrature_subsamples] )
+                optimal = P[ 0 : quadrature_subsamples]
 
                 # Now take the first "evaluations_user_can_afford" rows from P
-                Asquare = Atall[P,:]
-
-                # Row normalize the matrix!
-                Asquare_norms = np.sqrt(np.sum(Asquare**2, axis=1)/(1.0 * quadrature_subsamples))
-                Normalization_Constant = np.diag(1.0/Asquare_norms)
-                A_LSQ = np.dot(Normalization_Constant, Asquare)
-                b_LSQ = np.dot(Normalization_Constant, function_values[P] )
-                rows, cols = A_LSQ.shape
+                Asquare = A[optimal, 0 : basis_subsamples]
+                bsquare = b[optimal]
+                rows, cols = Asquare.shape
 
                 # Solve least squares problem only if rank is not degenrate!
-                if(np.linalg.matrix_rank(A_LSQ) == cols):
+                if(np.linalg.matrix_rank(Asquare) == cols):
                     # Solve the least squares problem
-                    x = matrix.solveLeastSquares(A_LSQ, b_LSQ)
+                    x = matrix.solveLeastSquares(Asquare, bsquare)
                     store_error[basis_subsamples,quadrature_subsamples] = np.linalg.norm( x - x_true[0:basis_subsamples])
 
     # If the derivative flag is switched on!
@@ -97,47 +96,29 @@ def main():
         A, C, gaussPoints = PolynomialParam.getAmatrix(uq_parameter1)
         b, d = fun(gaussPoints, derivative_flag)
 
-        # Normalize these!
-        A_norms = np.sqrt(np.sum(A**2, axis=1)/(1.0 * full_grid_points))
-        Normalization = np.diag(1.0/A_norms)
-        Aweighted = np.dot(Normalization, A)
-        bweighted = np.dot(Normalization, b)
-        x_true = matrix.solveLeastSquares(Aweighted, bweighted)
+        # Full least squares!
+        x_true = matrix.solveLeastSquares(A, b)
 
         # Get the function and gradient values
         function_values, grad_values = fun(gaussPoints, derivative_flag)
 
-        for basis_subsamples in range(2,highest_order):
-            for quadrature_subsamples in range(2,highest_order):
+        for quadrature_subsamples in range(2,highest_order):
+            for basis_subsamples in range(2,highest_order):
 
-                # Subselect columns
-                Atall = A[:, 0 : basis_subsamples]
-                Ctall = C[:, 0 : basis_subsamples]
 
                 # Now compute the "optimal" subsamples from this grid!
-                P = matrix.QRColumnPivoting(Atall)
-                P = P[ 0 : quadrature_subsamples]
+                P = matrix.QRColumnPivoting( A[:, 0 : quadrature_subsamples] )
+                optimal = P[ 0 : quadrature_subsamples]
 
                 # Now take the first "evaluations_user_can_afford" rows from P
-                Asquare = Atall[P,:]
-                Csquare = Ctall[P,:]
-
-                # Row normalize the matrix!
-                Asquare_norms = np.sqrt(np.sum(Asquare**2, axis=1)/(1.0 * quadrature_subsamples))
-                Normalization_Constant = np.diag(1.0/Asquare_norms)
-                Csquare_norms = np.sqrt(np.sum(Csquare**2, axis=1)/(1.0 * quadrature_subsamples))
-                Normalization_Constant_C = np.diag(1.0/Csquare_norms)
-
-
-                A_LSQ = np.dot(Normalization_Constant, Asquare)
-                C_LSQ = np.dot(Normalization_Constant_C, Csquare)
-
-                b_LSQ = np.dot(Normalization_Constant, function_values[P] )
-                d_LSQ = np.dot(Normalization_Constant_C, grad_values[P] )
+                Asquare = A[optimal, 0 : basis_subsamples]
+                Csquare = C[optimal, 0 : basis_subsamples]
+                bsquare = b[optimal]
+                dsquare = d[optimal]
 
                 # Stack the matrices & vectors
-                Matrices_stacked = np.vstack((A_LSQ, C_LSQ))
-                Vectors_stacked = np.vstack((b_LSQ, d_LSQ))
+                Matrices_stacked = np.vstack((Asquare, Csquare))
+                Vectors_stacked = np.vstack((bsquare, dsquare))
                 rows, cols = Matrices_stacked.shape
 
 
@@ -147,13 +128,12 @@ def main():
                     x = matrix.solveLeastSquares(Matrices_stacked, Vectors_stacked)
                     store_error[basis_subsamples,quadrature_subsamples] = np.linalg.norm( x - x_true[0:basis_subsamples])
 
+
     #--------------------------------------------------------------------------------------
     #
     #                               PLOTS BELOW!
     #
     #--------------------------------------------------------------------------------------
-
-
     # Plot!
     rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
     rc('text', usetex=True)

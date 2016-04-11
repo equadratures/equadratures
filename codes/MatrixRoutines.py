@@ -15,7 +15,7 @@ import scipy.linalg as sc
 """
 # Compute the pivot columns
 def QRColumnPivoting(A):
-    Q, R, P = sc.qr(A.T, mode='full', pivoting=True)
+    Q, R, P = sc.qr(A.T,  pivoting=True)
     return P
 
 def solveLeastSquares(A, b):

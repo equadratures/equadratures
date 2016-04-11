@@ -19,5 +19,7 @@ def QRColumnPivoting(A):
     return P
 
 def solveLeastSquares(A, b):
+    rows, cols = A.shape
+    rows_b = len(b)
     x = sc.lstsq(A, b)
     return x[0]

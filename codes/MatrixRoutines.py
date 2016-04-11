@@ -23,3 +23,6 @@ def solveLeastSquares(A, b):
     rows_b = len(b)
     x = sc.lstsq(A, b)
     return x[0]
+
+def rowNormalize(A):
+    return A_normalized, normalization_factor

@@ -8,6 +8,7 @@ from matplotlib import rc
 import matplotlib as mp
 import numpy as np
 import numpy.ma as ma
+import random
 """
     Optimal Quadrature Subsampling
     1D Example
@@ -18,13 +19,15 @@ import numpy.ma as ma
 
 """
 # Simple analytical function -- feel free to change
-def fun(x, derivative_flag):
+def fun(x, derivative_flag, error_flag):
 
     if derivative_flag == 0:
         return np.exp(x[:]) # No derivative
-    else:
+    elif derivative_flag == 1 and error_flag == 0:
         return np.exp(x[:]) , np.exp(x[:]) # Function and its derivative
-
+    elif derivative_flag == 1 and error_flag == 1:
+        noise = np.array([np.random.normal(0, 1e-010, len(x))]) # zero-mean noise with std 0.001
+        return np.exp(x[:]),  np.exp(x[:]) + noise.T
 
 
 def main():
@@ -38,10 +41,10 @@ def main():
     #
     #--------------------------------------------------------------------------------------
     highest_order = 50 # more for visualization
-    derivative_flag = 0 # derivative flag on=1; off=0
+    derivative_flag = 1 # derivative flag on=1; off=0
+    error_flag = 1 # For simulating noise in the derivatives!
 
-
-    full_grid_points = 100# full tensor grid
+    full_grid_points = 150 # full tensor grid
     min_value, max_value = -1, 1 # range of uncertainty --> assuming Legendre
     alpha_parameter, beta_parameter = 0, 0 # Jacobi polynomial values for Legendre
     uq_parameter1 = PolynomialParam("Jacobi", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, full_grid_points) # Setup uq_parameter
@@ -57,7 +60,7 @@ def main():
 
         # Compute A and C matrices and solve the full least squares problem
         A, C, gaussPoints = PolynomialParam.getAmatrix(uq_parameter1)
-        b = fun(gaussPoints, derivative_flag)
+        b = fun(gaussPoints, derivative_flag, error_flag)
 
         # Normalize these!
         A_norms = np.sqrt(np.sum(A**2, axis=1)/(1.0 * full_grid_points))
@@ -69,7 +72,7 @@ def main():
         x_true = matrix.solveLeastSquares(Aweighted, bweighted)
 
         # Get the function values at ALL points!
-        function_values = fun(gaussPoints, derivative_flag)
+        function_values = fun(gaussPoints, derivative_flag, error_flag)
 
         for basis_subsamples in range(2,highest_order):
             for quadrature_subsamples in range(2,highest_order):
@@ -94,13 +97,13 @@ def main():
 
         # Compute A and C matrices and solve the full least squares problem
         A, C, gaussPoints = PolynomialParam.getAmatrix(uq_parameter1)
-        b, d = fun(gaussPoints, derivative_flag)
+        b, d = fun(gaussPoints, derivative_flag, error_flag)
 
         # Full least squares!
         x_true = matrix.solveLeastSquares(A, b)
 
         # Get the function and gradient values
-        function_values, grad_values = fun(gaussPoints, derivative_flag)
+        function_values, grad_values = fun(gaussPoints, derivative_flag, error_flag)
 
         for quadrature_subsamples in range(2,highest_order):
             for basis_subsamples in range(2,highest_order):
@@ -153,6 +156,6 @@ def main():
     plt.xlim(2, highest_order-1)
     plt.ylim(2, highest_order-1)
     plt.show()
-
+    #plt.savefig('figure_2.eps', format='eps', dpi=500)
 
 main()

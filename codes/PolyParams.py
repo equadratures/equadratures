@@ -187,6 +187,9 @@ def getlocalquadrature(self, *argv):
         local_weights = recurrence_coeffs[0,1] * w # normalizing step
         local_points = p # re-label
 
+        # Check if local points is a numpy array!
+        validation = type(local_points).__module__ == np.__name__
+
     # Return 1D gauss points and weights
     return local_points, local_weights
 
@@ -212,6 +215,10 @@ def orthoPolynomial_and_derivative(self, gridPoints):
     orthopoly = np.zeros((self.order, len(gridPoints))) # create a matrix full of zeros
     derivative_orthopoly = np.zeros((self.order, len(gridPoints)))
     ab = recurrence_coefficients(self)
+
+    gridPoints_rows, gridPoints_cols = gridPoints.shape
+    if gridPoints_cols == 1:
+        gridPoints = gridPoints.T
 
     # Zeroth order
     orthopoly[0,:] = (1.0)/(1.0 * np.sqrt(ab[0,1]) ) # Correct!

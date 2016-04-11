@@ -4,6 +4,8 @@ from PolyParams import PolynomialParam
 import MatrixRoutines as matrix
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
+from matplotlib import rc
+import matplotlib as mp
 import numpy as np
 import numpy.ma as ma
 """
@@ -17,9 +19,11 @@ import numpy.ma as ma
 """
 
 # Simple analytical function
-def fun(x):
-    return np.exp(x[:])
-
+def fun(x, dervative_flag):
+    if derivative_flag == 0:
+        return np.exp(x[:]) # No derivative
+    else:
+        return np.exp(x[:]) , np.exp(x[:]) # Function and its derivative
 
 def main():
 
@@ -42,7 +46,7 @@ def main():
 
     # Compute A and C matrices!
     A, C, gaussPoints = PolynomialParam.getAmatrix(uq_parameter1)
-    b = fun(gaussPoints)
+    b = fun(gaussPoints, derivative_flag)
 
     # Compute the full error!
     x_true = matrix.solveLeastSquares(A, b)
@@ -74,20 +78,28 @@ def main():
                 Asquare_norms = np.sqrt(np.sum(Asquare**2, axis=1)/(1.0 * quadrature_subsamples))
                 Normalization_Constant = np.diag(1.0/Asquare_norms)
                 A_LSQ = np.dot(Normalization_Constant, Asquare)
-                b_LSQ = np.dot(Normalization_Constant, fun(gaussPoints[P,:] )  )
+                b_LSQ = np.dot(Normalization_Constant, fun(gaussPoints[P,:], derivative_flag )  )
 
                 # Solve the least squares problem
                 x = matrix.solveLeastSquares(A_LSQ, b_LSQ)
                 store_error[basis_subsamples,quadrature_subsamples] = np.linalg.norm( x - x_true[0:basis_subsamples])
 
     # Plot!
+    rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+    rc('text', usetex=True)
+
     Zm = ma.masked_where(np.isnan(store_error),store_error)
     yy, xx = np.mgrid[0:highest_order, 0: highest_order]
     plt.pcolor(yy, xx, np.log10(np.abs(Zm)), cmap='jet', vmin=-15, vmax=0)
-    plt.colorbar()
-    plt.ylabel('Quadrature subsamples')
-    plt.xlabel('Basis subsamples')
-    plt.title('L2 NORM COEFFICIENT ERROR')
+    cb = plt.colorbar()
+    ax = cb.ax
+    text = ax.yaxis.label
+    font = mp.font_manager.FontProperties(family='times new roman', style='italic', size=16)
+    text.set_font_properties(font)
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+    plt.ylabel(r'Quadrature subsamples',fontsize=16)
+    plt.xlabel(r'Basis subsamples',fontsize=16)
     plt.xlim(2, highest_order-1)
     plt.ylim(2, highest_order-1)
     plt.show()

@@ -25,4 +25,8 @@ def solveLeastSquares(A, b):
     return x[0]
 
 def rowNormalize(A):
-    return A_normalized, normalization_factor
+    rows, cols = A.shape
+    A_norms = np.sqrt(np.sum(A**2, axis=1)/(1.0 * cols))
+    Normalization = np.diag(1.0/A_norms)
+    A_normalized = np.dot(Normalization, A)
+    return A_normalized, Normalization

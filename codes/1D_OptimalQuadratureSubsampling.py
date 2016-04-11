@@ -26,7 +26,7 @@ def fun(x, derivative_flag, error_flag):
     elif derivative_flag == 1 and error_flag == 0:
         return np.exp(x[:]) , np.exp(x[:]) # Function and its derivative
     elif derivative_flag == 1 and error_flag == 1:
-        noise = np.array([np.random.normal(0, 1e-010, len(x))]) # zero-mean noise with std 0.001
+        noise = np.array([np.random.normal(0, 1e-09, len(x))]) # zero-mean noise with std 0.001
         return np.exp(x[:]),  np.exp(x[:]) + noise.T
 
 
@@ -40,7 +40,7 @@ def main():
     #        3. Input number of points on the "full grid" (3x5 times number in line above)
     #
     #--------------------------------------------------------------------------------------
-    highest_order = 50 # more for visualization
+    highest_order = 70 # more for visualization
     derivative_flag = 1 # derivative flag on=1; off=0
     error_flag = 1 # For simulating noise in the derivatives!
 
@@ -53,6 +53,7 @@ def main():
     # Pick select columns. This amounts using either a total order or hyperbolic cross
     # basis set in nD
     store_error = np.zeros((highest_order, highest_order)) + np.NaN
+    store_cond = np.zeros((highest_order, highest_order)) + np.NaN # NaN doesn't really matter here!
 
     # Check whether derivative flag is on or off!
     if derivative_flag == 0:
@@ -63,10 +64,8 @@ def main():
         b = fun(gaussPoints, derivative_flag, error_flag)
 
         # Normalize these!
-        A_norms = np.sqrt(np.sum(A**2, axis=1)/(1.0 * full_grid_points))
-        Normalization = np.diag(1.0/A_norms)
-        Aweighted = np.dot(Normalization, A)
-        bweighted = np.dot(Normalization, b)
+        Aweighted , NormFactor = matrix.rowNormalize(A)
+        bweighted = np.dot(NormFactor, b)
 
         # "REAL" solution
         x_true = matrix.solveLeastSquares(Aweighted, bweighted)
@@ -86,11 +85,19 @@ def main():
                 bsquare = b[optimal]
                 rows, cols = Asquare.shape
 
+                # Normalize these!
+                Asquare, smallNormFactor = matrix.rowNormalize(Asquare)
+                bsquare = np.dot(smallNormFactor, bsquare)
+
+
                 # Solve least squares problem only if rank is not degenrate!
                 if(np.linalg.matrix_rank(Asquare) == cols):
                     # Solve the least squares problem
                     x = matrix.solveLeastSquares(Asquare, bsquare)
                     store_error[basis_subsamples,quadrature_subsamples] = np.linalg.norm( x - x_true[0:basis_subsamples])
+
+                    # Compute the condition numbers of these matrices!
+                    store_cond[basis_subsamples, quadrature_subsamples] = np.linalg.cond(Asquare)
 
     # If the derivative flag is switched on!
     else:
@@ -99,12 +106,19 @@ def main():
         A, C, gaussPoints = PolynomialParam.getAmatrix(uq_parameter1)
         b, d = fun(gaussPoints, derivative_flag, error_flag)
 
+        # Normalize these!
+        Aweighted , NormFactor = matrix.rowNormalize(A)
+        bweighted = np.dot(NormFactor, b)
+        Cweighted , NormFactorGrad = matrix.rowNormalize(C)
+        dweighted = np.dot(NormFactorGrad, d)
+
         # Full least squares!
-        x_true = matrix.solveLeastSquares(A, b)
+        x_true = matrix.solveLeastSquares(Aweighted, bweighted)
 
         # Get the function and gradient values
         function_values, grad_values = fun(gaussPoints, derivative_flag, error_flag)
 
+        # For-loops
         for quadrature_subsamples in range(2,highest_order):
             for basis_subsamples in range(2,highest_order):
 
@@ -119,18 +133,23 @@ def main():
                 bsquare = b[optimal]
                 dsquare = d[optimal]
 
+                # Normalize these!
+                Asquare, smallNormFactor = matrix.rowNormalize(Asquare)
+                bsquare = np.dot(smallNormFactor, bsquare)
+                Csquare, smallGradNormFactor = matrix.rowNormalize(Csquare)
+                dsquare = np.dot(smallGradNormFactor, dsquare)
+
                 # Stack the matrices & vectors
                 Matrices_stacked = np.vstack((Asquare, Csquare))
                 Vectors_stacked = np.vstack((bsquare, dsquare))
                 rows, cols = Matrices_stacked.shape
-
 
                 # Solve least squares problem only if rank is not degenrate!
                 if(np.linalg.matrix_rank(Matrices_stacked) == cols):
                     # Solve the least squares problem
                     x = matrix.solveLeastSquares(Matrices_stacked, Vectors_stacked)
                     store_error[basis_subsamples,quadrature_subsamples] = np.linalg.norm( x - x_true[0:basis_subsamples])
-
+                    store_cond[basis_subsamples, quadrature_subsamples] = np.linalg.cond(Asquare)
 
     #--------------------------------------------------------------------------------------
     #
@@ -155,7 +174,26 @@ def main():
     plt.xlabel(r'Basis subsamples',fontsize=16)
     plt.xlim(2, highest_order-1)
     plt.ylim(2, highest_order-1)
-    plt.show()
-    #plt.savefig('figure_2.eps', format='eps', dpi=500)
+    #plt.show()
+    plt.savefig('figure_6.eps', format='eps', dpi=50)
+    plt.close()
+
+
+    Fm = ma.masked_where(np.isnan(store_cond),store_cond)
+    yy, xx = np.mgrid[0:highest_order, 0: highest_order]
+    plt.pcolor(yy, xx, np.log10(np.abs(Fm)), cmap='jet', vmin=0, vmax=2)
+    cb = plt.colorbar()
+    ax = cb.ax
+    text = ax.yaxis.label
+    font = mp.font_manager.FontProperties(family='times new roman', style='italic', size=16)
+    text.set_font_properties(font)
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+    plt.ylabel(r'Quadrature subsamples',fontsize=16)
+    plt.xlabel(r'Basis subsamples',fontsize=16)
+    plt.xlim(2, highest_order-1)
+    plt.ylim(2, highest_order-1)
+    plt.savefig('figure_7.eps', format='eps', dpi=50)
+
 
 main()

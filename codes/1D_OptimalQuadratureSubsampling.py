@@ -41,7 +41,7 @@ def main():
     #
     #--------------------------------------------------------------------------------------
     highest_order = 70 # more for visualization
-    derivative_flag = 1 # derivative flag on=1; off=0
+    derivative_flag = 0 # derivative flag on=1; off=0
     error_flag = 1 # For simulating noise in the derivatives!
 
     full_grid_points = 150 # full tensor grid
@@ -174,9 +174,9 @@ def main():
     plt.xlabel(r'Basis subsamples',fontsize=16)
     plt.xlim(2, highest_order-1)
     plt.ylim(2, highest_order-1)
-    #plt.show()
-    plt.savefig('figure_6.eps', format='eps', dpi=50)
-    plt.close()
+    plt.show()
+    #plt.savefig('figure_6.eps', format='eps', dpi=50)
+    #plt.close()
 
 
     Fm = ma.masked_where(np.isnan(store_cond),store_cond)
@@ -193,7 +193,7 @@ def main():
     plt.xlabel(r'Basis subsamples',fontsize=16)
     plt.xlim(2, highest_order-1)
     plt.ylim(2, highest_order-1)
-    plt.savefig('figure_7.eps', format='eps', dpi=50)
+    #plt.savefig('figure_7.eps', format='eps', dpi=50)
 
 
 main()

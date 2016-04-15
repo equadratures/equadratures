@@ -22,7 +22,7 @@ import numpy.ma as ma
 """
 # Simple analytical function
 def fun(x):
-    return np.exp(x[:,0] + x[:,1] + x[:,2] + x[:,3] + x[:,4] + x[:,5])
+    return np.exp(x[:,0] + x[:,1] + x[:,2] )
 
 def main():
 
@@ -38,7 +38,7 @@ def main():
     derivative_flag = 0 # derivative flag on=1; off=0
 
 
-    full_grid_points = 6 # full tensor grid
+    full_grid_points = 8 # full tensor grid
     min_value, max_value = -1, 1 # range of uncertainty --> assuming Legendre
     alpha_parameter, beta_parameter = 0, 0 # Jacobi polynomial values for Legendre
 
@@ -46,13 +46,10 @@ def main():
     uq_parameter1 = PolynomialParam("Jacobi", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, full_grid_points) # Setup uq_parameter
     uq_parameter2 = PolynomialParam("Jacobi", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, full_grid_points) # Setup uq_parameter
     uq_parameter3 = PolynomialParam("Jacobi", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, full_grid_points) # Setup uq_parameter
-    uq_parameter4 = PolynomialParam("Jacobi", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, full_grid_points) # Setup uq_parameter
-    uq_parameter5 = PolynomialParam("Jacobi", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, full_grid_points) # Setup uq_parameter
-    uq_parameter6 = PolynomialParam("Jacobi", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, full_grid_points) # Setup uq_parameter
-    uq_parameters = [uq_parameter1, uq_parameter2, uq_parameter3, uq_parameter4, uq_parameter5, uq_parameter6]
+    uq_parameters = [uq_parameter1, uq_parameter2, uq_parameter3]
 
     # Compute elements of an index set:self, index_set_type, orders, level=None, growth_rule=None):
-    indexset_configure = IndexSet("total order", [5,5,5,5,5,5])
+    indexset_configure = IndexSet("total order", [5,5,5])
     indices = IndexSet.getIndexSet(indexset_configure)
 
     # Create a PolyParent object!
@@ -63,7 +60,7 @@ def main():
     x = matrix.solveLeastSquares(A, b) #-->Need to check this!!!!!
 
     # How does this compare with far fewer simulations?
-    
+
     print(x)
 
 main()

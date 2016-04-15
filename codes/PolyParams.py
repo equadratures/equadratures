@@ -216,9 +216,10 @@ def orthoPolynomial_and_derivative(self, gridPoints):
     derivative_orthopoly = np.zeros((self.order, len(gridPoints)))
     ab = recurrence_coefficients(self)
 
-    gridPoints_rows, gridPoints_cols = gridPoints.shape
-    if gridPoints_cols == 1:
-        gridPoints = gridPoints.T
+    # Convert the grid points to a numpy array -- simplfy life!
+    gridPointsII = np.zeros((len(gridPoints), 1))
+    for u in range(0, len(gridPoints)):
+        gridPointsII[u,0] = gridPoints[u]
 
     # Zeroth order
     orthopoly[0,:] = (1.0)/(1.0 * np.sqrt(ab[0,1]) ) # Correct!
@@ -227,7 +228,7 @@ def orthoPolynomial_and_derivative(self, gridPoints):
     if self.order == 1:
         return orthopoly
 
-    orthopoly[1,:] = ((gridPoints - ab[0,0]) * orthopoly[0,:] ) * (1.0)/(1.0 * np.sqrt(ab[1,1]) )
+    orthopoly[1,:] = ((gridPointsII[:,0] - ab[0,0]) * orthopoly[0,:] ) * (1.0)/(1.0 * np.sqrt(ab[1,1]) )
 
     if self.order == 2:
         return orthopoly
@@ -235,7 +236,7 @@ def orthoPolynomial_and_derivative(self, gridPoints):
     if self.order >= 3:
         for u in range(2,self.order):
             # Three-term recurrence rule in action!
-            orthopoly[u,:] = ( ((gridPoints - ab[u-1,0])*orthopoly[u-1,:]) - np.sqrt(ab[u-1,1])*orthopoly[u-2,:] )/(1.0 * np.sqrt(ab[u,1]))
+            orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0])*orthopoly[u-1,:]) - np.sqrt(ab[u-1,1])*orthopoly[u-2,:] )/(1.0 * np.sqrt(ab[u,1]))
 
     # Only if the derivative flag is on do we compute the derivative polynomial
     if self.derivative_flag == 1:
@@ -250,7 +251,7 @@ def orthoPolynomial_and_derivative(self, gridPoints):
         if self.order >= 3:
             for u in range(2, self.order):
                 # Four-term recurrence formula for derivatives of orthogonal polynomials!
-                derivative_orthopoly[u,:] = ( ((gridPoints - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
+                derivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
         return orthopoly, derivative_orthopoly
 
     else:

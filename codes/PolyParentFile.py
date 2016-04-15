@@ -74,7 +74,7 @@ class PolyParent(object):
             for j in range(0, dimensions):
                 A_multivariate[i, :] =  A_univariate[j][indices[i,j], :] * temp
                 temp = A_multivariate[i, :]
-        # Take the transpose!        
+        # Take the transpose!
         A_multivariate = A_multivariate.T
         return A_multivariate
 

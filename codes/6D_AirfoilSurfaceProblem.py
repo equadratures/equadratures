@@ -61,6 +61,9 @@ def main():
     A = PolyParent.getMultivariateA(vv, pts)
     b = fun(pts)
     x = matrix.solveLeastSquares(A, b) #-->Need to check this!!!!!
+
+    # How does this compare with far fewer simulations?
+    
     print(x)
 
 main()

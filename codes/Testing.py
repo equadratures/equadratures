@@ -15,14 +15,19 @@ import matplotlib.pyplot as plt
 
 def main():
 
-
+    """
     derivative_flag = 1
     order = 5
     uq_parameter1 = PolynomialParam("Jacobi", -1, 1, 0, 0, derivative_flag, order) # Legendre
     A, C = PolynomialParam.getAmatrix(uq_parameter1)
     print(A)
     print(C)
+    """
+    v = [2, 3, 3, 6, 5]
+    dims = (2,5)
+    g = np.unravel_index(2, dims)
+    print(g)
 
-
+    
 
 main()

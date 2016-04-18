@@ -38,20 +38,11 @@ class PolyParent(object):
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     get() methods
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    def getMultivariateParamType(self):
-        return self.param_type
-
-    def getMultivariateLowerBound(self):
-        return self.lower_bound
-
-    def getMultivariateUpperBound(self):
-        return self.upper_bound
-
-    def getOrthoPoly(self, points):
-        return orthoPolynomial_and_derivative(self, points, derivative_flag)
-
     def getTensorQuadrature(self):
         return getGaussianQuadrature(self)
+
+    def getRandomizedTensorGrid(self, indices):
+        return getSubsampledGaussianQuadrature(self, indices)
 
     def getMultivariateA(self, points):
 
@@ -78,6 +69,13 @@ class PolyParent(object):
         A_multivariate = A_multivariate.T
         return A_multivariate
 
+    """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+                            PRIVATE FUNCTIONS
+
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 def getPseudospectralCoefficients(stackOfParameters, orders, function, *args):
 
     dimensions = len(stackOfParameters)
@@ -158,6 +156,45 @@ def efficient_kron_mult(Q, Uc):
         nright = int(nright * n[i,0])
 
     return Uc
+
+# This function returns subsampled Gauss quadrature points and weights without ever
+# computing the full tensor grid.
+def getSubsampledGaussianQuadrature(self, subsampled_indices):
+
+    stackOfParameters = self.uq_parameters
+    dimensions = len(stackOfParameters)
+    multivariate_orders = np.zeros((1, dimensions))
+    univariate_points_in_each_dimension = {}
+    univariate_weights_in_each_dimension = {}
+
+    # Final points & weights storage
+    gauss_points = np.zeros((len(subsampled_indices), dimensions))
+    gauss_weights = np.zeros((len(subsampled_indices)))
+
+    # Total orders in each direction!
+    for i in range(0, dimensions):
+        p_local, w_local = PolynomialParam.getLocalQuadrature(stackOfParameters[i])
+        univariate_points_in_each_dimension[i] = p_local
+        univariate_weights_in_each_dimension[i] = w_local
+        multivariate_orders[0,i] = stackOfParameters[i].order
+
+    # Cycle through all the subsampled indices
+    for i in range(0, len(subsampled_indices)):
+
+        # From the large tensor grid, find the index set value of the "subsampled_index"
+        index_set_entry = np.unravel_index(subsampled_indices[i], multivariate_orders[0])
+
+        # Cycle through all the dimensions and determine corresponding quadrature points
+        # and compute the corresponding weights
+        weight_temp = 1.0
+        for j in range(0, dimensions):
+            individual_order = index_set_entry[j]
+            gauss_points[i,j] = univariate_points_in_each_dimension[j][individual_order]
+            weight = weight_temp * univariate_weights_in_each_dimension[j][individual_order]
+            weight_temp = weight
+        gauss_weights[i] = weight
+
+    return gauss_points, gauss_weights
 
 # Computes nD quadrature points and weights using a kronecker product
 def getGaussianQuadrature(self):

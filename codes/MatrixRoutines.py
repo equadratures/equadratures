@@ -30,3 +30,5 @@ def rowNormalize(A):
     Normalization = np.diag(1.0/A_norms)
     A_normalized = np.dot(Normalization, A)
     return A_normalized, Normalization
+
+# Iterative least squares solve -- where we do not have to store A in memory!

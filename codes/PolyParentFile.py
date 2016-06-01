@@ -69,6 +69,9 @@ class PolyParent(object):
         A_multivariate = A_multivariate.T
         return A_multivariate
 
+    def getCoefficients(self, function, *args):
+        return getPseudospectralCoefficients(self, function)
+
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -76,13 +79,22 @@ class PolyParent(object):
 
 
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-def getPseudospectralCoefficients(stackOfParameters, orders, function, *args):
+def getPseudospectralCoefficients(self, function, *args):
 
+    # INPUTS
+    stackOfParameters = self.uq_parameters
+    indexSets = self.indexsets
     dimensions = len(stackOfParameters)
+
+    # Compute the "orders"
+    orders = np.zeros((dimensions))
+    for i in range(0, dimensions):
+        orders[i] = max(indexSets[:,i])
+
     q0 = [1]
     Q = []
     for i in range(0, dimensions):
-        Qmatrix = PolynomialParam.getJacobiEigenvectors(stackOfParameters[i], orders[i])
+        Qmatrix = PolynomialParam.getJacobiEigenvectors(stackOfParameters[i])
         Q.append(Qmatrix)
         if orders[i] == 1:
             q0 = np.kron(q0, Qmatrix)
@@ -90,7 +102,7 @@ def getPseudospectralCoefficients(stackOfParameters, orders, function, *args):
             q0 = np.kron(q0, Qmatrix[0,:])
 
     # Compute multivariate Gauss points and weights
-    p, w = getGaussianQuadrature(stackOfParameters, orders)
+    p, w = getGaussianQuadrature(self)
 
     # Evaluate the first point to get the size of the system
     fun_value_first_point = function(p[0,:])
@@ -116,11 +128,11 @@ def getPseudospectralCoefficients(stackOfParameters, orders, function, *args):
 
     # Now we use kronmult
     K = efficient_kron_mult(Q, Uc)
-    I = indexs.getIndexSet('tensor grid', orders)
+    #I = indexs.getIndexSet('tensor grid', orders)
     F = function_values
 
     # So we formulate it in this manner. It all
-    return K, I, F
+    return K,  F
 
 # Efficient kronecker product multiplication
 # Implementation is identical to kromult.m

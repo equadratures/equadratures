@@ -22,7 +22,7 @@ import random
 def fun(x, derivative_flag, error_flag):
 
     if derivative_flag == 0:
-        return np.exp(x[:]) # No derivative
+        return x[:]**2 + 3*x[:] - 1 # No derivative
     elif derivative_flag == 1 and error_flag == 0:
         return np.exp(x[:]) , np.exp(x[:]) # Function and its derivative
     elif derivative_flag == 1 and error_flag == 1:
@@ -46,7 +46,7 @@ def main():
 
     full_grid_points = 150 # full tensor grid
     min_value, max_value = -1, 1 # range of uncertainty --> assuming Legendre
-    alpha_parameter, beta_parameter = 0, 0 # Jacobi polynomial values for Legendre
+    alpha_parameter, beta_parameter = 2, 2 # Jacobi polynomial values for Legendre
     uq_parameter1 = PolynomialParam("Jacobi", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, full_grid_points) # Setup uq_parameter
 
 

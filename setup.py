@@ -9,7 +9,6 @@ setup(name='effective_quadratures',
       description='Set of codes for polynomial approximation',
       long_description=readme(),
       classifiers=[
-        'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 2.7',
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Mathematics'

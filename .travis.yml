@@ -25,4 +25,6 @@ install:
  - conda install --yes numpy scipy matplotlib pip nose
  - pip install setuptools
  - python setup.py install
+ 
+ script: python test.py
 

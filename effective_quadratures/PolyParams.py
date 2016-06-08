@@ -95,7 +95,7 @@ def recurrence_coefficients(self):
         self.shape_parameter_A = 0.0
         self.shape_parameter_B = 0.0
         ab = jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.order)
-    elif self.param_type == "Custom":
+    elif self.param_type == "Custom": # This needs coding Stjeletes procedure
         ab = custom_recurrence_coefficients(self.lower_bound, self.upper_bound, self.shape_parameter_A, self.shape_parameter_B, self.order)
     elif self.param_type == "Gaussian" or self.param_type == "Normal":
         ab = hermite_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.order)
@@ -105,6 +105,9 @@ def recurrence_coefficients(self):
 def jacobi_recurrence_coefficients(param_A, param_B, order):
 
     # Initial setup - check out Walter Gatuschi!
+
+    #print "Jacobi Recurrence Coefficients for (2,2)"
+    #print 'order: '+str(order)
     order = int(order) # check!!
     a0 = (param_B - param_A)/(param_A + param_B + 2.0)
     ab = np.zeros((order,2))
@@ -112,7 +115,7 @@ def jacobi_recurrence_coefficients(param_A, param_B, order):
 
     if order > 0 :
         ab[0,0] = a0
-        ab[0,1] = 2.0
+        ab[0,1] = ( 2**(param_A + param_B + 1) * gamma(param_A + 1) * gamma(param_B + 1) )/( gamma(param_A + param_B + 2))
 
     for k in range(1,order):
         temp = k + 1
@@ -121,6 +124,7 @@ def jacobi_recurrence_coefficients(param_A, param_B, order):
             ab[k,1] = ( 4.0 * (temp - 1) * (temp - 1 + param_A) * (temp - 1 + param_B)) / ( (2 * (temp - 1) + param_A + param_B  )**2 * (2 * (temp - 1) + param_A + param_B + 1))
         else:
             ab[k,1] = ( 4.0 * (temp - 1) * (temp - 1 + param_A) * (temp - 1 + param_B) * (temp -1 + param_A + param_B) ) / ((2 * (temp - 1) + param_A + param_B)**2 * (2 *(temp -1) + param_A + param_B + 1) * (2 * (temp - 1) + param_A + param_B -1 ) )
+
     return ab
 
 # Recurrence coefficients for Hermite type parameters with a variance of 1.0
@@ -132,17 +136,14 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
 
     if order == 1:
         ab[0,0] = 0
-        ab[0,1] = gamma(mu + 0.5)
+        ab[0,1] = 1# gamma(mu + 0.5)
         return ab
 
     # Adapted from Walter Gatuschi
     N = order - 1
     n = range(1,N+1)
-    print n
     nh = [ k / 2.0 for k in n]
-    print nh
     for i in range(0,N,2):
-        print i
         nh[i] = nh[i] + mu
 
     # Now fill in the entries of "ab"
@@ -151,6 +152,7 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
             ab[i,1] = gamma(mu + 0.5)
         else:
             ab[i,1] = nh[i-1]
+    ab[0,1] = 1.0
     return ab
 
 

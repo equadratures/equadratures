@@ -78,9 +78,7 @@ class PolyParent(object):
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
                             PRIVATE FUNCTIONS
-
 
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 def getPseudospectralCoefficients(self, function, *args):
@@ -246,10 +244,10 @@ def getGaussianQuadrature(self):
     weights = ww
 
     # Now re-scale the points and return only if its not a Gaussian!
-    for i in range(0, dimensions):
-        for j in range(0, len(points)):
-            if stackOfParameters[i].param_type != "Gaussian" and stackOfParameters[i].param_type != "Normal": # do not change points for these param_types
-                points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
+    #for i in range(0, dimensions):
+    #    for j in range(0, len(points)):
+    #        if stackOfParameters[i].param_type != "Gaussian" and stackOfParameters[i].param_type != "Normal" :
+    #            points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
 
     # Return tensor grid quad-points and weights
     return points, weights

@@ -90,7 +90,7 @@ class PolynomialParam(object):
 # Call different methods depending on the choice of the polynomial parameter
 def recurrence_coefficients(self):
     if self.param_type is "Jacobi":
-        ab = jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.order)
+        ab = jacobi_recurrence_coefficients_01(self.shape_parameter_A, self.shape_parameter_B, self.order)
     if self.param_type is "Uniform":
         self.shape_parameter_A = 0.0
         self.shape_parameter_B = 0.0
@@ -101,13 +101,10 @@ def recurrence_coefficients(self):
         ab = hermite_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.order)
     return ab
 
+
 # Recurrence coefficients for Jacobi type parameters
 def jacobi_recurrence_coefficients(param_A, param_B, order):
 
-    # Initial setup - check out Walter Gatuschi!
-
-    #print "Jacobi Recurrence Coefficients for (2,2)"
-    #print 'order: '+str(order)
     order = int(order) # check!!
     a0 = (param_B - param_A)/(param_A + param_B + 2.0)
     ab = np.zeros((order,2))
@@ -123,11 +120,28 @@ def jacobi_recurrence_coefficients(param_A, param_B, order):
         if(k == 1):
             ab[k,1] = ( 4.0 * (temp - 1) * (temp - 1 + param_A) * (temp - 1 + param_B)) / ( (2 * (temp - 1) + param_A + param_B  )**2 * (2 * (temp - 1) + param_A + param_B + 1))
         else:
-            ab[k,1] = ( 4.0 * (temp - 1) * (temp - 1 + param_A) * (temp - 1 + param_B) * (temp -1 + param_A + param_B) ) / ((2 * (temp - 1) + param_A + param_B)**2 * (2 *(temp -1) + param_A + param_B + 1) * (2 * (temp - 1) + param_A + param_B -1 ) )
+            ab[k,1] = ( 4.0 * (temp - 1) * (temp - 1 + param_A) * (temp - 1 + param_B) * (temp - 1 + param_A + param_B) ) / ((2 * (temp - 1) + param_A + param_B)**2 * (2 *(temp -1) + param_A + param_B + 1) * (2 * (temp - 1) + param_A + param_B -1 ) )
+
+    #print ab
+    return ab
+
+def jacobi_recurrence_coefficients_01(param_A, param_B, order):
+    ab = np.zeros((order,2))
+    cd = jacobi_recurrence_coefficients(param_A, param_B, order)
+    N = order
+
+    for i in range(0,N):
+        ab[i,0] = (1 + cd[i,0])/2.0
+
+    ab[0,1] = cd[0,1]/(2**(param_A + param_B + 1))
+
+    for i in range(1,N):
+        ab[i,1] = cd[i,1]/4.0
 
     return ab
 
-# Recurrence coefficients for Hermite type parameters with a variance of 0.5
+# Recurrence coefficients for Hermite type parameters with a variance given by param_B + 0.5
+# and mean of 0.0
 def hermite_recurrence_coefficients(param_A, param_B, order):
 
     # Allocate memory
@@ -187,8 +201,7 @@ def jacobiMatrix(self):
 
     return JacobiMatrix
 
-# Computes 1D quadrature points and weights
-" I think this is scaled to be between [-1,1] by default --> need to change this!"
+# Computes 1D quadrature points and weights between [-1,1]
 def getlocalquadrature(self, *argv):
 
     # If there is an additional argument, then replace the

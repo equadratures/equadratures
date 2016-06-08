@@ -34,23 +34,26 @@ def main():
         is "Jacobi"; alpha and beta respectively. For a normal distribution
         these become the mean and the standard deviation.
         3. The normal distribution is for a mean of 0 and variance of 0.5 by
-        default.
+        default. For all others adjust using variance = param_B + 0.5
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    order = 10
+    order = 4
     derivative_flag = 0 # derivative flag on=1; off=0
     error_flag = 0
-    min_value, max_value = -1, 1
-    parameter_A, parameter_B = 2,2
+    min_value, max_value = 0, 1
+
+    # What it should be
+    paramA = 3
+    paramB = 6
+
+    parameter_B = paramA - 1
+    parameter_A = paramB - 1
     uq_parameter1 = PolynomialParam("Jacobi", min_value, max_value, parameter_A, parameter_B, derivative_flag, order) # Setup uq_parameter
     uq_parameters = [uq_parameter1]
     pts_for_plotting = np.linspace(min_value, max_value, 600)
     indexset_configure = IndexSet("total order", [order])
     print '****************************************************************'
-    print '\n'
     print 'MIN'+'\t'+'MAX'+'\t'+'ALPHA'+'\t'+'BETA'+'\t'+'PTS'+'\t'+'FUNCTION'+'\n'
-    print '\n'
     print str(min_value)+'\t'+str(max_value)+'\t'+str(parameter_A)+'\t'+str(parameter_B)+'\t'+str(order)+'\t'+str('f(x) = x')
-    print '\n'
     print '****************************************************************'
 
     # Compute elements of an index set:self, index_set_type, orders, level=None, growth_rule=None):
@@ -62,42 +65,43 @@ def main():
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                  PRINT OUTPUTS TO SCREEN
-                                 *In the future write output to file!
+                           *In the future write output to file!
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    print '--Points--'
+    print '--Quadrature Points--'
     print pts
     print '\n'
     print '--Weights--'
     print wts
     print '\n'
 
-#    For coefficients!
+    # For coefficients!
     X , T = PolyParent.getCoefficients(uq_structure, fun)
-    print 'Pseudospectral coefficients:'
+    print '---Pseudospectral coefficients---'
     print X
     print '\n'
-    print 'Mean: '
-    print X[0,0]
-    print '\n'
-    print 'Variance: '
-    print np.sum(X[0,1:]**2)
+    print 'Mean: '+str(X[0,0])
+    print 'Variance: '+str(np.sum(X[0,1:]**2))
 
-
-
+    # Computing int(poly^2) * w
+    #P = PolyParent.getMultivariatePoly(uq_structure, pts)
+    #poly_value_1 = np.sum( P[0,:]**2 * wts)
+    #poly_value_2 = np.sum( P[1,:]**2 * wts)
+    #poly_value_3 = np.sum( P[2,:]**2 * wts)
+    #print poly_value_1, poly_value_2, poly_value_3
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     PLOTTING SECTION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    # Plot the first few univariate polynomials:
-    M = PolyParent.getMultivariatePoly(uq_structure, pts_for_plotting)
-    color=iter(cm.rainbow(np.linspace(0,1,order)))
+    # Plot all the univariate polynomials:
+    #M = PolyParent.getMultivariatePoly(uq_structure, pts_for_plotting)
+    #color=iter(cm.rainbow(np.linspace(0,1,order)))
 
-    for i in range(0, order):
-        c = next(color)
-        plt.plot(pts_for_plotting, M[i,:], '-', c=c)
-    plt.xlabel('x')
-    plt.ylabel('p(x)')
-    plt.title('First five orthogonal polynomials')
-    plt.show()
+    #for i in range(0, order):
+    #    c = next(color)
+    #    plt.plot(pts_for_plotting, M[i,:], '-', c=c)
+    #plt.xlabel('x')
+    #plt.ylabel('p(x)')
+    #plt.title('Orthogonal polynomials')
+    #plt.show()
 
 main()

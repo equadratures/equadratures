@@ -1,4 +1,4 @@
-# Optimal Quadrature Subsampling
+# Effective Quadratures
 
 # 
 

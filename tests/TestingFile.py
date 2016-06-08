@@ -1,8 +1,8 @@
 #!/usr/bin/python
-from PolyParams import PolynomialParam
-from PolyParentFile import PolyParent
-from IndexSets import IndexSet
-import MatrixRoutines as matrix
+from effective_quadratures.PolyParams import PolynomialParam
+from effective_quadratures.PolyParentFile import PolyParent
+from effective_quadratures.IndexSets import IndexSet
+import effective_quadratures.MatrixRoutines as matrix
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
@@ -38,7 +38,7 @@ def main():
     error_flag = 0
     min_value, max_value = -1, 1
     parameter_A, parameter_B = 0, 0
-    uq_parameter1 = PolynomialParam("Normal", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, order) # Setup uq_parameter
+    uq_parameter1 = PolynomialParam("Normal", min_value, max_value, parameter_A, parameter_B, derivative_flag, order) # Setup uq_parameter
     uq_parameters = [uq_parameter1]
 
     # Compute elements of an index set:self, index_set_type, orders, level=None, growth_rule=None):

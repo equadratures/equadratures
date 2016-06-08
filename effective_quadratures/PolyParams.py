@@ -127,7 +127,7 @@ def jacobi_recurrence_coefficients(param_A, param_B, order):
 
     return ab
 
-# Recurrence coefficients for Hermite type parameters with a variance of 1.0
+# Recurrence coefficients for Hermite type parameters with a variance of 0.5
 def hermite_recurrence_coefficients(param_A, param_B, order):
 
     # Allocate memory
@@ -152,7 +152,7 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
             ab[i,1] = gamma(mu + 0.5)
         else:
             ab[i,1] = nh[i-1]
-    ab[0,1] = 1.0
+    ab[0,1] = 2.0
     return ab
 
 
@@ -216,10 +216,10 @@ def getlocalquadrature(self, *argv):
             w[u] = (V[0,i[u]]**2) # replace weights with right value
             p[u,0] = local_points[u]
 
-        local_weights = recurrence_coeffs[0,1] * w # normalizing step
+        local_weights = recurrence_coeffs[0,1] * w  # normalizing step
         local_points = p # re-label
 
-        # Check if local points is a numpy array! (COMPLETE!)
+        # Check if local points is a numpy array! (TO COMPLETE!)
         validation = type(local_points).__module__ == np.__name__
 
     # Return 1D gauss points and weights

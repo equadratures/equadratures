@@ -41,8 +41,11 @@ class PolyParent(object):
     def getTensorQuadrature(self):
         return getGaussianQuadrature(self)
 
-    def getRandomizedTensorGrid(self, indices):
-        return getSubsampledGaussianQuadrature(self, indices)
+    def getRandomizedTensorGrid(self):
+        return getSubsampledGaussianQuadrature(self)
+
+    def getMultivariatePoly(self, points):
+        return getMultiOrthoPoly(self, points)
 
     def getMultivariateA(self, points):
 
@@ -65,6 +68,7 @@ class PolyParent(object):
             for j in range(0, dimensions):
                 A_multivariate[i, :] =  A_univariate[j][indices[i,j], :] * temp
                 temp = A_multivariate[i, :]
+
         # Take the transpose!
         A_multivariate = A_multivariate.T
         return A_multivariate
@@ -174,6 +178,7 @@ def efficient_kron_mult(Q, Uc):
 def getSubsampledGaussianQuadrature(self, subsampled_indices):
 
     stackOfParameters = self.uq_parameters
+    indexSets = self.indexsets
     dimensions = len(stackOfParameters)
     multivariate_orders = np.zeros((1, dimensions))
     univariate_points_in_each_dimension = {}
@@ -238,12 +243,12 @@ def getGaussianQuadrature(self):
 
     # Ignore the first column of pp
     points = pp[:,1::]
-    weights = ww/2
+    weights = ww
 
     # Now re-scale the points and return only if its not a Gaussian!
     for i in range(0, dimensions):
         for j in range(0, len(points)):
-            if stackOfParameters[i].param_type != "Gaussian" or stackOfParameters[i].param_type != "Normal": # do not change points for these param_types
+            if stackOfParameters[i].param_type != "Gaussian" and stackOfParameters[i].param_type != "Normal": # do not change points for these param_types
                 points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
 
     # Return tensor grid quad-points and weights
@@ -252,12 +257,22 @@ def getGaussianQuadrature(self):
 # determines a multivariate orthogonal polynomial corresponding to the stackOfParameters,
 # their corresponding orders and then evaluates the polynomial at the corresponding
 # stackOfPoints.
-def getMultiOrthoPoly(stackOfParameters, index_set, stackOfPoints):
-    # Check out the maximum order in the index set
+def getMultiOrthoPoly(self, stackOfPoints):
+
+    # "Unpack" parameters from "self"
+    stackOfParameters = self.uq_parameters
+    index_set = self.indexsets
+
     dimensions = len(stackOfParameters)
     p = {}
-    for i in range(0, dimensions):
-        p[i] = PolynomialParam.getOrthoPoly( stackOfParameters[i], int( np.max(index_set[:,i]) + 1 ), stackOfPoints[:,i])
+
+    # Save time by returning if univariate!
+    if(dimensions == 1):
+        poly , V =  PolynomialParam.getOrthoPoly(stackOfParameters[0], stackOfPoints)
+        return poly
+    else:
+        for i in range(0, dimensions):
+            p[i] = PolynomialParam.getOrthoPoly( stackOfParameters[i], stackOfPoints[:,i])
 
     # Now we multiply components according to the index set
     no_of_points = len(stackOfPoints)
@@ -265,7 +280,7 @@ def getMultiOrthoPoly(stackOfParameters, index_set, stackOfPoints):
     for i in range(0, len(index_set)):
         temp = np.ones((1, no_of_points))
         for k in range(0, dimensions):
-            polynomial[i,:] = p[k][index_set[i,k]] * temp
+            polynomial[i,:] = p[k][int(index_set[i,k])] * temp
             temp = polynomial[i,:]
 
     return polynomial

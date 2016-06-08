@@ -1,4 +1,4 @@
-# Efficient Quadratures
+# Effective Quadratures
 
 # 
 

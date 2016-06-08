@@ -7,5 +7,11 @@ Suite of tools for generating polynomials for approximation, uncertainty quantif
 
 WARNING: Coding underway!<br>
 
+# Installation
+
+```bash
+> python setup.py install
+```
+
 For details and queries please contact:<br>
 Pranay Seshadri <br>

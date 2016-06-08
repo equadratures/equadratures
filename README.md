@@ -13,5 +13,10 @@ WARNING: Coding underway!<br>
 > python setup.py install
 ```
 
+# Status
+
+[![Build Status](https://travis-ci.org/psesh/Effective-Quadratures.svg?branch=pranay-branch)](https://travis-ci.org/psesh/Effective-Quadratures/)
+
+
 For details and queries please contact:<br>
 Pranay Seshadri <br>

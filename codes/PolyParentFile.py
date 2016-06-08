@@ -240,12 +240,12 @@ def getGaussianQuadrature(self):
     points = pp[:,1::]
     weights = ww
 
-    # Now re-scale the points and return
+    # Now re-scale the points and return only if its not a Gaussian!
     for i in range(0, dimensions):
         for j in range(0, len(points)):
-            points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
-    print points
-    print '*****'
+            if stackOfParameters[i].param_type != "Gaussian" or stackOfParameters[i].param_type != "Normal":
+                points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
+
     # Return tensor grid quad-points and weights
     return points, weights
 

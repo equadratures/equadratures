@@ -7,5 +7,5 @@ Suite of tools for generating problems for approximation, uncertainty quantifica
 
 WARNING: Coding underway!<br>
 
-For details and queries please contact:
+For details and queries please contact:<br>
 Pranay Seshadri <br>

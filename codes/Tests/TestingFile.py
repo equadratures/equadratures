@@ -7,19 +7,14 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.ma as ma
-
-
-
 """
 
+    Testing File for Codes
+    
     Pranay Seshadri
-    University of Cambridge
-    ps583 <at> cam.ac.uk
+    ps583@cam.ac.uk
 
-
-    # Beta uncertainty bug!
-    # Send SS table!
-
+    Copyright (c) 2016 by Pranay Seshadri
 """
 # Simple analytical function
 def fun(x):
@@ -27,13 +22,21 @@ def fun(x):
 
 def main():
 
-    order = 8 # more for visualization
+    """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                    INPUT SECTION
+
+    NOTES:
+        1. min_value and max_value are not used when param_type = "Normal" or
+        "Gaussian".
+        2. parameter_A and parameter_B are the shape parameters when param_type
+        is "Jacobi", alpha and beta respectively. For a normal distribution
+        these become the mean and the standard deviation.
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
+    order = 8
     derivative_flag = 0 # derivative flag on=1; off=0
     error_flag = 0
-    min_value, max_value = -1, 1 # range of uncertainty --> assuming Legendre
-    alpha_parameter, beta_parameter = 0, 0 # Jacobi polynomial values for Legendre
-
-    # Uncertainty parameters
+    min_value, max_value = -1, 1
+    parameter_A, parameter_B = 0, 0
     uq_parameter1 = PolynomialParam("Normal", min_value, max_value, alpha_parameter, beta_parameter, derivative_flag, order) # Setup uq_parameter
     uq_parameters = [uq_parameter1]
 
@@ -45,6 +48,8 @@ def main():
     uq_structure = PolyParent(uq_parameters, indices)
     pts, wts = PolyParent.getTensorQuadrature(uq_structure)
     print pts
+
+#    For coefficients!
 #    X = PolyParent.getCoefficients(uq_structure, fun)
 #    print X
 

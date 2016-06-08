@@ -26,4 +26,3 @@ install:
  - pip install setuptools
  - python setup.py install
 
-script: python setup.py

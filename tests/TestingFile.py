@@ -7,7 +7,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import cm
 import numpy as np
-import numpy.ma as ma
+import numpy.ma as maogle
 import os
 """
 
@@ -42,12 +42,10 @@ def main():
     min_value, max_value = 0, 1
 
     # What it should be
-    paramA = 3
-    paramB = 6
+    parameter_A = 9
+    parameter_B = 3
 
-    parameter_B = paramA - 1
-    parameter_A = paramB - 1
-    uq_parameter1 = PolynomialParam("Jacobi", min_value, max_value, parameter_A, parameter_B, derivative_flag, order) # Setup uq_parameter
+    uq_parameter1 = PolynomialParam("Beta", min_value, max_value, parameter_A, parameter_B, derivative_flag, order) # Setup uq_parameter
     uq_parameters = [uq_parameter1]
     pts_for_plotting = np.linspace(min_value, max_value, 600)
     indexset_configure = IndexSet("total order", [order])

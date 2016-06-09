@@ -89,8 +89,10 @@ class PolynomialParam(object):
 
 # Call different methods depending on the choice of the polynomial parameter
 def recurrence_coefficients(self):
-    if self.param_type is "Jacobi":
-        ab = jacobi_recurrence_coefficients_01(self.shape_parameter_A, self.shape_parameter_B, self.order)
+    if self.param_type is "Beta":
+        param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
+        param_B = self.shape_parameter_A - 1
+        ab = jacobi_recurrence_coefficients_01(param_A, param_B , self.order)
     if self.param_type is "Uniform":
         self.shape_parameter_A = 0.0
         self.shape_parameter_B = 0.0
@@ -122,10 +124,11 @@ def jacobi_recurrence_coefficients(param_A, param_B, order):
         else:
             ab[k,1] = ( 4.0 * (temp - 1) * (temp - 1 + param_A) * (temp - 1 + param_B) * (temp - 1 + param_A + param_B) ) / ((2 * (temp - 1) + param_A + param_B)**2 * (2 *(temp -1) + param_A + param_B + 1) * (2 * (temp - 1) + param_A + param_B -1 ) )
 
-    #print ab
     return ab
 
+# Jacobi coefficients defined over [0,1]
 def jacobi_recurrence_coefficients_01(param_A, param_B, order):
+
     ab = np.zeros((order,2))
     cd = jacobi_recurrence_coefficients(param_A, param_B, order)
     N = order

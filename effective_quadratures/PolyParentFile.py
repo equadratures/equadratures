@@ -229,6 +229,9 @@ def getGaussianQuadrature(self):
         # Call to get local quadrature method (for dimension 'u')
         local_points, local_weights = PolynomialParam.getLocalQuadrature(stackOfParameters[u])
 
+        if(dimensions == 1):
+            return local_points, local_weights
+
         # Tensor product of the weights
         ww = np.kron(ww, local_weights)
 
@@ -244,10 +247,13 @@ def getGaussianQuadrature(self):
     weights = ww
 
     # Now re-scale the points and return only if its not a Gaussian!
-    #for i in range(0, dimensions):
-    #    for j in range(0, len(points)):
-    #        if stackOfParameters[i].param_type != "Gaussian" and stackOfParameters[i].param_type != "Normal" :
-    #            points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
+    for i in range(0, dimensions):
+        for j in range(0, len(points)):
+            if (stackOfParameters[i].param_type != "Gaussian" and stackOfParameters[i].param_type != "Normal" and stackOfParameters[i].param_type != "Beta")  :
+                points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
+
+            if (stackOfParameters[i].param_type == "Beta" )  :
+                points[j,i] =  ( points[j,i] )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
 
     # Return tensor grid quad-points and weights
     return points, weights

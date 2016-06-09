@@ -1,10 +1,22 @@
 #!/usr/bin/python
+from PolyParams import PolynomialParam
+
 import PolyMethod as polmeth
 import IndexSets as isets
 import numpy as np
-
 """
-    Tensor and sparse grid integration points and weights
+
+    Integrals Class
+
+    Notes to self:
+    - user provides function, and you return an Integrals
+    - user wants quadrature points and weights
+    - class basics: integral_type : sparse, tensor ; for sparse -- optional parameters
+    - leverage index_sets.py
+
+    Pranay Seshadri
+    ps583@cam.ac.uk
+
 """
 def SparseGrid(Parameters, level, growth_rule):
 

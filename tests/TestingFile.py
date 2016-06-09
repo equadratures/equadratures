@@ -34,7 +34,7 @@ def main():
         is "Jacobi"; alpha and beta respectively. For a normal distribution
         these become the mean and the standard deviation.
         3. The normal distribution is for a mean of 0 and variance of 0.5 by
-        default. For all others adjust using variance = param_B + 0.5
+        default. For all others adjust using variance = param_A + 0.5
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
     order = 4
     derivative_flag = 0 # derivative flag on=1; off=0
@@ -42,10 +42,10 @@ def main():
     min_value, max_value = 0, 1
 
     # What it should be
-    parameter_A = 9
-    parameter_B = 3
+    parameter_A = 0
+    parameter_B = 0
 
-    uq_parameter1 = PolynomialParam("Beta", min_value, max_value, parameter_A, parameter_B, derivative_flag, order) # Setup uq_parameter
+    uq_parameter1 = PolynomialParam("Gaussian", min_value, max_value, parameter_A, parameter_B, derivative_flag, order) # Setup uq_parameter
     uq_parameters = [uq_parameter1]
     pts_for_plotting = np.linspace(min_value, max_value, 600)
     indexset_configure = IndexSet("total order", [order])

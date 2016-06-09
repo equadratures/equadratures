@@ -20,41 +20,65 @@ import os
 """
 # Simple analytical function
 def fun(x):
-    return x[:]
+    return x[0]+x[1]+x[2]+x[3]+x[4]+x[5]
 
 def main():
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     INPUT SECTION
-
-    NOTES:
-        1. min_value and max_value are not used when param_type = "Normal" or
-        "Gaussian".
-        2. parameter_A and parameter_B are the shape parameters when param_type
-        is "Jacobi"; alpha and beta respectively. For a normal distribution
-        these become the mean and the standard deviation.
-        3. The normal distribution is for a mean of 0 and variance of 0.5 by
-        default. For all others adjust using variance = param_A + 0.5
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    order = 4
+    order = 2
     derivative_flag = 0 # derivative flag on=1; off=0
     error_flag = 0
-    min_value, max_value = 0, 1
 
-    # What it should be
-    parameter_A = 0
-    parameter_B = 0
+    # Min and max values. Not used for a "Gaussian" or "Normal" distribution
+    min_value = -1
+    max_value = 1
 
-    uq_parameter1 = PolynomialParam("Gaussian", min_value, max_value, parameter_A, parameter_B, derivative_flag, order) # Setup uq_parameter
-    uq_parameters = [uq_parameter1]
-    pts_for_plotting = np.linspace(min_value, max_value, 600)
-    indexset_configure = IndexSet("total order", [order])
+    # For a "Beta" uncertainty, these become alpha and beta shape parameters
+    # in which case both have to be greater than 1.0
+    # For a "Normal" or "Gaussian" uncertainty these become the mean and variance
+    parameter_A = 3
+    parameter_B = 2
+
+    # Set the polynomial basis. Options are: "tensor grid", "total order" or
+    # "sparse grid"
+    polynomial_basis_type = "tensor grid"
+
+    # Method for computing coefficients. Right now functionality is limited to
+    # tensor grids. to do: THIS NEEDS TO BE CODED
+    method = "Tensor"
+
+    # Write out the properties for each "uq_parameter". You can have as many
+    # as you like!
+    uq_parameter1_to_3 = PolynomialParam("Normal", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
+    uq_parameter4_to_6 = PolynomialParam("Beta", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
+    uq_parameters = [uq_parameter1_to_3, uq_parameter1_to_3, uq_parameter1_to_3, uq_parameter4_to_6, uq_parameter4_to_6, uq_parameter4_to_6]
+    highest_orders = [order, order, order, order, order, order]
+    #pts_for_plotting = np.linspace(min_value, max_value, 600)
+
+    """
+
+        user doesn't need to modify what lies below...
+
+
+    """
+
     print '****************************************************************'
-    print 'MIN'+'\t'+'MAX'+'\t'+'ALPHA'+'\t'+'BETA'+'\t'+'PTS'+'\t'+'FUNCTION'+'\n'
-    print str(min_value)+'\t'+str(max_value)+'\t'+str(parameter_A)+'\t'+str(parameter_B)+'\t'+str(order)+'\t'+str('f(x) = x')
+    print '                     EFFECTIVE-QUADRATURES                      '
+    print '\n'
+    for i in range(0,len(uq_parameters)):
+        print str('Uncertainty Parameter %i : '%(i+1)) + str(uq_parameters[i].param_type)
+        print str('With support:')+'\t'+('[')+str(uq_parameters[i].lower_bound)+str(uq_parameters[i].upper_bound)+str(']')
+        if str(uq_parameters[i] == "Gaussian" or uq_parameters[i] == "Normal"):
+            print str('With mean & variance:')+'\t'+('[')+str(uq_parameters[i].shape_parameter_A)+str(',')+str(uq_parameters[i].shape_parameter_B)+str(']')
+        else:
+            print str('With shape parameters:')+'\t'+('[')+str(uq_parameters[i].shape_parameter_A)+str(',')+str(uq_parameters[i].shape_parameter_A)+str(']')
+        print str('Order:')+'\t'+str(highest_orders[i])+'\n'
     print '****************************************************************'
 
     # Compute elements of an index set:self, index_set_type, orders, level=None, growth_rule=None):
+    indexset_configure = IndexSet(polynomial_basis_type, highest_orders)
     indices = IndexSet.getIndexSet(indexset_configure)
 
     # Create a PolyParent object!

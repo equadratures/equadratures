@@ -92,15 +92,23 @@ def recurrence_coefficients(self):
     if self.param_type is "Beta":
         param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
         param_B = self.shape_parameter_A - 1
+        if(param_B <= 0):
+            error_function('ERROR: parameter_A (beta shape parameter A) must be greater than 1!')
+        if(param_A <= 0):
+            error_function('ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
         ab = jacobi_recurrence_coefficients_01(param_A, param_B , self.order)
-    if self.param_type is "Uniform":
+    elif self.param_type is "Uniform":
         self.shape_parameter_A = 0.0
         self.shape_parameter_B = 0.0
         ab = jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.order)
     elif self.param_type == "Custom": # This needs coding Stjeletes procedure
         ab = custom_recurrence_coefficients(self.lower_bound, self.upper_bound, self.shape_parameter_A, self.shape_parameter_B, self.order)
     elif self.param_type == "Gaussian" or self.param_type == "Normal":
-        ab = hermite_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.order)
+        param_B = self.shape_parameter_B - 0.5
+        if(param_B <= -0.5):
+            error_function('ERROR: parameter_B (variance) must be greater than 0!')
+	else:
+            ab = hermite_recurrence_coefficients(self.shape_parameter_A, param_B, self.order)
     return ab
 
 
@@ -149,7 +157,7 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
 
     # Allocate memory
     ab = np.zeros((order,2))
-    mu = param_A
+    sigma2 = param_B
 
     if order == 1:
         ab[0,0] = 0
@@ -161,12 +169,12 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
     n = range(1,N+1)
     nh = [ k / 2.0 for k in n]
     for i in range(0,N,2):
-        nh[i] = nh[i] + mu
+        nh[i] = nh[i] + sigma2
 
     # Now fill in the entries of "ab"
     for i in range(0,order):
         if i == 0:
-            ab[i,1] = gamma(mu + 0.5)
+            ab[i,1] = gamma(sigma2 + 0.5)
         else:
             ab[i,1] = nh[i-1]
     ab[0,1] = 2.0
@@ -305,3 +313,7 @@ def orthoPolynomial_and_derivative(self, gridPoints):
     else:
         empty = np.mat([0])
         return orthopoly, empty
+
+def error_function(string_value):
+    print string_value
+    sys.exit()

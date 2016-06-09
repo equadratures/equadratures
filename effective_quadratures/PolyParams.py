@@ -89,6 +89,7 @@ class PolynomialParam(object):
 
 # Call different methods depending on the choice of the polynomial parameter
 def recurrence_coefficients(self):
+
     if self.param_type is "Beta":
         param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
         param_B = self.shape_parameter_A - 1
@@ -97,17 +98,20 @@ def recurrence_coefficients(self):
         if(param_A <= 0):
             error_function('ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
         ab = jacobi_recurrence_coefficients_01(param_A, param_B , self.order)
+
     elif self.param_type is "Uniform":
         self.shape_parameter_A = 0.0
         self.shape_parameter_B = 0.0
         ab = jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.order)
+
     elif self.param_type == "Custom": # This needs coding Stjeletes procedure
         ab = custom_recurrence_coefficients(self.lower_bound, self.upper_bound, self.shape_parameter_A, self.shape_parameter_B, self.order)
+
     elif self.param_type == "Gaussian" or self.param_type == "Normal":
         param_B = self.shape_parameter_B - 0.5
         if(param_B <= -0.5):
             error_function('ERROR: parameter_B (variance) must be greater than 0!')
-	else:
+	    else:
             ab = hermite_recurrence_coefficients(self.shape_parameter_A, param_B, self.order)
     return ab
 

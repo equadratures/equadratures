@@ -55,7 +55,6 @@ def SparseGrid(Parameters, level, growth_rule):
 
         # Now store point sets ---> scratch this, use append instead!!!!
         for k in range(0, len(points)):
-            #print points[k,:]
             points_store = np.append(points_store, points[k,:], axis=0)
             weights_store = np.append(weights_store, weights[k])
 

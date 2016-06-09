@@ -28,7 +28,7 @@ def main():
                                     INPUT SECTION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
     order = 2
-    derivative_flag = 0 # derivative flag on=1; off=0
+    derivative_flag = 0 # derivative flag 
     error_flag = 0
 
     # Min and max values. Not used for a "Gaussian" or "Normal" distribution
@@ -57,12 +57,6 @@ def main():
     highest_orders = [order, order, order, order, order, order]
     #pts_for_plotting = np.linspace(min_value, max_value, 600)
 
-    """
-
-        user doesn't need to modify what lies below...
-
-
-    """
 
     print '****************************************************************'
     print '                     EFFECTIVE-QUADRATURES                      '
@@ -82,13 +76,9 @@ def main():
     indices = IndexSet.getIndexSet(indexset_configure)
 
     # Create a PolyParent object!
-    uq_structure = PolyParent(uq_parameters, indices)
+    uq_structure = PolyParent(uq_parameters, indices, method)
     pts, wts = PolyParent.getTensorQuadrature(uq_structure)
 
-    """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                 PRINT OUTPUTS TO SCREEN
-                           *In the future write output to file!
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
     print '--Quadrature Points--'
     print pts
     print '\n'
@@ -97,19 +87,13 @@ def main():
     print '\n'
 
     # For coefficients!
-    X , T = PolyParent.getCoefficients(uq_structure, fun)
+    X , T = PolyParent.getCoefficients(uq_structure)
     print '---Pseudospectral coefficients---'
     print X
     print '\n'
     print 'Mean: '+str(X[0,0])
     print 'Variance: '+str(np.sum(X[0,1:]**2))
 
-    # Computing int(poly^2) * w
-    #P = PolyParent.getMultivariatePoly(uq_structure, pts)
-    #poly_value_1 = np.sum( P[0,:]**2 * wts)
-    #poly_value_2 = np.sum( P[1,:]**2 * wts)
-    #poly_value_3 = np.sum( P[2,:]**2 * wts)
-    #print poly_value_1, poly_value_2, poly_value_3
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     PLOTTING SECTION

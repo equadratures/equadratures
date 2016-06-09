@@ -69,10 +69,10 @@ def main():
     print '\n'
     for i in range(0,len(uq_parameters)):
         print str('Uncertainty Parameter %i : '%(i+1)) + str(uq_parameters[i].param_type)
-        print str('With support:')+'\t'+('[')+str(uq_parameters[i].lower_bound)+str(',')+str(uq_parameters[i].upper_bound)+str(']')
-        if str(uq_parameters[i] == "Gaussian" or uq_parameters[i] == "Normal"):
+        if(uq_parameters[i].param_type == "Gaussian" or uq_parameters[i].param_type == "Normal"):
             print str('With mean & variance:')+'\t'+('[')+str(uq_parameters[i].shape_parameter_A)+str(',')+str(uq_parameters[i].shape_parameter_B)+str(']')
-        else:
+        elif(uq_parameters[i].param_type == "Beta" or uq_parameters[i].param_type == "Uniform"):
+            print str('With support:')+'\t'+('[')+str(uq_parameters[i].lower_bound)+str(',')+str(uq_parameters[i].upper_bound)+str(']')
             print str('With shape parameters:')+'\t'+('[')+str(uq_parameters[i].shape_parameter_A)+str(',')+str(uq_parameters[i].shape_parameter_A)+str(']')
         print str('Order:')+'\t'+str(highest_orders[i])+'\n'
     print '****************************************************************'

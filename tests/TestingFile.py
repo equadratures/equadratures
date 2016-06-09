@@ -69,7 +69,7 @@ def main():
     print '\n'
     for i in range(0,len(uq_parameters)):
         print str('Uncertainty Parameter %i : '%(i+1)) + str(uq_parameters[i].param_type)
-        print str('With support:')+'\t'+('[')+str(uq_parameters[i].lower_bound)+str(uq_parameters[i].upper_bound)+str(']')
+        print str('With support:')+'\t'+('[')+str(uq_parameters[i].lower_bound)+str(',')+str(uq_parameters[i].upper_bound)+str(']')
         if str(uq_parameters[i] == "Gaussian" or uq_parameters[i] == "Normal"):
             print str('With mean & variance:')+'\t'+('[')+str(uq_parameters[i].shape_parameter_A)+str(',')+str(uq_parameters[i].shape_parameter_B)+str(']')
         else:

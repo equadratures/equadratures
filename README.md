@@ -10,7 +10,7 @@ WARNING: Coding underway!<br>
 # Installation
 
 ```bash
-> python setup.py install
+> sudo python setup.py install
 ```
 
 # Status

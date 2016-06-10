@@ -16,11 +16,12 @@ or alternatively try
 ```bash
 > python setup.py install
 ```
-# Status
 
-To do:<br>
+# To do:
+
 - Least squares techniques <br>
 - Gradient enhancement<br>
+
 # Status
 
 [![Build Status](https://travis-ci.org/psesh/Effective-Quadratures.svg?branch=pranay-branch)](https://travis-ci.org/psesh/Effective-Quadratures/)

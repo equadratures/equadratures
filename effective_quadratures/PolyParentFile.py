@@ -94,6 +94,8 @@ class PolyParent(object):
         if self.method == "sparse grid" or self.method == "Sparse grid":
             return getSparsePseudospectralCoefficients(self, function)
 
+    def getPointsAndWeights(self):
+        return getGaussianQuadrature(self.uq_parameters)
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
                             PRIVATE FUNCTIONS
@@ -182,24 +184,31 @@ def getSparsePseudospectralCoefficients(self, function):
 # Tensor grid pseudospectral method
 def getPseudospectralCoefficients(stackOfParameters, function, *argv):
 
-
     dimensions = len(stackOfParameters)
     q0 = [1]
     Q = []
+    orders = []
     for i in range(0, dimensions):
+        # In the case where this function is called from the "Sparse" function
         if len(sys.argv) > 1:
             orders =  argv[0]
-            Qmatrix = PolynomialParam.getJacobiMatrix(stackOfParameters[i], orders[i])
+            Qmatrix = PolynomialParam.getJacobiEigenvectors(stackOfParameters[i], orders[i])
+        # In the case where this function is called by the default call
         else:
-            Qmatrix = PolynomialParam.getJacobiMatrix(stackOfParameters[i])
+            Qmatrix = PolynomialParam.getJacobiEigenvectors(stackOfParameters[i])
+            orders.append(PolynomialParam.getOrder(stackOfParameters[i]))
+
+        # Now append!
         Q.append(Qmatrix)
+
         if orders[i] == 1:
             q0 = np.kron(q0, Qmatrix)
         else:
             q0 = np.kron(q0, Qmatrix[0,:])
 
+
     # Compute multivariate Gauss points and weights
-    p, w = getGaussianQuadrature(self, *argv)
+    p, w = getGaussianQuadrature(stackOfParameters, *argv)
 
     # Evaluate the first point to get the size of the system
     fun_value_first_point = function(p[0,:])
@@ -209,15 +218,9 @@ def getPseudospectralCoefficients(stackOfParameters, function, *argv):
     Uc = np.zeros((N, gn))
     Uc[0,1] = u0
 
-    # Compute function values at all quadrature points
-    # Can also input these directly as a vector!
-    if args: # If argument is provided with function values
-        function_values = args
-        # need to check that its the same size!!!
-    else:
-        function_values = np.zeros((1,gn))
-        for i in range(0, gn):
-            function_values[0,i] = function(p[i,:])
+    function_values = np.zeros((1,gn))
+    for i in range(0, gn):
+        function_values[0,i] = function(p[i,:])
 
     # Now we evaluate the solution at all the points
     for j in range(0, gn): # 0
@@ -225,10 +228,8 @@ def getPseudospectralCoefficients(stackOfParameters, function, *argv):
 
     # Now we use kronmult
     K = efficient_kron_mult(Q, Uc)
-    #I = indexs.getIndexSet('tensor grid', orders)
     F = function_values
 
-    # So we formulate it in this manner. It all
     return K,  F
 
 # Efficient kronecker product multiplication
@@ -307,9 +308,11 @@ def getSubsampledGaussianQuadrature(self, subsampled_indices):
     return gauss_points, gauss_weights
 
 # Computes nD quadrature points and weights using a kronecker product
-def getGaussianQuadrature(self, *argv):
+def getGaussianQuadrature(stackOfParameters, *argv):
 
     # Initialize some temporary variables
+    dimensions = int(len(stackOfParameters))
+
     if len(sys.argv) > 1:
         orders = argv[0]
     else:
@@ -321,8 +324,7 @@ def getGaussianQuadrature(self, *argv):
     pp = [1.0]
     ww = [1.0]
 
-    stackOfParameters = self.uq_parameters
-    dimensions = int(len(stackOfParameters)) # number of parameters
+     # number of parameters
     # For loop across each dimension
     for u in range(0,dimensions):
 

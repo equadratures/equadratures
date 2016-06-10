@@ -20,14 +20,14 @@ import os
 """
 # Simple analytical function
 def fun(x):
-    return x[0]+x[1]+x[2]+x[3]+x[4]+x[5]
+    return x[0]
 
 def main():
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     INPUT SECTION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    order = 2
+    order = 5
     derivative_flag = 0 # derivative flag
     error_flag = 0
 
@@ -38,25 +38,25 @@ def main():
     # For a "Beta" uncertainty, these become alpha and beta shape parameters
     # in which case both have to be greater than 1.0
     # For a "Normal" or "Gaussian" uncertainty these become the mean and variance
-    parameter_A = 3
+    parameter_A = 2
     parameter_B = 2
 
     # Method for computing coefficients. Right now functionality is limited to
     # tensor grids. to do: THIS NEEDS TO BE CODED
-    method = "sparse grid"
+    method = "tensor grid"
     level = 3
     growth_rule = "exponential"
     # Write out the properties for each "uq_parameter". You can have as many
     # as you like!
     uq_parameters = []
-    uq_parameter1_to_3 = PolynomialParam("Normal", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
+    uq_parameter1_to_3 = PolynomialParam("Uniform", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
     uq_parameter4_to_6 = PolynomialParam("Beta", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
     uq_parameters.append(uq_parameter1_to_3)
-    uq_parameters.append(uq_parameter1_to_3)
-    uq_parameters.append(uq_parameter1_to_3)
-    uq_parameters.append(uq_parameter4_to_6)
-    uq_parameters.append(uq_parameter4_to_6)
-    uq_parameters.append(uq_parameter4_to_6)
+    #uq_parameters.append(uq_parameter1_to_3)
+    #uq_parameters.append(uq_parameter1_to_3)
+    #uq_parameters.append(uq_parameter4_to_6)
+    #uq_parameters.append(uq_parameter4_to_6)
+    #uq_parameters.append(uq_parameter4_to_6)
     #pts_for_plotting = np.linspace(min_value, max_value, 600)
 
 
@@ -67,9 +67,10 @@ def main():
         print str('Uncertainty Parameter %i : '%(i+1)) + str(uq_parameters[i].param_type)
         if(uq_parameters[i].param_type == "Gaussian" or uq_parameters[i].param_type == "Normal"):
             print str('With mean & variance:')+'\t'+('[')+str(uq_parameters[i].shape_parameter_A)+str(',')+str(uq_parameters[i].shape_parameter_B)+str(']')
+        elif(uq_parameters[i].param_type == "Beta" ):
+            print str('With shape parameters:')+'\t'+('[')+str(uq_parameters[i].shape_parameter_A)+str(',')+str(uq_parameters[i].shape_parameter_A)+str(']')
         elif(uq_parameters[i].param_type == "Beta" or uq_parameters[i].param_type == "Uniform"):
             print str('With support:')+'\t'+('[')+str(uq_parameters[i].lower_bound)+str(',')+str(uq_parameters[i].upper_bound)+str(']')
-            print str('With shape parameters:')+'\t'+('[')+str(uq_parameters[i].shape_parameter_A)+str(',')+str(uq_parameters[i].shape_parameter_A)+str(']')
             print str('Order:')+'\t'+str(uq_parameters[i].order)+'\n'
     print '****************************************************************'
 
@@ -78,14 +79,14 @@ def main():
     uq_structure = PolyParent(uq_parameters, "tensor grid")
 
 
-    #pts, wts = PolyParent.getPointsAndWeights(uq_structure)
+    pts, wts = PolyParent.getPointsAndWeights(uq_structure)
 
-    #print '--Quadrature Points--'
-    #print pts
-    #print '\n'
-    #print '--Weights--'
-    #print wts
-    #print '\n'
+    print '--Quadrature Points--'
+    print pts
+    print '\n'
+    print '--Weights--'
+    print wts
+    print '\n'
 
     # For coefficients!
     X , T = PolyParent.getCoefficients(uq_structure, fun)

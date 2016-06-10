@@ -59,7 +59,7 @@ class PolynomialParam(object):
     def getShapeParameterB(self):
         return self.shape_parameter_B
 
-    def getRecurrenceCoefficients(self, *argv): # do i really need this!?
+    def getRecurrenceCoefficients(self, *argv):
         return recurrence_coefficients(self, *argv)
 
     def getJacobiMatrix(self, *argv):
@@ -100,15 +100,6 @@ def recurrence_coefficients(self, *argv):
     else:
         order = self.order
 
-    # Source of many bugs -- check!
-    print self.param_type
-    print self.order
-    print self.shape_parameter_B
-    print self.shape_parameter_A
-    print self.lower_bound
-    print self.upper_bound
-
-
     if self.param_type is "Beta":
         param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
         param_B = self.shape_parameter_A - 1
@@ -130,11 +121,8 @@ def recurrence_coefficients(self, *argv):
         param_B = self.shape_parameter_B - 0.5
         if(param_B <= -0.5):
             error_function('ERROR: parameter_B (variance) must be greater than 0')
-        print '~~~~~~~~'
-        print order
-        print '!!!!!!!!!!!!!!'
-	    ab =  hermite_recurrence_coefficients(self.shape_parameter_A, param_B, order)
-        print 'i got here'
+        else:
+            ab =  hermite_recurrence_coefficients(self.shape_parameter_A, param_B, order)
     else:
         error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform or Beta')
 
@@ -206,6 +194,7 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
         else:
             ab[i,1] = nh[i-1]
     ab[0,1] = 2.0
+    print 'got here'
     return ab
 
 

@@ -14,6 +14,8 @@ import numpy as np
     - class basics: integral_type : sparse, tensor ; for sparse -- optional parameters
     - leverage index_sets.py
 
+    ADD ALL INTEGRATION FUNCTIONALITY HERE!
+
     Pranay Seshadri
     ps583@cam.ac.uk
 

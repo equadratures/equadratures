@@ -96,6 +96,7 @@ class PolyParent(object):
 
     def getPointsAndWeights(self):
         return getGaussianQuadrature(self.uq_parameters)
+
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
                             PRIVATE FUNCTIONS
@@ -394,3 +395,24 @@ def getMultiOrthoPoly(self, stackOfPoints):
             temp = polynomial[i,:]
 
     return polynomial
+
+# A method that returns all the indicies that have the same elements as the index_value
+def find_repeated_elements(index_value, matrix):
+    i = index_value
+    selected_cell_indices = matrix[i,1::]
+    local_store = [i]
+    for j in range(0, len(matrix)):
+        if(j != any(local_store) and i!=j): # to get rid of repeats because of two for loop structure
+            if( all(matrix[j,1::] == selected_cell_indices)  ): # If all the indices match---i.e., the specific index is repeated
+                local_store = np.append(local_store, [j])
+    return local_store
+
+# Method for getting a vector of function evaluations!
+def evalfunction(function, points):
+    function_values = np.zeros((1,len(points)))
+
+    # For loop through all the points
+    for i in range(0, len(points)):
+        function_values[0,i] = function(points[i,:])
+
+    return function_values

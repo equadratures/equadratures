@@ -20,7 +20,7 @@ import os
 """
 # Simple analytical function
 def fun(x):
-    return x[0]
+    return np.exp(x[0] + x[1])
 
 def main():
 
@@ -43,7 +43,7 @@ def main():
 
     # Method for computing coefficients. Right now functionality is limited to
     # tensor grids. to do: THIS NEEDS TO BE CODED
-    method = "tensor grid"
+    method = "sparse grid"
     level = 3
     growth_rule = "exponential"
     # Write out the properties for each "uq_parameter". You can have as many
@@ -52,7 +52,7 @@ def main():
     uq_parameter1_to_3 = PolynomialParam("Uniform", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
     uq_parameter4_to_6 = PolynomialParam("Beta", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
     uq_parameters.append(uq_parameter1_to_3)
-    #uq_parameters.append(uq_parameter1_to_3)
+    uq_parameters.append(uq_parameter1_to_3)
     #uq_parameters.append(uq_parameter1_to_3)
     #uq_parameters.append(uq_parameter4_to_6)
     #uq_parameters.append(uq_parameter4_to_6)
@@ -75,8 +75,8 @@ def main():
     print '****************************************************************'
 
     # Create a PolyParent object!
-    #uq_structure = PolyParent(uq_parameters, method, level, growth_rule)
-    uq_structure = PolyParent(uq_parameters, "tensor grid")
+    uq_structure = PolyParent(uq_parameters, method, level, growth_rule)
+    #uq_structure = PolyParent(uq_parameters, "tensor grid")
 
 
     pts, wts = PolyParent.getPointsAndWeights(uq_structure)
@@ -89,7 +89,7 @@ def main():
     print '\n'
 
     # For coefficients!
-    X , T = PolyParent.getCoefficients(uq_structure, fun)
+    X  = PolyParent.getCoefficients(uq_structure, fun)
     print '---Pseudospectral coefficients---'
     print X
     print '\n'

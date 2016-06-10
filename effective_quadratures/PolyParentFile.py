@@ -1,6 +1,8 @@
 #!/usr/bin/python
 from PolyParams import PolynomialParam
+from IndexSets import IndexSet
 import numpy as np
+import sys
 """
 
     Polyparent Class
@@ -18,10 +20,9 @@ class PolyParent(object):
                                 constructor / initializer
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
-    def __init__(self, uq_parameters, indexsets, method, level=None, growth_rule=None):
+    def __init__(self, uq_parameters, method, level=None, growth_rule=None,index_sets=None):
 
         self.uq_parameters = uq_parameters
-        self.indexsets = indexsets
         self.method = method
 
         # Check for the levels (only for sparse grids)
@@ -36,12 +37,25 @@ class PolyParent(object):
         else:
             self.growth_rule = growth_rule
 
+        # Here we set the index sets!
+        if index_sets is None:
+
+            # Determine the highest orders for a tensor grid
+            highest_orders = []
+            for i in range(0, len(uq_parameters)):
+                highest_orders.append(uq_parameters[i].order)
+
+            if(method == "tensor grid" or method == "Tensor grid"):
+                indexObject = IndexSet(method, highest_orders)
+                self.index_sets = indexObject
+
+            if(method == "sparse grid" or method == "Sparse grid"):
+                indexObject = IndexSet(method, highest_orders, level, growth_rule)
+                self.index_sets = indexObject
+
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     get() methods
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    def getTensorQuadrature(self):
-        return getGaussianQuadrature(self)
-
     def getRandomizedTensorGrid(self):
         return getSubsampledGaussianQuadrature(self)
 
@@ -74,20 +88,27 @@ class PolyParent(object):
         A_multivariate = A_multivariate.T
         return A_multivariate
 
-    def getCoefficients(self, function, method, *args):
-        if method == "tensor grid" or method == "Tensor grid":
-            return getPseudospectralCoefficients(self)
-        if method = "sparse grid" or method = "Sparse grid":
-            return getSparsepseudospectralCoefficients(self)
+    def getCoefficients(self, function):
+        if self.method == "tensor grid" or self.method == "Tensor grid":
+            return getPseudospectralCoefficients(self.uq_parameters, function)
+        if self.method == "sparse grid" or self.method == "Sparse grid":
+            return getSparsePseudospectralCoefficients(self, function)
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
                             PRIVATE FUNCTIONS
 
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-def getCoeficients(stackOfParameters, function, sparse_growth_rule, sparse_level):
+def getSparsePseudospectralCoefficients(self, function):
+
+    # INPUTS
+    stackOfParameters = self.uq_parameters
+    indexSets = self.index_sets
+    level = self.level
+    growth_rule = self.growth_rule
+
     dimensions = len(stackOfParameters)
-    sparse_indices, sparse_factors, not_used = indi.sparse_grid_index_set(dimensions, sparse_level, sparse_growth_rule)
+    sparse_indices, sparse_factors, not_used = IndexSet.getIndexSet(indexSets)
     rows = len(sparse_indices)
     cols = len(sparse_indices[0])
 
@@ -102,7 +123,9 @@ def getCoeficients(stackOfParameters, function, sparse_growth_rule, sparse_level
 
     for i in range(0,rows):
         orders = sparse_indices[i,:]
-        K, I, F = polmeth.getPseudospectralCoefficients(stackOfParameters, orders, function)
+
+        # Here we need to make the index set part of "self" a tensor grid!
+        K, I = getPseudospectralCoefficients(self.uq_parameters, function, orders)
         individual_tensor_indices[i] = I
         individual_tensor_coefficients[i] =  K
         indices[i,0] = len(I)
@@ -156,23 +179,19 @@ def getCoeficients(stackOfParameters, function, sparse_growth_rule, sparse_level
 
     return final_store
 
+# Tensor grid pseudospectral method
+def getPseudospectralCoefficients(stackOfParameters, function, *argv):
 
-def getPseudospectralCoefficients(self, function, *args):
 
-    # INPUTS
-    stackOfParameters = self.uq_parameters
-    indexSets = self.indexsets
     dimensions = len(stackOfParameters)
-
-    # Compute the "orders"
-    orders = np.zeros((dimensions))
-    for i in range(0, dimensions):
-        orders[i] = max(indexSets[:,i])
-
     q0 = [1]
     Q = []
     for i in range(0, dimensions):
-        Qmatrix = PolynomialParam.getJacobiEigenvectors(stackOfParameters[i])
+        if len(sys.argv) > 1:
+            orders =  argv[0]
+            Qmatrix = PolynomialParam.getJacobiMatrix(stackOfParameters[i], orders[i])
+        else:
+            Qmatrix = PolynomialParam.getJacobiMatrix(stackOfParameters[i])
         Q.append(Qmatrix)
         if orders[i] == 1:
             q0 = np.kron(q0, Qmatrix)
@@ -180,7 +199,7 @@ def getPseudospectralCoefficients(self, function, *args):
             q0 = np.kron(q0, Qmatrix[0,:])
 
     # Compute multivariate Gauss points and weights
-    p, w = getGaussianQuadrature(self)
+    p, w = getGaussianQuadrature(self, *argv)
 
     # Evaluate the first point to get the size of the system
     fun_value_first_point = function(p[0,:])
@@ -288,22 +307,27 @@ def getSubsampledGaussianQuadrature(self, subsampled_indices):
     return gauss_points, gauss_weights
 
 # Computes nD quadrature points and weights using a kronecker product
-def getGaussianQuadrature(self):
+def getGaussianQuadrature(self, *argv):
 
     # Initialize some temporary variables
+    if len(sys.argv) > 1:
+        orders = argv[0]
+    else:
+        orders = np.zeros((dimensions))
+        for i in range(0, dimensions):
+            orders[i] = stackOfParameters[i].order
+
+    # Initialize points and weights
     pp = [1.0]
     ww = [1.0]
+
     stackOfParameters = self.uq_parameters
     dimensions = int(len(stackOfParameters)) # number of parameters
-    orders = np.zeros((dimensions))
-    for i in range(0, dimensions):
-        orders[i] = stackOfParameters[i].order
-
     # For loop across each dimension
     for u in range(0,dimensions):
 
         # Call to get local quadrature method (for dimension 'u')
-        local_points, local_weights = PolynomialParam.getLocalQuadrature(stackOfParameters[u])
+        local_points, local_weights = PolynomialParam.getLocalQuadrature(stackOfParameters[u], *argv)
 
         #if(dimensions == 1):
         #    return local_points, local_weights

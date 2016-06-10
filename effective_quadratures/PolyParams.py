@@ -38,6 +38,12 @@ class PolynomialParam(object):
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 get() methods
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
+    def getDerivativeFlag(self):
+        return self.derivative_flag
+
+    def getOrder(self):
+        return self.order
+
     def getParamType(self):
         return self.param_type
 
@@ -53,20 +59,20 @@ class PolynomialParam(object):
     def getShapeParameterB(self):
         return self.shape_parameter_B
 
-    def getRecurrenceCoefficients(self): # do i really need this!?
-        return recurrence_coefficients(self)
+    def getRecurrenceCoefficients(self, *argv): # do i really need this!?
+        return recurrence_coefficients(self, *argv)
 
-    def getJacobiMatrix(self):
-        return jacobiMatrix(self)
+    def getJacobiMatrix(self, *argv):
+        return jacobiMatrix(self, *argv)
 
-    def getJacobiEigenvectors(self):
-        return jacobiEigenvectors(self)
+    def getJacobiEigenvectors(self, *argv):
+        return jacobiEigenvectors(self, *argv)
 
     def getOrthoPoly(self, points):
         return orthoPolynomial_and_derivative(self, points)
 
-    def getLocalQuadrature(self):
-        return getlocalquadrature(self)
+    def getLocalQuadrature(self, *argv):
+        return getlocalquadrature(self, *argv)
 
     # Might need another getAmatrix function that doesn't store the full matrix!
     def getAmatrix(self, *argv):
@@ -88,7 +94,20 @@ class PolynomialParam(object):
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
 # Call different methods depending on the choice of the polynomial parameter
-def recurrence_coefficients(self):
+def recurrence_coefficients(self, *argv):
+    if len(sys.argv) > 1:
+        order = argv[0]
+    else:
+        order = self.order
+
+    # Source of many bugs -- check!
+    print self.param_type
+    print self.order
+    print self.shape_parameter_B
+    print self.shape_parameter_A
+    print self.lower_bound
+    print self.upper_bound
+
 
     if self.param_type is "Beta":
         param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
@@ -97,24 +116,29 @@ def recurrence_coefficients(self):
             error_function('ERROR: parameter_A (beta shape parameter A) must be greater than 1!')
         if(param_A <= 0):
             error_function('ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
-        ab = jacobi_recurrence_coefficients_01(param_A, param_B , self.order)
+        ab =  jacobi_recurrence_coefficients_01(param_A, param_B , order)
 
     elif self.param_type is "Uniform":
         self.shape_parameter_A = 0.0
         self.shape_parameter_B = 0.0
-        ab = jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.order)
+        ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, order)
 
     elif self.param_type == "Custom": # This needs coding Stjeletes procedure
-        ab = custom_recurrence_coefficients(self.lower_bound, self.upper_bound, self.shape_parameter_A, self.shape_parameter_B, self.order)
+        ab =  custom_recurrence_coefficients(self.lower_bound, self.upper_bound, self.shape_parameter_A, self.shape_parameter_B, order)
 
     elif self.param_type == "Gaussian" or self.param_type == "Normal":
         param_B = self.shape_parameter_B - 0.5
         if(param_B <= -0.5):
-            error_function('ERROR: parameter_B (variance) must be greater than 0!')
-	    else:
-            ab = hermite_recurrence_coefficients(self.shape_parameter_A, param_B, self.order)
-    return ab
+            error_function('ERROR: parameter_B (variance) must be greater than 0')
+        print '~~~~~~~~'
+        print order
+        print '!!!!!!!!!!!!!!'
+	    ab =  hermite_recurrence_coefficients(self.shape_parameter_A, param_B, order)
+        print 'i got here'
+    else:
+        error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform or Beta')
 
+    return ab
 
 # Recurrence coefficients for Jacobi type parameters
 def jacobi_recurrence_coefficients(param_A, param_B, order):
@@ -192,9 +216,15 @@ def custom_recurrence_coefficients(param_A, param_B, order):
 
 # Compute the Jacobi matrix. The eigenvalues and eigenvectors of this matrix
 # forms the basis of gaussian quadratures
-def jacobiMatrix(self):
-    order = int(self.order)
-    ab = recurrence_coefficients(self)
+def jacobiMatrix(self, *argv):
+
+    if len(sys.argv) > 1:
+        order =  argv[0]
+        ab = recurrence_coefficients(self, order)
+    else:
+        order = int(self.order)
+        ab = recurrence_coefficients(self)
+
 
     # The case of order 1~
     if order == 1:
@@ -219,9 +249,10 @@ def jacobiMatrix(self):
 # Computes 1D quadrature points and weights between [-1,1]
 def getlocalquadrature(self, *argv):
 
-    # If there is an additional argument, then replace the
-    for arg in argv:
-        self.order = arg
+    if len(sys.argv) > 1:
+        order = argv[0]
+    else:
+        order = self.order
 
     # Get the recurrence coefficients & the jacobi matrix
     recurrence_coeffs = recurrence_coefficients(self)
@@ -247,16 +278,18 @@ def getlocalquadrature(self, *argv):
         local_weights = recurrence_coeffs[0,1] * w  # normalizing step
         local_points = p # re-label
 
-        # Check if local points is a numpy array! (TO COMPLETE!)
-        validation = type(local_points).__module__ == np.__name__
-
     # Return 1D gauss points and weights
     return local_points, local_weights
 
 
-def jacobiEigenvectors(self):
-    JacobiMat = jacobiMatrix(self)
-    order = self.order
+def jacobiEigenvectors(self, *argv):
+
+    if len(sys.argv) > 1:
+        order = argv[0]
+    else:
+        order = self.order
+
+    JacobiMat = jacobiMatrix(self, order)
     if order == 1:
         V = [1.0]
     else:

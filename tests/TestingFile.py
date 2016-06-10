@@ -28,7 +28,7 @@ def main():
                                     INPUT SECTION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
     order = 2
-    derivative_flag = 0 # derivative flag 
+    derivative_flag = 0 # derivative flag
     error_flag = 0
 
     # Min and max values. Not used for a "Gaussian" or "Normal" distribution
@@ -41,20 +41,22 @@ def main():
     parameter_A = 3
     parameter_B = 2
 
-    # Set the polynomial basis. Options are: "tensor grid", "total order" or
-    # "sparse grid"
-    polynomial_basis_type = "tensor grid"
-
     # Method for computing coefficients. Right now functionality is limited to
     # tensor grids. to do: THIS NEEDS TO BE CODED
-    method = "Tensor"
-
+    method = "sparse grid"
+    level = 3
+    growth_rule = "exponential"
     # Write out the properties for each "uq_parameter". You can have as many
     # as you like!
+    uq_parameters = []
     uq_parameter1_to_3 = PolynomialParam("Normal", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
     uq_parameter4_to_6 = PolynomialParam("Beta", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
-    uq_parameters = [uq_parameter1_to_3, uq_parameter1_to_3, uq_parameter1_to_3, uq_parameter4_to_6, uq_parameter4_to_6, uq_parameter4_to_6]
-    highest_orders = [order, order, order, order, order, order]
+    uq_parameters.append(uq_parameter1_to_3)
+    uq_parameters.append(uq_parameter1_to_3)
+    uq_parameters.append(uq_parameter1_to_3)
+    uq_parameters.append(uq_parameter4_to_6)
+    uq_parameters.append(uq_parameter4_to_6)
+    uq_parameters.append(uq_parameter4_to_6)
     #pts_for_plotting = np.linspace(min_value, max_value, 600)
 
 
@@ -68,26 +70,25 @@ def main():
         elif(uq_parameters[i].param_type == "Beta" or uq_parameters[i].param_type == "Uniform"):
             print str('With support:')+'\t'+('[')+str(uq_parameters[i].lower_bound)+str(',')+str(uq_parameters[i].upper_bound)+str(']')
             print str('With shape parameters:')+'\t'+('[')+str(uq_parameters[i].shape_parameter_A)+str(',')+str(uq_parameters[i].shape_parameter_A)+str(']')
-        print str('Order:')+'\t'+str(highest_orders[i])+'\n'
+            print str('Order:')+'\t'+str(uq_parameters[i].order)+'\n'
     print '****************************************************************'
 
-    # Compute elements of an index set:self, index_set_type, orders, level=None, growth_rule=None):
-    indexset_configure = IndexSet(polynomial_basis_type, highest_orders)
-    indices = IndexSet.getIndexSet(indexset_configure)
-
     # Create a PolyParent object!
-    uq_structure = PolyParent(uq_parameters, indices, method)
-    pts, wts = PolyParent.getTensorQuadrature(uq_structure)
+    #uq_structure = PolyParent(uq_parameters, method, level, growth_rule)
+    uq_structure = PolyParent(uq_parameters, "tensor grid")
 
-    print '--Quadrature Points--'
-    print pts
-    print '\n'
-    print '--Weights--'
-    print wts
-    print '\n'
+
+    #pts, wts = PolyParent.getPointsAndWeights(uq_structure)
+
+    #print '--Quadrature Points--'
+    #print pts
+    #print '\n'
+    #print '--Weights--'
+    #print wts
+    #print '\n'
 
     # For coefficients!
-    X , T = PolyParent.getCoefficients(uq_structure)
+    X , T = PolyParent.getCoefficients(uq_structure, fun)
     print '---Pseudospectral coefficients---'
     print X
     print '\n'

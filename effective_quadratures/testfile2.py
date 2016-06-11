@@ -1,8 +1,8 @@
-#!/usr/bin/env python
-from effective_quadratures.PolyParams import PolynomialParam
-from effective_quadratures.PolyParentFile import PolyParent
-from effective_quadratures.IndexSets import IndexSet
-import effective_quadratures.MatrixRoutines as matrix
+#!/usr/bin/python
+from PolyParams import PolynomialParam
+from PolyParentFile import PolyParent
+from IndexSets import IndexSet
+import MatrixRoutines as matrix
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import cm
@@ -45,7 +45,7 @@ def main():
     # tensor grids. to do: THIS NEEDS TO BE CODED
     method = "sparse grid"
     level = 3
-    growth_rule = "exponential"
+    growth_rule = "linear"
     # Write out the properties for each "uq_parameter". You can have as many
     # as you like!
     uq_parameters = []

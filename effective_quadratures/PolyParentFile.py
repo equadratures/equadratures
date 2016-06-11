@@ -97,9 +97,9 @@ class PolyParent(object):
     def getPointsAndWeights(self, *argv):
         if self.method == "tensor grid" or self.method == "Tensor grid":
             return getGaussianQuadrature(self.uq_parameters)
-        if self.method = "sparse grid" or self.method = "Sparse grid":
+        if self.method == "sparse grid" or self.method == "Sparse grid":
             indexSets = self.index_sets
-            if len(sys.argv) > 1:
+            if len(sys.argv) > 0:
                 level =  argv[0]
                 growth_rule = argv[1]
             else:
@@ -159,7 +159,24 @@ def sparsegrid(uq_parameters, indexSetObject, level, growth_rule):
     dims1 = int( len(points_store) / dimensions )
     points_store = np.reshape(points_store, ( dims1, dimensions ) )
 
-    return points_store, weights_store
+    points_store, unique_indices = removeDuplicates(points_store)
+    return points_store, weights_store[unique_indices]
+
+# Simple function that removes duplicate rows from a matrix and returns the
+# deleted row indices
+def removeDuplicates(a):
+    order = np.lexsort(a.T)
+    a = a[order]
+    indices = []
+    diff = np.diff(a, axis=0)
+    ui = np.ones(len(a), 'bool')
+    ui[1:] = (diff != 0).any(axis=1)
+
+    # Save the indices
+    for i in range(0, len(ui)):
+        if(ui[i] == bool(1)):
+            indices.append(i)
+    return a[ui], indices
 
 def getSparsePseudospectralCoefficients(self, function):
 

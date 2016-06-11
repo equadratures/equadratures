@@ -79,7 +79,7 @@ def main():
     #uq_structure = PolyParent(uq_parameters, "tensor grid")
 
 
-    pts, wts = PolyParent.getPointsAndWeights(uq_structure)
+    pts, wts = PolyParent.getPointsAndWeights(uq_structure, level, growth_rule)
 
     print '--Quadrature Points--'
     print pts

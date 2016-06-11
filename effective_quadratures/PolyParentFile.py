@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 from PolyParams import PolynomialParam
 from IndexSets import IndexSet
 import numpy as np
@@ -94,14 +94,73 @@ class PolyParent(object):
         if self.method == "sparse grid" or self.method == "Sparse grid":
             return getSparsePseudospectralCoefficients(self, function)
 
-    def getPointsAndWeights(self):
-        return getGaussianQuadrature(self.uq_parameters)
+    def getPointsAndWeights(self, *argv):
+        if self.method == "tensor grid" or self.method == "Tensor grid":
+            return getGaussianQuadrature(self.uq_parameters)
+        if self.method = "sparse grid" or self.method = "Sparse grid":
+            indexSets = self.index_sets
+            if len(sys.argv) > 1:
+                level =  argv[0]
+                growth_rule = argv[1]
+            else:
+                error_function('ERROR: To compute the points of a sparse grid integration rule, level and growth rule are required.')
+
+            level = self.level
+            growth_rule = self.growth_rule
+            sparse_indices, sparse_factors, not_used = IndexSet.getIndexSet(indexSets)
+            return sparsegrid(self.uq_parameters, self.index_sets, level, growth_rule)
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
                             PRIVATE FUNCTIONS
 
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
+def sparsegrid(uq_parameters, indexSetObject, level, growth_rule):
+
+    # Get the sparse indices
+    dimensions = len(uq_parameters)
+    sparse_index, a , sg_set = IndexSet.getIndexSet(indexSetObject)
+
+    # Compute the corresponding Gauss quadrature points and weights
+    rows = len(sparse_index)
+
+    # Get this into an array
+    orders = np.zeros((rows, dimensions))
+    points_store = []
+    weights_store = []
+
+    """
+    # Ok, now we have to correct for the weights, depending on the right and left
+    # bounds of the individual parameters. I'm hardcoding this for Legendre for
+    # the moment!
+    factor = 0
+    for k in range(0, dimensions):
+        factor = (uq_parameters[k].upper_bound - uq_parameters[k].lower_bound) + factor
+    """
+    factor = 1
+
+    for i in range(0, rows):
+
+        # loop through the dimensions
+        for j in range(0, dimensions):
+            orders[i,j] = np.array(sparse_index[i][j])
+
+        # points and weights for each order~
+        points, weights = getGaussianQuadrature(uq_parameters, orders[i,:])
+
+        # Multiply weights by constant 'a':
+        weights = factor * weights * a[i]
+
+        # Now store point sets ---> scratch this, use append instead!!!!
+        for k in range(0, len(points)):
+            points_store = np.append(points_store, points[k,:], axis=0)
+            weights_store = np.append(weights_store, weights[k])
+
+    dims1 = int( len(points_store) / dimensions )
+    points_store = np.reshape(points_store, ( dims1, dimensions ) )
+
+    return points_store, weights_store
+
 def getSparsePseudospectralCoefficients(self, function):
 
     # INPUTS
@@ -234,8 +293,7 @@ def getPseudospectralCoefficients(stackOfParameters, function, *argv):
     return K,  F
 
 # Efficient kronecker product multiplication
-# Implementation is identical to kromult.m
-# from Paul Constantine and David Gleich
+# Adapted from David Gelich and Paul Constantine's kronmult.m
 def efficient_kron_mult(Q, Uc):
     N = len(Q)
     n = np.zeros((N,1))
@@ -416,3 +474,7 @@ def evalfunction(function, points):
         function_values[0,i] = function(points[i,:])
 
     return function_values
+
+def error_function(string_value):
+    print string_value
+    sys.exit()

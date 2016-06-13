@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import numpy as np
 import math as mt
 """
@@ -61,7 +61,8 @@ class IndexSet(object):
         if name == "total order":
             index_set = total_order_index_set(self.orders)
         elif name == "sparse grid":
-            index_set = sparse_grid_index_set(dimensions, self.level, self.growth_rule) # Note sparse grid rule depends on points!
+            sparse_index, a, SG_set = sparse_grid_index_set(dimensions, self.level, self.growth_rule) # Note sparse grid rule depends on points!
+            return sparse_index, a, SG_set
         elif name == "tensor grid":
             index_set = tensor_grid_index_set(self.orders)
         elif name == "hyperbolic cross":
@@ -129,8 +130,9 @@ def total_order_index_set(orders):
 def sparse_grid_index_set(dimensions, level, growth_rule):
 
     # Initialize a few parameters for the setup
-    lhs = level + 1
-    rhs = level + dimensions
+    print level
+    lhs = int(level) + 1
+    rhs = int(level) + dimensions
 
     # Set up a global tensor grid
     tensor_elements = np.ones((dimensions))

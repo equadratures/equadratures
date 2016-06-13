@@ -1,6 +1,46 @@
+*.m~
+.DS_Store
 
+# compiled python codes
 *.pyc
 
-*.pyc
+# figs directory
+figs/
 
-*.pyc
+# test data
+
+# *.npz
+
+# the etc directory
+etc/
+
+# logs
+gurobi.log
+
+# Python Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+__pycache__
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Translations
+*.mo
+.eggs

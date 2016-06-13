@@ -31,4 +31,39 @@ def rowNormalize(A):
     A_normalized = np.dot(Normalization, A)
     return A_normalized, Normalization
 
-# Iterative least squares solve -- where we do not have to store A in memory!
+"""
+    MODIFIED GRAM SCHMIDT QR COLUMN PIVOTING
+    INPUTS:
+        fun_cols_A(j): A function that returns the jth column of A
+        m : number of rows in A
+        n : number of columns in A
+
+    OUTPUTS:
+        P : pivots
+"""
+def qrColumnPivoting_mgs(fun_cols_A, m, n):
+
+    # Compute the column norms of A:
+    column_norms = np.zeros((n))
+    for j in range(0,n):
+        column_norms[j] = np.sum(fun_cols_A(j)**2)
+
+    # Now loop!
+    for k in range(0, n):
+
+        #----------------------------------------------
+        # Step 0
+        #----------------------------------------------
+        # Find the "j*" column index with the highest
+        # column norm
+        value, j_star = np.max(column_norms[k:n])
+        j_star = j_star + k
+
+        if k != j_star:
+
+            # Swap columns in A:
+            temp = fun_cols_A(k)
+            A_k = fun_cols_A(j_star)
+            A_j_star = temp
+
+        # Swap columns in R accordingly

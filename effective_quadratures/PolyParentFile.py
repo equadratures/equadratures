@@ -240,6 +240,7 @@ def getSparsePseudospectralCoefficients(self, function):
             coefficient_value = coefficient_value + store[actual_index,0]
 
         # Store into a new array
+        print coefficient_value
         final_store[counter,0] = coefficient_value
         final_store[counter,1::] = store[index_to_pick, 1::]
         counter = counter + 1
@@ -253,10 +254,11 @@ def getSparsePseudospectralCoefficients(self, function):
             flag = 0
 
     # For cleaning up!
+    print '************'
     indices_to_delete = np.arange(counter, sum_indices, 1)
     final_store = np.delete(final_store, indices_to_delete, axis=0)
 
-    return final_store
+    return final_store, indices_to_delete
 
 # Tensor grid pseudospectral method
 def getPseudospectralCoefficients(stackOfParameters, function, *argv):

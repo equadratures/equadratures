@@ -39,7 +39,7 @@ def rowNormalize(A):
     OUTPUTS:
         Q: orthogonal matrix
         R: upper triangular matrix
-        P : pivots
+        P: pivots
 
     References:
     1. A. Dax
@@ -52,9 +52,14 @@ def qrColumnPivoting_mgs(A):
     n = len(A[0,:])
     h = np.max([m, n])
 
+    # Set Q and P
+    Q = np.mat( np.zeros((m,n)) )
+    R = np.mat( np.zeros((n,n)) )
+
     # Initialize!
     column_norms = np.zeros((n))
-    pivots = np.zeros((h))
+    pivots = np.linspace(0,h-1,h)
+    print pivots
 
     # Compute the column norms
     for j in range(0,n):
@@ -94,26 +99,29 @@ def qrColumnPivoting_mgs(A):
         # Step 1: Reorthogonalization
         #-----------------------------------------------
         if k != 1:
-            for j in range(k+1,n):
-                alpha = Q[:,i].T * A[:,k]
+            for i in range(0,k-1):
+                alpha = np.dot(Q[:,i].T , A[:,k] )
                 R[i,k] = R[i,k] + alpha
-                A[:,k] = A[:,k] - alpha * Q[:,i]
+                for u in range(0,m):
+                    A[u,k] = A[u,k] - alpha * Q[u,i]
 
         #----------------------------------------------
         # Step 2: Normalization
         #----------------------------------------------
-        R[k,k] = np.norm(A[:,k], 2)
-        Q[:,k] = A[:,k] / R[k,k]
+        R[k,k] = np.linalg.norm(A[:,k], 2)
+        for i in range(0, m):
+            Q[i,k] = A[i,k] * 1.0/R[k,k]
 
         #----------------------------------------------
         # Step 3: Orthogonalization
         #----------------------------------------------
         if k != n:
             for j in range(k+1,n):
-                R[k,j] = Q[:,k].T * A[:,j]
-                A[:,j] = A[:,j] - R[k,j] * Q[:,k]
+                R[k,j] = np.dot(Q[:,k].T , A[:,j] )
+                for v in range(0,m):
+                    A[v,j] = A[v,j] - R[k,j] * Q[v,k]
 
                 # Now re-compute column norms
-                column_norms[j] = np.norm(A[:,j]**2, 2)
+                column_norms[j] = np.linalg.norm(A[:,j]**2, 2)
 
     return Q, R, pivots

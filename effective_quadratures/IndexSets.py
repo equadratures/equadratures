@@ -25,7 +25,7 @@ class IndexSet(object):
                         a. Linear growth rule
                         b. Exponential growth rule
 
-
+       * Need to use recurrence for index sets!
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 constructor / initializer
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""

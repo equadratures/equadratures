@@ -240,7 +240,6 @@ def getSparsePseudospectralCoefficients(self, function):
             coefficient_value = coefficient_value + store[actual_index,0]
 
         # Store into a new array
-        print coefficient_value
         final_store[counter,0] = coefficient_value
         final_store[counter,1::] = store[index_to_pick, 1::]
         counter = counter + 1

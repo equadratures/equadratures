@@ -89,13 +89,13 @@ def main():
     print '\n'
 
     # For coefficients!
-    X , F = PolyParent.getCoefficients(uq_structure, fun)
+    X , F, T = PolyParent.getCoefficients(uq_structure, fun)
     print '---Pseudospectral coefficients---'
     print X
     print '\n'
     print 'Mean: '+str(X[0,0])
     print 'Variance: '+str(np.sum(X[0,1:]**2))
-
+    print T
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     PLOTTING SECTION

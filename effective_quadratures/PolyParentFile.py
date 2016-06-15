@@ -11,6 +11,8 @@ import sys
     Pranay Seshadri
     ps583@cam.ac.uk
 
+    - Bug in the spam : doesn't show all computed coefficients!
+
 """
 class PolyParent(object):
     """ An index set.
@@ -128,15 +130,6 @@ def sparsegrid(uq_parameters, indexSetObject, level, growth_rule):
     orders = np.zeros((rows, dimensions))
     points_store = []
     weights_store = []
-
-    """
-    # Ok, now we have to correct for the weights, depending on the right and left
-    # bounds of the individual parameters. I'm hardcoding this for Legendre for
-    # the moment!
-    factor = 0
-    for k in range(0, dimensions):
-        factor = (uq_parameters[k].upper_bound - uq_parameters[k].lower_bound) + factor
-    """
     factor = 1
 
     for i in range(0, rows):
@@ -257,7 +250,7 @@ def getSparsePseudospectralCoefficients(self, function):
     indices_to_delete = np.arange(counter, sum_indices, 1)
     final_store = np.delete(final_store, indices_to_delete, axis=0)
 
-    return final_store, indices_to_delete
+    return final_store, indices_to_delete, sparse_indices
 
 # Tensor grid pseudospectral method
 def getPseudospectralCoefficients(stackOfParameters, function, *argv):

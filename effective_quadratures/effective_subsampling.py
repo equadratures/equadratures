@@ -31,7 +31,7 @@ import MatrixRoutines as mat
 # Insert the mutivariate "A" matrix Computation Here
 # Call QR column pivoting based on a square matrix construction
 #
-class EffectiveQuadrature(object):
+class EffectiveSubsampling(object):
 
     def __init__(self, uq_parameters, index_set, derivative_flag):
 
@@ -41,7 +41,7 @@ class EffectiveQuadrature(object):
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     get() methods
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    def getMultivariateA(self, *argv):
+    def getA(self):
         #----------------------------------------------------------------------
         # INPUTS:
         # self: EffectiveQuadrature object
@@ -49,24 +49,24 @@ class EffectiveQuadrature(object):
         #----------------------------------------------------------------------
         stackOfParameters = self.uq_parameters
         polynomial_basis = self.index_set
-        no_of_basis_terms, dimensions = IndexSet.getIndexSet(polynomial_basis)
+        dimensions = len(stackOfParameters)
+        indices = IndexSet.getIndexSet(polynomial_basis)
+        no_of_indices = len(indices)
 
         # Crate a new PolynomialParam object to get tensor grid points & weights
         polyObject =  PolyParent(stackOfParameters, "tensor grid")
         quadrature_pts, quadrature_wts = PolyParent.getPointsAndWeights(polyObject)
 
-        # Now if the user has input an extra argument, we assume she wants to
-        # evaluate the "A" matrix at those points
-        if len(sys.argv) > 0:
-            quadrature_pts = argv[0]
-
         # Allocate space for each of the univariate matrices!
         A_univariate = {}
-        total_points = len(points[:,0])
+        total_points = len(quadrature_pts[:,0])
 
         " Assuming we have no derivatives"
         for i in range(0, dimensions):
             P, M = PolynomialParam.getOrthoPoly(self.uq_parameters[i], quadrature_pts[:,i])
+
+            " --> need to go +1 order!"
+
             A_univariate[i] = P
             local_rows, local_cols = A_univariate[i].shape
 

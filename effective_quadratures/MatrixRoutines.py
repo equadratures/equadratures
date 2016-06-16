@@ -4,13 +4,14 @@ import scipy.linalg as sc
 
 
 """
-    Matrix Routines Class
+    Matrix Routines File. Coded algorithms are:
+    1. QR column pivoting
+    2. ...
 
     Pranay Seshadri
     University of Cambridge
     ps583 <at> cam.ac.uk
 
-    Write something meaningfull here!
 
 """
 # Compute the pivot columns

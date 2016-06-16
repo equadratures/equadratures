@@ -64,32 +64,6 @@ class PolyParent(object):
     def getMultivariatePoly(self, points):
         return getMultiOrthoPoly(self, points)
 
-    def getMultivariateA(self, points):
-
-        # Preliminaries
-        indices = self.indexsets
-        no_of_indices, dimensions = indices.shape
-        A_univariate = {}
-        total_points = len(points[:,0])
-
-        # Assuming we have no derivatives?
-        for i in range(0, dimensions):
-            P, M = PolynomialParam.getOrthoPoly(self.uq_parameters[i], points[:,i])
-            A_univariate[i] = P
-            local_rows, local_cols = A_univariate[i].shape
-
-        # Now based on the index set compute the big ortho-poly matrix!
-        A_multivariate = np.zeros((no_of_indices, total_points))
-        for i in range(0, no_of_indices):
-            temp = np.ones((1,total_points))
-            for j in range(0, dimensions):
-                A_multivariate[i, :] =  A_univariate[j][indices[i,j], :] * temp
-                temp = A_multivariate[i, :]
-
-        # Take the transpose!
-        A_multivariate = A_multivariate.T
-        return A_multivariate
-
     def getCoefficients(self, function):
         if self.method == "tensor grid" or self.method == "Tensor grid":
             return getPseudospectralCoefficients(self.uq_parameters, function)

@@ -293,7 +293,6 @@ def jacobiEigenvectors(self, *argv):
 
 # Univariate orthogonal polynomial correspoding to the weight of the parameter
 def orthoPolynomial_and_derivative(self, gridPoints):
-
     orthopoly = np.zeros((self.order, len(gridPoints))) # create a matrix full of zeros
     derivative_orthopoly = np.zeros((self.order, len(gridPoints)))
     ab = recurrence_coefficients(self)

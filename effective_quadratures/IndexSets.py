@@ -64,7 +64,7 @@ class IndexSet(object):
             sparse_index, a, SG_set = sparse_grid_index_set(dimensions, self.level, self.growth_rule) # Note sparse grid rule depends on points!
             return sparse_index, a, SG_set
         elif name == "tensor grid":
-            index_set = tensor_grid_index_set(self.orders)
+            index_set = tensor_grid_index_set(self.orders )
         elif name == "hyperbolic cross":
             index_set = hyperbolic_index_set(self.orders)
         else:
@@ -210,3 +210,7 @@ def tensor_grid_index_set(orders):
     index_set = I[:,1::]
 
     return index_set
+
+def error_function(string_value):
+    print string_value
+    sys.exit()

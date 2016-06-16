@@ -44,7 +44,7 @@ def main():
     # Method for computing coefficients. Right now functionality is limited to
     # tensor grids. to do: THIS NEEDS TO BE CODED
     method = "sparse grid"
-    level = 3
+    level = 2
     growth_rule = "exponential"
     # Write out the properties for each "uq_parameter". You can have as many
     # as you like!
@@ -89,13 +89,13 @@ def main():
     print '\n'
 
     # For coefficients!
-    X  = PolyParent.getCoefficients(uq_structure, fun)
+    X , F, T = PolyParent.getCoefficients(uq_structure, fun)
     print '---Pseudospectral coefficients---'
     print X
     print '\n'
     print 'Mean: '+str(X[0,0])
     print 'Variance: '+str(np.sum(X[0,1:]**2))
-
+    print T
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     PLOTTING SECTION

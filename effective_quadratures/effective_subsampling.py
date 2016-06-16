@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from PolyParams import PolynomialParam
+from PolyParentFile import PolyParent
 from IndexSets import IndexSet
 import numpy as np
 import sys
@@ -24,65 +25,53 @@ import MatrixRoutines as mat
 # 3. uncertainties
 # 4. Plotting
 # 5. Read data from file!?
+#
+# From the orders in uq_parameters construct a tensor grid.
+# Use the index set as the basis
+# Insert the mutivariate "A" matrix Computation Here
+# Call QR column pivoting based on a square matrix construction
+#
 class EffectiveQuadrature(object):
 
-    def __init__(self, uq_parameters, method, level=None, growth_rule=None,index_sets=None):
+    def __init__(self, uq_parameters, index_set, derivative_flag):
 
         self.uq_parameters = uq_parameters
-        self.method = method
-
-        # Check for the levels (only for sparse grids)
-        if level is None:
-            self.level = []
-        else:
-            self.level = level
-
-        # Check for the growth rule (only for sparse grids)
-        if growth_rule is None:
-            self.growth_rule = []
-        else:
-            self.growth_rule = growth_rule
-
-        # Here we set the index sets!
-        if index_sets is None:
-
-            # Determine the highest orders for a tensor grid
-            highest_orders = []
-            for i in range(0, len(uq_parameters)):
-                highest_orders.append(uq_parameters[i].order)
-
-            if(method == "tensor grid" or method == "Tensor grid"):
-                indexObject = IndexSet(method, highest_orders)
-                self.index_sets = indexObject
-
-            if(method == "sparse grid" or method == "Sparse grid"):
-                indexObject = IndexSet(method, highest_orders, level, growth_rule)
-                self.index_sets = indexObject
+        self.index_set = index_set
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     get() methods
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    def getRandomizedTensorGrid(self):
-        return getSubsampledGaussianQuadrature(self)
+    def getMultivariateA(self, *argv):
+        #----------------------------------------------------------------------
+        # INPUTS:
+        # self: EffectiveQuadrature object
+        # points: If user does not want to use default tensor grid of points
+        #----------------------------------------------------------------------
+        stackOfParameters = self.uq_parameters
+        polynomial_basis = self.index_set
+        no_of_basis_terms, dimensions = IndexSet.getIndexSet(polynomial_basis)
 
-    def getMultivariatePoly(self, points):
-        return getMultiOrthoPoly(self, points)
+        # Crate a new PolynomialParam object to get tensor grid points & weights
+        polyObject =  PolyParent(stackOfParameters, "tensor grid")
+        quadrature_pts, quadrature_wts = PolyParent.getPointsAndWeights(polyObject)
 
-    def getMultivariateA(self, points):
+        # Now if the user has input an extra argument, we assume she wants to
+        # evaluate the "A" matrix at those points
+        if len(sys.argv) > 0:
+            quadrature_pts = argv[0]
 
-        # Preliminaries
-        indices = self.indexsets
-        no_of_indices, dimensions = indices.shape
+        # Allocate space for each of the univariate matrices!
         A_univariate = {}
         total_points = len(points[:,0])
 
-        # Assuming we have no derivatives?
+        " Assuming we have no derivatives"
         for i in range(0, dimensions):
-            P, M = PolynomialParam.getOrthoPoly(self.uq_parameters[i], points[:,i])
+            P, M = PolynomialParam.getOrthoPoly(self.uq_parameters[i], quadrature_pts[:,i])
             A_univariate[i] = P
             local_rows, local_cols = A_univariate[i].shape
 
-        # Now based on the index set compute the big ortho-poly matrix!
+        # Now using the select basis terms, compute multivariate "A". This is
+        # a memory intensive operation -- need to figure out a way to handle this.
         A_multivariate = np.zeros((no_of_indices, total_points))
         for i in range(0, no_of_indices):
             temp = np.ones((1,total_points))
@@ -92,35 +81,9 @@ class EffectiveQuadrature(object):
 
         # Take the transpose!
         A_multivariate = A_multivariate.T
+
         return A_multivariate
-
-    def getCoefficients(self, function):
-        if self.method == "tensor grid" or self.method == "Tensor grid":
-            return getPseudospectralCoefficients(self.uq_parameters, function)
-        if self.method == "sparse grid" or self.method == "Sparse grid":
-            return getSparsePseudospectralCoefficients(self, function)
-
-    def getPointsAndWeights(self, *argv):
-        if self.method == "tensor grid" or self.method == "Tensor grid":
-            return getGaussianQuadrature(self.uq_parameters)
-        if self.method == "sparse grid" or self.method == "Sparse grid":
-            indexSets = self.index_sets
-            if len(sys.argv) > 0:
-                level =  argv[0]
-                growth_rule = argv[1]
-            else:
-                error_function('ERROR: To compute the points of a sparse grid integration rule, level and growth rule are required.')
-
-            level = self.level
-            growth_rule = self.growth_rule
-            sparse_indices, sparse_factors, not_used = IndexSet.getIndexSet(indexSets)
-            return sparsegrid(self.uq_parameters, self.index_sets, level, growth_rule)
-
-    """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-                            PRIVATE FUNCTIONS
-
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
+"""
 
 # Then create the A matrix using a subset of columns
 # Compute A and C matrices and solve the full least squares problem
@@ -162,3 +125,4 @@ for basis_subsamples in range(2,highest_order):
 
             # Compute the condition numbers of these matrices!
             store_cond[basis_subsamples, quadrature_subsamples] = np.linalg.cond(Asquare)
+"""

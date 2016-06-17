@@ -11,6 +11,8 @@ import sys
     Pranay Seshadri
     ps583@cam.ac.uk
 
+    - Bug in the spam : doesn't show all computed coefficients!
+
 """
 class PolyParent(object):
     """ An index set.
@@ -62,32 +64,6 @@ class PolyParent(object):
     def getMultivariatePoly(self, points):
         return getMultiOrthoPoly(self, points)
 
-    def getMultivariateA(self, points):
-
-        # Preliminaries
-        indices = self.indexsets
-        no_of_indices, dimensions = indices.shape
-        A_univariate = {}
-        total_points = len(points[:,0])
-
-        # Assuming we have no derivatives?
-        for i in range(0, dimensions):
-            P, M = PolynomialParam.getOrthoPoly(self.uq_parameters[i], points[:,i])
-            A_univariate[i] = P
-            local_rows, local_cols = A_univariate[i].shape
-
-        # Now based on the index set compute the big ortho-poly matrix!
-        A_multivariate = np.zeros((no_of_indices, total_points))
-        for i in range(0, no_of_indices):
-            temp = np.ones((1,total_points))
-            for j in range(0, dimensions):
-                A_multivariate[i, :] =  A_univariate[j][indices[i,j], :] * temp
-                temp = A_multivariate[i, :]
-
-        # Take the transpose!
-        A_multivariate = A_multivariate.T
-        return A_multivariate
-
     def getCoefficients(self, function):
         if self.method == "tensor grid" or self.method == "Tensor grid":
             return getPseudospectralCoefficients(self.uq_parameters, function)
@@ -128,15 +104,6 @@ def sparsegrid(uq_parameters, indexSetObject, level, growth_rule):
     orders = np.zeros((rows, dimensions))
     points_store = []
     weights_store = []
-
-    """
-    # Ok, now we have to correct for the weights, depending on the right and left
-    # bounds of the individual parameters. I'm hardcoding this for Legendre for
-    # the moment!
-    factor = 0
-    for k in range(0, dimensions):
-        factor = (uq_parameters[k].upper_bound - uq_parameters[k].lower_bound) + factor
-    """
     factor = 1
 
     for i in range(0, rows):
@@ -240,7 +207,6 @@ def getSparsePseudospectralCoefficients(self, function):
             coefficient_value = coefficient_value + store[actual_index,0]
 
         # Store into a new array
-        print coefficient_value
         final_store[counter,0] = coefficient_value
         final_store[counter,1::] = store[index_to_pick, 1::]
         counter = counter + 1
@@ -258,7 +224,7 @@ def getSparsePseudospectralCoefficients(self, function):
     indices_to_delete = np.arange(counter, sum_indices, 1)
     final_store = np.delete(final_store, indices_to_delete, axis=0)
 
-    return final_store, indices_to_delete
+    return final_store, indices_to_delete, sparse_indices
 
 # Tensor grid pseudospectral method
 def getPseudospectralCoefficients(stackOfParameters, function, *argv):
@@ -362,7 +328,7 @@ def getSubsampledGaussianQuadrature(self, subsampled_indices):
 
     # Total orders in each direction!
     for i in range(0, dimensions):
-        p_local, w_local = PolynomialParam.getLocalQuadrature(stackOfParameters[i])
+        p_local, w_local = PolynomialParam.getLocalQuadrature(stackOfParameters[i], [])
         univariate_points_in_each_dimension[i] = p_local
         univariate_weights_in_each_dimension[i] = w_local
         multivariate_orders[0,i] = stackOfParameters[i].order
@@ -407,7 +373,7 @@ def getGaussianQuadrature(stackOfParameters, *argv):
     for u in range(0,dimensions):
 
         # Call to get local quadrature method (for dimension 'u')
-        local_points, local_weights = PolynomialParam.getLocalQuadrature(stackOfParameters[u], *argv)
+        local_points, local_weights = PolynomialParam.getLocalQuadrature(stackOfParameters[u], orders)
 
         #if(dimensions == 1):
         #    return local_points, local_weights

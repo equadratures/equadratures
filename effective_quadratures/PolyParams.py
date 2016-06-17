@@ -60,7 +60,7 @@ class PolynomialParam(object):
         return self.shape_parameter_B
 
     def getRecurrenceCoefficients(self, *argv):
-        return recurrence_coefficients(self, *argv)
+        return recurrence_coefficients(self, argv)
 
     def getJacobiMatrix(self, *argv):
         return jacobiMatrix(self, *argv)
@@ -68,11 +68,11 @@ class PolynomialParam(object):
     def getJacobiEigenvectors(self, *argv):
         return jacobiEigenvectors(self, *argv)
 
-    def getOrthoPoly(self, points):
-        return orthoPolynomial_and_derivative(self, points)
+    def getOrthoPoly(self, points, *argv):
+        return orthoPolynomial_and_derivative(self, points, *argv)
 
-    def getLocalQuadrature(self, *argv):
-        return getlocalquadrature(self, *argv)
+    def getLocalQuadrature(self, order):
+        return getlocalquadrature(self, order)
 
     # Might need another getAmatrix function that doesn't store the full matrix!
     def getAmatrix(self, *argv):
@@ -94,10 +94,9 @@ class PolynomialParam(object):
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
 # Call different methods depending on the choice of the polynomial parameter
-def recurrence_coefficients(self, *argv):
-    if len(sys.argv) > 1:
-        order = argv[0]
-    else:
+def recurrence_coefficients(self, order):
+
+    if not order:
         order = self.order
 
     if self.param_type is "Beta":
@@ -194,7 +193,6 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
         else:
             ab[i,1] = nh[i-1]
     ab[0,1] = 2.0
-    print 'got here'
     return ab
 
 
@@ -212,7 +210,7 @@ def jacobiMatrix(self, *argv):
         ab = recurrence_coefficients(self, order)
     else:
         order = int(self.order)
-        ab = recurrence_coefficients(self)
+        ab = recurrence_coefficients(self, [])
 
 
     # The case of order 1~
@@ -236,15 +234,10 @@ def jacobiMatrix(self, *argv):
     return JacobiMatrix
 
 # Computes 1D quadrature points and weights between [-1,1]
-def getlocalquadrature(self, *argv):
-
-    if len(sys.argv) > 1:
-        order = argv[0]
-    else:
-        order = self.order
+def getlocalquadrature(self, order):
 
     # Get the recurrence coefficients & the jacobi matrix
-    recurrence_coeffs = recurrence_coefficients(self)
+    recurrence_coeffs = recurrence_coefficients(self, [])
     JacobiMat = jacobiMatrix(self)
 
     # If statement to handle the case where order = 1
@@ -292,12 +285,17 @@ def jacobiEigenvectors(self, *argv):
 
 
 # Univariate orthogonal polynomial correspoding to the weight of the parameter
-def orthoPolynomial_and_derivative(self, gridPoints):
+def orthoPolynomial_and_derivative(self, gridPoints, *argv):
 
-    orthopoly = np.zeros((self.order, len(gridPoints))) # create a matrix full of zeros
-    derivative_orthopoly = np.zeros((self.order, len(gridPoints)))
-    ab = recurrence_coefficients(self)
+    if len(sys.argv) == 1:
+        order = argv[0]
+    else:
+        order = self.order
 
+    orthopoly = np.zeros((order, len(gridPoints))) # create a matrix full of zeros
+    derivative_orthopoly = np.zeros((order, len(gridPoints)))
+
+    ab = recurrence_coefficients(self, order)
     # Convert the grid points to a numpy array -- simplfy life!
     gridPointsII = np.zeros((len(gridPoints), 1))
     for u in range(0, len(gridPoints)):
@@ -307,31 +305,31 @@ def orthoPolynomial_and_derivative(self, gridPoints):
     orthopoly[0,:] = (1.0)/(1.0 * np.sqrt(ab[0,1]) ) # Correct!
 
     # Cases
-    if self.order == 1:
+    if order == 1:
         return orthopoly
 
     orthopoly[1,:] = ((gridPointsII[:,0] - ab[0,0]) * orthopoly[0,:] ) * (1.0)/(1.0 * np.sqrt(ab[1,1]) )
 
-    if self.order == 2:
+    if order == 2:
         return orthopoly
 
-    if self.order >= 3:
-        for u in range(2,self.order):
+    if order >= 3:
+        for u in range(2,order):
             # Three-term recurrence rule in action!
             orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0])*orthopoly[u-1,:]) - np.sqrt(ab[u-1,1])*orthopoly[u-2,:] )/(1.0 * np.sqrt(ab[u,1]))
 
     # Only if the derivative flag is on do we compute the derivative polynomial
     if self.derivative_flag == 1:
-        if self.order == 1:
+        if order == 1:
             return derivative_orthopoly
 
         derivative_orthopoly[1,:] = orthopoly[0,:] / (np.sqrt(ab[1,1]))
 
-        if self.order == 2:
+        if order == 2:
             return derivative_orthopoly
 
-        if self.order >= 3:
-            for u in range(2, self.order):
+        if order >= 3:
+            for u in range(2, order):
                 # Four-term recurrence formula for derivatives of orthogonal polynomials!
                 derivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
         return orthopoly, derivative_orthopoly

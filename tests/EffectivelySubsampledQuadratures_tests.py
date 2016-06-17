@@ -3,7 +3,7 @@ from effective_quadratures.PolyParams import PolynomialParam
 from effective_quadratures.PolyParentFile import PolyParent
 from effective_quadratures.IndexSets import IndexSet
 import effective_quadratures.MatrixRoutines as matrix
-from effective_quadratures.Effective_Subsampling import EffectiveSubsampling
+from effective_quadratures.EffectiveQuadSubsampling import EffectiveSubsampling
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import cm
@@ -45,6 +45,9 @@ def main():
     # Define the EffectiveSubsampling object and get "A"
     effectiveQuads = EffectiveSubsampling(uq_parameters, hyperbolic_basis, derivative_flag)
     A = EffectiveSubsampling.getA(effectiveQuads)
-    print A
+
+    # Now perform QR column pivoting on A:
+    print len(A)
+    print len(A[0,:])
 
 main()

@@ -328,7 +328,7 @@ def getSubsampledGaussianQuadrature(self, subsampled_indices):
 
     # Total orders in each direction!
     for i in range(0, dimensions):
-        p_local, w_local = PolynomialParam.getLocalQuadrature(stackOfParameters[i])
+        p_local, w_local = PolynomialParam.getLocalQuadrature(stackOfParameters[i], [])
         univariate_points_in_each_dimension[i] = p_local
         univariate_weights_in_each_dimension[i] = w_local
         multivariate_orders[0,i] = stackOfParameters[i].order
@@ -373,7 +373,7 @@ def getGaussianQuadrature(stackOfParameters, *argv):
     for u in range(0,dimensions):
 
         # Call to get local quadrature method (for dimension 'u')
-        local_points, local_weights = PolynomialParam.getLocalQuadrature(stackOfParameters[u], *argv)
+        local_points, local_weights = PolynomialParam.getLocalQuadrature(stackOfParameters[u], orders)
 
         #if(dimensions == 1):
         #    return local_points, local_weights

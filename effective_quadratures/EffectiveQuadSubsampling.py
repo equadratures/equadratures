@@ -63,10 +63,10 @@ class EffectiveSubsampling(object):
 
         " Assuming we have no derivatives"
         for i in range(0, dimensions):
-            P, M = PolynomialParam.getOrthoPoly(self.uq_parameters[i], quadrature_pts[:,i])
 
-            " --> need to go +1 order!"
-
+            # Create a polynomial object!
+            N = self.uq_parameters[i].order + 1
+            P, M = PolynomialParam.getOrthoPoly(self.uq_parameters[i], quadrature_pts[:,i], N)
             A_univariate[i] = P
             local_rows, local_cols = A_univariate[i].shape
 

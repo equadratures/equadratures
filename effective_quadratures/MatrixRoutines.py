@@ -4,14 +4,12 @@ import scipy.linalg as sc
 
 
 """
-    Matrix Routines File. Coded algorithms are:
-    1. QR column pivoting
-    2. ...
+    Should I change this into a class?
+
 
     Pranay Seshadri
     University of Cambridge
     ps583 <at> cam.ac.uk
-
 
 """
 # Compute the pivot columns
@@ -24,6 +22,27 @@ def solveLeastSquares(A, b):
     rows_b = len(b)
     x = sc.lstsq(A, b)
     return x[0]
+
+# Function that returns a submatrix of specific rows
+def getRows(A, row_indices):
+    m = len(A) # number of rows
+    n = len(A[0,:]) # number of columns
+
+    print 'get rows'
+    print m,n
+
+    # Allocate space for the submatrix
+    A2 = np.zeros((len(row_indices), n))
+
+    print len(A2)
+    print len(A2[0,:])
+
+    # Now loop!
+    for i in range(0, len(A2)):
+        for j in range(0, n):
+            A2[i,j] = A[row_indices[i], j]
+
+    return A2
 
 def rowNormalize(A):
     rows, cols = A.shape
@@ -60,7 +79,6 @@ def qrColumnPivoting_mgs(A):
     # Initialize!
     column_norms = np.zeros((n))
     pivots = np.linspace(0,h-1,h)
-    print pivots
 
     # Compute the column norms
     for j in range(0,n):
@@ -124,5 +142,9 @@ def qrColumnPivoting_mgs(A):
 
                 # Now re-compute column norms
                 column_norms[j] = np.linalg.norm(A[:,j]**2, 2)
+
+    # Ensure that the pivots are integers
+    for k in range(0, len(pivots)):
+        pivots[k] = int(pivots[k])
 
     return Q, R, pivots

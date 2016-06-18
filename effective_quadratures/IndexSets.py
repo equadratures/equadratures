@@ -75,8 +75,6 @@ class IndexSet(object):
 def hyperbolic_index_set(orders, q):
 
     # Initialize a few parameters for the setup
-    print orders
-    print '-----------'
     dimensions = len(orders)
     n_bar = tensor_grid_index_set(orders)
     n_new = []

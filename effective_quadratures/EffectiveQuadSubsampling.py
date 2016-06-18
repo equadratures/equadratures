@@ -38,10 +38,9 @@ class EffectiveSubsampling(object):
         self.uq_parameters = uq_parameters
         self.index_set = index_set
 
-    """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                    get() methods
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    def getA(self):
+
+    " The A matrix"
+    def getA(self, points=None):
         #----------------------------------------------------------------------
         # INPUTS:
         # self: EffectiveQuadrature object
@@ -83,6 +82,10 @@ class EffectiveSubsampling(object):
         A_multivariate = A_multivariate.T
 
         return A_multivariate
+
+
+    def getSquareA(self, maximum_number_of_evals):
+
 """
 
 # Then create the A matrix using a subset of columns

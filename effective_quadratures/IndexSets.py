@@ -66,16 +66,17 @@ class IndexSet(object):
         elif name == "tensor grid":
             index_set = tensor_grid_index_set(self.orders )
         elif name == "hyperbolic cross":
-            index_set = hyperbolic_index_set(self.orders)
+            index_set = hyperbolic_index_set(self.orders, self.level)
         else:
             index_set = [0]
         return index_set
 
 
-def hyperbolic_index_set(orders):
+def hyperbolic_index_set(orders, q):
 
     # Initialize a few parameters for the setup
-    q = 1.0
+    print orders
+    print '-----------'
     dimensions = len(orders)
     n_bar = tensor_grid_index_set(orders)
     n_new = []

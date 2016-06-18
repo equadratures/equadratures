@@ -31,10 +31,11 @@ def main():
     order = 6
     derivative_flag = 0 # derivative flag
     min_value, max_value = -1, 1
-
+    q_parameter = 0.5
+    
     # Decide on the polynomial basis. We recommend total order or hyperbolic cross
     # basis terms. First we create an index set object
-    hyperbolic_basis = IndexSet("hyperbolic cross", [order, order])
+    hyperbolic_basis = IndexSet("hyperbolic cross", [order, order], q_parameter)
 
     # The "UQ" parameters
     uq_parameters = []

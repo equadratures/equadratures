@@ -49,6 +49,11 @@ class IndexSet(object):
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 get() methods
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
+    def getCardinality(self):
+        # Return the number of elements in the index set!
+        index_set = getindexsetvalues(self)
+        return len(index_set)
+
     def getIndexSetType(self):
         return self.index_set_type
 
@@ -56,20 +61,23 @@ class IndexSet(object):
         return self.orders
 
     def getIndexSet(self):
-        dimensions = len(self.orders)
-        name = self.index_set_type
-        if name == "total order":
-            index_set = total_order_index_set(self.orders)
-        elif name == "sparse grid":
-            sparse_index, a, SG_set = sparse_grid_index_set(dimensions, self.level, self.growth_rule) # Note sparse grid rule depends on points!
-            return sparse_index, a, SG_set
-        elif name == "tensor grid":
-            index_set = tensor_grid_index_set(self.orders )
-        elif name == "hyperbolic cross":
-            index_set = hyperbolic_index_set(self.orders, self.level)
-        else:
-            index_set = [0]
-        return index_set
+        return getindexsetvalues(self)
+
+def getindexsetvalues(self):
+    dimensions = len(self.orders)
+    name = self.index_set_type
+    if name == "total order":
+        index_set = total_order_index_set(self.orders)
+    elif name == "sparse grid":
+        sparse_index, a, SG_set = sparse_grid_index_set(dimensions, self.level, self.growth_rule) # Note sparse grid rule depends on points!
+        return sparse_index, a, SG_set
+    elif name == "tensor grid":
+        index_set = tensor_grid_index_set(self.orders )
+    elif name == "hyperbolic cross":
+        index_set = hyperbolic_index_set(self.orders, self.level)
+    else:
+        index_set = [0]
+    return index_set
 
 
 def hyperbolic_index_set(orders, q):
@@ -129,7 +137,6 @@ def total_order_index_set(orders):
 def sparse_grid_index_set(dimensions, level, growth_rule):
 
     # Initialize a few parameters for the setup
-    print level
     lhs = int(level) + 1
     rhs = int(level) + dimensions
 

@@ -28,14 +28,8 @@ def getRows(A, row_indices):
     m = len(A) # number of rows
     n = len(A[0,:]) # number of columns
 
-    print 'get rows'
-    print m,n
-
     # Allocate space for the submatrix
     A2 = np.zeros((len(row_indices), n))
-
-    print len(A2)
-    print len(A2[0,:])
 
     # Now loop!
     for i in range(0, len(A2)):

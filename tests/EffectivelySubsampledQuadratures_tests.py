@@ -21,7 +21,7 @@ import os
 """
 # Simple analytical function
 def fun(x):
-    return np.exp(x[0] + x[1])
+    return np.exp(x[0,:] + x[1,:])
 
 def main():
 
@@ -46,8 +46,8 @@ def main():
 
     # Define the EffectiveSubsampling object and get "A"
     effectiveQuads = EffectiveSubsampling(uq_parameters, hyperbolic_basis, derivative_flag)
-    A = EffectiveSubsampling.getAsubsampled(effectiveQuads, maximum_number_of_evals)
-
+    A, pts = EffectiveSubsampling.getAsubsampled(effectiveQuads, maximum_number_of_evals)
+    b = fun(pts)
     # ADD NORMALIZATION!!!
 
 main()

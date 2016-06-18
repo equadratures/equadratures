@@ -36,6 +36,7 @@ class EffectiveSubsampling(object):
     def normalizeA(self):
         return 0
 
+
 " The A matrix"
 def getA(self, points):
 
@@ -79,13 +80,13 @@ def getA(self, points):
             A_multivariate[i, :] =  A_univariate[j][indices[i,j], :] * temp
             temp = A_multivariate[i, :]
 
-    return A_multivariate.T
+    return A_multivariate.T, quadrature_pts
 
 
 def getSquareA(self, maximum_number_of_evals, points):
 
     # Get A
-    A = getA(self, points)
+    A, quadrature_pts = getA(self, points)
 
     # Determine the size of A
     m = len(A)
@@ -98,7 +99,7 @@ def getSquareA(self, maximum_number_of_evals, points):
     # Now compute the rank revealing QR decomposition of A!
     Q, R, P = mat.qrColumnPivoting_mgs(A.T)
     selected_quadrature_points = P[0:maximum_number_of_evals]
-    return mat.getRows(A, selected_quadrature_points)
+    return mat.getRows(A, selected_quadrature_points), mat.getRows(quadrature_pts, selected_quadrature_points)
 
 def error_function(string_value):
     print string_value

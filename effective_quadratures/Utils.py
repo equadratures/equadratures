@@ -7,11 +7,11 @@ def compute_b_vector(quad_pts, function, quad_weights):
 
 # Evaluate the function (above) at certain points
 def evalfunction(points, function):
-    function_values = np.zeros((1,len(points)))
+    function_values = np.zeros((len(points), 1))
 
     # For loop through all the points
     for i in range(0, len(points)):
-        function_values[0,i] = function(points[i,:])
+        function_values[i,0] = function(points[i,:])
 
     return function_values
 

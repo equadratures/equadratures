@@ -17,7 +17,7 @@ import os
 
 def plot_index_sets_2D():
     order = [4,4]
-    q_parameter = 0.5
+    q_parameter = 0.2
 
     # Hyperbolic cross basis
     hyperbolic_basis = IndexSet("hyperbolic cross", order, q_parameter)
@@ -44,7 +44,7 @@ def plot_index_sets_2D():
 
 def plot_index_sets_3D():
     order = [4,4,4]
-    q_parameter = 0.7
+    q_parameter = 1.0
 
     # Hyperbolic cross basis
     hyperbolic_basis = IndexSet("hyperbolic cross", order, q_parameter)

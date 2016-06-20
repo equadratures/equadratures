@@ -99,6 +99,9 @@ def getSquareA(self, maximum_number_of_evals, points):
     # Now compute the rank revealing QR decomposition of A!
     Q, R, P = mat.qrColumnPivoting_mgs(A.T)
     selected_quadrature_points = P[0:maximum_number_of_evals]
+
+    print A
+    print '~~~~~~~~~~~~~~~'
     return mat.getRows(A, selected_quadrature_points), mat.getRows(quadrature_pts, selected_quadrature_points)
 
 def error_function(string_value):

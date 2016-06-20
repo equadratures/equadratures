@@ -4,6 +4,7 @@ from effective_quadratures.PolyParentFile import PolyParent
 from effective_quadratures.IndexSets import IndexSet
 import effective_quadratures.MatrixRoutines as matrix
 from effective_quadratures.EffectiveQuadSubsampling import EffectiveSubsampling
+import effective_quadratures.Utils as utils
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import cm
@@ -21,7 +22,7 @@ import os
 """
 # Simple analytical function
 def fun(x):
-    return np.exp(x[0,:] + x[1,:])
+    return np.exp(x[0] + x[1])
 
 def main():
 
@@ -47,7 +48,17 @@ def main():
     # Define the EffectiveSubsampling object and get "A"
     effectiveQuads = EffectiveSubsampling(uq_parameters, hyperbolic_basis, derivative_flag)
     A, pts = EffectiveSubsampling.getAsubsampled(effectiveQuads, maximum_number_of_evals)
-    b = fun(pts)
-    # ADD NORMALIZATION!!!
+    b = utils.evalfunction(pts, fun)
 
+    # ADD NORMALIZATION!!!
+    print A
+    print '~~~~~~~~~~~'
+    A , norm_factor = matrix.rowNormalize(A)
+    b = np.diag(norm_factor) * b
+    print len(A), len(A[0,:])
+    print len(b)
+    print b
+    print norm_factor
+    x = matrix.solveLeastSquares(A, b)
+    print x
 main()

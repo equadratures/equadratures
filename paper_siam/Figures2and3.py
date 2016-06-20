@@ -1,6 +1,104 @@
+#!/usr/bin/env python
+from effective_quadratures.PolyParams import PolynomialParam
+from effective_quadratures.PolyParentFile import PolyParent
+from effective_quadratures.IndexSets import IndexSet
+import effective_quadratures.MatrixRoutines as matrix
+from effective_quadratures.EffectiveQuadSubsampling import EffectiveSubsampling
+import effective_quadratures.Utils as utils
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import cm
+import numpy as np
+import numpy.ma as maogle
+import os
+"""
 
-" Ok here redo plot!
-# Replace old figures 3 and 4 with new ones in 2D!!!
+    Plots for:
+    "Effective Quadrature Subsampling for Least Squares Polynomial Approximations"
+    Seshadri, P., Narayan, A., Mahadevan, S.
+
+    Pranay Seshadri
+    ps583@cam.ac.uk
+
+    Copyright (c) 2016 by Pranay Seshadri
+
+    In this figure we plot the error in the pseudospectral coefficients
+    for a 2D tensor grid using basis terms from a 2D total order basis set.
+    Here we compare randomized quadrature with our technique. 
+"""
+# Simple analytical function
+def fun(x):
+    return np.exp(x[0] + x[1])
+
+def main():
+
+    # Inputs
+    order_in_each_direction = 50
+    derivative_flag = 0 # derivative flag
+    min_value, max_value = -1, 1
+    q_parameter = 0.7
+
+    # We use a hyperbolic cross basis
+    hyperbolic_basis = IndexSet("total order", [order_in_each_direction, order_in_each_direction])
+    maximum_number_of_evals = IndexSet.getCardinality(hyperbolic_basis)
+
+    # Uniform parameters between [-1,1]
+    uq_parameters = []
+    uniform_parameter = PolynomialParam("Uniform", min_value, max_value, [], [] , derivative_flag, order)
+    uq_parameters.append(uniform_parameter)
+    uq_parameters.append(uniform_parameter)
+
+    # Define the EffectiveSubsampling object and get "A"
+    effectiveQuads = EffectiveSubsampling(uq_parameters, hyperbolic_basis, derivative_flag)
+    A, pts = EffectiveSubsampling.getAs(effectiveQuads, maximum_number_of_evals)
+
+
+    """
+    ------------------------------------------------------------------------
+
+    Solving the effective quadratures problem!
+
+    ----------------------------------------------------------------------------
+    """
+    # Step 1 - QR column pivoting
+    P = matrix.QRColumnPivoting(A.T)
+    print P
+    #print P2
+    effective = P[ 0 : maximum_number_of_evals]
+
+    # Step 2 - Subsampling
+    Asquare = A[effective, :]
+    bsquare = utils.evalfunction(pts[effective], fun)
+
+    # Step 3 - Normalize
+    Asquare, smallNormFactor = matrix.rowNormalize(Asquare)
+    bsquare = np.dot(smallNormFactor, bsquare)
+
+    # Step 4 - Solve the least squares problem
+    xapprox = matrix.solveLeastSquares(Asquare, bsquare)
+
+    """
+    ------------------------------------------------------------------------
+
+    Solving the tensor grid least squares problem!
+
+    ----------------------------------------------------------------------------
+    """
+    # Get evaluations at all points!
+    b = utils.evalfunction(pts, fun)
+
+    # Normalize
+    Abig, NormFactor = matrix.rowNormalize(A)
+    bbig = np.dot(NormFactor, b)
+
+    # Now let's solve the least squares problem:
+    xfull = matrix.solveLeastSquares(Abig, bbig)
+
+    # Display Output
+    print xapprox
+    print xfull
+
+main()
 
 
 # Then create the A matrix using a subset of columns

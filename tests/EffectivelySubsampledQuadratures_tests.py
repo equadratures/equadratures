@@ -47,7 +47,7 @@ def main():
 
     # Define the EffectiveSubsampling object and get "A"
     effectiveQuads = EffectiveSubsampling(uq_parameters, hyperbolic_basis, derivative_flag)
-    A, pts = EffectiveSubsampling.getAmatrix(effectiveQuads, maximum_number_of_evals)
+    A, pts = EffectiveSubsampling.getAs(effectiveQuads, maximum_number_of_evals)
 
     print 'Dimensions of big A'
     print len(A)
@@ -63,7 +63,7 @@ def main():
     # Step 1 - QR column pivoting
     P = matrix.QRColumnPivoting(A.T)
     print P
-    print P2
+    #print P2
     effective = P[ 0 : maximum_number_of_evals]
 
     # Step 2 - Subsampling

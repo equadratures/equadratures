@@ -25,6 +25,9 @@ import os
     In this figure we plot the error in the pseudospectral coefficients
     for a 2D tensor grid using basis terms from a 2D total order basis set.
     Here we compare randomized quadrature with our technique. 
+    
+    
+    Wrap this up today!!!
 """
 # Simple analytical function
 def fun(x):

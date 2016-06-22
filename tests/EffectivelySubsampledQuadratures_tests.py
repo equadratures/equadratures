@@ -31,7 +31,7 @@ def main():
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
     order = 8
     derivative_flag = 0 # derivative flag
-    min_value, max_value = -1, 1
+    min_value, max_value = 0, 1
     q_parameter = 0.7
 
     # Decide on the polynomial basis. We recommend total order or hyperbolic cross

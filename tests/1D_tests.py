@@ -20,7 +20,7 @@ import os
 """
 # Simple analytical function
 def fun(x):
-    return np.exp(x[0] + x[1])
+    return x[:]
 
 def main():
 
@@ -32,7 +32,7 @@ def main():
     error_flag = 0
 
     # Min and max values. Not used for a "Gaussian" or "Normal" distribution
-    min_value = -1
+    min_value = 0
     max_value = 1
 
     # For a "Beta" uncertainty, these become alpha and beta shape parameters
@@ -49,16 +49,8 @@ def main():
     # Write out the properties for each "uq_parameter". You can have as many
     # as you like!
     uq_parameters = []
-    uq_parameter1_to_3 = PolynomialParam("Uniform", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
-    uq_parameter4_to_6 = PolynomialParam("Beta", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
-    uq_parameters.append(uq_parameter1_to_3)
-    uq_parameters.append(uq_parameter1_to_3)
-    #uq_parameters.append(uq_parameter1_to_3)
-    #uq_parameters.append(uq_parameter4_to_6)
-    #uq_parameters.append(uq_parameter4_to_6)
-    #uq_parameters.append(uq_parameter4_to_6)
-    #pts_for_plotting = np.linspace(min_value, max_value, 600)
-
+    uq_parameter = PolynomialParam("Beta", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
+    uq_parameters.append(uq_parameter)
 
     print '****************************************************************'
     print '                     EFFECTIVE-QUADRATURES                      '

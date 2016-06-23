@@ -138,9 +138,6 @@ def jacobi_recurrence_coefficients(param_A, param_B, order):
         ab[0,0] = a0
         ab[0,1] = ( 2**(param_A + param_B + 1) * gamma(param_A + 1) * gamma(param_B + 1) )/( gamma(param_A + param_B + 2))
 
-    print '**********-------'
-    print order
-    print int(order)
     for k in range(1,int(order)):
         temp = k + 1
         ab[k,0] = b2a2/((2.0 * (temp - 1) + param_A + param_B) * (2.0 * temp + param_A + param_B))

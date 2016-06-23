@@ -32,8 +32,8 @@ def main():
     error_flag = 0
 
     # Min and max values. Not used for a "Gaussian" or "Normal" distribution
-    min_value = 0
-    max_value = 1
+    min_value = -3.0
+    max_value = 2.0
 
     # For a "Beta" uncertainty, these become alpha and beta shape parameters
     # in which case both have to be greater than 1.0
@@ -49,7 +49,7 @@ def main():
     # Write out the properties for each "uq_parameter". You can have as many
     # as you like!
     uq_parameters = []
-    uq_parameter = PolynomialParam("Gaussian", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
+    uq_parameter = PolynomialParam("Beta", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
     uq_parameters.append(uq_parameter)
 
     print '****************************************************************'

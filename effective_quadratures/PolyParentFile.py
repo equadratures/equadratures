@@ -170,6 +170,8 @@ def getSparsePseudospectralCoefficients(self, function):
     for i in range(0,rows):
         orders = sparse_indices[i,:]
         K, I, F = getPseudospectralCoefficients(self.uq_parameters, function, orders)
+        print orders, I, K
+        print '---------------'
         individual_tensor_indices[i] = I
         individual_tensor_coefficients[i] =  K
         indices[i,0] = len(I)
@@ -233,7 +235,7 @@ def getPseudospectralCoefficients(stackOfParameters, function, additional_orders
     # If additional orders are provided, then use those!
     if additional_orders is None:
         for i in range(0, dimensions):
-            orders.append(stackOfParameters[i].order)
+            orders.append(stackOfParameters[i].order )
             Qmatrix = PolynomialParam.getJacobiEigenvectors(stackOfParameters[i])
             Q.append(Qmatrix)
 
@@ -256,10 +258,7 @@ def getPseudospectralCoefficients(stackOfParameters, function, additional_orders
 
     # Compute multivariate Gauss points and weights
     p, w = getGaussianQuadrature(stackOfParameters, orders)
-    print orders
-    print 'gaussian quadrature points & weights'
-    print p, w
-    print '~~~~~~~~~~~~~~~'
+
     # Evaluate the first point to get the size of the system
     fun_value_first_point = function(p[0,:])
     u0 =  q0[0,0] * fun_value_first_point

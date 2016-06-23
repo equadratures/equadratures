@@ -94,9 +94,9 @@ class PolynomialParam(object):
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
 # Call different methods depending on the choice of the polynomial parameter
-def recurrence_coefficients(self, order):
+def recurrence_coefficients(self, order=None):
 
-    if not order:
+    if order is None:
         order = self.order
 
     if self.param_type is "Beta":
@@ -130,7 +130,6 @@ def recurrence_coefficients(self, order):
 # Recurrence coefficients for Jacobi type parameters
 def jacobi_recurrence_coefficients(param_A, param_B, order):
 
-    order = int(order) # check!!
     a0 = (param_B - param_A)/(param_A + param_B + 2.0)
     ab = np.zeros((order,2))
     b2a2 = param_B**2 - param_A**2
@@ -139,13 +138,16 @@ def jacobi_recurrence_coefficients(param_A, param_B, order):
         ab[0,0] = a0
         ab[0,1] = ( 2**(param_A + param_B + 1) * gamma(param_A + 1) * gamma(param_B + 1) )/( gamma(param_A + param_B + 2))
 
-    for k in range(1,order):
+    print '**********-------'
+    print order
+    print int(order)
+    for k in range(1,int(order)):
         temp = k + 1
         ab[k,0] = b2a2/((2.0 * (temp - 1) + param_A + param_B) * (2.0 * temp + param_A + param_B))
         if(k == 1):
             ab[k,1] = ( 4.0 * (temp - 1) * (temp - 1 + param_A) * (temp - 1 + param_B)) / ( (2 * (temp - 1) + param_A + param_B  )**2 * (2 * (temp - 1) + param_A + param_B + 1))
         else:
-            ab[k,1] = ( 4.0 * (temp - 1) * (temp - 1 + param_A) * (temp - 1 + param_B) * (temp - 1 + param_A + param_B) ) / ((2 * (temp - 1) + param_A + param_B)**2 * (2 *(temp -1) + param_A + param_B + 1) * (2 * (temp - 1) + param_A + param_B -1 ) )
+            ab[k,1] = ( 4.0 * (temp - 1) * (temp - 1 + param_A) * (temp - 1 + param_B) * (temp - 1 + param_A + param_B) ) / ((2 * (temp - 1) + param_A + param_B)**2 * ( 2 *(temp -1) + param_A + param_B + 1) * (2 * (temp - 1) + param_A + param_B -1 ) )
 
     return ab
 
@@ -203,27 +205,27 @@ def custom_recurrence_coefficients(param_A, param_B, order):
 
 # Compute the Jacobi matrix. The eigenvalues and eigenvectors of this matrix
 # forms the basis of gaussian quadratures
-def jacobiMatrix(self, *argv):
+def jacobiMatrix(self, order_to_use=None):
 
-    if len(sys.argv) > 1:
-        order =  argv[0]
-        ab = recurrence_coefficients(self, order)
+    if order_to_use is None:
+        ab = recurrence_coefficients(self)
+        order = self.order
     else:
-        order = int(self.order)
-        ab = recurrence_coefficients(self, [])
-
+        order = order_to_use
+        ab = recurrence_coefficients(self, order)
 
     # The case of order 1~
-    if order == 1:
+    if int(order) == 1:
         JacobiMatrix = ab[0, 0]
 
     # For everything else~
     else:
-        JacobiMatrix = np.zeros((order, order)) # allocate space
+        JacobiMatrix = np.zeros((int(order), int(order))) # allocate space
         JacobiMatrix[0,0] = ab[0,0]
         JacobiMatrix[0,1] = np.sqrt(ab[1,1])
 
-        for u in range(1,order-1):
+        k = order - 1
+        for u in range(1, int(k)):
             JacobiMatrix[u,u] = ab[u,0]
             JacobiMatrix[u,u-1] = np.sqrt(ab[u,1])
             JacobiMatrix[u,u+1] = np.sqrt(ab[u+1,1])
@@ -234,14 +236,20 @@ def jacobiMatrix(self, *argv):
     return JacobiMatrix
 
 # Computes 1D quadrature points and weights between [-1,1]
-def getlocalquadrature(self, order):
+def getlocalquadrature(self, order_to_use=None):
+
+    # Check for extra input argument!
+    if order_to_use is None:
+        order = self.order
+    else:
+        order = order_to_use
 
     # Get the recurrence coefficients & the jacobi matrix
-    recurrence_coeffs = recurrence_coefficients(self, [])
-    JacobiMat = jacobiMatrix(self)
+    recurrence_coeffs = recurrence_coefficients(self, order)
+    JacobiMat = jacobiMatrix(self, order)
 
     # If statement to handle the case where order = 1
-    if self.order == 1:
+    if order == 1:
         local_points = [(self.upper_bound - self.lower_bound)/(2.0) + self.lower_bound]
         local_weights = [1.0]
     else:
@@ -251,8 +259,8 @@ def getlocalquadrature(self, order):
         local_points = np.sort(D) # sort by the eigenvalues
         i = np.argsort(D) # get the sorted indices
         i = np.array(i) # convert to array
-        w = np.linspace(1,self.order+1,self.order) # create space for weights
-        p = np.ones((self.order,1))
+        w = np.linspace(1,order+1,order) # create space for weights
+        p = np.ones((order,1))
         for u in range(0, len(i) ):
             w[u] = (V[0,i[u]]**2) # replace weights with right value
             p[u,0] = local_points[u]
@@ -264,11 +272,9 @@ def getlocalquadrature(self, order):
     return local_points, local_weights
 
 
-def jacobiEigenvectors(self, *argv):
+def jacobiEigenvectors(self, order=None):
 
-    if len(sys.argv) > 1:
-        order = argv[0]
-    else:
+    if order is None:
         order = self.order
 
     JacobiMat = jacobiMatrix(self, order)
@@ -285,11 +291,9 @@ def jacobiEigenvectors(self, *argv):
 
 
 # Univariate orthogonal polynomial correspoding to the weight of the parameter
-def orthoPolynomial_and_derivative(self, gridPoints, *argv):
+def orthoPolynomial_and_derivative(self, gridPoints, order=None):
 
-    if len(sys.argv) == 1:
-        order = argv[0]
-    else:
+    if order is None:
         order = self.order
 
     orthopoly = np.zeros((order, len(gridPoints))) # create a matrix full of zeros

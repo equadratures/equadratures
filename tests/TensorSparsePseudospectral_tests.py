@@ -43,7 +43,7 @@ def main():
 
     # Method for computing coefficients. Right now functionality is limited to
     # tensor grids. to do: THIS NEEDS TO BE CODED
-    method = "tensor grid"
+    method = "sparse grid"
     level = 2
     growth_rule = "exponential"
     # Write out the properties for each "uq_parameter". You can have as many
@@ -75,11 +75,11 @@ def main():
     print '****************************************************************'
 
     # Create a PolyParent object!
-    uq_structure = PolyParent(uq_parameters, method)
+    uq_structure = PolyParent(uq_parameters, method, level, growth_rule)
     #uq_structure = PolyParent(uq_parameters, "tensor grid")
 
-
-    pts, wts = PolyParent.getPointsAndWeights(uq_structure,)
+    """
+    pts, wts = PolyParent.getPointsAndWeights(uq_structure, level, growth_rule)
 
     print '--Quadrature Points--'
     print pts
@@ -87,9 +87,9 @@ def main():
     print '--Weights--'
     print wts
     print '\n'
-
+    """
     # For coefficients!
-    X , F = PolyParent.getCoefficients(uq_structure, fun)
+    X , I, F = PolyParent.getCoefficients(uq_structure, fun)
     print '---Pseudospectral coefficients---'
     print X
     print '\n'

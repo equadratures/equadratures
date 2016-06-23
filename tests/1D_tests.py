@@ -27,7 +27,7 @@ def main():
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     INPUT SECTION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    order = 5
+    order = 6
     derivative_flag = 0 # derivative flag
     error_flag = 0
 
@@ -38,8 +38,8 @@ def main():
     # For a "Beta" uncertainty, these become alpha and beta shape parameters
     # in which case both have to be greater than 1.0
     # For a "Normal" or "Gaussian" uncertainty these become the mean and variance
-    parameter_A = 2
-    parameter_B = 2
+    parameter_A = 0
+    parameter_B = 1
 
     # Method for computing coefficients. Right now functionality is limited to
     # tensor grids. to do: THIS NEEDS TO BE CODED
@@ -49,7 +49,7 @@ def main():
     # Write out the properties for each "uq_parameter". You can have as many
     # as you like!
     uq_parameters = []
-    uq_parameter = PolynomialParam("Beta", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
+    uq_parameter = PolynomialParam("Gaussian", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
     uq_parameters.append(uq_parameter)
 
     print '****************************************************************'

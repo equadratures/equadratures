@@ -169,9 +169,7 @@ def getSparsePseudospectralCoefficients(self, function):
 
     for i in range(0,rows):
         orders = sparse_indices[i,:]
-
-        # Here we need to make the index set part of "self" a tensor grid!
-        K, I = getPseudospectralCoefficients(self.uq_parameters, function, orders)
+        K, I, F = getPseudospectralCoefficients(self.uq_parameters, function, orders)
         individual_tensor_indices[i] = I
         individual_tensor_coefficients[i] =  K
         indices[i,0] = len(I)
@@ -219,42 +217,49 @@ def getSparsePseudospectralCoefficients(self, function):
         if rows == 0:
             flag = 0
 
-    # For cleaning up!
-    print '************'
     indices_to_delete = np.arange(counter, sum_indices, 1)
     final_store = np.delete(final_store, indices_to_delete, axis=0)
 
     return final_store, indices_to_delete, sparse_indices
 
 # Tensor grid pseudospectral method
-def getPseudospectralCoefficients(stackOfParameters, function, *argv):
+def getPseudospectralCoefficients(stackOfParameters, function, additional_orders=None):
 
     dimensions = len(stackOfParameters)
     q0 = [1]
     Q = []
     orders = []
-    for i in range(0, dimensions):
-        # In the case where this function is called from the "Sparse" function
-        if len(sys.argv) > 1:
-            orders =  argv[0]
-            Qmatrix = PolynomialParam.getJacobiEigenvectors(stackOfParameters[i], orders[i])
-        # In the case where this function is called by the default call
-        else:
+
+    # If additional orders are provided, then use those!
+    if additional_orders is None:
+        for i in range(0, dimensions):
+            orders.append(stackOfParameters[i].order)
             Qmatrix = PolynomialParam.getJacobiEigenvectors(stackOfParameters[i])
-            orders.append(PolynomialParam.getOrder(stackOfParameters[i]))
+            Q.append(Qmatrix)
 
-        # Now append!
-        Q.append(Qmatrix)
+            if orders[i] == 1:
+                q0 = np.kron(q0, Qmatrix)
+            else:
+                q0 = np.kron(q0, Qmatrix[0,:])
 
-        if orders[i] == 1:
-            q0 = np.kron(q0, Qmatrix)
-        else:
-            q0 = np.kron(q0, Qmatrix[0,:])
 
+    else:
+        for i in range(0, dimensions):
+            orders.append(additional_orders[i])
+            Qmatrix = PolynomialParam.getJacobiEigenvectors(stackOfParameters[i], orders[i])
+            Q.append(Qmatrix)
+
+            if orders[i] == 1:
+                q0 = np.kron(q0, Qmatrix)
+            else:
+                q0 = np.kron(q0, Qmatrix[0,:])
 
     # Compute multivariate Gauss points and weights
-    p, w = getGaussianQuadrature(stackOfParameters, *argv)
-
+    p, w = getGaussianQuadrature(stackOfParameters, orders)
+    print orders
+    print 'gaussian quadrature points & weights'
+    print p, w
+    print '~~~~~~~~~~~~~~~'
     # Evaluate the first point to get the size of the system
     fun_value_first_point = function(p[0,:])
     u0 =  q0[0,0] * fun_value_first_point
@@ -271,11 +276,16 @@ def getPseudospectralCoefficients(stackOfParameters, function, *argv):
     for j in range(0, gn): # 0
         Uc[0,j]  = q0[0,j] * function_values[0,j]
 
+    # Compute the corresponding tensor grid index set:
+    tensor_grid_basis = IndexSet("tensor grid",  orders)
+    tensor_set = IndexSet.getIndexSet(tensor_grid_basis)
+
+
     # Now we use kronmult
     K = efficient_kron_mult(Q, Uc)
     F = function_values
 
-    return K,  F
+    return K, tensor_set, F
 
 # Efficient kronecker product multiplication
 # Adapted from David Gelich and Paul Constantine's kronmult.m
@@ -352,17 +362,19 @@ def getSubsampledGaussianQuadrature(self, subsampled_indices):
     return gauss_points, gauss_weights
 
 # Computes nD quadrature points and weights using a kronecker product
-def getGaussianQuadrature(stackOfParameters, *argv):
+def getGaussianQuadrature(stackOfParameters, additional_orders=None):
 
     # Initialize some temporary variables
     dimensions = int(len(stackOfParameters))
+    orders = []
 
-    if len(sys.argv) > 1:
-        orders = argv[0]
-    else:
-        orders = np.zeros((dimensions))
+    # Check for extra input argument!
+    if additional_orders is None:
         for i in range(0, dimensions):
-            orders[i] = stackOfParameters[i].order
+            orders.append(stackOfParameters[i].order)
+    else:
+        for i in range(0, dimensions):
+            orders.append(additional_orders[i])
 
     # Initialize points and weights
     pp = [1.0]
@@ -373,10 +385,7 @@ def getGaussianQuadrature(stackOfParameters, *argv):
     for u in range(0,dimensions):
 
         # Call to get local quadrature method (for dimension 'u')
-        local_points, local_weights = PolynomialParam.getLocalQuadrature(stackOfParameters[u], orders)
-
-        #if(dimensions == 1):
-        #    return local_points, local_weights
+        local_points, local_weights = PolynomialParam.getLocalQuadrature(stackOfParameters[u], orders[u])
 
         # Tensor product of the weights
         ww = np.kron(ww, local_weights)

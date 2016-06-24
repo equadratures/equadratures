@@ -4,11 +4,11 @@ from effective_quadratures.PolyParentFile import PolyParent
 from effective_quadratures.IndexSets import IndexSet
 import effective_quadratures.MatrixRoutines as matrix
 import effective_quadratures.ComputeStats as stats
+import effective_quadratures.Utils as utils
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import cm
 import numpy as np
-import numpy.ma as maogle
 import os
 """
 
@@ -28,7 +28,7 @@ def main():
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     INPUT SECTION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    order = 5
+    order = 15
     derivative_flag = 0 # derivative flag
     error_flag = 0
 
@@ -44,20 +44,16 @@ def main():
 
     # Method for computing coefficients. Right now functionality is limited to
     # tensor grids. to do: THIS NEEDS TO BE CODED
-    method = "tensor grid"
-    level = 3
+    method = "sparse grid"
+    level = 7
     growth_rule = "exponential"
+
     # Write out the properties for each "uq_parameter". You can have as many
     # as you like!
     uq_parameters = []
     uq_parameter1_to_3 = PolynomialParam("Uniform", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
     uq_parameters.append(uq_parameter1_to_3)
     uq_parameters.append(uq_parameter1_to_3)
-    #uq_parameters.append(uq_parameter1_to_3)
-    #uq_parameters.append(uq_parameter4_to_6)
-    #uq_parameters.append(uq_parameter4_to_6)
-    #uq_parameters.append(uq_parameter4_to_6)
-    #pts_for_plotting = np.linspace(min_value, max_value, 600)
 
 
     print '****************************************************************'
@@ -76,7 +72,7 @@ def main():
 
     # Create a PolyParent object!
     uq_structure = PolyParent(uq_parameters, method, level, growth_rule)
-    
+
     """
     pts, wts = PolyParent.getPointsAndWeights(uq_structure, level, growth_rule)
 
@@ -92,6 +88,7 @@ def main():
     mean, variance = stats.compute_mean_variance(X,I)
     print '---Pseudospectral coefficients---'
     print X
+    print '---Index set---'
     print I
     print '\n'
     print 'Mean: '+str(mean)
@@ -100,17 +97,12 @@ def main():
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     PLOTTING SECTION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    # Plot all the univariate polynomials:
-    #M = PolyParent.getMultivariatePoly(uq_structure, pts_for_plotting)
-    #color=iter(cm.rainbow(np.linspace(0,1,order)))
-    """
-    sparse_coefficients = spam.getSPAM_LSQRCoefficients(V, function, sparse_growth_rule, sparse_level)
-    x,y,z, max_order = twoDgrid(sparse_coefficients)
+    x,y,z, max_order = utils.twoDgrid(X,I)
 
     z = np.log10(np.abs(z))
-    Zm = ma.masked_where(np.isnan(z),z)
+    Zm = np.ma.masked_where(np.isnan(z),z)
     plt.pcolor(y,x, Zm, cmap='jet', vmin=-14, vmax=0)
-    plt.title('SPAM coefficients')
+    plt.title('Pseudospectral coefficients')
     plt.xlabel('i1')
     plt.ylabel('i2')
     plt.colorbar()
@@ -118,39 +110,5 @@ def main():
     plt.ylim(0,max_order)
     plt.show()
 
-
-def lineup(coefficients, index_set):
-    orders_length = len(index_set[0])
-    coefficient_array = np.zeros((len(coefficients), orders_length +1))
-    for i in range(0, len(coefficients)):
-        coefficient_array[i,0] = coefficients[i]
-        for j in range(0, orders_length):
-            coefficient_array[i,j+1] =  index_set[i,j]
-
-    return coefficient_array
-
-
-
-# Function just to help plotting!
-def twoDgrid(spam_coefficients):
-
-    max_order = int( np.max(spam_coefficients[:,1], axis=0) )
-
-    # Now create a tensor grid with this max. order
-    y, x = np.mgrid[0:max_order, 0:max_order]
-    z = (x*0 + y*0) + float('NaN')
-
-    # Now for each grid point, cycle through spam_coefficients and see if
-    # that grid point is present, if so, add the coefficient value to z.
-    for i in range(0, max_order):
-        for j in range(0, max_order):
-            x_entry = x[i,j]
-            y_entry = y[i,j]
-            for k in range(0, len(spam_coefficients)):
-                if(x_entry == spam_coefficients[k,1] and y_entry == spam_coefficients[k,2]):
-                    z[i,j] = spam_coefficients[k,0]
-
-    return x,y,z, max_order
-    """
 
 main()

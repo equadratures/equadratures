@@ -169,9 +169,7 @@ def getSparsePseudospectralCoefficients(self, function):
 
     for i in range(0,rows):
         orders = sparse_indices[i,:] + 1
-        K, I, F = getPseudospectralCoefficients(self.uq_parameters, function, orders)
-        print orders, I, K
-        print '---------------'
+        K, I = getPseudospectralCoefficients(self.uq_parameters, function, orders)
         individual_tensor_indices[i] = I
         individual_tensor_coefficients[i] =  K
         indices[i,0] = len(I)
@@ -222,7 +220,20 @@ def getSparsePseudospectralCoefficients(self, function):
     indices_to_delete = np.arange(counter, sum_indices, 1)
     final_store = np.delete(final_store, indices_to_delete, axis=0)
 
-    return final_store, indices_to_delete, sparse_indices
+    # Now split final store into coefficients and their index sets!
+    coefficients = np.zeros((1, len(final_store)))
+    for i in range(0, len(final_store)):
+        coefficients[0,i] = final_store[i,0]
+
+    # Splitting final_store to get the indices!
+    indices = final_store[:,1::]
+
+    # Now just double check to make sure they are all integers
+    for i in range(0, len(indices)):
+        for j in range(0, dimensions):
+            indices[i,j] = int(indices[i,j])
+
+    return coefficients, indices
 
 # Tensor grid pseudospectral method
 def getPseudospectralCoefficients(stackOfParameters, function, additional_orders=None):
@@ -289,7 +300,7 @@ def getPseudospectralCoefficients(stackOfParameters, function, additional_orders
     K = efficient_kron_mult(Q, Uc)
     F = function_values
 
-    return K, tensor_set, F
+    return K, tensor_set
 
 # Efficient kronecker product multiplication
 # Adapted from David Gelich and Paul Constantine's kronmult.m

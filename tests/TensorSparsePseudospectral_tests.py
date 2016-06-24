@@ -109,5 +109,64 @@ def main():
     #plt.ylabel('p(x)')
     #plt.title('Orthogonal polynomials')
     #plt.show()
+    
+    
+def main():
+    
+    
+    uq_parameter1 = PolynomialParam("Jacobi", -1, 1.0, 0, 0) # Uniform parameter on [-,1,1]
+    V = [uq_parameter1, uq_parameter1] # Two such params
+    sparse_growth_rule = 'exponential'
+    sparse_level = 7
+
+
+    sparse_coefficients = spam.getSPAM_LSQRCoefficients(V, function, sparse_growth_rule, sparse_level)
+    x,y,z, max_order = twoDgrid(sparse_coefficients)
+    
+    z = np.log10(np.abs(z))
+    Zm = ma.masked_where(np.isnan(z),z)
+    plt.pcolor(y,x, Zm, cmap='jet', vmin=-14, vmax=0)
+    plt.title('SPAM LSQR coefficients')
+    plt.xlabel('i1')
+    plt.ylabel('i2')
+    plt.colorbar()
+    plt.xlim(0,max_order)
+    plt.ylim(0,max_order)
+    plt.show()
+    
+    
+def lineup(coefficients, index_set):
+    orders_length = len(index_set[0])
+    coefficient_array = np.zeros((len(coefficients), orders_length +1))
+    for i in range(0, len(coefficients)):
+        coefficient_array[i,0] = coefficients[i]
+        for j in range(0, orders_length):
+            coefficient_array[i,j+1] =  index_set[i,j]
+ 
+    return coefficient_array
+     
+     
+     
+# Function just to help plotting!
+def twoDgrid(spam_coefficients):
+    
+    max_order = int( np.max(spam_coefficients[:,1], axis=0) )
+    
+    # Now create a tensor grid with this max. order
+    y, x = np.mgrid[0:max_order, 0:max_order]
+    z = (x*0 + y*0) + float('NaN')
+     
+    # Now for each grid point, cycle through spam_coefficients and see if
+    # that grid point is present, if so, add the coefficient value to z.
+    for i in range(0, max_order):
+        for j in range(0, max_order):
+            x_entry = x[i,j]
+            y_entry = y[i,j]
+            for k in range(0, len(spam_coefficients)):
+                if(x_entry == spam_coefficients[k,1] and y_entry == spam_coefficients[k,2]):
+                    z[i,j] = spam_coefficients[k,0]
+                    
+    return x,y,z, max_order
+
 
 main()

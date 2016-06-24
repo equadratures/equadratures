@@ -168,7 +168,7 @@ def getSparsePseudospectralCoefficients(self, function):
     indices = np.zeros((rows,1))
 
     for i in range(0,rows):
-        orders = sparse_indices[i,:]
+        orders = sparse_indices[i,:] + 1
         K, I, F = getPseudospectralCoefficients(self.uq_parameters, function, orders)
         print orders, I, K
         print '---------------'
@@ -276,7 +276,12 @@ def getPseudospectralCoefficients(stackOfParameters, function, additional_orders
         Uc[0,j]  = q0[0,j] * function_values[0,j]
 
     # Compute the corresponding tensor grid index set:
-    tensor_grid_basis = IndexSet("tensor grid",  orders)
+    order_correction = []
+    for i in range(0, len(orders)):
+        temp = orders[i] - 1
+        order_correction.append(temp)
+
+    tensor_grid_basis = IndexSet("tensor grid",  order_correction)
     tensor_set = IndexSet.getIndexSet(tensor_grid_basis)
 
 

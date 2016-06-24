@@ -45,7 +45,7 @@ def main():
     # Method for computing coefficients. Right now functionality is limited to
     # tensor grids. to do: THIS NEEDS TO BE CODED
     method = "sparse grid"
-    level = 7
+    level = 5
     growth_rule = "exponential"
 
     # Write out the properties for each "uq_parameter". You can have as many

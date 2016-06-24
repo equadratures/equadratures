@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-import sys
 import numpy as np
 from scipy.special import gamma
+import Utils as utils
 """
 
     The PolynomialParam Class
@@ -103,9 +103,9 @@ def recurrence_coefficients(self, order=None):
         param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
         param_B = self.shape_parameter_A - 1
         if(param_B <= 0):
-            error_function('ERROR: parameter_A (beta shape parameter A) must be greater than 1!')
+            utils.error_function('ERROR: parameter_A (beta shape parameter A) must be greater than 1!')
         if(param_A <= 0):
-            error_function('ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
+            utils.error_function('ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
         ab =  jacobi_recurrence_coefficients_01(param_A, param_B , order)
 
     elif self.param_type is "Uniform":
@@ -119,11 +119,11 @@ def recurrence_coefficients(self, order=None):
     elif self.param_type == "Gaussian" or self.param_type == "Normal":
         param_B = self.shape_parameter_B - 0.5
         if(param_B <= -0.5):
-            error_function('ERROR: parameter_B (variance) must be greater than 0')
+            utils.error_function('ERROR: parameter_B (variance) must be greater than 0')
         else:
             ab =  hermite_recurrence_coefficients(self.shape_parameter_A, param_B, order)
     else:
-        error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform or Beta')
+        utils.error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform or Beta')
 
     return ab
 
@@ -338,7 +338,3 @@ def orthoPolynomial_and_derivative(self, gridPoints, order=None):
     else:
         empty = np.mat([0])
         return orthopoly, empty
-
-def error_function(string_value):
-    print string_value
-    sys.exit()

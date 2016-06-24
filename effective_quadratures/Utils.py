@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import numpy as np
+import sys
 """
     Set of utility functions that are used throughout EFFECTIVE-QUADRATURES
 """
@@ -42,6 +43,22 @@ def evalfunction(points, function):
 
     return function_values
 
+# Simple function that removes duplicate rows from a matrix and returns the
+# deleted row indices
+def removeDuplicates(a):
+    order = np.lexsort(a.T)
+    a = a[order]
+    indices = []
+    diff = np.diff(a, axis=0)
+    ui = np.ones(len(a), 'bool')
+    ui[1:] = (diff != 0).any(axis=1)
+
+    # Save the indices
+    for i in range(0, len(ui)):
+        if(ui[i] == bool(1)):
+            indices.append(i)
+    return a[ui], indices
+
 def lineup(coefficients, index_set):
     orders_length = len(index_set[0])
     coefficient_array = np.zeros((len(coefficients), orders_length +1))
@@ -51,3 +68,19 @@ def lineup(coefficients, index_set):
             coefficient_array[i,j+1] =  index_set[i,j]
 
     return coefficient_array
+
+# A method that returns all the indicies that have the same elements as the index_value
+def find_repeated_elements(index_value, matrix):
+    i = index_value
+    selected_cell_indices = matrix[i,1::]
+    local_store = [i]
+    for j in range(0, len(matrix)):
+        if(j != any(local_store) and i!=j): # to get rid of repeats because of two for loop structure
+            if( all(matrix[j,1::] == selected_cell_indices)  ): # If all the indices match---i.e., the specific index is repeated
+                local_store = np.append(local_store, [j])
+    return local_store
+
+# An error function
+def error_function(string_value):
+    print string_value
+    sys.exit()

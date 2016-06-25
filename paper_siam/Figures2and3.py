@@ -13,12 +13,21 @@ import numpy.ma as maogle
 import os
 """
 
-    Testing Script for Effective Quadrature Suite of Tools
+    Plots for:
+    "Effective Quadrature Subsampling for Least Squares Polynomial Approximations"
+    Seshadri, P., Narayan, A., Mahadevan, S.
 
     Pranay Seshadri
     ps583@cam.ac.uk
 
     Copyright (c) 2016 by Pranay Seshadri
+
+    In this figure we plot the error in the pseudospectral coefficients
+    for a 2D tensor grid using basis terms from a 2D total order basis set.
+    Here we compare randomized quadrature with our technique. 
+    
+    
+    Wrap this up today!!!
 """
 # Simple analytical function
 def fun(x):
@@ -26,20 +35,17 @@ def fun(x):
 
 def main():
 
-    """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                    INPUT SECTION
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    order = 8
+    # Inputs
+    order_in_each_direction = 50
     derivative_flag = 0 # derivative flag
-    min_value, max_value = 0, 1
+    min_value, max_value = -1, 1
     q_parameter = 0.7
 
-    # Decide on the polynomial basis. We recommend total order or hyperbolic cross
-    # basis terms. First we create an index set object
-    hyperbolic_basis = IndexSet("hyperbolic cross", [order, order], q_parameter)
+    # We use a hyperbolic cross basis
+    hyperbolic_basis = IndexSet("total order", [order_in_each_direction, order_in_each_direction])
     maximum_number_of_evals = IndexSet.getCardinality(hyperbolic_basis)
 
-    # The "UQ" parameters
+    # Uniform parameters between [-1,1]
     uq_parameters = []
     uniform_parameter = PolynomialParam("Uniform", min_value, max_value, [], [] , derivative_flag, order)
     uq_parameters.append(uniform_parameter)
@@ -49,9 +55,6 @@ def main():
     effectiveQuads = EffectiveSubsampling(uq_parameters, hyperbolic_basis, derivative_flag)
     A, pts = EffectiveSubsampling.getAs(effectiveQuads, maximum_number_of_evals)
 
-    print 'Dimensions of big A'
-    print len(A)
-    print len(A[0,:])
 
     """
     ------------------------------------------------------------------------
@@ -99,3 +102,45 @@ def main():
     print xfull
 
 main()
+
+
+# Then create the A matrix using a subset of columns
+# Compute A and C matrices and solve the full least squares problem
+A, C, gaussPoints = PolynomialParam.getAmatrix(uq_parameter1)
+b = fun(gaussPoints, derivative_flag, error_flag)
+
+# Normalize these!
+Aweighted , NormFactor = matrix.rowNormalize(A)
+bweighted = np.dot(NormFactor, b)
+
+# "REAL" solution
+x_true = matrix.solveLeastSquares(Aweighted, bweighted)
+
+# Get the function values at ALL points!
+function_values = fun(gaussPoints, derivative_flag, error_flag)
+
+for basis_subsamples in range(2,highest_order):
+    for quadrature_subsamples in range(2,highest_order):
+
+        # Now compute the "optimal" subsamples from this grid!
+        P = matrix.QRColumnPivoting( A[:, 0 : quadrature_subsamples] )
+        optimal = P[ 0 : quadrature_subsamples]
+
+        # Now take the first "evaluations_user_can_afford" rows from P
+        Asquare = A[optimal, 0 : basis_subsamples]
+        bsquare = b[optimal]
+        rows, cols = Asquare.shape
+
+        # Normalize these!
+        Asquare, smallNormFactor = matrix.rowNormalize(Asquare)
+        bsquare = np.dot(smallNormFactor, bsquare)
+
+
+        # Solve least squares problem only if rank is not degenrate!
+        if(np.linalg.matrix_rank(Asquare) == cols):
+            # Solve the least squares problem
+            x = matrix.solveLeastSquares(Asquare, bsquare)
+            store_error[basis_subsamples,quadrature_subsamples] = np.linalg.norm( x - x_true[0:basis_subsamples])
+
+            # Compute the condition numbers of these matrices!
+            store_cond[basis_subsamples, quadrature_subsamples] = np.linalg.cond(Asquare)

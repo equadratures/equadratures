@@ -2,7 +2,7 @@
 from PolyParams import PolynomialParam
 from IndexSets import IndexSet
 import numpy as np
-import sys
+import Utils as utils
 """
 
     Polyparent Class
@@ -67,8 +67,11 @@ class PolyParent(object):
     def getCoefficients(self, function):
         if self.method == "tensor grid" or self.method == "Tensor grid":
             return getPseudospectralCoefficients(self.uq_parameters, function)
-        if self.method == "sparse grid" or self.method == "Sparse grid":
+        if self.method == "spam" or self.method == "Spam":
             return getSparsePseudospectralCoefficients(self, function)
+        if self.method == "sparse grid" or self.method == "Sparse grid":
+            print('WARNING: Use spam as a method instead!')
+            return getSparseCoefficientsViaIntegration(self, function)
 
     def getPointsAndWeights(self, *argv):
         if self.method == "tensor grid" or self.method == "Tensor grid":
@@ -79,7 +82,7 @@ class PolyParent(object):
                 level =  argv[0]
                 growth_rule = argv[1]
             else:
-                error_function('ERROR: To compute the points of a sparse grid integration rule, level and growth rule are required.')
+                utils.error_function('ERROR: To compute the points of a sparse grid integration rule, level and growth rule are required.')
 
             level = self.level
             growth_rule = self.growth_rule
@@ -91,7 +94,7 @@ class PolyParent(object):
                             PRIVATE FUNCTIONS
 
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-def sparsegrid(uq_parameters, indexSetObject, level, growth_rule):
+def sparsegrid(uq_parameters, indexSetObject):
 
     # Get the sparse indices
     dimensions = len(uq_parameters)
@@ -126,25 +129,40 @@ def sparsegrid(uq_parameters, indexSetObject, level, growth_rule):
     dims1 = int( len(points_store) / dimensions )
     points_store = np.reshape(points_store, ( dims1, dimensions ) )
 
-    points_store, unique_indices = removeDuplicates(points_store)
+    points_store, unique_indices = utils.removeDuplicates(points_store)
     return points_store, weights_store[unique_indices]
 
-# Simple function that removes duplicate rows from a matrix and returns the
-# deleted row indices
-def removeDuplicates(a):
-    order = np.lexsort(a.T)
-    a = a[order]
-    indices = []
-    diff = np.diff(a, axis=0)
-    ui = np.ones(len(a), 'bool')
-    ui[1:] = (diff != 0).any(axis=1)
 
-    # Save the indices
-    for i in range(0, len(ui)):
-        if(ui[i] == bool(1)):
-            indices.append(i)
-    return a[ui], indices
+# Do not use the function below. It is provided here only for illustrative purposes.
+# SPAM should be used!
+def getSparseCoefficientsViaIntegration(self, function):
 
+    # Preliminaries
+    stackOfParameters = self.uq_parameters
+    indexSets = self.index_sets
+    level = self.level
+    growth_rule = self.growth_rule
+    dimensions = len(stackOfParameters)
+    sparse_indices, sparse_factors, sg_set_full = IndexSet.getIndexSet(indexSets)
+    rows = len(sg_set_full)
+
+    # Sparse grid integration rule
+    pts, wts = sparsegrid(stackOfParameters, indexSets)
+    Wdiag = np.diag(wts)
+
+    # Get multivariate orthogonal polynomial according to the index set
+    P = getMultiOrthoPoly(self, pts, sg_set_full)
+    f = utils.evalfunction(function, pts)
+    f = np.mat(f)
+
+    coefficients = np.zeros((rows, 1))
+    for i in range(0,rows):
+        coefficients[i,0] = np.mat(P[i,:]) * Wdiag * f.T
+
+    return coefficients, sg_set_full
+
+
+# The SPAM technique!
 def getSparsePseudospectralCoefficients(self, function):
 
     # INPUTS
@@ -168,9 +186,7 @@ def getSparsePseudospectralCoefficients(self, function):
     indices = np.zeros((rows,1))
 
     for i in range(0,rows):
-        orders = sparse_indices[i,:]
-
-        # Here we need to make the index set part of "self" a tensor grid!
+        orders = sparse_indices[i,:] + 1
         K, I = getPseudospectralCoefficients(self.uq_parameters, function, orders)
         individual_tensor_indices[i] = I
         individual_tensor_coefficients[i] =  K
@@ -197,8 +213,9 @@ def getSparsePseudospectralCoefficients(self, function):
 
     final_store = np.zeros((sum_indices, dimensions + 1))
     while(flag != 0):
+
         # find the repeated indices
-        rep = find_repeated_elements(index_to_pick, store)
+        rep = utils.find_repeated_elements(index_to_pick, store)
         coefficient_value = 0.0
 
         # Sum up all the coefficient values
@@ -219,41 +236,57 @@ def getSparsePseudospectralCoefficients(self, function):
         if rows == 0:
             flag = 0
 
-    # For cleaning up!
-    print '************'
     indices_to_delete = np.arange(counter, sum_indices, 1)
     final_store = np.delete(final_store, indices_to_delete, axis=0)
 
-    return final_store, indices_to_delete, sparse_indices
+    # Now split final store into coefficients and their index sets!
+    coefficients = np.zeros((1, len(final_store)))
+    for i in range(0, len(final_store)):
+        coefficients[0,i] = final_store[i,0]
+
+    # Splitting final_store to get the indices!
+    indices = final_store[:,1::]
+
+    # Now just double check to make sure they are all integers
+    for i in range(0, len(indices)):
+        for j in range(0, dimensions):
+            indices[i,j] = int(indices[i,j])
+
+    return coefficients, indices
 
 # Tensor grid pseudospectral method
-def getPseudospectralCoefficients(stackOfParameters, function, *argv):
+def getPseudospectralCoefficients(stackOfParameters, function, additional_orders=None):
 
     dimensions = len(stackOfParameters)
     q0 = [1]
     Q = []
     orders = []
-    for i in range(0, dimensions):
-        # In the case where this function is called from the "Sparse" function
-        if len(sys.argv) > 1:
-            orders =  argv[0]
-            Qmatrix = PolynomialParam.getJacobiEigenvectors(stackOfParameters[i], orders[i])
-        # In the case where this function is called by the default call
-        else:
+
+    # If additional orders are provided, then use those!
+    if additional_orders is None:
+        for i in range(0, dimensions):
+            orders.append(stackOfParameters[i].order )
             Qmatrix = PolynomialParam.getJacobiEigenvectors(stackOfParameters[i])
-            orders.append(PolynomialParam.getOrder(stackOfParameters[i]))
+            Q.append(Qmatrix)
 
-        # Now append!
-        Q.append(Qmatrix)
+            if orders[i] == 1:
+                q0 = np.kron(q0, Qmatrix)
+            else:
+                q0 = np.kron(q0, Qmatrix[0,:])
 
-        if orders[i] == 1:
-            q0 = np.kron(q0, Qmatrix)
-        else:
-            q0 = np.kron(q0, Qmatrix[0,:])
+    else:
+        for i in range(0, dimensions):
+            orders.append(additional_orders[i])
+            Qmatrix = PolynomialParam.getJacobiEigenvectors(stackOfParameters[i], orders[i])
+            Q.append(Qmatrix)
 
+            if orders[i] == 1:
+                q0 = np.kron(q0, Qmatrix)
+            else:
+                q0 = np.kron(q0, Qmatrix[0,:])
 
     # Compute multivariate Gauss points and weights
-    p, w = getGaussianQuadrature(stackOfParameters, *argv)
+    p, w = getGaussianQuadrature(stackOfParameters, orders)
 
     # Evaluate the first point to get the size of the system
     fun_value_first_point = function(p[0,:])
@@ -271,11 +304,21 @@ def getPseudospectralCoefficients(stackOfParameters, function, *argv):
     for j in range(0, gn): # 0
         Uc[0,j]  = q0[0,j] * function_values[0,j]
 
+    # Compute the corresponding tensor grid index set:
+    order_correction = []
+    for i in range(0, len(orders)):
+        temp = orders[i] - 1
+        order_correction.append(temp)
+
+    tensor_grid_basis = IndexSet("tensor grid",  order_correction)
+    tensor_set = IndexSet.getIndexSet(tensor_grid_basis)
+
+
     # Now we use kronmult
     K = efficient_kron_mult(Q, Uc)
     F = function_values
 
-    return K,  F
+    return K, tensor_set
 
 # Efficient kronecker product multiplication
 # Adapted from David Gelich and Paul Constantine's kronmult.m
@@ -352,17 +395,19 @@ def getSubsampledGaussianQuadrature(self, subsampled_indices):
     return gauss_points, gauss_weights
 
 # Computes nD quadrature points and weights using a kronecker product
-def getGaussianQuadrature(stackOfParameters, *argv):
+def getGaussianQuadrature(stackOfParameters, additional_orders=None):
 
     # Initialize some temporary variables
     dimensions = int(len(stackOfParameters))
+    orders = []
 
-    if len(sys.argv) > 1:
-        orders = argv[0]
-    else:
-        orders = np.zeros((dimensions))
+    # Check for extra input argument!
+    if additional_orders is None:
         for i in range(0, dimensions):
-            orders[i] = stackOfParameters[i].order
+            orders.append(stackOfParameters[i].order)
+    else:
+        for i in range(0, dimensions):
+            orders.append(additional_orders[i])
 
     # Initialize points and weights
     pp = [1.0]
@@ -373,10 +418,7 @@ def getGaussianQuadrature(stackOfParameters, *argv):
     for u in range(0,dimensions):
 
         # Call to get local quadrature method (for dimension 'u')
-        local_points, local_weights = PolynomialParam.getLocalQuadrature(stackOfParameters[u], orders)
-
-        #if(dimensions == 1):
-        #    return local_points, local_weights
+        local_points, local_weights = PolynomialParam.getLocalQuadrature(stackOfParameters[u], orders[u])
 
         # Tensor product of the weights
         ww = np.kron(ww, local_weights)
@@ -411,55 +453,39 @@ def getGaussianQuadrature(stackOfParameters, *argv):
 # determines a multivariate orthogonal polynomial corresponding to the stackOfParameters,
 # their corresponding orders and then evaluates the polynomial at the corresponding
 # stackOfPoints.
-def getMultiOrthoPoly(self, stackOfPoints):
+def getMultiOrthoPoly(self, stackOfPoints, index_set_alternate=None):
 
     # "Unpack" parameters from "self"
     stackOfParameters = self.uq_parameters
-    index_set = self.indexsets
+
+    # Now if the user has provided an alternate index set, we use that one.
+    if index_set_alternate is None:
+        index_set = self.indexsets
+    else:
+        index_set = index_set_alternate
 
     dimensions = len(stackOfParameters)
     p = {}
 
     # Save time by returning if univariate!
     if(dimensions == 1):
+        # Here "V" is the derivative. Need to change if we want to use multivariate
+        # derivative polynomial.
         poly , V =  PolynomialParam.getOrthoPoly(stackOfParameters[0], stackOfPoints)
         return poly
     else:
         for i in range(0, dimensions):
-            p[i] = PolynomialParam.getOrthoPoly( stackOfParameters[i], stackOfPoints[:,i])
+            print int(np.max(index_set[:,i]))
+            p[i] = PolynomialParam.getOrthoPoly(stackOfParameters[i], stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
 
     # Now we multiply components according to the index set
     no_of_points = len(stackOfPoints)
+    print no_of_points
     polynomial = np.zeros((len(index_set), no_of_points))
     for i in range(0, len(index_set)):
         temp = np.ones((1, no_of_points))
         for k in range(0, dimensions):
-            polynomial[i,:] = p[k][int(index_set[i,k])] * temp
+            polynomial[i,:] = p[k][0][int(index_set[i,k])] * temp
             temp = polynomial[i,:]
 
     return polynomial
-
-# A method that returns all the indicies that have the same elements as the index_value
-def find_repeated_elements(index_value, matrix):
-    i = index_value
-    selected_cell_indices = matrix[i,1::]
-    local_store = [i]
-    for j in range(0, len(matrix)):
-        if(j != any(local_store) and i!=j): # to get rid of repeats because of two for loop structure
-            if( all(matrix[j,1::] == selected_cell_indices)  ): # If all the indices match---i.e., the specific index is repeated
-                local_store = np.append(local_store, [j])
-    return local_store
-
-# Method for getting a vector of function evaluations!
-def evalfunction(function, points):
-    function_values = np.zeros((1,len(points)))
-
-    # For loop through all the points
-    for i in range(0, len(points)):
-        function_values[0,i] = function(points[i,:])
-
-    return function_values
-
-def error_function(string_value):
-    print string_value
-    sys.exit()

@@ -1,6 +1,5 @@
 #!/usr/bin/python
 from PolyParams import PolynomialParam
-
 import PolyMethod as polmeth
 import IndexSets as isets
 import numpy as np
@@ -18,6 +17,8 @@ import numpy as np
 
     Pranay Seshadri
     ps583@cam.ac.uk
+
+    NEED TO RE-WRITE
 
 """
 def SparseGrid(Parameters, level, growth_rule):

@@ -147,7 +147,7 @@ def getSparseCoefficientsViaIntegration(self, function):
     rows = len(sg_set_full)
 
     # Sparse grid integration rule
-    pts, wts = sparsegrid(stackOfParameters, indexSet)
+    pts, wts = sparsegrid(stackOfParameters, indexSets)
     Wdiag = np.diag(wts)
 
     # Get multivariate orthogonal polynomial according to the index set
@@ -475,15 +475,17 @@ def getMultiOrthoPoly(self, stackOfPoints, index_set_alternate=None):
         return poly
     else:
         for i in range(0, dimensions):
-            p[i] = PolynomialParam.getOrthoPoly( stackOfParameters[i], stackOfPoints[:,i])
+            print int(np.max(index_set[:,i]))
+            p[i] = PolynomialParam.getOrthoPoly(stackOfParameters[i], stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
 
     # Now we multiply components according to the index set
     no_of_points = len(stackOfPoints)
+    print no_of_points
     polynomial = np.zeros((len(index_set), no_of_points))
     for i in range(0, len(index_set)):
         temp = np.ones((1, no_of_points))
         for k in range(0, dimensions):
-            polynomial[i,:] = p[k][int(index_set[i,k])] * temp
+            polynomial[i,:] = p[k][0][int(index_set[i,k])] * temp
             temp = polynomial[i,:]
 
     return polynomial

@@ -6,8 +6,6 @@ import numpy as np
 """
     Integration utilities.
 """
-
-
 def sparseGrid(listOfParameters, indexSet):
 
     # Get the number of parameters
@@ -30,7 +28,8 @@ def sparseGrid(listOfParameters, indexSet):
             orders[i,j] = np.array(sparse_index[i][j])
 
         # points and weights for each order~
-        points, weights = PolyParent.getPointsAndWeights(listOfParameters, orders[i,:])
+        tensorObject = PolyParent(listOfParameters, method="tensor grid")
+        points, weights = PolyParent.getPointsAndWeights(tensorObject, orders[i,:])
 
         # Multiply weights by constant 'a':
         weights = weights * a[i]
@@ -60,10 +59,11 @@ def tensorGrid(listOfParameters, indexSet=None):
         max_orders = IndexSet.getMaxOrders(indexSet)
 
     # Call the gaussian quadrature routine
-    points, weights = PolyParent.getPointsAndWeights(listOfParameters, max_orders)
+    tensorObject = PolyParent(listOfParameters, method="tensor grid")
+    points, weights = PolyParent.getPointsAndWeights(tensorObject)
 
     # Multiply by the factor
-    weights = weights * scaleWeights(uqParameters)
+    weights = weights * scaleWeights(listOfParameters)
 
     return points, weights
 
@@ -73,7 +73,7 @@ def scaleWeights(listOfParameters):
     factor = 0
     dimensions = len(listOfParameters)
     for k in range(0, dimensions):
-        if(listOfParameters[i].param_type == 'Uniform' or listOfParameters[i].param_type == 'Beta' ):
+        if(listOfParameters[k].param_type == 'Uniform' or listOfParameters[k].param_type == 'Beta' ):
             factor = (listOfParameters[k].upper_bound - listOfParameters[k].lower_bound) + factor
 
     # Final check.

@@ -59,9 +59,14 @@ class PolyParent(object):
             print('WARNING: Use spam as a method instead!')
             return getSparseCoefficientsViaIntegration(self, function)
 
-    def getPointsAndWeights(self):
-        if self.method == "tensor grid" or self.method == "Tensor grid":
-            return getGaussianQuadrature(self.uq_parameters)
+    def getPointsAndWeights(self, overwrite_orders=None):
+        if overwrite_orders is not None:
+            if self.method == "tensor grid" or self.method == "Tensor grid":
+                return getGaussianQuadrature(self.uq_parameters, overwrite_orders)
+        else:
+            if self.method == "tensor grid" or self.method == "Tensor grid":
+                return getGaussianQuadrature(self.uq_parameters)
+                
         if self.method == "sparse grid" or self.method == "Sparse grid":
             indexSets = self.index_sets
             level = self.level

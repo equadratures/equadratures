@@ -74,6 +74,7 @@ class IndexSet(object):
         return getindexsetvalues(self)
 
 def getindexsetvalues(self):
+
     name = self.index_set_type
     if name == "total order":
         index_set = total_order_index_set(self.orders)
@@ -146,7 +147,6 @@ def total_order_index_set(orders):
 def sparse_grid_index_set(level, growth_rule, dimensions):
 
     # Initialize a few parameters for the setup
-    print level, growth_rule, dimensions
     lhs = int(level) + 1
     rhs = int(level) + dimensions
 

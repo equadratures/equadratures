@@ -4,6 +4,7 @@ from effective_quadratures.PolyParentFile import PolyParent
 from effective_quadratures.IndexSets import IndexSet
 import effective_quadratures.Integrals as integrals
 import effective_quadratures.Utils as utils
+import matplotlib.pyplot as plt
 import numpy as np
 """
     Testing integration rules.
@@ -12,63 +13,51 @@ import numpy as np
 def main():
 
     # Uq parameters setup.
-    order = 4
+    order = 8
     derivative_flag = 0 # derivative flag
     min_value = -1
     max_value = 1
     parameter_A = 0
     parameter_B = 0
-    uq_parameters = []
-    uq_parameterx = PolynomialParam("Uniform", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
-    uq_parameters.append(uq_parameterx)
-    uq_parameters.append(uq_parameterx)
+
+    first_parameter = PolynomialParam("Uniform", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
+    second_parameter = PolynomialParam("Uniform", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
+    uq_parameters = [first_parameter, second_parameter]
 
     # Index set setup - don't need one for a tensor grid...but do need one for a sparse grid.
     tensorgridObject = IndexSet("tensor grid", [order, order])
-    #sparsegridObject = IndexSet("sparse grid",  3, "exponential", 2)
+    sparsegridObject = IndexSet("sparse grid", [], 3, "exponential", 2)
 
     # Get the points and weights!
-    #sg_pts, sg_wts = integrals.sparseGrid(uq_parameters, sparsegridObject)
+    sg_pts, sg_wts = integrals.sparseGrid(uq_parameters, sparsegridObject)
     tg_pts, tg_wts = integrals.tensorGrid(uq_parameters, tensorgridObject)
 
-    tensor_int = utils.evalfunction(tg_pts, function) * np.mat(tg_wts)
-    #sparse_int = utils.evalfunction(sg_pts, function) * np.mat(sg_wts)
-    """
-    wts = np.mat(wts)
-    wts = wts.T
+    tensor_int = np.mat(tg_wts) * utils.evalfunction(tg_pts, function)
+    sparse_int = np.mat(sg_wts) * utils.evalfunction(sg_pts, function)
 
-    # Inputs for a tensor grid
-    tensor_orders = [7,7]
-    pts2, wts2 = integrals.TensorGrid(V, tensor_orders)
-    wts2 = np.mat(wts2)
-    wts2 = wts2.T
+    print 'Integrals'
+    print tensor_int
+    print sparse_int
 
     # Plot sparse grid
-    plt.scatter(pts[:,0], pts[:,1], s=20, c='r', marker='o')
-    plt.xlabel('x')
-    plt.ylabel('y')
+    plt.scatter(sg_pts[:,0], sg_pts[:,1], s=70, c='r', marker='o')
+    plt.xlabel('first parameter')
+    plt.ylabel('second parameter')
     plt.title('Sparse grid points')
-    plt.xlim(-1,1)
-    plt.ylim(-1,1)
+    plt.xlim(min_value,max_value)
+    plt.ylim(min_value,max_value)
     plt.show()
 
     # Plot tensor grid
-    plt.scatter(pts2[:,0], pts2[:,1], s=20, c='b', marker='o')
-    plt.xlabel('x')
-    plt.ylabel('y')
+    plt.scatter(tg_pts[:,0], tg_pts[:,1], s=70, c='b', marker='o')
+    plt.xlabel('first parameter')
+    plt.ylabel('second_parameter')
     plt.title('Tensor points')
-    plt.xlim(-1,1)
-    plt.ylim(-1,1)
-    plt.savefig('foo.pdf')
+    plt.xlim(min_value,max_value)
+    plt.ylim(min_value,max_value)
     plt.show()
 
-    # Comparing integration:
-    tensor_int = evalfunction(pts2) * wts2
-    sparse_int = evalfunction(pts) * wts
 
-    print(sparse_int)
-    print(tensor_int)
-    """
 # Model or function!
 def function(x):
     return np.exp(x[0] + x[1])

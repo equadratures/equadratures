@@ -434,13 +434,13 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 
 # (Optional) Logo. Should be small enough to fit the navbar (ideally 24x24).
 # Path should be relative to the ``_static`` files directory.
-html_logo = "my_logo.png"
+#html_logo = "my_logo.png"
 
 # Theme options are theme-specific and customize the look and feel of a
 # theme further.
 html_theme_options = {
     # Navigation bar title. (Default: ``project`` value)
-    'navbar_title': "Demo",
+    'navbar_title': "Effective-Quadratures",
     
     # Tab name for entire site. (Default: "Site")
     'navbar_site_name': "Site",

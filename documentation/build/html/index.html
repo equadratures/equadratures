@@ -47,8 +47,8 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#"><img src="_static/my_logo.png">
-          Demo</a>
+        <a class="navbar-brand" href="#">
+          Effective-Quadratures</a>
         <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
       </div>
 
@@ -67,9 +67,7 @@
      href="#">Site <b class="caret"></b></a>
   <ul class="dropdown-menu globaltoc"
       role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul class="simple">
-</ul>
-</ul>
+      aria-labelledby="dLabelGlobalToc"></ul>
 </li>
               
                 <li class="dropdown">
@@ -81,8 +79,21 @@
   <ul class="dropdown-menu localtoc"
       role="menu"
       aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">Effective-Quadratures</a></li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#">Effective-Quadratures</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#polyparams-class">PolyParams() class</a></li>
+<li><a class="reference internal" href="#indexsets-class">IndexSets() class</a></li>
+<li><a class="reference internal" href="#polyparent-class">PolyParent() class</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#integration">Integration</a></li>
+<li><a class="reference internal" href="#optimization">Optimization</a></li>
+<li><a class="reference internal" href="#computestats">ComputeStats</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </ul>
 </li>
@@ -124,20 +135,69 @@
       
   <div class="section" id="effective-quadratures">
 <h1>Effective-Quadratures<a class="headerlink" href="#effective-quadratures" title="Permalink to this headline">¶</a></h1>
-<p>Suite of tools for everything polynomial
-Contents:</p>
-<div class="toctree-wrapper compound">
-<ul class="simple">
-</ul>
+<p>Effective-Quadratures is a suite of tools for generating polynomials for approximation, uncertainty quantification, optimization and integration. This is a research code designed for the development and testing for techniques in the areas listed above. The documentation in these pages covers the code&#8217;s main functionality and its use. All functions are coded in python, so this code is not designed for speed &#8211; however it does</p>
+<p>There are three principal building blocks in Effective-Quadratures. These are the parameter(s), the index set (polynomial basis) and the method. Both the parameter(s) and the index set are classes with a set of attributes while the method is simply given as a string. Below we detail all of these.</p>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="polyparams-class">
+<h3>PolyParams() class<a class="headerlink" href="#polyparams-class" title="Permalink to this headline">¶</a></h3>
+<p>All definitions in Effective-Quadratures are centered</p>
+</div>
+<div class="section" id="indexsets-class">
+<h3>IndexSets() class<a class="headerlink" href="#indexsets-class" title="Permalink to this headline">¶</a></h3>
+<p>Talk about indexset class</p>
+</div>
+<div class="section" id="polyparent-class">
+<h3>PolyParent() class<a class="headerlink" href="#polyparent-class" title="Permalink to this headline">¶</a></h3>
+<p>A PolyParent object takes in two or three inputs, depending on what exactly the user wants. For pseudospectral tensor and sparse grid related computations, the user does not need to input the additional index_set parameter. This is only to be used in case of a least squares type coefficient estimate, where the basis terms may be different from quadrature point evaluations.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">effective_quadratures.PolyParentFile</span> <span class="k">import</span> <span class="n">PolyParent</span>
+
+<span class="n">PolyParent</span><span class="p">(</span><span class="n">uq_parameters</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">index_sets</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Existing methods include:</p>
+<ol class="arabic simple">
+<li><em>Sparse grid</em></li>
+<li><em>SPAM</em> <a href="#id3"><span class="problematic" id="id4"><span id="id1"></span>[#f1]_</span></a>.yada</li>
+<li><em>Tensor grid</em></li>
+<li><em>Least squares</em> (using either tensor or sparse grids)</li>
+</ol>
+<p>Below are several ways this object can be called</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Sparse grid integration rule based method (do not use)</span>
+<span class="n">PolyParent</span><span class="p">(</span><span class="n">uq_parameters</span><span class="p">,</span> <span class="s2">&quot;Sparse grid&quot;</span><span class="p">,</span> <span class="n">index_sets</span><span class="p">)</span>
+
+<span class="c1"># Sparse pseudospectral approximation method</span>
+<span class="n">PolyParent</span><span class="p">(</span><span class="n">uq_parameters</span><span class="p">,</span> <span class="s2">&quot;SPAM&quot;</span><span class="p">,</span> <span class="n">index_sets</span><span class="p">)</span>
+
+<span class="c1"># Tensor grid pseudospectral method</span>
+<span class="n">PolyParent</span><span class="p">(</span><span class="n">uq_parameters</span><span class="p">,</span> <span class="s2">&quot;Tensor grid&quot;</span><span class="p">)</span>
+
+<span class="c1"># Least squares using a tensor grid basis with tensor grid quadrature points</span>
+<span class="n">PolyParent</span><span class="p">(</span><span class="n">uq_parameters</span><span class="p">,</span> <span class="s2">&quot;Least squares&quot;</span><span class="p">)</span>
+
+<span class="c1"># Least squares using a non-tensor grid basis with tensor grid quadrature points</span>
+<span class="n">PolyParent</span><span class="p">(</span><span class="n">uq_parameters</span><span class="p">,</span> <span class="s2">&quot;Least squares&quot;</span><span class="p">,</span> <span class="n">index_sets</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For other least squares type problems, we use the Effectively Subsampled Class.</p>
 </div>
 </div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
-<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
-<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
-</ul>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="integration">
+<h3>Integration<a class="headerlink" href="#integration" title="Permalink to this headline">¶</a></h3>
+<p>Talk about integrals</p>
+</div>
+<div class="section" id="optimization">
+<h3>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="computestats">
+<h3>ComputeStats<a class="headerlink" href="#computestats" title="Permalink to this headline">¶</a></h3>
+<p>Something goes here...</p>
+<p class="rubric">References</p>
+<p>[#f1] Constantine, Paul G., Michael S. Eldred, and Eric T. Phipps. &#8220;Sparse pseudospectral approximation method.&#8221; Computer Methods in Applied Mechanics and Engineering 229 (2012): 1-12.</p>
+</div>
+</div>
 </div>
 
 

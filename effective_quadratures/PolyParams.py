@@ -69,7 +69,6 @@ class PolynomialParam(object):
         return jacobiEigenvectors(self, *argv)
 
     def getOrthoPoly(self, points, *argv):
-        "---- MAKE CHANGES HERE --- NEED ADDITIONAL ARGS"
         return orthoPolynomial_and_derivative(self, points, *argv)
 
     def getLocalQuadrature(self, order):

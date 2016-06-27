@@ -4,13 +4,7 @@ import scipy.linalg as sc
 
 
 """
-    Should I change this into a class?
-
-
-    Pranay Seshadri
-    University of Cambridge
-    ps583 <at> cam.ac.uk
-
+    Useful matrix routines.
 """
 # Compute the pivot columns
 def QRColumnPivoting(A):

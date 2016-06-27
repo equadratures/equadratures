@@ -21,7 +21,8 @@ gurobi.log
 *.egg
 *.egg-info
 dist
-build
+source
+*_
 eggs
 parts
 bin

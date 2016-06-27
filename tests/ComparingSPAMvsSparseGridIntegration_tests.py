@@ -38,7 +38,7 @@ def main():
     uq_parameters = [first_parameter, second_parameter]
 
     # Index set setup
-    sparsegridObject = IndexSet("sparse grid", [], 6, "exponential", 2)
+    sparsegridObject = IndexSet("sparse grid", [], 7, "exponential", 2)
 
 
     # Create a PolyParent object!
@@ -49,6 +49,7 @@ def main():
 
     # Compute stats.
     mean, variance = stats.compute_mean_variance(X,I)
+    print mean, variance
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     PLOTTING SECTION

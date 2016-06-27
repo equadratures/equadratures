@@ -141,6 +141,9 @@ def getSparseCoefficientsViaIntegration(self, function):
     pts, wts, sg_set_full = sparseGrid(stackOfParameters, indexSets)
     Wdiag = np.diag(wts)
 
+    sg_set_full, repeated_indices = utils.removeDuplicates(sg_set_full)
+    print sg_set_full
+
     # Get multivariate orthogonal polynomial according to the index set
     P = getMultiOrthoPoly(self, pts, sg_set_full)
     f = utils.evalfunction(pts, function)
@@ -151,9 +154,10 @@ def getSparseCoefficientsViaIntegration(self, function):
     coefficients = np.zeros((1, rows))
 
     # To best double check this -- why not use a tensor grid rule ??
-    print P[:,0]
+    # I'm still not happy with this!!! Double check points & weights!
     for i in range(0,rows):
-        coefficients[0,i] = np.mat(P[i,:]) * Wdiag * f
+        coefficients[0,i] = np.mat(P[i,:]) * Wdiag * f * 1/8
+    #    print coefficients[0,i]
 
     return coefficients, sg_set_full
 

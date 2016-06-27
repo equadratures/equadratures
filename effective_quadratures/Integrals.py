@@ -6,22 +6,15 @@ import numpy as np
 """
     Integration utilities.
 """
-def sparseGrid(uqStructure, indexSet):
-
-    # Get the sparse indices
-    uq_para = uqStructure.uq_parameters
-    indexSets = uqStructure.index_sets
-    level = uqStructure.level
-    growth_rule = uqStructure.growth_rule
-    dimensions = len(stackOfParameters)
-    sparse_indices, sparse_factors, sg_set_full = IndexSet.getIndexSet(indexSets)
 
 
+def sparseGrid(listOfParameters, indexSet):
 
-    dimensions = len(uq_parameters)
-    sparse_index, a , sg_set = IndexSet.getIndexSet(indexSetObject)
+    # Get the number of parameters
+    dimensions = len(listOfParameters)
 
-    # Compute the corresponding Gauss quadrature points and weights
+    # Get the sparse index set attributes
+    sparse_index, a , sg_set = IndexSet.getIndexSet(indexSet)
     rows = len(sparse_index)
 
     # Get this into an array
@@ -37,16 +30,17 @@ def sparseGrid(uqStructure, indexSet):
             orders[i,j] = np.array(sparse_index[i][j])
 
         # points and weights for each order~
-        points, weights = PolyParent.getPointsAndWeights(uqStructure)
+        points, weights = PolyParent.getPointsAndWeights(listOfParameters, orders[i,:])
 
         # Multiply weights by constant 'a':
-        weights = scaleWeights(uqParameters) * weights * a[i]
+        weights = weights * a[i]
 
         # Now store point sets ---> scratch this, use append instead!!!!
         for k in range(0, len(points)):
             points_store = np.append(points_store, points[k,:], axis=0)
             weights_store = np.append(weights_store, weights[k])
 
+    weights_store = scaleWeights(listOfParameters) * weights_store
     dims1 = int( len(points_store) / dimensions )
     points_store = np.reshape(points_store, ( dims1, dimensions ) )
 
@@ -54,19 +48,19 @@ def sparseGrid(uqStructure, indexSet):
     #return points_store, weights_store[unique_indices]
     return points_store, weights_store
 
-def tensorGrid(uqStructure):
+def tensorGrid(listOfParameters, indexSet=None):
 
     # Get the tensor indices
-    dimensions = len(uq_parameters)
-    all_indices = IndexSet.getIndexSet(indexSetObject)
-
-    # Just get the highest order in each direction
+    dimensions = len(listOfParameters)
     max_orders = []
-    for u in range(0, dimensions):
-        max_orders.append(int(np.max(all_indices[:,u]) ) )
+    if indexSet is None:
+        for u in range(0, dimensions):
+            max_orders.append(int(np.max(all_indices[:,u]) ) )
+    else:
+        max_orders = IndexSet.getMaxOrders(indexSet)
 
     # Call the gaussian quadrature routine
-    points, weights = PolyParent.getPointsAndWeights(uqParameters, max_orders)
+    points, weights = PolyParent.getPointsAndWeights(listOfParameters, max_orders)
 
     # Multiply by the factor
     weights = weights * scaleWeights(uqParameters)
@@ -75,11 +69,12 @@ def tensorGrid(uqStructure):
 
 # Returns the overall scaling factor associated with the uqParameters depending
 # on their distribution type and their ranges!
-def scaleWeights(uqParameters):
+def scaleWeights(listOfParameters):
     factor = 0
+    dimensions = len(listOfParameters)
     for k in range(0, dimensions):
-        if(uqParameters[i].param_type == 'Uniform' or uqParameters[i].param_type == 'Beta' ):
-            factor = (Parameters[k].upper_bound - Parameters[k].lower_bound) + factor
+        if(listOfParameters[i].param_type == 'Uniform' or listOfParameters[i].param_type == 'Beta' ):
+            factor = (listOfParameters[k].upper_bound - listOfParameters[k].lower_bound) + factor
 
     # Final check.
     if factor == 0:

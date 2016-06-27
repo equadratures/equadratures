@@ -30,7 +30,7 @@ class IndexSet(object):
                                 constructor / initializer
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
-    def __init__(self, index_set_type, orders, level=None, growth_rule=None):
+    def __init__(self, index_set_type, orders, level=None, growth_rule=None, dimension=None):
         self.index_set_type = index_set_type # string
         self.orders =  orders # we store order as an array!
 
@@ -46,6 +46,13 @@ class IndexSet(object):
         else:
             self.growth_rule = growth_rule
 
+        # Check for problem dimensionality (only for sparse grids)
+        if dimension is None:
+            self.dimension = []
+        else:
+            self.dimension = dimension
+
+
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 get() methods
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
@@ -60,16 +67,18 @@ class IndexSet(object):
     def getOrders(self):
         return self.orders
 
+    def getMaxOrders(self):
+        return self.orders
+
     def getIndexSet(self):
         return getindexsetvalues(self)
 
 def getindexsetvalues(self):
-    dimensions = len(self.orders)
     name = self.index_set_type
     if name == "total order":
         index_set = total_order_index_set(self.orders)
     elif name == "sparse grid":
-        sparse_index, a, SG_set = sparse_grid_index_set(dimensions, self.level, self.growth_rule) # Note sparse grid rule depends on points!
+        sparse_index, a, SG_set = sparse_grid_index_set(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
         return sparse_index, a, SG_set
     elif name == "tensor grid":
         index_set = tensor_grid_index_set(self.orders )
@@ -134,9 +143,10 @@ def total_order_index_set(orders):
 
 
 
-def sparse_grid_index_set(dimensions, level, growth_rule):
+def sparse_grid_index_set(level, growth_rule, dimensions):
 
     # Initialize a few parameters for the setup
+    print level, growth_rule, dimensions
     lhs = int(level) + 1
     rhs = int(level) + dimensions
 

@@ -24,15 +24,15 @@ def main():
     uq_parameters.append(uq_parameterx)
 
     # Index set setup - don't need one for a tensor grid...but do need one for a sparse grid.
-    tensorgridObject = PolyParent(uq_parameters, "tensor grid")
-    sparsegridObject = PolyParent(uq_parameters, "sparse grid",  3, "exponential")
+    tensorgridObject = IndexSet("tensor grid", [order, order])
+    #sparsegridObject = IndexSet("sparse grid",  3, "exponential", 2)
 
     # Get the points and weights!
-    sg_pts, sg_wts = integrals.sparseGrid(sparsegridObject)
-    tg_pts, tg_wts = integrals.tensorGrid(tensorgridObject)
+    #sg_pts, sg_wts = integrals.sparseGrid(uq_parameters, sparsegridObject)
+    tg_pts, tg_wts = integrals.tensorGrid(uq_parameters, tensorgridObject)
 
     tensor_int = utils.evalfunction(tg_pts, function) * np.mat(tg_wts)
-    sparse_int = utils.evalfunction(sg_pts, function) * np.mat(sg_wts)
+    #sparse_int = utils.evalfunction(sg_pts, function) * np.mat(sg_wts)
     """
     wts = np.mat(wts)
     wts = wts.T

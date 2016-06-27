@@ -15,6 +15,11 @@ class PolyParent(object):
     """
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 constructor / initializer
+
+
+     PolyParent object.
+        Two inputs:
+            1. uq_parameters:
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
     def __init__(self, uq_parameters, method, index_sets=None):

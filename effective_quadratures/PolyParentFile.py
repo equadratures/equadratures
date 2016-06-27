@@ -129,9 +129,9 @@ def sparsegrid(uq_parameters, indexSetObject):
     dims1 = int( len(points_store) / dimensions )
     points_store = np.reshape(points_store, ( dims1, dimensions ) )
 
-    points_store, unique_indices = utils.removeDuplicates(points_store)
-    return points_store, weights_store[unique_indices]
-
+    #points_store, unique_indices = utils.removeDuplicates(points_store)
+    #return points_store, weights_store[unique_indices]
+    return points_store, weights_store
 
 # Do not use the function below. It is provided here only for illustrative purposes.
 # SPAM should be used!
@@ -152,12 +152,29 @@ def getSparseCoefficientsViaIntegration(self, function):
 
     # Get multivariate orthogonal polynomial according to the index set
     P = getMultiOrthoPoly(self, pts, sg_set_full)
-    f = utils.evalfunction(function, pts)
+    print len(P)
+    print len(P[0,:])
+    print rows
+
+    f = utils.evalfunction(pts, function)
     f = np.mat(f)
 
-    coefficients = np.zeros((rows, 1))
+    # Allocate memory for the coefficients
+    coefficients = np.zeros((1, rows))
+
+    print 'Sparse grid points & weights'
+    print pts, wts
+    print len(pts), len(wts), len(f)
+    print rows
+    print P[0,:]
+    "-----bug below----------"
+    " Are the indices we use here unique? "
+    " why do we have 350 vs 588???"
     for i in range(0,rows):
-        coefficients[i,0] = np.mat(P[i,:]) * Wdiag * f.T
+        coefficients[0,i] = np.mat(P[i,:]) * Wdiag * f
+    print '~~~~~~~~~~~~~~~~~~~~~~~~~'
+
+    print coefficients, sg_set_full
 
     return coefficients, sg_set_full
 

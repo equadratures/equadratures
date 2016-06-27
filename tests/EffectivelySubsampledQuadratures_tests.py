@@ -47,7 +47,7 @@ def main():
 
     # Define the EffectiveSubsampling object and get "A"
     effectiveQuads = EffectiveSubsampling(uq_parameters, hyperbolic_basis, derivative_flag)
-    A, pts = EffectiveSubsampling.getAs(effectiveQuads, maximum_number_of_evals)
+    A, pts = EffectiveSubsampling.getAsubsampled(effectiveQuads, maximum_number_of_evals)
 
     print 'Dimensions of big A'
     print len(A)

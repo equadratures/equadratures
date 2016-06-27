@@ -28,7 +28,7 @@ def main():
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     INPUT SECTION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    order = 15
+    order = 4
     derivative_flag = 0 # derivative flag
     error_flag = 0
 
@@ -45,7 +45,7 @@ def main():
     # Method for computing coefficients. Right now functionality is limited to
     # tensor grids. to do: THIS NEEDS TO BE CODED
     method = "sparse grid"
-    level = 5
+    level = 7
     growth_rule = "exponential"
 
     # Write out the properties for each "uq_parameter". You can have as many
@@ -87,9 +87,9 @@ def main():
     X , I  = PolyParent.getCoefficients(uq_structure, fun)
     mean, variance = stats.compute_mean_variance(X,I)
     print '---Pseudospectral coefficients---'
-    print X
+    #print X
     print '---Index set---'
-    print I
+    #print I
     print '\n'
     print 'Mean: '+str(mean)
     print 'Variance: '+str(variance)

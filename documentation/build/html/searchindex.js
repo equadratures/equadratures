@@ -1,0 +1,1 @@
+Search.setIndex({envversion:49,filenames:["index"],objects:{},objnames:{},objtypes:{},terms:{content:0,everyth:0,index:0,modul:0,page:0,polynomi:0,search:0,suit:0,tool:0},titles:["Effective-Quadratures"],titleterms:{document:[],effectiv:0,indice:0,quadratur:0,tabl:0,welcom:[]}})

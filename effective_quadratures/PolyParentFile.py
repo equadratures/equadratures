@@ -40,9 +40,8 @@ class PolyParent(object):
                 self.index_sets = indexObject
         else:
 
-            if(method == "sparse grid" or method == "Sparse grid"):
-                indexObject = IndexSet(method, highest_orders, level, growth_rule)
-                self.index_sets = indexObject
+            if(method == "sparse grid" or method == "Sparse grid" or method == "spam" or method == "SPAM"):
+                self.index_sets = index_sets
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     get() methods
@@ -66,7 +65,7 @@ class PolyParent(object):
         else:
             if self.method == "tensor grid" or self.method == "Tensor grid":
                 return getGaussianQuadrature(self.uq_parameters)
-                
+
         if self.method == "sparse grid" or self.method == "Sparse grid":
             indexSets = self.index_sets
             level = self.level
@@ -79,32 +78,80 @@ class PolyParent(object):
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 # Do not use the function below. It is provided here only for illustrative purposes.
 # SPAM should be used!
+def sparseGrid(listOfParameters, indexSet):
+
+    # Get the number of parameters
+    dimensions = len(listOfParameters)
+
+    # Get the sparse index set attributes
+    sparse_index, a , sg_set = IndexSet.getIndexSet(indexSet)
+    rows = len(sparse_index)
+
+    # Get this into an array
+    orders = np.zeros((rows, dimensions))
+    points_store = []
+    weights_store = []
+    factor = 1
+
+    for i in range(0, rows):
+
+        # loop through the dimensions
+        for j in range(0, dimensions):
+            orders[i,j] = np.array(sparse_index[i][j])
+
+        # points and weights for each order~
+        tensorObject = PolyParent(listOfParameters, method="tensor grid")
+        points, weights = PolyParent.getPointsAndWeights(tensorObject, orders[i,:])
+
+        # Multiply weights by constant 'a':
+        weights = weights * a[i]
+
+        # Now store point sets ---> scratch this, use append instead!!!!
+        for k in range(0, len(points)):
+            points_store = np.append(points_store, points[k,:], axis=0)
+            weights_store = np.append(weights_store, weights[k])
+
+    weights_store = scaleWeights(listOfParameters) * weights_store
+    dims1 = int( len(points_store) / dimensions )
+    points_store = np.reshape(points_store, ( dims1, dimensions ) )
+
+    # Now if there are duplicates, we would like to remove the duplicate points,
+    # but add the weights.
+    #points_unique, unique_indices = utils.removeDuplicates(points_store)
+    #counter = np.ones((len(points_unique), 1))
+    #for i in range(0, len(points_unique)):
+    #    for j in range(0, len(points_store)):
+    #        if( points_unique[i,:] == points_store[j,:] ):
+    #            counter[i,0] = counter[i,0] + 1
+
+    #print counter
+
+    # Figure out how many times the
+    #return points_store, weights_store[unique_indices]
+    return points_store, weights_store, sg_set
+
 def getSparseCoefficientsViaIntegration(self, function):
 
     # Preliminaries
     stackOfParameters = self.uq_parameters
     indexSets = self.index_sets
-    level = self.level
-    growth_rule = self.growth_rule
     dimensions = len(stackOfParameters)
-    sparse_indices, sparse_factors, sg_set_full = IndexSet.getIndexSet(indexSets)
-    rows = len(sg_set_full)
 
     # Sparse grid integration rule
-    pts, wts = sparsegrid(stackOfParameters, indexSets)
+    pts, wts, sg_set_full = sparseGrid(stackOfParameters, indexSets)
     Wdiag = np.diag(wts)
 
     # Get multivariate orthogonal polynomial according to the index set
     P = getMultiOrthoPoly(self, pts, sg_set_full)
-    print len(P)
-    print len(P[0,:])
-    print rows
-
     f = utils.evalfunction(pts, function)
     f = np.mat(f)
 
     # Allocate memory for the coefficients
+    rows = len(sg_set_full)
     coefficients = np.zeros((1, rows))
+
+    # To best double check this -- why not use a tensor grid rule ??
+    print P[:,0]
     for i in range(0,rows):
         coefficients[0,i] = np.mat(P[i,:]) * Wdiag * f
 
@@ -395,3 +442,16 @@ def getMultiOrthoPoly(self, stackOfPoints, index_set_alternate=None):
             temp = polynomial[i,:]
 
     return polynomial
+
+def scaleWeights(listOfParameters):
+    factor = 0
+    dimensions = len(listOfParameters)
+    for k in range(0, dimensions):
+        if(listOfParameters[k].param_type == 'Uniform' or listOfParameters[k].param_type == 'Beta' ):
+            factor = (listOfParameters[k].upper_bound - listOfParameters[k].lower_bound) + factor
+
+    # Final check.
+    if factor == 0:
+        factor = 1
+
+    return factor

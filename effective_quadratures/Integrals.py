@@ -6,7 +6,7 @@ import numpy as np
 """
     Integration utilities.
 """
-def sparseGrid(uqStructure):
+def sparseGrid(uqStructure, indexSet):
 
     # Get the sparse indices
     uq_para = uqStructure.uq_parameters

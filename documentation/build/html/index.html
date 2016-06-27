@@ -80,7 +80,9 @@
       role="menu"
       aria-labelledby="dLabelLocalToc"><ul>
 <li><a class="reference internal" href="#">Effective-Quadratures</a><ul>
-<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#quick-start-guide">Quick Start Guide</a></li>
+<li><a class="reference internal" href="#advanced-guide">Advanced Guide</a></li>
+<li><a class="reference internal" href="#under-the-hood-the-classes">Under the hood: the classes()</a><ul>
 <li><a class="reference internal" href="#polyparams-class">PolyParams() class</a></li>
 <li><a class="reference internal" href="#indexsets-class">IndexSets() class</a></li>
 <li><a class="reference internal" href="#polyparent-class">PolyParent() class</a></li>
@@ -135,21 +137,73 @@
       
   <div class="section" id="effective-quadratures">
 <h1>Effective-Quadratures<a class="headerlink" href="#effective-quadratures" title="Permalink to this headline">¶</a></h1>
-<p>Effective-Quadratures is a suite of tools for generating polynomials for approximation, uncertainty quantification, optimization and integration. This is a research code designed for the development and testing for techniques in the areas listed above. The documentation in these pages covers the code&#8217;s main functionality and its use. All functions are coded in python, so this code is not designed for speed &#8211; however it does</p>
+<p>Effective-Quadratures is a suite of tools for generating polynomials for parametric computational studies. These polynomials may be used to compute approximations to scientific models or more specifically for uncertainty quantification, optimization and numerical integration. This is a research code designed for the development and testing of new polynomial techniques in the areas listed above. The documentation in these pages covers the code&#8217;s main functionality and its use. All functions are coded in python, so as such this code is not designed for speed. Our motivation for using python is to make this package easily accessible to engineers and scientists, regardless of their scientific computation prowess.</p>
 <p>There are three principal building blocks in Effective-Quadratures. These are the parameter(s), the index set (polynomial basis) and the method. Both the parameter(s) and the index set are classes with a set of attributes while the method is simply given as a string. Below we detail all of these.</p>
-<div class="section" id="classes">
-<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="quick-start-guide">
+<h2>Quick Start Guide<a class="headerlink" href="#quick-start-guide" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>How do I compute statistics of a model?</li>
+<li>How do I integrate a function?</li>
+<li>How do I get a polynomial approximation of my model?</li>
+<li>How do I plot my model&#8217;s coefficients?</li>
+</ol>
+</div>
+<div class="section" id="advanced-guide">
+<h2>Advanced Guide<a class="headerlink" href="#advanced-guide" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>How do I use the compressed sensing utlities?</li>
+<li>How do I use effective quadrature subsampling?</li>
+<li>How do I leverage gradients from my model?</li>
+</ol>
+</div>
+<div class="section" id="under-the-hood-the-classes">
+<h2>Under the hood: the classes()<a class="headerlink" href="#under-the-hood-the-classes" title="Permalink to this headline">¶</a></h2>
+<p>Below we detail the various classes and their functionalities. Understanding the structures of these classes is key to leveraging the full range of</p>
 <div class="section" id="polyparams-class">
 <h3>PolyParams() class<a class="headerlink" href="#polyparams-class" title="Permalink to this headline">¶</a></h3>
-<p>All definitions in Effective-Quadratures are centered</p>
+<p>All polynomials generated in Effective-Quadratures are orthonormal according to some weight.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot; An uncertain parameter.</span>
+<span class="sd">Attributes:</span>
+<span class="sd">    param_type: The distribution associated with the parameter</span>
+<span class="sd">    lower_bound: Lower bound of the parameter</span>
+<span class="sd">    upper_bound: Upper bound of the parameter</span>
+<span class="sd">    shape_parameter_A: Value of the first shape parameter</span>
+<span class="sd">    shape_parameter_B: Value of the second shape parameter</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_type</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="p">,</span> <span class="n">shape_parameter_B</span><span class="p">,</span> <span class="n">derivative_flag</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
+</pre></div>
+</div>
+<p>Below we provide a few examples for how to declare such an object:</p>
 </div>
 <div class="section" id="indexsets-class">
 <h3>IndexSets() class<a class="headerlink" href="#indexsets-class" title="Permalink to this headline">¶</a></h3>
-<p>Talk about indexset class</p>
+<p>The IndexSet() class is used to establish the basis terms involved in the polynomial computation. The class constructor requires two inputs and also takes in two additional inputs:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">effective_quadratures.IndexSets</span> <span class="k">import</span> <span class="n">IndexSet</span>
+<span class="c1"># Constructor definition</span>
+<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_set_type</span><span class="p">,</span> <span class="n">orders</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">growth_rule</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">index_set_type:</th><td class="field-body"><em>(String)</em> The type of index set. Options incldue &#8220;Tensor grid&#8221;, &#8220;Total order&#8221;, &#8220;Hyperbolic cross&#8221; and &#8220;Sparse grid&#8221;</td>
+</tr>
+<tr class="field-even field"><th class="field-name">order:</th><td class="field-body"><em>(List of integers)</em> The maximum order along each dimension</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">level:</th><td class="field-body"><em>(Integer)</em> The level of a sparse grid</td>
+</tr>
+<tr class="field-even field"><th class="field-name">growth_rule:</th><td class="field-body"><em>(String)</em> The growth strategy for a sparse grid. Options include &#8220;exponential&#8221; and &#8220;linear&#8221;</td>
+</tr>
+</tbody>
+</table>
+<p>Subsequent indented lines comprise
+the body of the sidebar, and are
+interpreted as body elements.</p>
 </div>
 <div class="section" id="polyparent-class">
 <h3>PolyParent() class<a class="headerlink" href="#polyparent-class" title="Permalink to this headline">¶</a></h3>
-<p>A PolyParent object takes in two or three inputs, depending on what exactly the user wants. For pseudospectral tensor and sparse grid related computations, the user does not need to input the additional index_set parameter. This is only to be used in case of a least squares type coefficient estimate, where the basis terms may be different from quadrature point evaluations.</p>
+<p>A PolyParent object takes in two or three inputs, depending on the chosen method. For pseudospectral tensor and sparse grid related computations, the user does not need to input the additional index_set parameter. This is only to be used in case of a least squares type coefficient estimate, where the basis terms may be different from quadrature point evaluations.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">effective_quadratures.PolyParentFile</span> <span class="k">import</span> <span class="n">PolyParent</span>
 
 <span class="n">PolyParent</span><span class="p">(</span><span class="n">uq_parameters</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">index_sets</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -184,16 +238,33 @@
 </div>
 <div class="section" id="functions">
 <h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<p>We can use polynomials for integration, optimization and statistics computations.</p>
 <div class="section" id="integration">
 <h3>Integration<a class="headerlink" href="#integration" title="Permalink to this headline">¶</a></h3>
-<p>Talk about integrals</p>
+<p>How do we numerically compute the integral of a function? The integration function has a few routines that may be used for numerical computation of an integral. Below we present a few sample calls</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">effective_quadratures.Integrals</span> <span class="k">as</span> <span class="nn">int</span>
+
+<span class="s2">&quot;------------Sparse grid routines------------&quot;</span>
+<span class="n">points</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">sparseGrid</span><span class="p">(</span><span class="n">uqParameters</span><span class="p">,</span> <span class="n">indexSet</span><span class="p">)</span>
+
+<span class="s2">&quot;------------Tensor grid routines------------&quot;</span>
+<span class="c1"># Call below will use the order associated with each uqParameter</span>
+<span class="n">points</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">tensorGrid</span><span class="p">(</span><span class="n">listOfParameters</span><span class="p">)</span>
+<span class="c1"># Call below will use the order associated with the index set</span>
+<span class="n">points</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">tensorGrid</span><span class="p">(</span><span class="n">listOfParameters</span><span class="p">,</span> <span class="n">listOfOrders</span><span class="p">)</span>
+
+<span class="s2">&quot;------------Scattered data sets------------&quot;</span>
+<span class="n">points</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">scatteredPoints</span><span class="p">(</span><span class="n">x_data</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="optimization">
 <h3>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">¶</a></h3>
+<p>Optimize a model by assuming it can be well represented by a polynomial surrogate. For global models with constraints we resort to basic least squares ideas with reguarlization. For local models we use a trust region strategy.</p>
 </div>
 <div class="section" id="computestats">
 <h3>ComputeStats<a class="headerlink" href="#computestats" title="Permalink to this headline">¶</a></h3>
-<p>Something goes here...</p>
+<p>This is the main uncertainty quantification function. In addition to computing moments, we should also provide a PDF.</p>
 <p class="rubric">References</p>
 <p>[#f1] Constantine, Paul G., Michael S. Eldred, and Eric T. Phipps. &#8220;Sparse pseudospectral approximation method.&#8221; Computer Methods in Applied Mechanics and Engineering 229 (2012): 1-12.</p>
 </div>

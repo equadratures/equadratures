@@ -7,6 +7,9 @@
 # figs directory
 figs/
 
+# docs directory
+documentation/
+
 # test data
 
 # *.npz

@@ -21,7 +21,6 @@ def sparseGrid(listOfParameters, indexSet):
     weights_store = []
     factor = 1
 
-    print '--------Sparse Grid---------'
     for i in range(0, rows):
 
         # loop through the dimensions
@@ -30,10 +29,7 @@ def sparseGrid(listOfParameters, indexSet):
 
         # points and weights for each order~
         tensorObject = PolyParent(listOfParameters, method="tensor grid")
-
-        print orders[i,:]
         points, weights = PolyParent.getPointsAndWeights(tensorObject, orders[i,:] + 1)
-        print len(points)
 
         # Multiply weights by constant 'a':
         weights = weights * a[i]

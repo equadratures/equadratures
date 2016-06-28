@@ -73,6 +73,14 @@ class PolyParent(object):
             sparse_indices, sparse_factors, not_used = IndexSet.getIndexSet(indexSets)
             return sparsegrid(self.uq_parameters, self.index_sets, level, growth_rule)
 
+    def getPolynomialApproximation(self, pts):
+        if s
+
+
+
+        
+        return getOrthoPolyApprox(self, pts)
+
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                             PRIVATE FUNCTIONS
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
@@ -112,7 +120,6 @@ def sparseGrid(listOfParameters, indexSet):
     weights_store = []
     factor = 1
 
-    print 'Sparse grid -------------'
     for i in range(0, rows):
 
         # loop through the dimensions
@@ -121,8 +128,6 @@ def sparseGrid(listOfParameters, indexSet):
 
         # points and weights for each order~
         tensorObject = PolyParent(listOfParameters, method="tensor grid")
-
-        print orders[i,:]
         points, weights = PolyParent.getPointsAndWeights(tensorObject, orders[i,:] + 1) # Changed!!!!!!!!!!!!!
 
         # Multiply weights by constant 'a':
@@ -175,10 +180,9 @@ def getSparseCoefficientsViaIntegration(self, function):
     rows = len(sg_set_full)
     coefficients = np.zeros((1, rows))
 
-    # To best double check this -- why not use a tensor grid rule ??
-    # I'm still not happy with this!!! Double check points & weights!
+    # I multiply by P[0,:] because my zeroth order polynomial is not 1.0
     for i in range(0,rows):
-        coefficients[0,i] = np.mat(P[i,:]) * Wdiag * np.diag(P[0,:]) * f 
+        coefficients[0,i] = np.mat(P[i,:]) * Wdiag * np.diag(P[0,:]) * f
 
     return coefficients, sg_set_full
 
@@ -453,12 +457,10 @@ def getMultiOrthoPoly(self, stackOfPoints, index_set_alternate=None):
         return poly
     else:
         for i in range(0, dimensions):
-            print int(np.max(index_set[:,i]))
             p[i] = PolynomialParam.getOrthoPoly(stackOfParameters[i], stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
 
     # Now we multiply components according to the index set
     no_of_points = len(stackOfPoints)
-    print no_of_points
     polynomial = np.zeros((len(index_set), no_of_points))
     for i in range(0, len(index_set)):
         temp = np.ones((1, no_of_points))
@@ -468,15 +470,6 @@ def getMultiOrthoPoly(self, stackOfPoints, index_set_alternate=None):
 
     return polynomial
 
-def scaleWeights(listOfParameters):
-    factor = 0
-    dimensions = len(listOfParameters)
-    for k in range(0, dimensions):
-        if(listOfParameters[k].param_type == 'Uniform' or listOfParameters[k].param_type == 'Beta' ):
-            factor = (listOfParameters[k].upper_bound - listOfParameters[k].lower_bound) + factor
-
-    # Final check.
-    if factor == 0:
-        factor = 1
-
-    return factor
+def getPolynomialApproximation(self, pts):
+    P = getMultiOrthoPoly(self, pts)
+    coefficients =

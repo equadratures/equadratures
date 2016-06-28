@@ -26,7 +26,7 @@ def main():
 
     # Index set setup - don't need one for a tensor grid...but do need one for a sparse grid.
     tensorgridObject = IndexSet("tensor grid", [order, order])
-    sparsegridObject = IndexSet("sparse grid", [], 3, "exponential", 2)
+    sparsegridObject = IndexSet("sparse grid", [], 7, "exponential", 2)
 
     # Get the points and weights!
     sg_pts, sg_wts = integrals.sparseGrid(uq_parameters, sparsegridObject)

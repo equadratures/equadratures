@@ -78,6 +78,25 @@ class PolyParent(object):
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 # Do not use the function below. It is provided here only for illustrative purposes.
 # SPAM should be used!
+def tensorGrid(listOfParameters, indexSet=None):
+
+    # Get the tensor indices
+    dimensions = len(listOfParameters)
+    max_orders = []
+    if indexSet is None:
+        for u in range(0, dimensions):
+            max_orders.append(int(listOfParameters[u].order) )
+    else:
+        max_orders = IndexSet.getMaxOrders(indexSet)
+
+    # Call the gaussian quadrature routine
+    tensorObject = PolyParent(listOfParameters, method="tensor grid")
+    points, weights = PolyParent.getPointsAndWeights(tensorObject)
+
+    return points, weights
+
+
+
 def sparseGrid(listOfParameters, indexSet):
 
     # Get the number of parameters
@@ -93,6 +112,7 @@ def sparseGrid(listOfParameters, indexSet):
     weights_store = []
     factor = 1
 
+    print 'Sparse grid -------------'
     for i in range(0, rows):
 
         # loop through the dimensions
@@ -101,7 +121,9 @@ def sparseGrid(listOfParameters, indexSet):
 
         # points and weights for each order~
         tensorObject = PolyParent(listOfParameters, method="tensor grid")
-        points, weights = PolyParent.getPointsAndWeights(tensorObject, orders[i,:])
+
+        print orders[i,:]
+        points, weights = PolyParent.getPointsAndWeights(tensorObject, orders[i,:] + 1) # Changed!!!!!!!!!!!!!
 
         # Multiply weights by constant 'a':
         weights = weights * a[i]
@@ -111,7 +133,6 @@ def sparseGrid(listOfParameters, indexSet):
             points_store = np.append(points_store, points[k,:], axis=0)
             weights_store = np.append(weights_store, weights[k])
 
-    weights_store = scaleWeights(listOfParameters) * weights_store
     dims1 = int( len(points_store) / dimensions )
     points_store = np.reshape(points_store, ( dims1, dimensions ) )
 
@@ -139,15 +160,16 @@ def getSparseCoefficientsViaIntegration(self, function):
 
     # Sparse grid integration rule
     pts, wts, sg_set_full = sparseGrid(stackOfParameters, indexSets)
-    Wdiag = np.diag(wts)
 
-    sg_set_full, repeated_indices = utils.removeDuplicates(sg_set_full)
-    print sg_set_full
 
     # Get multivariate orthogonal polynomial according to the index set
+    #del pts, wts
+    #pts, wts = tensorGrid(stackOfParameters)
+
     P = getMultiOrthoPoly(self, pts, sg_set_full)
     f = utils.evalfunction(pts, function)
     f = np.mat(f)
+    Wdiag = np.diag(wts)
 
     # Allocate memory for the coefficients
     rows = len(sg_set_full)
@@ -156,8 +178,7 @@ def getSparseCoefficientsViaIntegration(self, function):
     # To best double check this -- why not use a tensor grid rule ??
     # I'm still not happy with this!!! Double check points & weights!
     for i in range(0,rows):
-        coefficients[0,i] = np.mat(P[i,:]) * Wdiag * f * 1/8
-    #    print coefficients[0,i]
+        coefficients[0,i] = np.mat(P[i,:]) * Wdiag * np.diag(P[0,:]) * f 
 
     return coefficients, sg_set_full
 

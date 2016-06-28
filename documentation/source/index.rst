@@ -21,6 +21,7 @@ Advanced Guide
 1. How do I use the compressed sensing utlities?
 2. How do I use effective quadrature subsampling?
 3. How do I leverage gradients from my model?
+4. What is the difference between sparse grid integration and SPAM?
 
 
 Under the hood: the classes()

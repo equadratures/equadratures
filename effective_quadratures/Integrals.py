@@ -21,6 +21,7 @@ def sparseGrid(listOfParameters, indexSet):
     weights_store = []
     factor = 1
 
+    print '--------Sparse Grid---------'
     for i in range(0, rows):
 
         # loop through the dimensions
@@ -29,7 +30,10 @@ def sparseGrid(listOfParameters, indexSet):
 
         # points and weights for each order~
         tensorObject = PolyParent(listOfParameters, method="tensor grid")
-        points, weights = PolyParent.getPointsAndWeights(tensorObject, orders[i,:])
+
+        print orders[i,:]
+        points, weights = PolyParent.getPointsAndWeights(tensorObject, orders[i,:] + 1)
+        print len(points)
 
         # Multiply weights by constant 'a':
         weights = weights * a[i]
@@ -39,7 +43,6 @@ def sparseGrid(listOfParameters, indexSet):
             points_store = np.append(points_store, points[k,:], axis=0)
             weights_store = np.append(weights_store, weights[k])
 
-    weights_store = scaleWeights(listOfParameters) * weights_store
     dims1 = int( len(points_store) / dimensions )
     points_store = np.reshape(points_store, ( dims1, dimensions ) )
 
@@ -54,16 +57,13 @@ def tensorGrid(listOfParameters, indexSet=None):
     max_orders = []
     if indexSet is None:
         for u in range(0, dimensions):
-            max_orders.append(int(np.max(all_indices[:,u]) ) )
+            max_orders.append(int(listOfParameters[u].order) )
     else:
         max_orders = IndexSet.getMaxOrders(indexSet)
 
     # Call the gaussian quadrature routine
     tensorObject = PolyParent(listOfParameters, method="tensor grid")
     points, weights = PolyParent.getPointsAndWeights(tensorObject)
-
-    # Multiply by the factor
-    weights = weights * scaleWeights(listOfParameters)
 
     return points, weights
 

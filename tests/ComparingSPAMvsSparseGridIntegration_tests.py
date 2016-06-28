@@ -26,7 +26,7 @@ def fun(x):
 def main():
 
     # Uq parameters setup.
-    order = 8
+    order = 5
     derivative_flag = 0 # derivative flag
     min_value = -1
     max_value = 1
@@ -58,7 +58,7 @@ def main():
 
     z = np.log10(np.abs(z))
     Zm = np.ma.masked_where(np.isnan(z),z)
-    plt.pcolor(y,x, Zm, cmap='jet', vmin=-13, vmax=0)
+    plt.pcolor(y,x, Zm, cmap='jet', vmin=-15, vmax=0)
     plt.title('Pseudospectral coefficients')
     plt.xlabel('i1')
     plt.ylabel('i2')

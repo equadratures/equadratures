@@ -74,11 +74,12 @@ class PolyParent(object):
             return sparsegrid(self.uq_parameters, self.index_sets, level, growth_rule)
 
     def getPolynomialApproximation(self, pts):
-        if s
+        if self.method == "sparse grid" or self.method == "Sparse grid":
+            print('WARNING: Use spam as a method instead!')
 
 
 
-        
+
         return getOrthoPolyApprox(self, pts)
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -104,7 +105,7 @@ def tensorGrid(listOfParameters, indexSet=None):
     return points, weights
 
 
-
+# Sparse grids
 def sparseGrid(listOfParameters, indexSet):
 
     # Get the number of parameters

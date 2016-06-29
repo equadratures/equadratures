@@ -1,48 +1,25 @@
 #!/usr/bin/python
 from PolyParams import PolynomialParam
-import PolyMethod as polmeth
-import IndexSets as isets
+from PolyParentFile import PolyParent
+from IndexSets import IndexSet
 import numpy as np
 """
-
-    Integrals Class
-
-    Notes to self:
-    - user provides function, and you return an Integrals
-    - user wants quadrature points and weights
-    - class basics: integral_type : sparse, tensor ; for sparse -- optional parameters
-    - leverage index_sets.py
-
-    ADD ALL INTEGRATION FUNCTIONALITY HERE!
-
-    Pranay Seshadri
-    ps583@cam.ac.uk
-
-    NEED TO RE-WRITE
-
+    Integration utilities.
 """
-def SparseGrid(Parameters, level, growth_rule):
+def sparseGrid(listOfParameters, indexSet):
 
-    # Get the sparse indices
-    dimensions = len(Parameters)
-    sparse_index, a , sg_set = isets.sparse_grid_index_set(dimensions, level, growth_rule)
+    # Get the number of parameters
+    dimensions = len(listOfParameters)
 
-    # Compute the corresponding Gauss quadrature points and weights
+    # Get the sparse index set attributes
+    sparse_index, a , sg_set = IndexSet.getIndexSet(indexSet)
     rows = len(sparse_index)
 
     # Get this into an array
     orders = np.zeros((rows, dimensions))
     points_store = []
     weights_store = []
-
-
-    # Ok, now we have to correct for the weights, depending on the right and left
-    # bounds of the individual parameters. I'm hardcoding this for Legendre for
-    # the moment!
-    factor = 0
-    for k in range(0, dimensions):
-        factor = (Parameters[k].upper_bound - Parameters[k].lower_bound) + factor
-
+    factor = 1
 
     for i in range(0, rows):
 
@@ -51,10 +28,11 @@ def SparseGrid(Parameters, level, growth_rule):
             orders[i,j] = np.array(sparse_index[i][j])
 
         # points and weights for each order~
-        points, weights = polmeth.getGaussianQuadrature(Parameters, orders[i,:])
+        tensorObject = PolyParent(listOfParameters, method="tensor grid")
+        points, weights = PolyParent.getPointsAndWeights(tensorObject, orders[i,:] + 1)
 
         # Multiply weights by constant 'a':
-        weights = factor * weights * a[i]
+        weights = weights * a[i]
 
         # Now store point sets ---> scratch this, use append instead!!!!
         for k in range(0, len(points)):
@@ -64,20 +42,38 @@ def SparseGrid(Parameters, level, growth_rule):
     dims1 = int( len(points_store) / dimensions )
     points_store = np.reshape(points_store, ( dims1, dimensions ) )
 
+    #points_store, unique_indices = utils.removeDuplicates(points_store)
+    #return points_store, weights_store[unique_indices]
     return points_store, weights_store
 
-def TensorGrid(Parameters, orders):
+def tensorGrid(listOfParameters, indexSet=None):
+
+    # Get the tensor indices
+    dimensions = len(listOfParameters)
+    max_orders = []
+    if indexSet is None:
+        for u in range(0, dimensions):
+            max_orders.append(int(listOfParameters[u].order) )
+    else:
+        max_orders = IndexSet.getMaxOrders(indexSet)
 
     # Call the gaussian quadrature routine
-    points, weights = polmeth.getGaussianQuadrature(Parameters, orders)
-
-    # Get the weight factor:
-    dimensions = len(Parameters)
-    factor = 0
-    for k in range(0, dimensions):
-        factor = (Parameters[k].upper_bound - Parameters[k].lower_bound) + factor
-
-    # Multiply by the factor
-    weights = weights * factor
+    tensorObject = PolyParent(listOfParameters, method="tensor grid")
+    points, weights = PolyParent.getPointsAndWeights(tensorObject)
 
     return points, weights
+
+# Returns the overall scaling factor associated with the uqParameters depending
+# on their distribution type and their ranges!
+def scaleWeights(listOfParameters):
+    factor = 0
+    dimensions = len(listOfParameters)
+    for k in range(0, dimensions):
+        if(listOfParameters[k].param_type == 'Uniform' or listOfParameters[k].param_type == 'Beta' ):
+            factor = (listOfParameters[k].upper_bound - listOfParameters[k].lower_bound) + factor
+
+    # Final check.
+    if factor == 0:
+        factor = 1
+
+    return factor

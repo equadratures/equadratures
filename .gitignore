@@ -7,6 +7,9 @@
 # figs directory
 figs/
 
+# docs directory
+documentation/
+
 # test data
 
 # *.npz
@@ -21,7 +24,8 @@ gurobi.log
 *.egg
 *.egg-info
 dist
-build
+source
+*_
 eggs
 parts
 bin

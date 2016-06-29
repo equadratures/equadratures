@@ -6,38 +6,26 @@ import Utils as utils
 """
 
     Polyparent Class
-    Designed to be the parent class to the
 
     Pranay Seshadri
     ps583@cam.ac.uk
 
-    - Bug in the spam : doesn't show all computed coefficients!
-
 """
 class PolyParent(object):
-    """ An index set.
-    Attributes:
-
+    """
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 constructor / initializer
+
+
+     PolyParent object.
+        Two inputs:
+            1. uq_parameters:
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
-    def __init__(self, uq_parameters, method, level=None, growth_rule=None,index_sets=None):
+    def __init__(self, uq_parameters, method, index_sets=None):
 
         self.uq_parameters = uq_parameters
         self.method = method
-
-        # Check for the levels (only for sparse grids)
-        if level is None:
-            self.level = []
-        else:
-            self.level = level
-
-        # Check for the growth rule (only for sparse grids)
-        if growth_rule is None:
-            self.growth_rule = []
-        else:
-            self.growth_rule = growth_rule
 
         # Here we set the index sets!
         if index_sets is None:
@@ -50,17 +38,14 @@ class PolyParent(object):
             if(method == "tensor grid" or method == "Tensor grid"):
                 indexObject = IndexSet(method, highest_orders)
                 self.index_sets = indexObject
+        else:
 
-            if(method == "sparse grid" or method == "Sparse grid"):
-                indexObject = IndexSet(method, highest_orders, level, growth_rule)
-                self.index_sets = indexObject
+            if(method == "sparse grid" or method == "Sparse grid" or method == "spam" or method == "SPAM"):
+                self.index_sets = index_sets
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     get() methods
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    def getRandomizedTensorGrid(self):
-        return getSubsampledGaussianQuadrature(self)
-
     def getMultivariatePoly(self, points):
         return getMultiOrthoPoly(self, points)
 
@@ -73,34 +58,61 @@ class PolyParent(object):
             print('WARNING: Use spam as a method instead!')
             return getSparseCoefficientsViaIntegration(self, function)
 
-    def getPointsAndWeights(self, *argv):
-        if self.method == "tensor grid" or self.method == "Tensor grid":
-            return getGaussianQuadrature(self.uq_parameters)
+    def getPointsAndWeights(self, overwrite_orders=None):
+        if overwrite_orders is not None:
+            if self.method == "tensor grid" or self.method == "Tensor grid":
+                return getGaussianQuadrature(self.uq_parameters, overwrite_orders)
+        else:
+            if self.method == "tensor grid" or self.method == "Tensor grid":
+                return getGaussianQuadrature(self.uq_parameters)
+
         if self.method == "sparse grid" or self.method == "Sparse grid":
             indexSets = self.index_sets
-            if len(sys.argv) > 0:
-                level =  argv[0]
-                growth_rule = argv[1]
-            else:
-                utils.error_function('ERROR: To compute the points of a sparse grid integration rule, level and growth rule are required.')
-
             level = self.level
             growth_rule = self.growth_rule
             sparse_indices, sparse_factors, not_used = IndexSet.getIndexSet(indexSets)
             return sparsegrid(self.uq_parameters, self.index_sets, level, growth_rule)
 
+    def getPolynomialApproximation(self, pts):
+        if self.method == "sparse grid" or self.method == "Sparse grid":
+            print('WARNING: Use spam as a method instead!')
+
+
+
+
+        return getOrthoPolyApprox(self, pts)
+
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
                             PRIVATE FUNCTIONS
-
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-def sparsegrid(uq_parameters, indexSetObject):
+# Do not use the function below. It is provided here only for illustrative purposes.
+# SPAM should be used!
+def tensorGrid(listOfParameters, indexSet=None):
 
-    # Get the sparse indices
-    dimensions = len(uq_parameters)
-    sparse_index, a , sg_set = IndexSet.getIndexSet(indexSetObject)
+    # Get the tensor indices
+    dimensions = len(listOfParameters)
+    max_orders = []
+    if indexSet is None:
+        for u in range(0, dimensions):
+            max_orders.append(int(listOfParameters[u].order) )
+    else:
+        max_orders = IndexSet.getMaxOrders(indexSet)
 
-    # Compute the corresponding Gauss quadrature points and weights
+    # Call the gaussian quadrature routine
+    tensorObject = PolyParent(listOfParameters, method="tensor grid")
+    points, weights = PolyParent.getPointsAndWeights(tensorObject)
+
+    return points, weights
+
+
+# Sparse grids
+def sparseGrid(listOfParameters, indexSet):
+
+    # Get the number of parameters
+    dimensions = len(listOfParameters)
+
+    # Get the sparse index set attributes
+    sparse_index, a , sg_set = IndexSet.getIndexSet(indexSet)
     rows = len(sparse_index)
 
     # Get this into an array
@@ -116,10 +128,11 @@ def sparsegrid(uq_parameters, indexSetObject):
             orders[i,j] = np.array(sparse_index[i][j])
 
         # points and weights for each order~
-        points, weights = getGaussianQuadrature(uq_parameters, orders[i,:])
+        tensorObject = PolyParent(listOfParameters, method="tensor grid")
+        points, weights = PolyParent.getPointsAndWeights(tensorObject, orders[i,:] + 1) # Changed!!!!!!!!!!!!!
 
         # Multiply weights by constant 'a':
-        weights = factor * weights * a[i]
+        weights = weights * a[i]
 
         # Now store point sets ---> scratch this, use append instead!!!!
         for k in range(0, len(points)):
@@ -129,35 +142,48 @@ def sparsegrid(uq_parameters, indexSetObject):
     dims1 = int( len(points_store) / dimensions )
     points_store = np.reshape(points_store, ( dims1, dimensions ) )
 
-    points_store, unique_indices = utils.removeDuplicates(points_store)
-    return points_store, weights_store[unique_indices]
+    # Now if there are duplicates, we would like to remove the duplicate points,
+    # but add the weights.
+    #points_unique, unique_indices = utils.removeDuplicates(points_store)
+    #counter = np.ones((len(points_unique), 1))
+    #for i in range(0, len(points_unique)):
+    #    for j in range(0, len(points_store)):
+    #        if( points_unique[i,:] == points_store[j,:] ):
+    #            counter[i,0] = counter[i,0] + 1
 
+    #print counter
 
-# Do not use the function below. It is provided here only for illustrative purposes.
-# SPAM should be used!
+    # Figure out how many times the
+    #return points_store, weights_store[unique_indices]
+    return points_store, weights_store, sg_set
+
 def getSparseCoefficientsViaIntegration(self, function):
 
     # Preliminaries
     stackOfParameters = self.uq_parameters
     indexSets = self.index_sets
-    level = self.level
-    growth_rule = self.growth_rule
     dimensions = len(stackOfParameters)
-    sparse_indices, sparse_factors, sg_set_full = IndexSet.getIndexSet(indexSets)
-    rows = len(sg_set_full)
 
     # Sparse grid integration rule
-    pts, wts = sparsegrid(stackOfParameters, indexSets)
-    Wdiag = np.diag(wts)
+    pts, wts, sg_set_full = sparseGrid(stackOfParameters, indexSets)
+
 
     # Get multivariate orthogonal polynomial according to the index set
-    P = getMultiOrthoPoly(self, pts, sg_set_full)
-    f = utils.evalfunction(function, pts)
-    f = np.mat(f)
+    #del pts, wts
+    #pts, wts = tensorGrid(stackOfParameters)
 
-    coefficients = np.zeros((rows, 1))
+    P = getMultiOrthoPoly(self, pts, sg_set_full)
+    f = utils.evalfunction(pts, function)
+    f = np.mat(f)
+    Wdiag = np.diag(wts)
+
+    # Allocate memory for the coefficients
+    rows = len(sg_set_full)
+    coefficients = np.zeros((1, rows))
+
+    # I multiply by P[0,:] because my zeroth order polynomial is not 1.0
     for i in range(0,rows):
-        coefficients[i,0] = np.mat(P[i,:]) * Wdiag * f.T
+        coefficients[0,i] = np.mat(P[i,:]) * Wdiag * np.diag(P[0,:]) * f
 
     return coefficients, sg_set_full
 
@@ -168,9 +194,6 @@ def getSparsePseudospectralCoefficients(self, function):
     # INPUTS
     stackOfParameters = self.uq_parameters
     indexSets = self.index_sets
-    level = self.level
-    growth_rule = self.growth_rule
-
     dimensions = len(stackOfParameters)
     sparse_indices, sparse_factors, not_used = IndexSet.getIndexSet(indexSets)
     rows = len(sparse_indices)
@@ -354,46 +377,6 @@ def efficient_kron_mult(Q, Uc):
 
     return Uc
 
-# This function returns subsampled Gauss quadrature points and weights without ever
-# computing the full tensor grid.
-def getSubsampledGaussianQuadrature(self, subsampled_indices):
-
-    stackOfParameters = self.uq_parameters
-    indexSets = self.indexsets
-    dimensions = len(stackOfParameters)
-    multivariate_orders = np.zeros((1, dimensions))
-    univariate_points_in_each_dimension = {}
-    univariate_weights_in_each_dimension = {}
-
-    # Final points & weights storage
-    gauss_points = np.zeros((len(subsampled_indices), dimensions))
-    gauss_weights = np.zeros((len(subsampled_indices)))
-
-    # Total orders in each direction!
-    for i in range(0, dimensions):
-        p_local, w_local = PolynomialParam.getLocalQuadrature(stackOfParameters[i], [])
-        univariate_points_in_each_dimension[i] = p_local
-        univariate_weights_in_each_dimension[i] = w_local
-        multivariate_orders[0,i] = stackOfParameters[i].order
-
-    # Cycle through all the subsampled indices
-    for i in range(0, len(subsampled_indices)):
-
-        # From the large tensor grid, find the index set value of the "subsampled_index"
-        index_set_entry = np.unravel_index(subsampled_indices[i], multivariate_orders[0])
-
-        # Cycle through all the dimensions and determine corresponding quadrature points
-        # and compute the corresponding weights
-        weight_temp = 1.0
-        for j in range(0, dimensions):
-            individual_order = index_set_entry[j]
-            gauss_points[i,j] = univariate_points_in_each_dimension[j][individual_order]
-            weight = weight_temp * univariate_weights_in_each_dimension[j][individual_order]
-            weight_temp = weight
-        gauss_weights[i] = weight
-
-    return gauss_points, gauss_weights
-
 # Computes nD quadrature points and weights using a kronecker product
 def getGaussianQuadrature(stackOfParameters, additional_orders=None):
 
@@ -475,12 +458,10 @@ def getMultiOrthoPoly(self, stackOfPoints, index_set_alternate=None):
         return poly
     else:
         for i in range(0, dimensions):
-            print int(np.max(index_set[:,i]))
             p[i] = PolynomialParam.getOrthoPoly(stackOfParameters[i], stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
 
     # Now we multiply components according to the index set
     no_of_points = len(stackOfPoints)
-    print no_of_points
     polynomial = np.zeros((len(index_set), no_of_points))
     for i in range(0, len(index_set)):
         temp = np.ones((1, no_of_points))
@@ -489,3 +470,7 @@ def getMultiOrthoPoly(self, stackOfPoints, index_set_alternate=None):
             temp = polynomial[i,:]
 
     return polynomial
+
+def getPolynomialApproximation(self, pts):
+    P = getMultiOrthoPoly(self, pts)
+    coefficients =

@@ -97,7 +97,7 @@ def getSquareA(self, maximum_number_of_evals, points):
         error_function('ERROR: For QR column pivoting, we require m > n!')
 
     # Now compute the rank revealing QR decomposition of A!
-    Q, R, P = mat.QRColumnPivoting(A.T)
+    P = mat.QRColumnPivoting(A.T)
     selected_quadrature_points = P[0:maximum_number_of_evals]
     return mat.getRows(A, selected_quadrature_points), mat.getRows(quadrature_pts, selected_quadrature_points)
 

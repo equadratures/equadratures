@@ -472,5 +472,4 @@ def getMultiOrthoPoly(self, stackOfPoints, index_set_alternate=None):
     return polynomial
 
 def getPolynomialApproximation(self, pts):
-    P = getMultiOrthoPoly(self, pts)
-    coefficients =
+    return 0

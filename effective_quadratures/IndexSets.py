@@ -191,9 +191,13 @@ def sparse_grid_index_set(level, growth_rule, dimensions):
     # Ok, but sparse_index just has the tensor order sets to be used. Now we need
     # to get all the index sets!
     SG_indices = {}
+    print sparse_index
+    print '~~~~~~~~~~~~~~~~'
+    print tensor_grid_index_set([3,3])
+
     counter = 0
     for i in range(0, len(sparse_index)):
-        SG_indices[i] = tensor_grid_index_set(sparse_index[i,:] )
+        SG_indices[i] = tensor_grid_index_set(sparse_index[i,:] - 1)
         counter = counter + len(SG_indices[i])
 
     SG_set = np.zeros((counter, dimensions))
@@ -202,7 +206,6 @@ def sparse_grid_index_set(level, growth_rule, dimensions):
         for j in range(0, len(SG_indices[i]) ):
             SG_set[counter,:] = SG_indices[i][j]
             counter = counter + 1
-
     return sparse_index, a, SG_set
 
 def tensor_grid_index_set(orders):

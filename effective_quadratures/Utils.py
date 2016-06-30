@@ -13,10 +13,11 @@ def meshgrid(lower_lim, upper_lim, nx1, nx2):
     x2_pts = np.linspace(lower_lim, upper_lim, nx2)
     # Code segment below is solely for resizing *(must be a better way to do this!)
     x1, x2 = np.meshgrid(x1_pts, x2_pts, indexing='ij') # combined grid
-    x1 = np.reshape(x1, (total_points, 1))
-    x2 = np.reshape(x2, (total_points, 1))
-    stackOfPoints = np.concatenate((x1, x2), axis = 1)
-    return stackOfPoints
+    x1o = np.reshape(x1, (total_points, 1))
+    x2o = np.reshape(x2, (total_points, 1))
+    stackOfPoints = np.concatenate((x1o, x2o), axis = 1)
+
+    return stackOfPoints, x1, x2
 
 # A simple utility that helps to visualize plotting sparse and tensor grid coefficients
 def twoDgrid(coefficients, index_set):

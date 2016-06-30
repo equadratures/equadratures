@@ -38,52 +38,34 @@ def main():
     uq_parameters = [first_parameter, second_parameter]
 
     # Index set setup
-    sparsegridObject = IndexSet("sparse grid", [], 4, "exponential", 2)
+    tensorObject = IndexSet("tensor grid", [order,order])
 
 
     # Create a PolyParent object!
-    uq_sparse_integration = PolyParent(uq_parameters, "sparse grid", sparsegridObject)
-    uq_spam = PolyParent(uq_parameters, "spam", sparsegridObject)
+    uq_tensor = PolyParent(uq_parameters, "tensor grid", tensorObject)
 
     # For coefficients!
-    X , I  , not_used = PolyParent.getCoefficients(uq_sparse_integration, fun)
-    X2, I2 , not_used = PolyParent.getCoefficients(uq_spam, fun)
+    X , I  , not_used = PolyParent.getCoefficients(uq_tensor, fun)
 
     # Compute stats.
     mean, variance = stats.compute_mean_variance(X,I)
     print mean, variance
-    mean, variance = stats.compute_mean_variance(X2,I2)
-    print mean, variance
+
+
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     PLOTTING SECTION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
     x,y,z, max_order = utils.twoDgrid(X,I)
-    x2,y2,z2, max_order2 = utils.twoDgrid(X2,I2)
-
     z = np.log10(np.abs(z))
-    z2 = np.log10(np.abs(z2))
-
     Zm = np.ma.masked_where(np.isnan(z),z)
-    Zm2 = np.ma.masked_where(np.isnan(z2),z2)
 
-
-    plt.subplot(121)
     plt.pcolor(x,y, Zm, cmap='jet', vmin=-15, vmax=0)
-    plt.title('Sparse grid integration')
+    plt.title('Tensor grid pseudospectral')
     plt.xlabel('i1')
     plt.ylabel('i2')
     plt.xlim(0,max_order)
     plt.ylim(0,max_order)
     plt.colorbar()
-    plt.subplot(122)
-    plt.pcolor(x2,y2, Zm2, cmap='jet', vmin=-15, vmax=0)
-    plt.title('Sparse pseudospectral method')
-    plt.xlabel('i1')
-    plt.ylabel('i2')
-    plt.colorbar()
-    plt.xlim(0,max_order)
-    plt.ylim(0,max_order)
-    plt.savefig('compare.pdf', format='pdf')
     plt.show()
 
 

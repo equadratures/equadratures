@@ -5,7 +5,7 @@ import math as mt
 
     The IndexSet Class
     Designed to be the base class for all subsequent multivariate polynomials
-    
+
     need to sort out this ordering vs. number of points issue!
 
     Pranay Seshadri

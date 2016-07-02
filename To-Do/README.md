@@ -1,6 +1,6 @@
 # To do list.
 
-- Integration class cleanup <br>
+- Ordering issue <br>
 - Least squares techniques <br>
 - Gradient enhancement<br>
 - Sobol and higher order indices computation (student project?) <br>

@@ -199,7 +199,7 @@ def sparse_grid_index_set(level, growth_rule, dimensions):
 
     counter = 0
     for i in range(0, len(sparse_index)):
-        SG_indices[i] = tensor_grid_index_set(sparse_index[i,:] - 1)
+        SG_indices[i] = tensor_grid_index_set(sparse_index[i,:] )
         counter = counter + len(SG_indices[i])
 
     SG_set = np.zeros((counter, dimensions))

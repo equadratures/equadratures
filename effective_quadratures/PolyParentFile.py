@@ -152,6 +152,13 @@ def getSparseCoefficientsViaIntegration(self, function):
 
     # Sparse grid integration rule
     pts, wts, sg_set_full = sparseGrid(stackOfParameters, indexSets)
+    print '~~~~~~~~Full Sparse Grid Index Set~~~~~~~~~~~'
+    print sg_set_full
+
+    for i in range(0, len(sg_set_full)):
+        for j in range(0, dimensions):
+            sg_set_full[i,j] = int(sg_set_full[i,j])
+
     print len(pts), len(wts), len(sg_set_full), len(sg_set_full[0,:])
     print sg_set_full
     P = getMultiOrthoPoly(self, pts, sg_set_full)

@@ -24,14 +24,14 @@ def main():
     uq_parameters = [first_parameter, second_parameter]
 
     # Index set setup - don't need one for a tensor grid...but do need one for a sparse grid.
-    basisObject = IndexSet("sparse grid", [], 4, "linear", 2)
+    basisObject = IndexSet("sparse grid", [], 5, "linear", 2)
 
     # Define a [-2,2] grid with 20 points in each direction
     num_elements = 50
     pts, x1, x2 = utils.meshgrid(-1.5, 1.5, num_elements,num_elements)
 
     # Setup the polyparent object
-    model_approx_obj = PolyParent(uq_parameters, 'sparse grid', basisObject)
+    model_approx_obj = PolyParent(uq_parameters, 'spam', basisObject)
     V, evaled_pts = PolyParent.getPolynomialApproximation(model_approx_obj, function, pts)
     print evaled_pts
     # Now we "reshape" V

@@ -38,8 +38,7 @@ def main():
     uq_parameters = [first_parameter, second_parameter]
 
     # Index set setup
-    sparsegridObject = IndexSet("sparse grid", [],5, "exponential", 2)
-
+    sparsegridObject = IndexSet("sparse grid", [], 5, "exponential", 2)
 
     # Create a PolyParent object!
     uq_sparse_integration = PolyParent(uq_parameters, "sparse grid", sparsegridObject)

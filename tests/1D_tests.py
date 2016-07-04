@@ -27,25 +27,24 @@ def main():
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     INPUT SECTION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    order = 6
+    order = 5
     derivative_flag = 0 # derivative flag
     error_flag = 0
 
     # Min and max values. Not used for a "Gaussian" or "Normal" distribution
-    min_value = -3.0
-    max_value = 2.0
+    min_value = -2.0
+    max_value = 5.0
 
     # For a "Beta" uncertainty, these become alpha and beta shape parameters
     # in which case both have to be greater than 1.0
     # For a "Normal" or "Gaussian" uncertainty these become the mean and variance
-    parameter_A = 0
-    parameter_B = 1
+    parameter_A = 3
+    parameter_B = 2
 
     # Method for computing coefficients. Right now functionality is limited to
     # tensor grids. to do: THIS NEEDS TO BE CODED
     method = "tensor grid"
-    level = 2
-    growth_rule = "exponential"
+
     # Write out the properties for each "uq_parameter". You can have as many
     # as you like!
     uq_parameters = []
@@ -60,7 +59,7 @@ def main():
         if(uq_parameters[i].param_type == "Gaussian" or uq_parameters[i].param_type == "Normal"):
             print str('With mean & variance:')+'\t'+('[')+str(uq_parameters[i].shape_parameter_A)+str(',')+str(uq_parameters[i].shape_parameter_B)+str(']')
         elif(uq_parameters[i].param_type == "Beta" ):
-            print str('With shape parameters:')+'\t'+('[')+str(uq_parameters[i].shape_parameter_A)+str(',')+str(uq_parameters[i].shape_parameter_A)+str(']')
+            print str('With shape parameters:')+'\t'+('[')+str(uq_parameters[i].shape_parameter_A)+str(',')+str(uq_parameters[i].shape_parameter_B)+str(']')
         elif(uq_parameters[i].param_type == "Beta" or uq_parameters[i].param_type == "Uniform"):
             print str('With support:')+'\t'+('[')+str(uq_parameters[i].lower_bound)+str(',')+str(uq_parameters[i].upper_bound)+str(']')
             print str('Order:')+'\t'+str(uq_parameters[i].order)+'\n'
@@ -68,10 +67,7 @@ def main():
 
     # Create a PolyParent object!
     uq_structure = PolyParent(uq_parameters, method)
-    #uq_structure = PolyParent(uq_parameters, "tensor grid")
-
-
-    pts, wts = PolyParent.getPointsAndWeights(uq_structure,)
+    pts, wts = PolyParent.getPointsAndWeights(uq_structure)
 
     print '--Quadrature Points--'
     print pts
@@ -81,13 +77,12 @@ def main():
     print '\n'
 
     # For coefficients!
-    X , F = PolyParent.getCoefficients(uq_structure, fun)
+    X , F, I = PolyParent.getCoefficients(uq_structure, fun)
     print '---Pseudospectral coefficients---'
     print X
     print '\n'
     print 'Mean: '+str(X[0,0])
     print 'Variance: '+str(np.sum(X[0,1:]**2))
-    print T
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     PLOTTING SECTION

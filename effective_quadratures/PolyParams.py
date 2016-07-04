@@ -192,6 +192,7 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
         else:
             ab[i,1] = nh[i-1]
     ab[0,1] = 2.0
+
     return ab
 
 

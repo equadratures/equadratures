@@ -9,7 +9,7 @@ import scipy.linalg as sc
 # Compute the pivot columns
 def QRColumnPivoting(A):
     Q, R, P = sc.qr(A,  pivoting=True)
-    return P
+    return Q, R, P
 
 def solveLeastSquares(A, b):
     rows, cols = A.shape
@@ -135,4 +135,4 @@ def qrColumnPivoting_mgs(A):
     for k in range(0, len(pivots)):
         pivots[k] = int(pivots[k])
 
-    return pivots
+    return Q, R, pivots

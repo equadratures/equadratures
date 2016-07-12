@@ -2,6 +2,8 @@
 
 - Add MGS QR pivoting with minor modifications
 - Code up paper examples and comparison with sparse grid
+- Add reduce basis technique
+- Provision for multi-fidelity methods
 
 <br>
 - Ordering issue <br>

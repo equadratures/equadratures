@@ -10,11 +10,11 @@ WARNING: Coding underway!<br>
 # Installation
 
 ```bash
-> pip install effective-quadratures
+> sudo pip install effective-quadratures
 ```
 or alternatively try
 ```bash
-> python setup.py install
+> sudo python setup.py install
 ```
 
 For details and queries please contact:<br>

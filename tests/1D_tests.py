@@ -2,6 +2,7 @@
 from effective_quadratures.PolyParams import PolynomialParam
 from effective_quadratures.PolyParentFile import PolyParent
 from effective_quadratures.IndexSets import IndexSet
+import effective_quadratures.ComputeStats as stats
 import effective_quadratures.MatrixRoutines as matrix
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
@@ -11,7 +12,7 @@ import numpy.ma as maogle
 import os
 """
 
-    Testing Script for Effective Quadrature Suite of Tools
+    Script for Vegetation Sensitivity Study
 
     Pranay Seshadri
     ps583@cam.ac.uk
@@ -20,14 +21,14 @@ import os
 """
 # Simple analytical function
 def fun(x):
-    return x[:]
+    return x[0] + x[1] + x[2]*x[3]
 
 def main():
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     INPUT SECTION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    order = 5
+    order = 2
     derivative_flag = 0 # derivative flag
     error_flag = 0
 
@@ -49,6 +50,9 @@ def main():
     # as you like!
     uq_parameters = []
     uq_parameter = PolynomialParam("Beta", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
+    uq_parameters.append(uq_parameter)
+    uq_parameters.append(uq_parameter)
+    uq_parameters.append(uq_parameter)
     uq_parameters.append(uq_parameter)
 
     print '****************************************************************'
@@ -77,12 +81,15 @@ def main():
     print '\n'
 
     # For coefficients!
-    X , F, I = PolyParent.getCoefficients(uq_structure, fun)
-    print '---Pseudospectral coefficients---'
-    print X
-    print '\n'
-    print 'Mean: '+str(X[0,0])
-    print 'Variance: '+str(np.sum(X[0,1:]**2))
+    X , I, F = PolyParent.getCoefficients(uq_structure, fun)
+    #print X, F, I
+
+    # Get Sobol indices!
+    sobol = stats.compute_first_order_Sobol_indices(X, I)
+    print sobol
+    #print 'Finished!'
+
+
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     PLOTTING SECTION

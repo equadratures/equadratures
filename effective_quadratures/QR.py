@@ -82,12 +82,18 @@ def qrColumnPivoting_house(A):
         # Reduction
         v, beta = house(A[k:m, k])
         H = np.identity(m-k+1) - beta * np.dot(v, v.T)
-        A[k:m]
+        A[k:m, k:n] = H * A[k:m, k:n]
+        if k < m:
+            A[k+1:m, k] = v[2:m - k + 1]
 
+        Q[:,k:m] = Q[:,k:m] - Q[:,k:m] * np.dot(v, v.T) * beta
 
+        # update the remaining column norms
+        if k != n
+            for j in range(k + 1, n)
+                column_norms[j] = norms(A[1:m, j], 2)**2
 
-
-    return 0
+    return Q, R, pivots
 
 
 

@@ -20,6 +20,26 @@ or alternatively try
 For details and queries please contact:<br>
 Pranay Seshadri <br>
 
+
+# To do list.
+
+- Add MGS QR pivoting with minor modifications
+- Code up paper examples and comparison with sparse grid
+- Add reduce basis technique
+- Provision for multi-fidelity methods
+
+<br>
+- Ordering issue <br>
+- Least squares techniques <br>
+- Gradient enhancement<br>
+- Sobol and higher order indices computation (student project?) <br>
+- Rosenblatt transforms (student project) <br>
+- Paper examples <br>
+- Compressed sensing modules <br>
+
+
+
+
 # Status
 
 [![Build Status](https://travis-ci.org/psesh/Effective-Quadratures.svg?branch=pranay-branch)](https://travis-ci.org/psesh/Effective-Quadratures/)

@@ -22,10 +22,14 @@ def main():
     A = np.random.rand(10,8)
     print A
     Q, R, P = matrix.qrColumnPivoting_mgs(A)
-    print Q, R, P
-
+    print Q
+    print R
+    print P
+    print '------------------'
     Q, R, P = matrix.QRColumnPivoting(A)
-    print Q, R, P
+    print Q
+    print R
+    print P
 
 
 main()

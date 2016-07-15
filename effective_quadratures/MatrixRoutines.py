@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 import scipy.linalg as sc
-
+import Utils as util
 
 """
     Useful matrix routines.
@@ -32,6 +32,18 @@ def getRows(A, row_indices):
 
     return A2
 
+" Norm computation"
+def norms(vector, integer):
+
+    # l1 norm
+    if integer == 1:
+        return np.sum(np.abs(vector))
+    elif integer == 2:
+        # l2 norm
+        return np.sqrt(np.sum(vector**2))
+    else:
+        util.error_function('NORM: DO NOT RECOGNIZE SECOND ARGUMENT!')
+
 def rowNormalize(A):
     rows, cols = A.shape
     A_norms = np.sqrt(np.sum(A**2, axis=1)/(1.0 * cols))
@@ -39,25 +51,29 @@ def rowNormalize(A):
     A_normalized = np.dot(Normalization, A)
     return A_normalized, Normalization
 
+
 """
-    MODIFIED GRAM SCHMIDT QR COLUMN PIVOTING
-    INPUTS:
-        A: matrix A
+    QR Householder with Pivoting!
+"""
+def qrColumnPivoting_house(A):
 
-    OUTPUTS:
-        Q: orthogonal matrix
-        R: upper triangular matrix
-        P: pivots
+    # Determine the size of A
+    m = len(A[:,0])
+    n = len(A[0,:])
 
-    References:
-    1. A. Dax
-    2. Golub, G., VanLoan, C., "Matrix Computations"
+    return 0
+
+
+
+"""
+    Modified Gram Schmidt QR column pivoting!
 """
 def qrColumnPivoting_mgs(A):
 
     # Determine the size of A
     m = len(A[:,0])
     n = len(A[0,:])
+    u = np.min([m, n])
     h = np.max([m, n])
 
     # Set Q and P
@@ -66,14 +82,14 @@ def qrColumnPivoting_mgs(A):
 
     # Initialize!
     column_norms = np.zeros((n))
-    pivots = np.linspace(0,h-1,h)
+    pivots = np.linspace(0,n-1,n)
 
     # Compute the column norms
     for j in range(0,n):
-        column_norms[j] = np.sum(A[:,j]**2)
+        column_norms[j] = norms(A[:,j], 2)**2
 
     # Now loop!
-    for k in range(0, n):
+    for k in range(0, u):
 
         #----------------------------------------------
         # Step 0: Column norm sorting
@@ -81,26 +97,29 @@ def qrColumnPivoting_mgs(A):
         # Find the "j*" column index with the highest
         # column norm
         j_star = np.argmax(column_norms[k:n])
-        j_star = j_star + k
+        j_star = j_star + k - 1
 
+        # If j_star = k, skip to step 1, else swap columns!
         if k != j_star:
 
             # Swap columns in A:
             temp = A[:,j]
             A[:,k] = A[:,j_star]
             A[:,j_star] = temp
+            del temp
 
             # Swap columns in R accordingly
             for i in range(0, k-1):
                 temp = R[i,k]
                 R[i,k] = R[i, j_star]
                 R[i, j_star] = temp
+                del temp
 
             # Swap pivots
             temp = pivots[k]
             pivots[k] = pivots[j_star]
             pivots[j_star] = temp
-
+            del temp
 
         #-----------------------------------------------
         # Step 1: Reorthogonalization
@@ -115,9 +134,9 @@ def qrColumnPivoting_mgs(A):
         #----------------------------------------------
         # Step 2: Normalization
         #----------------------------------------------
-        R[k,k] = np.linalg.norm(A[:,k], 2)
+        R[k,k] = norms(A[:,k], 2)
         for i in range(0, m):
-            Q[i,k] = A[i,k] * 1.0/R[k,k]
+            Q[i,k] = A[i,k]/R[k,k]
 
         #----------------------------------------------
         # Step 3: Orthogonalization
@@ -127,9 +146,8 @@ def qrColumnPivoting_mgs(A):
                 R[k,j] = np.dot(Q[:,k].T , A[:,j] )
                 for v in range(0,m):
                     A[v,j] = A[v,j] - R[k,j] * Q[v,k]
-
                 # Now re-compute column norms
-                column_norms[j] = np.linalg.norm(A[:,j]**2, 2)
+                column_norms[j] = norms(A[:,j], 2)**2
 
     # Ensure that the pivots are integers
     for k in range(0, len(pivots)):

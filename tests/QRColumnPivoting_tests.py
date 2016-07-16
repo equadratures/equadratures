@@ -11,11 +11,21 @@ import os
     ps583@cam.ac.uk
 
     Copyright (c) 2016 by Pranay Seshadri
+
+
+
+
+
+
+
+    To do:
+    1. MGS has a bug -- Q'Q is not the identity for certain cases -- why?
+    2. Householder -- numbering issue!
 """
 def main():
 
     # Test 1: QR Modified Gram Schmidt
-    A = np.random.rand(10,8)
+    A = np.random.rand(5,3)
     print A
     Q, R, P = qr.qrColumnPivoting_mgs(A)
     print np.dot(Q.T, Q) # Orthogonality check!
@@ -23,9 +33,9 @@ def main():
     print P
 
     # Test 2: QR Householder
-    Q, R, P = qr.qrColumnPivoting_house(A)
-    print np.dot(Q.T, Q)
-    print R
-    print P
+    #Q, R, P = qr.qrColumnPivoting_house(A)
+    #print np.dot(Q.T, Q)
+    #print R
+    #print P
 
 main()

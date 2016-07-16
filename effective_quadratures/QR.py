@@ -43,6 +43,8 @@ def house(vec):
             v[0] = -sigma / (vec[0] + mu)
     beta = 2 * v[0]**2 / (sigma + v[0]**2)
     v = v/v[0]
+    v = np.mat(v)
+    v = v.T
     return v, beta
 
 """
@@ -58,7 +60,7 @@ def qrColumnPivoting_house(A):
     u = np.min([m,n])
 
     # Set Q and P
-    Q = np.mat(np.zeros((m, m)))
+    Q = np.mat(np.identity(m))
     R = np.mat(np.zeros((m, n)))
 
     # Compute the column norms
@@ -94,21 +96,25 @@ def qrColumnPivoting_house(A):
 
         # Reduction
         v, beta = house(A[k:m, k])
-        H = np.identity(m-k+1) - beta * np.dot(v, v.T)
-        A[k:m, k:n] = H * A[k:m, k:n]
+        H = np.mat( np.identity(m-k+1) - beta * np.dot(v, v.T) )
+        A[k:m, k:n] = np.dot(H , A[k:m, k:n])
+        ## Loop for A[k:m, k:n] = H * A[k:m, k:n]
+        #for ii in range(0, m):
+        #    for jj in range(0, n):
+        #        A[ii, jj] = H[ii, ]
 
-        # Loop for A[k:m, k:n] = H * A[k:m, k:n]
-        for
-
-        if k < m:
-            A[k+1:m, k] = v[2:m - k + 1]
-
-        Q[:,k:m] = Q[:,k:m] - Q[:,k:m] * np.dot(v, v.T) * beta
+        #if k < m:
+        #    A[k+1:m, k] = v[2:m - k + 1]
+        print v
+        interior = beta * np.mat(np.dot(v, v.T))
+        print interior
+        print '~~~~~~~~~~~~~~~~~~~~~'
+        Q[:,k:m] = Q[:,k:m] - np.dot(Q[:,k:m] , interior)
 
         # update the remaining column norms
         if k != n:
             for j in range(k + 1, n):
-                column_norms[j] = norms(A[1:m, j], 2)**2
+                column_norms[j] = norms(A[0:m, j], 2)**2
 
     return Q, R, pivots
 

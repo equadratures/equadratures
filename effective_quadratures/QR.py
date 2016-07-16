@@ -5,7 +5,7 @@ import Utils as util
 """
 
     QR factorization routines
-    Based on QR-awesomeness
+    (See MATLAB set of codes in QR-awesomeness repo)
 
     Pranay Seshadri
     ps583@cam.ac.uk
@@ -23,19 +23,31 @@ def norms(vector, integer):
         # l2 norm
         return np.sqrt(np.sum(vector**2))
     else:
-        util.error_function('NORM: DO NOT RECOGNIZE SECOND ARGUMENT!')
+        util.error_function('Norm: Either using 1 or 2 as the second argument for the norm')
+
+
+# Householder reflection
+def house(vec):
+    m = len(vec)
+    sigma = np.dot(vec[1:m].T , vec[1:m] )
+    v = np.insert(vec, 0, 1)
+    if sigma == 0 and vec[0] >= 0:
+        beta = 0
+    elif sigma == 0 and vec[0] < 0 :
+        beta = -2
+    else:
+        mu = np.sqrt(vec[0]**2 + sigma)
+        if vec[0] <= 0:
+            v[0] = vec[0] - mu
+        else:
+            v[0] = -sigma / (vec[0] + mu)
+    beta = 2 * v[0]**2 / (sigma + v[0]**2)
+    v = v/v[0]
+    return v, beta
 
 """
     QR Householder with Pivoting!
 """
-# Householder reflection
-def house(x):
-    m = len(vec)
-    sigma = np.dot(vec(1:m).T , vec(1:m) )
-    v =
-
-    return v, beta
-
 def qrColumnPivoting_house(A):
 
     # Determine the size of A
@@ -43,6 +55,7 @@ def qrColumnPivoting_house(A):
     n = len(A[0,:])
     pivots = np.linspace(0, n-1, n)
     column_norms = np.zeros((n))
+    u = np.min([m,n])
 
     # Set Q and P
     Q = np.mat(np.zeros((m, m)))
@@ -53,7 +66,7 @@ def qrColumnPivoting_house(A):
         column_norms[j] = norms(A[:,j], 2)**2
 
     # Reduction steps
-    for k in range(0, u-1)
+    for k in range(0, u-1):
         j_star = np.argmax(column_norms[k:n])
         j_star = j_star + k - 1
 
@@ -83,19 +96,21 @@ def qrColumnPivoting_house(A):
         v, beta = house(A[k:m, k])
         H = np.identity(m-k+1) - beta * np.dot(v, v.T)
         A[k:m, k:n] = H * A[k:m, k:n]
+
+        # Loop for A[k:m, k:n] = H * A[k:m, k:n]
+        for
+
         if k < m:
             A[k+1:m, k] = v[2:m - k + 1]
 
         Q[:,k:m] = Q[:,k:m] - Q[:,k:m] * np.dot(v, v.T) * beta
 
         # update the remaining column norms
-        if k != n
-            for j in range(k + 1, n)
+        if k != n:
+            for j in range(k + 1, n):
                 column_norms[j] = norms(A[1:m, j], 2)**2
 
     return Q, R, pivots
-
-
 
 """
     Modified Gram Schmidt QR column pivoting!

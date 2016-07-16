@@ -1,11 +1,6 @@
 #!/usr/bin/env python
-from effective_quadratures.PolyParams import PolynomialParam
-from effective_quadratures.PolyParentFile import PolyParent
-from effective_quadratures.IndexSets import IndexSet
-import effective_quadratures.MatrixRoutines as matrix
-from mpl_toolkits.mplot3d import Axes3D
+import effective_quadratures.QR as qr
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import cm
 import numpy as np
 import os
 """
@@ -19,17 +14,18 @@ import os
 """
 def main():
 
+    # Test 1: QR Modified Gram Schmidt
     A = np.random.rand(10,8)
     print A
-    Q, R, P = matrix.qrColumnPivoting_mgs(A)
-    print Q
-    print R
-    print P
-    print '------------------'
-    Q, R, P = matrix.QRColumnPivoting(A)
-    print Q
-    print R
+    Q, R, P = qr.qrColumnPivoting_mgs(A)
+    print np.dot(Q.T, Q) # Orthogonality check!
+    print R # Check to see if its upper triangular
     print P
 
+    # Test 2: QR Householder
+    Q, R, P = qr.qrColumnPivoting_house(A)
+    print np.dot(Q.T, Q)
+    print R
+    print P
 
 main()

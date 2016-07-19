@@ -78,4 +78,4 @@ def plot_index_sets_3D():
 def column(matrix, i):
     return [row[i] for row in matrix]
 
-plot_index_sets_2D()
+plot_index_sets_3D()

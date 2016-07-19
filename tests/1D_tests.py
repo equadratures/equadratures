@@ -21,26 +21,26 @@ import os
 """
 # Simple analytical function
 def fun(x):
-    return x[0] + x[1] + x[2]*x[3]
-
+    #return (1 - x[0])**2 + 100*(x[1] - x[0]**2)**2
+    return x[0]**2 - 13*x[0] + 15
 def main():
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     INPUT SECTION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    order = 2
+    order = 20
     derivative_flag = 0 # derivative flag
     error_flag = 0
 
     # Min and max values. Not used for a "Gaussian" or "Normal" distribution
-    min_value = -2.0
-    max_value = 5.0
+    min_value = 1
+    max_value = 4
 
     # For a "Beta" uncertainty, these become alpha and beta shape parameters
     # in which case both have to be greater than 1.0
     # For a "Normal" or "Gaussian" uncertainty these become the mean and variance
-    parameter_A = 3
-    parameter_B = 2
+    parameter_A = 2
+    parameter_B = 3
 
     # Method for computing coefficients. Right now functionality is limited to
     # tensor grids. to do: THIS NEEDS TO BE CODED
@@ -49,11 +49,10 @@ def main():
     # Write out the properties for each "uq_parameter". You can have as many
     # as you like!
     uq_parameters = []
-    uq_parameter = PolynomialParam("Beta", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
+    uq_parameter = PolynomialParam("Gaussian", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
     uq_parameters.append(uq_parameter)
-    uq_parameters.append(uq_parameter)
-    uq_parameters.append(uq_parameter)
-    uq_parameters.append(uq_parameter)
+    #uq_parameters.append(uq_parameter)
+
 
     print '****************************************************************'
     print '                     EFFECTIVE-QUADRATURES                      '
@@ -82,11 +81,13 @@ def main():
 
     # For coefficients!
     X , I, F = PolyParent.getCoefficients(uq_structure, fun)
-    #print X, F, I
+    print X, I
 
     # Get Sobol indices!
-    sobol = stats.compute_first_order_Sobol_indices(X, I)
-    print sobol
+    mean, variance = stats.compute_mean_variance(X, I)
+    #sobol = stats.compute_first_order_Sobol_indices(X, I)
+    print mean, variance
+    #print sobol
     #print 'Finished!'
 
 

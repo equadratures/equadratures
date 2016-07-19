@@ -423,7 +423,7 @@ def getGaussianQuadrature(stackOfParameters, additional_orders=None):
 
             # Scale points by the mean!
             elif (stackOfParameters[i].param_type == "Gaussian" or stackOfParameters[i].param_type == "Normal" ):
-                points[j,i] = points[j,i] + float(stackOfParameters[i].shape_parameter_A)
+                points[j,i] = points[j,i]*(stackOfParameters[i].shape_parameter_B) + float(stackOfParameters[i].shape_parameter_A)
 
     # Return tensor grid quad-points and weights
     return points, weights

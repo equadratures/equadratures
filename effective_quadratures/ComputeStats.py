@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import numpy as np
-import Utils as util
+import effective_quadratures.Utils as util
 """
 
     Compute statistics and various sensitivity indices
@@ -24,6 +24,7 @@ def compute_first_order_Sobol_indices(coefficients, index_set):
     # Allocate memory!
     mean, variance = compute_mean_variance(coefficients, index_set)
     dimensions = len(index_set[0,:])
+
 
     if dimensions == 1:
         utils.error_function('ERROR: Sobol indices can only be computed for parameter studies with more than one parameter')

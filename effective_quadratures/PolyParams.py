@@ -175,7 +175,7 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
 
     if order == 1:
         ab[0,0] = 0
-        ab[0,1] = 1# gamma(mu + 0.5)
+        ab[0,1] = gamma(param_A + 0.5)
         return ab
 
     # Adapted from Walter Gatuschi
@@ -191,7 +191,7 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
             ab[i,1] = gamma(sigma2 + 0.5)
         else:
             ab[i,1] = nh[i-1]
-    ab[0,1] = 2.0
+    ab[0,1] = gamma(param_A + 0.5)#2.0
 
     return ab
 

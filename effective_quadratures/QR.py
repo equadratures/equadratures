@@ -123,14 +123,14 @@ def qrColumnPivoting_house(A):
 """
 def qrColumnPivoting_mgs(A):
 
-    # Determine the size of A
+    # Determine the size of
     m , n = A.shape
     u = np.min([m, n])
     h = np.max([m, n])
 
     # Set Q and P
-    Q = np.mat( np.zeros((m,n)) )
-    R = np.mat( np.zeros((n,n)) )
+    Q = np.mat( np.zeros((m,m)) )
+    R = np.mat( np.zeros((m,n)) )
 
     # Initialize!
     column_norms = np.zeros((n))
@@ -140,8 +140,6 @@ def qrColumnPivoting_mgs(A):
     for j in range(0,n):
         column_norms[j] = norms(np.array(A[:,j]), 2)**2
 
-    print 'COLUMN NORMS'
-    print column_norms
 
     # Now loop!
     for k in range(0, u):
@@ -154,8 +152,6 @@ def qrColumnPivoting_mgs(A):
         j_star = np.argmax(column_norms[k:n])
         j_star = j_star + k
 
-        print 'JSTAR'
-        print j_star
 
 
         # If j_star = k, skip to step 1, else swap columns!
@@ -180,41 +176,37 @@ def qrColumnPivoting_mgs(A):
             pivots[j_star] = temp
             del temp
 
-        print 'Loop number'
-        print k
-        print '\n'
-        print A
-        print '----------'
-        print R
-        print pivots
-        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~'
         #-----------------------------------------------
         # Step 1: Reorthogonalization
         #-----------------------------------------------
         if k != 0:
-            for i in range(0,k-1):
+            for i in range(0,k):
                 alpha = np.dot(Q[:,i].T , A[:,k] )
-                R[i,k] = R[i,k] + alpha[0,0]
-                A[:,k] = A[:,k] - alpha[0,0] * Q[:,i]
+                print R[i,k]
+                R[i,k] = R[i,k] + alpha
+                print R[i,k]
+                A[:,k] = np.array(A[:,k] - alpha[0,0] * Q[:,i])
 
         #----------------------------------------------
         # Step 2: Normalization
         #----------------------------------------------
         R[k,k] = norms(np.array(A[:,k]), 2)
-        r = np.mat(A[:,k] * 1.0/R[k,k])
-        Q[:,k] = r
+        Q[:,k] = np.array(A[:,k] * 1.0/R[k,k])
 
         #----------------------------------------------
         # Step 3: Orthogonalization
         #----------------------------------------------
         if k != n:
-            for j in range(k+1,n):
+            for j in range(k,n):
                 R[k,j] = np.dot(Q[:,k].T , A[:,j] )
-                subtract = np.mat(R[k,j] * Q[:,k])
-                A[:,j] = A[:,j] - subtract
+                A[:,j] = np.array(A[:,j] - np.mat(R[k,j] * Q[:,k]))
+
                 # Now re-compute column norms
                 column_norms[j] = norms(np.array(A[:,j]), 2)**2
 
+        # DEBUG: let's print R at each iteration
+        print R
+        print '***************************************'
     # Ensure that the pivots are integers
     for k in range(0, len(pivots)):
         pivots[k] = int(pivots[k])

@@ -19,8 +19,6 @@ pivots = 1 : n; %
 for j = 1 : n
     column_norms(j,1) = norm(A(1:m, j),2)^2;
 end
-disp('----COLUMN NORMS----')
-disp(column_norms')
 
 % Now loop!
 u = min(m,n);
@@ -32,8 +30,6 @@ for k = 1 : u
     % 2. Find the "j*" column index with the highest column norm
     [~,j_star] = max(column_norms(k:n,1));
     j_star = j_star + (k - 1);
-    disp('----JSTAR----');
-    disp(j_star)
     
     % 3. If j* = k, skip to step 1, else swap columns
     if(k ~= j_star)
@@ -57,20 +53,19 @@ for k = 1 : u
         
     end
     
-    disp('Loop number');
-    disp(k)
-    
-    A
     %R
-    pivots
-    disp('~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+    %pivots
+    %disp('~~~~~~~~~~~~~~~~~~~~~~~~~~~')
     %---------------------------------------------------------------------
     % Step 1: Reorthogonalization
     %---------------------------------------------------------------------
     if( k~=1 )
         for i = 1 : k - 1
+           % disp('i came here');
             alpha = Q(1:m,i)' * A(1:m,k);
+            disp(R(i,k))
             R(i,k) = R(i,k) + alpha;
+            disp(R(i,k))
             A(1:m,k) = A(1:m,k) - alpha*Q(1:m,i);
         end
     end
@@ -93,6 +88,8 @@ for k = 1 : u
         end
     end
     
+    %disp(R)
+    %disp('********************');
     
 end
 

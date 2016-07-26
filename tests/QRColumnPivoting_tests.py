@@ -20,7 +20,7 @@ import os
 def main():
 
     # Test 1: QR Modified Gram Schmidt
-    A = np.mat('3 2 1 5; 3 2 12 31; 12 2 -1 -3; -6 -7 13 -21; 1 0 -2 52')
+    A = np.mat('3.0 2.0 1.0 ; -6.0 -7.0 13.0')
     print A
     #print A
     Q, R, P = qr.qrColumnPivoting_mgs(A)
@@ -29,6 +29,8 @@ def main():
     print '------------------'
     print R
     print '~~~~~~~~~~~~~~~~'
+    print np.dot(Q, R)
+    print '*********************'
     print np.dot(Q.T, Q) # Orthogonality check!
     #print 'xxxxxxxxxxxxxxxxxxxx'
     # Test 2: QR Householder

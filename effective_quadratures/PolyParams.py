@@ -113,7 +113,7 @@ def recurrence_coefficients(self, order=None):
         self.shape_parameter_B = 0.0
         ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, order)
 
-    elif self.param_type == "Custom": # This needs coding Stjeletes procedure
+    elif self.param_type == "Custom - Name": # This needs coding Stjeletes procedure
         ab =  custom_recurrence_coefficients(self.lower_bound, self.upper_bound, self.shape_parameter_A, self.shape_parameter_B, order)
 
     elif self.param_type == "Gaussian" or self.param_type == "Normal":
@@ -197,10 +197,13 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
 
 
 # Recurrence coefficients for Custom parameters
-def custom_recurrence_coefficients(param_A, param_B, order):
-
+def custom_recurrence_coefficients(order):
+    
+    # Stieltjes procedure for generating recurrence coefficients
+    
+    
     return ab
-
+    
 # Compute the Jacobi matrix. The eigenvalues and eigenvectors of this matrix
 # forms the basis of gaussian quadratures
 def jacobiMatrix(self, order_to_use=None):

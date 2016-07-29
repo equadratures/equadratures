@@ -99,6 +99,7 @@ def recurrence_coefficients(self, order=None):
     if order is None:
         order = self.order
 
+    # 1. Beta distribution -- Jacobi orthonormal polynomial!
     if self.param_type is "Beta":
         param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
         param_B = self.shape_parameter_A - 1
@@ -108,13 +109,38 @@ def recurrence_coefficients(self, order=None):
             utils.error_function('ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
         ab =  jacobi_recurrence_coefficients_01(param_A, param_B , order)
 
+    # 2. Uniform distribution -- Legendre orthonormal polynomial!
     elif self.param_type is "Uniform":
         self.shape_parameter_A = 0.0
         self.shape_parameter_B = 0.0
         ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, order)
 
-    elif self.param_type == "Custom - Name": # This needs coding Stjeletes procedure
-        ab =  custom_recurrence_coefficients(self.lower_bound, self.upper_bound, self.shape_parameter_A, self.shape_parameter_B, order)
+    # 3. True Gaussian distribution - Custom orthonormal polynomial!
+    elif self.param_type is "True Gaussian":
+        mu = self.shape_parameter_A
+        sigma = np.sqrt(self.shape_parameter_B)
+        N = 5000 # can increase accordingly!
+        x = np.linspace(-15*sigma, 15*sigma, N) # x scaled by the standard deviation!
+        w = 1.0/( np.sqrt(2 * sigma**2 * np.pi) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma**2) )
+        w = w/np.sum(w) # normalize!
+        ab = custom_recurrence_coefficients(order, x, w)
+
+    # 4. True Truncated Gaussian distribution
+    #elif self.param_type is "Truncated Gaussian":
+    #    ab = custom_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B,  x, w)
+
+    #elif self.param_type == "Custom": # This needs coding Stjeletes procedure
+
+
+        # 1. True Gaussian
+        # 2. Truncated Gaussian
+        # 3. Cauchy distribution
+        # 4. Exponential
+        # 5. Gamma distribution
+        # 6. Log-normal distribution
+
+    #    ab =  custom_Gaussian_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, order)
+
 
     elif self.param_type == "Gaussian" or self.param_type == "Normal":
         param_B = self.shape_parameter_B - 0.5
@@ -196,14 +222,20 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
     return ab
 
 
-# Recurrence coefficients for Custom parameters
-def custom_recurrence_coefficients(order):
-    
+# Recurrence coefficients for Custom parameters - based the discretized Stieltjes procedure.
+# See Walter Gautchi's book!
+def custom_recurrence_coefficients(order, x, w):
+
+    # Define a very small and very large value
+    small = 2.5e-300
+    large = 1.8e+300
+
+    # Now remove the 
     # Stieltjes procedure for generating recurrence coefficients
-    
-    
+    np.sort(w, axis=0)
+
     return ab
-    
+
 # Compute the Jacobi matrix. The eigenvalues and eigenvectors of this matrix
 # forms the basis of gaussian quadratures
 def jacobiMatrix(self, order_to_use=None):

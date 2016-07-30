@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 from scipy.special import gamma
+import AnalyticalDistributions as analytical
 import Utils as utils
 """
 
@@ -99,6 +100,9 @@ def recurrence_coefficients(self, order=None):
     if order is None:
         order = self.order
 
+    print '~~~~~~~~~~~~~~~~~~~~~~'
+    print self.param_type
+
     # 1. Beta distribution -- Jacobi orthonormal polynomial!
     if self.param_type is "Beta":
         param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
@@ -116,31 +120,14 @@ def recurrence_coefficients(self, order=None):
         ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, order)
 
     # 3. True Gaussian distribution - Custom orthonormal polynomial!
-    elif self.param_type is "True Gaussian":
+    elif self.param_type is "F":
+        print '---i got here---'
         mu = self.shape_parameter_A
         sigma = np.sqrt(self.shape_parameter_B)
         N = 5000 # can increase accordingly!
-        x = np.linspace(-15*sigma, 15*sigma, N) # x scaled by the standard deviation!
-        w = 1.0/( np.sqrt(2 * sigma**2 * np.pi) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma**2) )
-        w = w/np.sum(w) # normalize!
+        x, w  = analytical.Gaussian(mu, sigma, N)
+        w = w/np.sum(w)
         ab = custom_recurrence_coefficients(order, x, w)
-
-    # 4. True Truncated Gaussian distribution
-    #elif self.param_type is "Truncated Gaussian":
-    #    ab = custom_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B,  x, w)
-
-    #elif self.param_type == "Custom": # This needs coding Stjeletes procedure
-
-
-        # 1. True Gaussian
-        # 2. Truncated Gaussian
-        # 3. Cauchy distribution
-        # 4. Exponential
-        # 5. Gamma distribution
-        # 6. Log-normal distribution
-
-    #    ab =  custom_Gaussian_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, order)
-
 
     elif self.param_type == "Gaussian" or self.param_type == "Normal":
         param_B = self.shape_parameter_B - 0.5
@@ -223,16 +210,52 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
 
 
 # Recurrence coefficients for Custom parameters - based the discretized Stieltjes procedure.
-# See Walter Gautchi's book!
+# Adapted from stieltjes.m
 def custom_recurrence_coefficients(order, x, w):
+
+    # Allocate memory for recurrence coefficients
+    ab = np.zeros((order,2))
 
     # Define a very small and very large value
     small = 2.5e-300
     large = 1.8e+300
 
-    # Now remove the 
+    # Now remove the
     # Stieltjes procedure for generating recurrence coefficients
-    np.sort(w, axis=0)
+    nonzero_indices = []
+    for i in range(0, len(x)):
+        if w[i] != 0:
+            nonzero_indices.append(i)
+
+    ncap = len(nonzero_indices)
+    x = x[nonzero_indices] # only keep entries at the non-zero indices!
+    w = w[nonzero_indices]
+    print '----------------------------'
+    print w
+    s = np.ones((ncap, 1)) * w.T
+    print s
+
+    print '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+    temp = w/s
+    print x
+    ab[0,0] = np.dot(x, temp.T)
+    ab[0,1] = s
+
+    if order == 1:
+        return ab
+    else:
+        p1 = np.zeros((ncap, 1))
+        p2 = np.ones((ncap, 1))
+        for j in range(0, order - 1):
+            p0 = p1
+            p1 = p2
+            p2 = ( x - ab[j,0] ) * p1 - ab[j,1] * p0
+            s1 = np.dot(w.T, p2**2)
+            inner = w * p2**2
+            s2 = np.dot(x, inner)
+        ab[k+1,0] = s2/s1
+        ab[k+1,1] = s1/s0
+        s0 = s1
 
     return ab
 
@@ -374,3 +397,13 @@ def orthoPolynomial_and_derivative(self, gridPoints, order=None):
     else:
         empty = np.mat([0])
         return orthopoly, empty
+
+def test():
+    mu = 0
+    sigma = 2
+    x, w = analytical.Gaussian(mu, sigma, 8)
+    w = w / np.sum(w) # Normalize!
+    x, w = custom_recurrence_coefficients(6, x, w)
+    print x, w
+
+test()

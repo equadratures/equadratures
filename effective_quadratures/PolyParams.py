@@ -100,9 +100,6 @@ def recurrence_coefficients(self, order=None):
     if order is None:
         order = self.order
 
-    print '~~~~~~~~~~~~~~~~~~~~~~'
-    print self.param_type
-
     # 1. Beta distribution -- Jacobi orthonormal polynomial!
     if self.param_type is "Beta":
         param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
@@ -119,9 +116,8 @@ def recurrence_coefficients(self, order=None):
         self.shape_parameter_B = 0.0
         ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, order)
 
-    # 3. True Gaussian distribution - Custom orthonormal polynomial!
-    elif self.param_type is "F":
-        print '---i got here---'
+    # 3. True Gaussian distribution - Custom orthonormal polynomial! -- this should replace the other one!
+    elif self.param_type is "FunGaussian":
         mu = self.shape_parameter_A
         sigma = np.sqrt(self.shape_parameter_B)
         N = 5000 # can increase accordingly!
@@ -209,19 +205,13 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
     return ab
 
 
-# Recurrence coefficients for Custom parameters - based the discretized Stieltjes procedure.
-# Adapted from stieltjes.m
+# Recurrence coefficients for Custom parameters
 def custom_recurrence_coefficients(order, x, w):
 
     # Allocate memory for recurrence coefficients
     ab = np.zeros((order,2))
 
-    # Define a very small and very large value
-    small = 2.5e-300
-    large = 1.8e+300
-
-    # Now remove the
-    # Stieltjes procedure for generating recurrence coefficients
+    # Negate "zero" components
     nonzero_indices = []
     for i in range(0, len(x)):
         if w[i] != 0:
@@ -230,32 +220,28 @@ def custom_recurrence_coefficients(order, x, w):
     ncap = len(nonzero_indices)
     x = x[nonzero_indices] # only keep entries at the non-zero indices!
     w = w[nonzero_indices]
-    print '----------------------------'
-    print w
-    s = np.ones((ncap, 1)) * w.T
-    print s
 
-    print '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+    s = np.sum(w)
     temp = w/s
-    print x
     ab[0,0] = np.dot(x, temp.T)
     ab[0,1] = s
 
     if order == 1:
         return ab
-    else:
-        p1 = np.zeros((ncap, 1))
-        p2 = np.ones((ncap, 1))
-        for j in range(0, order - 1):
-            p0 = p1
-            p1 = p2
-            p2 = ( x - ab[j,0] ) * p1 - ab[j,1] * p0
-            s1 = np.dot(w.T, p2**2)
-            inner = w * p2**2
-            s2 = np.dot(x, inner)
-        ab[k+1,0] = s2/s1
-        ab[k+1,1] = s1/s0
-        s0 = s1
+
+    p1 = np.zeros((1, ncap))
+    p2 = np.ones((1, ncap))
+    for j in range(0, order - 1):
+        p0 = p1
+        p1 = p2
+        p2 = ( x - ab[j,0] ) * p1 - ab[j,1] * p0
+        p2_squared = p2**2
+        s1 = np.dot(w, p2_squared.T)
+        inner = w * p2_squared
+        s2 = np.dot(x, inner.T)
+        ab[j+1,0] = s2/s1
+        ab[j+1,1] = s1/s
+        s = s1
 
     return ab
 
@@ -398,12 +384,14 @@ def orthoPolynomial_and_derivative(self, gridPoints, order=None):
         empty = np.mat([0])
         return orthopoly, empty
 
-def test():
-    mu = 0
-    sigma = 2
-    x, w = analytical.Gaussian(mu, sigma, 8)
-    w = w / np.sum(w) # Normalize!
-    x, w = custom_recurrence_coefficients(6, x, w)
-    print x, w
-
-test()
+#def test():
+#    mu = 0
+#    sigma = np.sqrt(0.5)
+#    x, w = analytical.Gaussian(mu, sigma, 40)
+#    w = w / np.sum(w) # Normalize!
+#    print x, w
+#
+#    ab = custom_recurrence_coefficients(8, x, w)
+#    print ab
+#
+#test()

@@ -413,9 +413,10 @@ def getGaussianQuadrature(stackOfParameters, additional_orders=None):
     weights = ww
 
     # Now re-scale the points and return only if its not a Gaussian!
+
     for i in range(0, dimensions):
         for j in range(0, len(points)):
-            if (stackOfParameters[i].param_type != "Gaussian" and stackOfParameters[i].param_type != "Normal" and stackOfParameters[i].param_type != "Beta")  :
+            if (stackOfParameters[i].param_type != "FunGaussian" and stackOfParameters[i].param_type != "Gaussian" and stackOfParameters[i].param_type != "Normal" and stackOfParameters[i].param_type != "Beta")  :
                 points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
 
             elif (stackOfParameters[i].param_type == "Beta" ):
@@ -425,7 +426,11 @@ def getGaussianQuadrature(stackOfParameters, additional_orders=None):
             elif (stackOfParameters[i].param_type == "Gaussian" or stackOfParameters[i].param_type == "Normal" ):
                 points[j,i] = points[j,i]*(stackOfParameters[i].shape_parameter_B) + float(stackOfParameters[i].shape_parameter_A)
 
+            elif (stackOfParameters[i].param_type == "FunGaussian"):
+                points[j,i] = points[j,i] # No scaling!
+
     # Return tensor grid quad-points and weights
+
     return points, weights
 
 # determines a multivariate orthogonal polynomial corresponding to the stackOfParameters,

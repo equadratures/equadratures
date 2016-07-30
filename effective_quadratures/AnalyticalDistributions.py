@@ -32,11 +32,11 @@ def Gaussian(mu, sigma, N):
 def ExponentialDistribution(N, lambda_value):
     x = np.linspace(0, 15*lambda_value, N)
     w = lambda_value * np.exp(-lambda_value * x)
-    return x,w
+    return x, w
 
 def TruncatedGaussian(N, mu, sigma, a, b):
     x = np.linspace(a, b, N)
-    w = 1.0/( np.sqrt(2 * sigma**2 * np.pi) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma**2) ) )
+    w = 1.0/( np.sqrt(2 * sigma**2 * np.pi)) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma**2) )
     w = 1.0/sigma * w
     first_term = GaussianCDF(b, mean, sigma)
     second_term = GaussianCDF(a, mean, sigma)
@@ -44,8 +44,9 @@ def TruncatedGaussian(N, mu, sigma, a, b):
     return x, w
 
 def GaussianPDF(mu, sigma, N):
-    x = np.linspace(-15*sigma, 15*sigma, N)
-    w = 1.0/( np.sqrt(2 * sigma**2 * np.pi) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma**2) ) )
+    x = np.linspace(-10*sigma, 10*sigma, N)
+    x = x + mu # scaling it by the mean!
+    w = 1.0/( np.sqrt(2 * sigma**2 * np.pi) ) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma**2) )
     return x, w
 
 def GaussianCDF(constant, mean, sigma):

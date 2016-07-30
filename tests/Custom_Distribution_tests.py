@@ -41,8 +41,8 @@ def main():
     # For a "Beta" uncertainty, these become alpha and beta shape parameters
     # in which case both have to be greater than 1.0
     # For a "Normal" or "Gaussian" uncertainty these become the mean and variance
-    mean = 0
-    variance = 1
+    mean = 13
+    variance = 12
 
     # Method for computing coefficients. Right now functionality is limited to
     # tensor grids. to do: THIS NEEDS TO BE CODED
@@ -51,14 +51,15 @@ def main():
     # Write out the properties for each "uq_parameter". You can have as many
     # as you like!
     uq_parameters = []
-    uq_parameter = PolynomialParam("F", min_value, max_value, mean, variance, derivative_flag, order)
+    uq_parameter = PolynomialParam("FunGaussian", min_value, max_value, mean, variance, derivative_flag, order)
     uq_parameters.append(uq_parameter)
 
 
     # Create a PolyParent object!
     uq_structure = PolyParent(uq_parameters, method)
     pts, wts = PolyParent.getPointsAndWeights(uq_structure)
-
+    print '--- Points and Weights ---'
+    print pts, wts
     # For coefficients!
     X , I, F = PolyParent.getCoefficients(uq_structure, fun)
     print X, I

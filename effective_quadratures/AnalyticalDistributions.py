@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 from scipy.special import erf
+from scipy.special import gamma
 """
 
    Analytical definitions for some sample PDFs. Functions in this file are
@@ -10,24 +11,31 @@ from scipy.special import erf
    used in PolyParams.py
 
 
-    Q. Should I just set the mean to be zero??
-
     Pranay Seshadri
     ps583@cam.ac.uk
 
     Copyright (c) 2016 by Pranay Seshadri
 """
+
 def Gaussian(mu, sigma, N):
   x, w = GaussianPDF(mu, sigma, N)
   return x, w
 
-#def LogNormalDistribution(N, mu, sigma):
-#    x = np.linspace(0, )
-#
-# def GammaDistribution()
-#
-# def CauchyDistribution()
-#
+def WeibullDistribution(N, lambda_value, k):
+    x = np.linspace(0, 15/k, N)
+    w = k/lambda_value * (x/lambda_value)**(k-1) * np.exp(-1.0 * (x/lambda_value)**k )
+    return x, w
+        
+def GammaDistribution(N, k, theta):
+    x = np.linspace(0, k*theta*10, N)
+    w = 1.0/(gamma(k) * theta**k) * x**(k-1) * np.exp(-x/theta)
+    return x, w
+
+def CauchyDistribution(N, x0, gammavalue):
+    x = np.linspace(-15*gammavalue, 15*gammavalue, N)
+    x = x + x0
+    w = 1.0/(pi * gammavalue * (1 + ((x - x0)/(gammavalue))**2) )
+    return x, w
 
 def ExponentialDistribution(N, lambda_value):
     x = np.linspace(0, 15*lambda_value, N)

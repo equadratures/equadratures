@@ -97,10 +97,12 @@ class PolynomialParam(object):
 # Call different methods depending on the choice of the polynomial parameter
 def recurrence_coefficients(self, order=None):
 
+    # Preliminaries.
+    N = 5000 # no. of points for analytical distributions.
     if order is None:
         order = self.order
 
-    # 1. Beta distribution -- Jacobi orthonormal polynomial!
+    # 1. Beta distribution
     if self.param_type is "Beta":
         param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
         param_B = self.shape_parameter_A - 1
@@ -110,19 +112,23 @@ def recurrence_coefficients(self, order=None):
             utils.error_function('ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
         ab =  jacobi_recurrence_coefficients_01(param_A, param_B , order)
 
-    # 2. Uniform distribution -- Legendre orthonormal polynomial!
+    # 2. Uniform distribution
     elif self.param_type is "Uniform":
         self.shape_parameter_A = 0.0
         self.shape_parameter_B = 0.0
         ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, order)
 
-    # 3. True Gaussian distribution - Custom orthonormal polynomial! -- this should replace the other one!
+    # 3. Analytical Gaussian
     elif self.param_type is "FunGaussian":
         mu = self.shape_parameter_A
         sigma = np.sqrt(self.shape_parameter_B)
-        N = 5000 # can increase accordingly!
         x, w  = analytical.Gaussian(mu, sigma, N)
-        w = w/np.sum(w)
+        ab = custom_recurrence_coefficients(order, x, w)
+
+    # 4. Analytical Exponential
+    elif self.param_type is "Exponential":
+        lambda_value = self.shape_parameter_A
+        x, w  = analytical.ExponentialDistribution(N, lambda_value)
         ab = custom_recurrence_coefficients(order, x, w)
 
     elif self.param_type == "Gaussian" or self.param_type == "Normal":
@@ -209,6 +215,7 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
 def custom_recurrence_coefficients(order, x, w):
 
     # Allocate memory for recurrence coefficients
+    w = w / np.sum(w)
     ab = np.zeros((order,2))
 
     # Negate "zero" components

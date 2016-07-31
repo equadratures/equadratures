@@ -51,7 +51,7 @@ def main():
     # Write out the properties for each "uq_parameter". You can have as many
     # as you like!
     uq_parameters = []
-    uq_parameter = PolynomialParam("FunGaussian", min_value, max_value, mean, variance, derivative_flag, order)
+    uq_parameter = PolynomialParam("FunGaussian", [], [], mean, variance, [], order)
     uq_parameters.append(uq_parameter)
 
 

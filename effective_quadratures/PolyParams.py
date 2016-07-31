@@ -131,6 +131,27 @@ def recurrence_coefficients(self, order=None):
         x, w  = analytical.ExponentialDistribution(N, lambda_value)
         ab = custom_recurrence_coefficients(order, x, w)
 
+    # 5. Analytical Cauchy
+    elif self.param_type is "Cauchy":
+        x0 = self.shape_parameter_A
+        gammavalue = self.shape_parameter_B
+        x, w  = analytical.CauchyDistribution(N, x0, gammavalue)
+        ab = custom_recurrence_coefficients(order, x, w)
+
+    # 5. Analytical Gamma
+    elif self.param_type is "Gamma":
+        k = self.shape_parameter_A
+        theta = self.shape_parameter_B
+        x, w  = analytical.GammaDistribution(N, k, theta)
+        ab = custom_recurrence_coefficients(order, x, w)
+
+    # 6. Analytical Weibull
+    elif self.param_type is "Weibull":
+        lambda_value= self.shape_parameter_A
+        k = self.shape_parameter_B
+        x, w  = analytical.WeibullDistribution(N, lambda_value, k)
+        ab = custom_recurrence_coefficients(order, x, w)
+
     elif self.param_type == "Gaussian" or self.param_type == "Normal":
         param_B = self.shape_parameter_B - 0.5
         if(param_B <= -0.5):

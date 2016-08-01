@@ -34,6 +34,7 @@ def main():
     dimension = 2
     basis = IndexSet("sparse grid", [], level, growth_rule, dimension)
     uqProblem = PolyParent(x1x2, method, basis)
+
     pts, wts = PolyParent.getPointsAndWeights(uqProblem)
 
     #print pts
@@ -51,8 +52,17 @@ def main():
     # Tensor grid
     method = "tensor grid"
     uqProblemT = PolyParent(x1x2, method)
+    pts2, wts = PolyParent.getPointsAndWeights(uqProblemT)
     x, i, f = PolyParent.getCoefficients(uqProblemT, rosenbrock_fun)
     mean, variance = stats.compute_mean_variance(x, i)
+
     print mean, variance
+
+
+    plt.scatter(pts[:,0], pts[:,1], s=70, c='b', marker='o')
+    plt.scatter(pts2[:,0], pts2[:,1], s=70, c='r', marker='o')
+    plt.xlabel('x1')
+    plt.ylabel('x2')
+    plt.show()
 
 main()

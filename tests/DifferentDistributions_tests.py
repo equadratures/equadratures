@@ -23,8 +23,16 @@ def main():
     sigma = 2
     variance = sigma**2
     method = "tensor grid"
-    x1 = PolynomialParam("Gaussian", [], [], mu, variance, [], no_pts_x1)
-    x2 = PolynomialParam("Gaussian", [], [], mu, variance, [], no_pts_x2)
+    #x1 = PolynomialParam("Gaussian", [], [], mu, variance, [], no_pts_x1)
+    #x2 = PolynomialParam("Gaussian", [], [], mu, variance, [], no_pts_x2)
+    x1 = PolynomialParam("TruncatedGaussian", -15, 15, mu, variance, [], no_pts_x1)
+    x2 = PolynomialParam("TruncatedGaussian", -15, 15, mu, variance, [], no_pts_x2)
+
+    #x1 = PolynomialParam("Weibull", [], [], a, b, [], no_pts_x1)
+    #x2 = PolynomialParam("Weibull", [], [], a, b, [], no_pts_x2)
+    #x1 = PolynomialParam("Exponential", [], [], lambda_value, [], [], no_pts_x1)
+    #x2 = PolynomialParam("Exponential", [], [], lambda_value, [], [], no_pts_x2)
+
     x1x2 = []
     x1x2.append(x1)
     x1x2.append(x2)

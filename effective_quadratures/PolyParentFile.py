@@ -57,16 +57,18 @@ class PolyParent(object):
         if overwrite_orders is not None:
             if self.method == "tensor grid" or self.method == "Tensor grid":
                 return getGaussianQuadrature(self.uq_parameters, overwrite_orders)
+
+            elif self.method == "sparse grid" or self.method == "Sparse grid" or self.method == "spam":
+                p, w, sets = sparseGrid(self.uq_parameters, overwrite_orders)
+                return p, w
+
         else:
             if self.method == "tensor grid" or self.method == "Tensor grid":
                 return getGaussianQuadrature(self.uq_parameters)
 
-        if self.method == "sparse grid" or self.method == "Sparse grid":
-            indexSets = self.index_sets
-            level = self.level
-            growth_rule = self.growth_rule
-            sparse_indices, sparse_factors, not_used = IndexSet.getIndexSet(indexSets)
-            return sparsegrid(self.uq_parameters, self.index_sets, level, growth_rule)
+            elif self.method == "sparse grid" or self.method == "Sparse grid" or self.method == "spam":
+                p, w, sets = sparseGrid(self.uq_parameters, self.index_sets)
+                return p, w
 
     def getPolynomialApproximation(self, function, plotting_pts):
 
@@ -152,18 +154,12 @@ def getSparseCoefficientsViaIntegration(self, function):
 
     # Sparse grid integration rule
     pts, wts, sg_set_full = sparseGrid(stackOfParameters, indexSets)
-    print '~~~~~~~~Full Sparse Grid Index Set~~~~~~~~~~~'
-    print sg_set_full
 
     for i in range(0, len(sg_set_full)):
         for j in range(0, dimensions):
             sg_set_full[i,j] = int(sg_set_full[i,j])
 
-    print len(pts), len(wts), len(sg_set_full), len(sg_set_full[0,:])
-    print sg_set_full
     P = getMultiOrthoPoly(self, pts, sg_set_full)
-    print len(P), len(P[0,:])
-    print '---------------------'
     f = utils.evalfunction(pts, function)
     f = np.mat(f)
     Wdiag = np.diag(wts)
@@ -413,24 +409,18 @@ def getGaussianQuadrature(stackOfParameters, additional_orders=None):
     weights = ww
 
     # Now re-scale the points and return only if its not a Gaussian!
-
     for i in range(0, dimensions):
         for j in range(0, len(points)):
-            if (stackOfParameters[i].param_type != "FunGaussian" and stackOfParameters[i].param_type != "Gaussian" and stackOfParameters[i].param_type != "Normal" and stackOfParameters[i].param_type != "Beta")  :
+            if (stackOfParameters[i].param_type == "Uniform"):
                 points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
 
             elif (stackOfParameters[i].param_type == "Beta" ):
                 points[j,i] =  ( points[j,i] )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
 
-            # Scale points by the mean!
-            elif (stackOfParameters[i].param_type == "Gaussian" or stackOfParameters[i].param_type == "Normal" ):
-                points[j,i] = points[j,i]*(stackOfParameters[i].shape_parameter_B) + float(stackOfParameters[i].shape_parameter_A)
-
-            elif (stackOfParameters[i].param_type == "FunGaussian"):
+            elif (stackOfParameters[i].param_type == "Gaussian"):
                 points[j,i] = points[j,i] # No scaling!
 
     # Return tensor grid quad-points and weights
-
     return points, weights
 
 # determines a multivariate orthogonal polynomial corresponding to the stackOfParameters,

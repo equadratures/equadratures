@@ -118,48 +118,48 @@ def recurrence_coefficients(self, order=None):
         self.shape_parameter_B = 0.0
         ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, order)
 
-    # 3. Analytical Gaussian
-    elif self.param_type is "FunGaussian":
+    # 3. Analytical Gaussian defined on [-inf, inf]
+    elif self.param_type is "Gaussian":
         mu = self.shape_parameter_A
         sigma = np.sqrt(self.shape_parameter_B)
         x, w  = analytical.Gaussian(mu, sigma, N)
         ab = custom_recurrence_coefficients(order, x, w)
 
-    # 4. Analytical Exponential
+    # 4. Analytical Exponential defined on [0, inf]
     elif self.param_type is "Exponential":
         lambda_value = self.shape_parameter_A
         x, w  = analytical.ExponentialDistribution(N, lambda_value)
         ab = custom_recurrence_coefficients(order, x, w)
 
-    # 5. Analytical Cauchy
+    # 5. Analytical Cauchy defined on [-inf, inf]
     elif self.param_type is "Cauchy":
         x0 = self.shape_parameter_A
         gammavalue = self.shape_parameter_B
         x, w  = analytical.CauchyDistribution(N, x0, gammavalue)
         ab = custom_recurrence_coefficients(order, x, w)
 
-    # 5. Analytical Gamma
+    # 5. Analytical Gamma defined on [0, inf]
     elif self.param_type is "Gamma":
         k = self.shape_parameter_A
         theta = self.shape_parameter_B
         x, w  = analytical.GammaDistribution(N, k, theta)
         ab = custom_recurrence_coefficients(order, x, w)
 
-    # 6. Analytical Weibull
+    # 6. Analytical Weibull defined on [0, inf]
     elif self.param_type is "Weibull":
         lambda_value= self.shape_parameter_A
         k = self.shape_parameter_B
         x, w  = analytical.WeibullDistribution(N, lambda_value, k)
         ab = custom_recurrence_coefficients(order, x, w)
 
-    elif self.param_type == "Gaussian" or self.param_type == "Normal":
-        param_B = self.shape_parameter_B - 0.5
-        if(param_B <= -0.5):
-            utils.error_function('ERROR: parameter_B (variance) must be greater than 0')
-        else:
-            ab =  hermite_recurrence_coefficients(self.shape_parameter_A, param_B, order)
+    #elif self.param_type == "Gaussian" or self.param_type == "Normal":
+    #    param_B = self.shape_parameter_B - 0.5
+    #   if(param_B <= -0.5):
+    #        utils.error_function('ERROR: parameter_B (variance) must be greater than 0')
+    #    else:
+    #        ab =  hermite_recurrence_coefficients(self.shape_parameter_A, param_B, order)
     else:
-        utils.error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform or Beta')
+        utils.error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential or Beta')
 
     return ab
 
@@ -236,6 +236,7 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
 def custom_recurrence_coefficients(order, x, w):
 
     # Allocate memory for recurrence coefficients
+    order = int(order)
     w = w / np.sum(w)
     ab = np.zeros((order,2))
 
@@ -259,6 +260,7 @@ def custom_recurrence_coefficients(order, x, w):
 
     p1 = np.zeros((1, ncap))
     p2 = np.ones((1, ncap))
+
     for j in range(0, order - 1):
         p0 = p1
         p1 = p2
@@ -283,6 +285,8 @@ def jacobiMatrix(self, order_to_use=None):
     else:
         order = order_to_use
         ab = recurrence_coefficients(self, order)
+
+    order = int(order)
 
     # The case of order 1~
     if int(order) == 1:
@@ -320,7 +324,12 @@ def getlocalquadrature(self, order_to_use=None):
 
     # If statement to handle the case where order = 1
     if order == 1:
-        local_points = [(self.upper_bound - self.lower_bound)/(2.0) + self.lower_bound]
+
+        # Check to see whether upper and lower bound are defined:
+        if not self.lower_bound or not self.upper_bound:
+            local_points = [computeMean(self)]
+        else:
+            local_points = [(self.upper_bound - self.lower_bound)/(2.0) + self.lower_bound]
         local_weights = [1.0]
     else:
         # Compute eigenvalues & eigenvectors of Jacobi matrix
@@ -341,7 +350,6 @@ def getlocalquadrature(self, order_to_use=None):
     # Return 1D gauss points and weights
     return local_points, local_weights
 
-
 def jacobiEigenvectors(self, order=None):
 
     if order is None:
@@ -359,6 +367,20 @@ def jacobiEigenvectors(self, order=None):
 
     return V
 
+# This routine computes the mean of the distribution, depending on which distribution
+# is selected. This function is called by getlocalquadratures()
+def computeMean(self):
+    if self.param_type == "Gaussian":
+        mu = self.shape_parameter_A
+    elif self.param_type == "Exponential":
+        mu = 1.0/self.shape_parameter_A
+    elif self.param_type == "Cauchy":
+        mu = self.shape_parameter_A # technically the mean is undefined!
+    elif self.param_type == "Weibull":
+        mu = self.shape_parameter_A * gamma(1.0 + 1.0/self.shape_parameter_B)
+    elif self.param_type == "Gamma":
+        mu = self.shape_parameter_A * self.shape_parameter_B
+    return mu
 
 # Univariate orthogonal polynomial correspoding to the weight of the parameter
 def orthoPolynomial_and_derivative(self, gridPoints, order=None):

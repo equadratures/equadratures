@@ -29,7 +29,7 @@ def sparseGrid(listOfParameters, indexSet):
 
         # points and weights for each order~
         tensorObject = PolyParent(listOfParameters, method="tensor grid")
-        points, weights = PolyParent.getPointsAndWeights(tensorObject, orders[i,:] + 1)
+        points, weights = PolyParent.getPointsAndWeights(tensorObject, orders[i,:] )
 
         # Multiply weights by constant 'a':
         weights = weights * a[i]

@@ -15,11 +15,6 @@ class PolyParent(object):
     """
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 constructor / initializer
-
-
-     PolyParent object.
-        Two inputs:
-            1. uq_parameters:
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
     def __init__(self, uq_parameters, method, index_sets=None):
@@ -62,25 +57,33 @@ class PolyParent(object):
         if overwrite_orders is not None:
             if self.method == "tensor grid" or self.method == "Tensor grid":
                 return getGaussianQuadrature(self.uq_parameters, overwrite_orders)
+
+            elif self.method == "sparse grid" or self.method == "Sparse grid" or self.method == "spam":
+                p, w, sets = sparseGrid(self.uq_parameters, overwrite_orders)
+                return p, w
+
         else:
             if self.method == "tensor grid" or self.method == "Tensor grid":
                 return getGaussianQuadrature(self.uq_parameters)
 
-        if self.method == "sparse grid" or self.method == "Sparse grid":
-            indexSets = self.index_sets
-            level = self.level
-            growth_rule = self.growth_rule
-            sparse_indices, sparse_factors, not_used = IndexSet.getIndexSet(indexSets)
-            return sparsegrid(self.uq_parameters, self.index_sets, level, growth_rule)
+            elif self.method == "sparse grid" or self.method == "Sparse grid" or self.method == "spam":
+                p, w, sets = sparseGrid(self.uq_parameters, self.index_sets)
+                return p, w
 
-    def getPolynomialApproximation(self, pts):
+    def getPolynomialApproximation(self, function, plotting_pts):
+
+        # Get the right polynomial coefficients
+        if self.method == "tensor grid" or self.method == "Tensor grid":
+            coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self.uq_parameters, function)
+        if self.method == "spam" or self.method == "Spam":
+            coefficients, indexset, evaled_pts = getSparsePseudospectralCoefficients(self, function)
         if self.method == "sparse grid" or self.method == "Sparse grid":
             print('WARNING: Use spam as a method instead!')
+            coefficients, indexset, evaled_pts = getSparseCoefficientsViaIntegration(self, function)
 
-
-
-
-        return getOrthoPolyApprox(self, pts)
+        P = getMultiOrthoPoly(self, plotting_pts, indexset)
+        PolyApprox = np.mat(coefficients) * np.mat(P)
+        return PolyApprox, evaled_pts
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                             PRIVATE FUNCTIONS
@@ -104,8 +107,6 @@ def tensorGrid(listOfParameters, indexSet=None):
 
     return points, weights
 
-
-# Sparse grids
 def sparseGrid(listOfParameters, indexSet):
 
     # Get the number of parameters
@@ -129,7 +130,7 @@ def sparseGrid(listOfParameters, indexSet):
 
         # points and weights for each order~
         tensorObject = PolyParent(listOfParameters, method="tensor grid")
-        points, weights = PolyParent.getPointsAndWeights(tensorObject, orders[i,:] + 1) # Changed!!!!!!!!!!!!!
+        points, weights = PolyParent.getPointsAndWeights(tensorObject, orders[i,:])
 
         # Multiply weights by constant 'a':
         weights = weights * a[i]
@@ -142,19 +143,6 @@ def sparseGrid(listOfParameters, indexSet):
     dims1 = int( len(points_store) / dimensions )
     points_store = np.reshape(points_store, ( dims1, dimensions ) )
 
-    # Now if there are duplicates, we would like to remove the duplicate points,
-    # but add the weights.
-    #points_unique, unique_indices = utils.removeDuplicates(points_store)
-    #counter = np.ones((len(points_unique), 1))
-    #for i in range(0, len(points_unique)):
-    #    for j in range(0, len(points_store)):
-    #        if( points_unique[i,:] == points_store[j,:] ):
-    #            counter[i,0] = counter[i,0] + 1
-
-    #print counter
-
-    # Figure out how many times the
-    #return points_store, weights_store[unique_indices]
     return points_store, weights_store, sg_set
 
 def getSparseCoefficientsViaIntegration(self, function):
@@ -167,10 +155,9 @@ def getSparseCoefficientsViaIntegration(self, function):
     # Sparse grid integration rule
     pts, wts, sg_set_full = sparseGrid(stackOfParameters, indexSets)
 
-
-    # Get multivariate orthogonal polynomial according to the index set
-    #del pts, wts
-    #pts, wts = tensorGrid(stackOfParameters)
+    for i in range(0, len(sg_set_full)):
+        for j in range(0, dimensions):
+            sg_set_full[i,j] = int(sg_set_full[i,j])
 
     P = getMultiOrthoPoly(self, pts, sg_set_full)
     f = utils.evalfunction(pts, function)
@@ -185,7 +172,7 @@ def getSparseCoefficientsViaIntegration(self, function):
     for i in range(0,rows):
         coefficients[0,i] = np.mat(P[i,:]) * Wdiag * np.diag(P[0,:]) * f
 
-    return coefficients, sg_set_full
+    return coefficients, sg_set_full, pts
 
 
 # The SPAM technique!
@@ -206,23 +193,27 @@ def getSparsePseudospectralCoefficients(self, function):
     # For storage we use dictionaries
     individual_tensor_coefficients = {}
     individual_tensor_indices = {}
+    points_store = {}
     indices = np.zeros((rows,1))
 
     for i in range(0,rows):
-        orders = sparse_indices[i,:] + 1
-        K, I = getPseudospectralCoefficients(self.uq_parameters, function, orders)
+        orders = sparse_indices[i,:]
+        K, I, points = getPseudospectralCoefficients(self.uq_parameters, function, orders)
         individual_tensor_indices[i] = I
         individual_tensor_coefficients[i] =  K
+        points_store[i] = points
         indices[i,0] = len(I)
 
     sum_indices = int(np.sum(indices))
     store = np.zeros((sum_indices, dimensions+1))
+    points_saved = np.zeros((sum_indices, dimensions))
     counter = int(0)
     for i in range(0,rows):
         for j in range(0, int(indices[i][0])):
              store[counter,0] = sparse_factors[i] * individual_tensor_coefficients[i][0][j]
              for d in range(0, dimensions):
                  store[counter,d+1] = individual_tensor_indices[i][j][d]
+                 points_saved[counter,d] = points_store[i][j][d]
              counter = counter + 1
 
 
@@ -275,7 +266,7 @@ def getSparsePseudospectralCoefficients(self, function):
         for j in range(0, dimensions):
             indices[i,j] = int(indices[i,j])
 
-    return coefficients, indices
+    return coefficients, indices, points_saved
 
 # Tensor grid pseudospectral method
 def getPseudospectralCoefficients(stackOfParameters, function, additional_orders=None):
@@ -341,7 +332,7 @@ def getPseudospectralCoefficients(stackOfParameters, function, additional_orders
     K = efficient_kron_mult(Q, Uc)
     F = function_values
 
-    return K, tensor_set
+    return K, tensor_set, p
 
 # Efficient kronecker product multiplication
 # Adapted from David Gelich and Paul Constantine's kronmult.m
@@ -420,15 +411,14 @@ def getGaussianQuadrature(stackOfParameters, additional_orders=None):
     # Now re-scale the points and return only if its not a Gaussian!
     for i in range(0, dimensions):
         for j in range(0, len(points)):
-            if (stackOfParameters[i].param_type != "Gaussian" and stackOfParameters[i].param_type != "Normal" and stackOfParameters[i].param_type != "Beta")  :
+            if (stackOfParameters[i].param_type == "Uniform"):
                 points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
 
             elif (stackOfParameters[i].param_type == "Beta" ):
                 points[j,i] =  ( points[j,i] )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
 
-            # Scale points by the mean!
-            elif (stackOfParameters[i].param_type == "Gaussian" or stackOfParameters[i].param_type == "Normal" ):
-                points[j,i] = points[j,i] + float(stackOfParameters[i].shape_parameter_A)
+            elif (stackOfParameters[i].param_type == "Gaussian"):
+                points[j,i] = points[j,i] # No scaling!
 
     # Return tensor grid quad-points and weights
     return points, weights
@@ -470,7 +460,3 @@ def getMultiOrthoPoly(self, stackOfPoints, index_set_alternate=None):
             temp = polynomial[i,:]
 
     return polynomial
-
-def getPolynomialApproximation(self, pts):
-    P = getMultiOrthoPoly(self, pts)
-    coefficients =

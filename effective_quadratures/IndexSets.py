@@ -6,6 +6,8 @@ import math as mt
     The IndexSet Class
     Designed to be the base class for all subsequent multivariate polynomials
 
+    need to sort out this ordering vs. number of points issue!
+
     Pranay Seshadri
     ps583@cam.ac.uk
 
@@ -191,6 +193,7 @@ def sparse_grid_index_set(level, growth_rule, dimensions):
     # Ok, but sparse_index just has the tensor order sets to be used. Now we need
     # to get all the index sets!
     SG_indices = {}
+
     counter = 0
     for i in range(0, len(sparse_index)):
         SG_indices[i] = tensor_grid_index_set(sparse_index[i,:] )
@@ -202,7 +205,6 @@ def sparse_grid_index_set(level, growth_rule, dimensions):
         for j in range(0, len(SG_indices[i]) ):
             SG_set[counter,:] = SG_indices[i][j]
             counter = counter + 1
-
     return sparse_index, a, SG_set
 
 def tensor_grid_index_set(orders):

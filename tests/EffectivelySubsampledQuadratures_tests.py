@@ -22,7 +22,7 @@ import os
 """
 # Simple analytical function
 def fun(x):
-    return np.exp(x[0] + x[1])
+    return np.exp(x[0] + x[1] )
 
 def main():
 

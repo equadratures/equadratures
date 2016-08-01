@@ -9,7 +9,7 @@ Effective-Quadratures is a suite of tools for generating polynomials for paramet
 
 This project has been funded in part from AFOSR and EPSRC.
 
-.. image:: compare.pdf
+.. image:: compare.png
     :width: 900px
     :align: center
     :alt: alternate text

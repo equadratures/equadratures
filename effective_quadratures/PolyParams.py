@@ -98,7 +98,7 @@ class PolynomialParam(object):
 def recurrence_coefficients(self, order=None):
 
     # Preliminaries.
-    N = 5000 # no. of points for analytical distributions.
+    N = 8000 # no. of points for analytical distributions.
     if order is None:
         order = self.order
 

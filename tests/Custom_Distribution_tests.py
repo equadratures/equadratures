@@ -22,8 +22,9 @@ import os
 
 # Simple analytical function
 def fun(x):
-    #return (1 - x[0])**2 + 100*(x[1] - x[0]**2)**2
-    return x[0]
+
+    # Rosenbrock's function in 2D
+    return (1 - x[0])**2 + 100*(x[1] - x[0]**2)**2
 
 def main():
 

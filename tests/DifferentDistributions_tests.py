@@ -19,23 +19,31 @@ def rosenbrock_fun(x):
 def main():
     no_pts_x1 = 5
     no_pts_x2 = 5
-    mu = 1
-    sigma = 2
-    variance = sigma**2
+    #k = 5
+    #theta = 1
+    #mu = 1
+    #sigma = 2
+    #variance = sigma**2
+    #a = 1
+    #b = 5
+    lambda_value = 1.5
     method = "tensor grid"
     #x1 = PolynomialParam("Gaussian", [], [], mu, variance, [], no_pts_x1)
     #x2 = PolynomialParam("Gaussian", [], [], mu, variance, [], no_pts_x2)
     #x1 = PolynomialParam("Weibull", [], [], a, b, [], no_pts_x1)
     #x2 = PolynomialParam("Weibull", [], [], a, b, [], no_pts_x2)
-    #x1 = PolynomialParam("Exponential", [], [], lambda_value, [], [], no_pts_x1)
-    #x2 = PolynomialParam("Exponential", [], [], lambda_value, [], [], no_pts_x2)
-    x1 = PolynomialParam("TruncatedGaussian", -15, 15, mu, variance, [], no_pts_x1)
-    x2 = PolynomialParam("TruncatedGaussian", -15, 15, mu, variance, [], no_pts_x2)
+    x1 = PolynomialParam("Exponential", [], [], lambda_value, [], [], no_pts_x1)
+    x2 = PolynomialParam("Exponential", [], [], lambda_value, [], [], no_pts_x2)
+    #x1 = PolynomialParam("TruncatedGaussian", -15, 15, mu, variance, [], no_pts_x1)
+    #x2 = PolynomialParam("TruncatedGaussian", -15, 15, mu, variance, [], no_pts_x2)
+    #x1 = PolynomialParam("Gamma", [], [], k, theta, [], no_pts_x1)
+    #x2 = PolynomialParam("Gamma", [], [], k, theta, [], no_pts_x2)
     x1x2 = []
     x1x2.append(x1)
     x1x2.append(x2)
 
     # spam.
+    """
     method = "spam"
     growth_rule = "linear"
     level = 4
@@ -46,7 +54,7 @@ def main():
     x, i, f = PolyParent.getCoefficients(uqProblem, rosenbrock_fun)
     mean, variance = stats.compute_mean_variance(x, i)
     print mean, variance
-
+    """
     # Tensor grid
     method = "tensor grid"
     uqProblemT = PolyParent(x1x2, method)
@@ -55,11 +63,11 @@ def main():
     mean, variance = stats.compute_mean_variance(x, i)
     print mean, variance
 
-
-    plt.scatter(pts[:,0], pts[:,1], s=70, c='b', marker='o')
-    plt.scatter(pts2[:,0], pts2[:,1], s=70, c='r', marker='o')
-    plt.xlabel('x1')
-    plt.ylabel('x2')
-    plt.show()
+    print pts2, wts
+    #plt.scatter(pts[:,0], pts[:,1], s=70, c='b', marker='o')
+    #plt.scatter(pts2[:,0], pts2[:,1], s=70, c='r', marker='o')
+    #plt.xlabel('x1')
+    #plt.ylabel('x2')
+    #plt.show()
 
 main()

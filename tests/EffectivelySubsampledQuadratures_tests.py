@@ -29,7 +29,7 @@ def main():
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     INPUT SECTION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    order = 8
+    order = 3
     derivative_flag = 0 # derivative flag
     min_value, max_value = 0, 1
     q_parameter = 0.7
@@ -49,20 +49,23 @@ def main():
     effectiveQuads = EffectiveSubsampling(uq_parameters, hyperbolic_basis, derivative_flag)
     A, pts = EffectiveSubsampling.getAsubsampled(effectiveQuads, maximum_number_of_evals)
 
+
+    """
     print 'Dimensions of big A'
     print len(A)
     print len(A[0,:])
 
-    """
+
     ------------------------------------------------------------------------
 
     Solving the effective quadratures problem!
 
     ----------------------------------------------------------------------------
-    """
+
     # Step 1 - QR column pivoting
     P = matrix.QRColumnPivoting(A.T)
     print P
+
     #print P2
     effective = P[ 0 : maximum_number_of_evals]
 
@@ -77,13 +80,13 @@ def main():
     # Step 4 - Solve the least squares problem
     xapprox = matrix.solveLeastSquares(Asquare, bsquare)
 
-    """
+
     ------------------------------------------------------------------------
 
     Solving the tensor grid least squares problem!
 
     ----------------------------------------------------------------------------
-    """
+
     # Get evaluations at all points!
     b = utils.evalfunction(pts, fun)
 
@@ -97,5 +100,5 @@ def main():
     # Display Output
     print xapprox
     print xfull
-
+    """
 main()

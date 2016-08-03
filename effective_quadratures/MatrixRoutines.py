@@ -9,7 +9,7 @@ import Utils as util
 # Compute the pivot columns
 def QRColumnPivoting(A):
     Q, R, P = sc.qr(A,  pivoting=True)
-    return Q, R, P
+    return P
 
 def solveLeastSquares(A, b):
     rows, cols = A.shape

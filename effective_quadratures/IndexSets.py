@@ -96,6 +96,10 @@ def hyperbolic_index_set(orders, q):
 
     # Initialize a few parameters for the setup
     dimensions = len(orders)
+    #for i in range(0, dimensions):
+    #    orders[i] = orders[i] - 1
+
+
     n_bar = tensor_grid_index_set(orders)
     n_new = []
     summation = np.ones((1, len(n_bar)))

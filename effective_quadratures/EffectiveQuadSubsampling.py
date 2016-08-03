@@ -80,6 +80,8 @@ def getA(self, points):
             A_multivariate[i, :] =  A_univariate[j][indices[i,j], :] * temp
             temp = A_multivariate[i, :]
 
+
+    # MULTIPLY BY WEIGHTS!!!!!!!!!!!!!!
     return A_multivariate.T, quadrature_pts
 
 

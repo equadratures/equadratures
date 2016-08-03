@@ -60,7 +60,7 @@ def getA(self, points):
 
 
     # Allocate space for each of the univariate matrices!
-    A_univariate = {}
+    P_univariate = {}
     total_points = len(quadrature_pts[:,0])
 
     for i in range(0, dimensions):
@@ -68,40 +68,46 @@ def getA(self, points):
         # Create a polynomial object!
         N = self.uq_parameters[i].order + 1
         P, M = PolynomialParam.getOrthoPoly(self.uq_parameters[i], quadrature_pts[:,i], N)
-        A_univariate[i] = P
-        local_rows, local_cols = A_univariate[i].shape
+        P_univariate[i] = P
+        local_rows, local_cols = P_univariate[i].shape
 
     # Now using the select basis terms, compute multivariate "A". This is
     # a memory intensive operation -- need to figure out a way to handle this.
-    A_multivariate = np.zeros((no_of_indices, total_points))
+    P_multivariate = np.zeros((no_of_indices, total_points))
     for i in range(0, no_of_indices):
         temp = np.ones((1,total_points))
         for j in range(0, dimensions):
-            A_multivariate[i, :] =  A_univariate[j][indices[i,j], :] * temp
-            temp = A_multivariate[i, :]
+            P_multivariate[i, :] =  P_univariate[j][indices[i,j], :] * temp
+            temp = P_multivariate[i, :]
 
-
-    # MULTIPLY BY WEIGHTS!!!!!!!!!!!!!!
-    return A_multivariate.T, quadrature_pts
+    # Multiplication buy weights.
+    W = np.diag(quadrature_wts)
+    A_multivariate = W * np.mat(P_multivariate.T)
+    #A_multivariate = np.mat(P_multivariate.T)
+    return np.mat(A_multivariate), quadrature_pts, quadrature_wts
 
 
 def getSquareA(self, maximum_number_of_evals, points):
 
     # Get A
-    A, quadrature_pts = getA(self, points)
+    A, quadrature_pts, quadrature_wts = getA(self, points)
 
     # Determine the size of A
-    m = len(A)
-    n = len(A[0,:])
-
+    m , n = A.shape
+    #print m, n
+    #print m, n
     # Check that A is a tall matrix!
-    if m < n:
-        error_function('ERROR: For QR column pivoting, we require m > n!')
+    #if m < n:
+    #    error_function('ERROR: For QR column pivoting, we require m > n!')
 
     # Now compute the rank revealing QR decomposition of A!
     P = mat.QRColumnPivoting(A.T)
     selected_quadrature_points = P[0:maximum_number_of_evals]
-    return mat.getRows(A, selected_quadrature_points), mat.getRows(quadrature_pts, selected_quadrature_points)
+    Asquare =  mat.getRows(np.mat(A), selected_quadrature_points)
+    esq_pts = mat.getRows(np.mat(quadrature_pts), selected_quadrature_points)
+    esq_wts = quadrature_wts[selected_quadrature_points]
+    return Asquare, esq_pts, esq_wts
+    #return mat.getRows(A, selected_quadrature_points), mat.getRows(quadrature_pts, selected_quadrature_points)
 
 def error_function(string_value):
     print string_value

@@ -22,40 +22,50 @@ import os
 """
 # Simple analytical function
 def fun(x):
-    return np.exp(x[0] + x[1] )
+    return np.exp(x[0] + x[1] + x[2])
 
 def main():
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     INPUT SECTION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    order = 3
+    order = 5
     derivative_flag = 0 # derivative flag
-    min_value, max_value = 0, 1
-    q_parameter = 0.7
+    min_value, max_value = -1, 1
+    q_parameter = 1.0
 
     # Decide on the polynomial basis. We recommend total order or hyperbolic cross
     # basis terms. First we create an index set object
-    hyperbolic_basis = IndexSet("hyperbolic cross", [order, order], q_parameter)
-    maximum_number_of_evals = IndexSet.getCardinality(hyperbolic_basis)
+    #hyperbolic_basis = IndexSet("hyperbolic cross", [order-1, order-1], q_parameter)
+    tensor_basis = IndexSet("tensor grid", [order-1, order-1, order-1])
+    maximum_number_of_evals = IndexSet.getCardinality(tensor_basis)
 
     # The "UQ" parameters
     uq_parameters = []
     uniform_parameter = PolynomialParam("Uniform", min_value, max_value, [], [] , derivative_flag, order)
     uq_parameters.append(uniform_parameter)
     uq_parameters.append(uniform_parameter)
+    uq_parameters.append(uniform_parameter)
 
     # Define the EffectiveSubsampling object and get "A"
-    effectiveQuads = EffectiveSubsampling(uq_parameters, hyperbolic_basis, derivative_flag)
-    A, pts = EffectiveSubsampling.getAsubsampled(effectiveQuads, maximum_number_of_evals)
+    effectiveQuads = EffectiveSubsampling(uq_parameters, tensor_basis, derivative_flag)
+    A, pts, wts = EffectiveSubsampling.getAsubsampled(effectiveQuads, maximum_number_of_evals)
+    An, normalizations = matrix.rowNormalize(A)
+    b_tall = np.diag(wts) * np.mat(utils.evalfunction(pts, fun))
+    bn = np.dot(normalizations, b_tall)
+    xn = matrix.solveLeastSquares(An, bn)
+    print xn[0,0]
+    #bn =
+    #bn = np.dot(normalizations, bn)
+
+
+    #print 'Dimensions of big A'
+    #print len(A)
+    #print len(A[0,:])
+
 
 
     """
-    print 'Dimensions of big A'
-    print len(A)
-    print len(A[0,:])
-
-
     ------------------------------------------------------------------------
 
     Solving the effective quadratures problem!

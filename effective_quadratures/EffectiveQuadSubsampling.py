@@ -56,42 +56,15 @@ def getA(self, points):
     else:
         quadrature_pts = points
 
-    quadrature_pts, quadrature_wts = PolyParent.getPointsAndWeights(polyObject)
-
-
-    # Allocate space for each of the univariate matrices!
-    P_univariate = {}
-    total_points = len(quadrature_pts[:,0])
-
-    for i in range(0, dimensions):
-
-        # Create a polynomial object!
-        N = self.uq_parameters[i].order + 1
-        P, M = PolynomialParam.getOrthoPoly(self.uq_parameters[i], quadrature_pts[:,i], N)
-        P_univariate[i] = P
-        local_rows, local_cols = P_univariate[i].shape
-
-    # Now using the select basis terms, compute multivariate "A". This is
-    # a memory intensive operation -- need to figure out a way to handle this.
-    P_multivariate = np.zeros((no_of_indices, total_points))
-    for i in range(0, no_of_indices):
-        temp = np.ones((1,total_points))
-        for j in range(0, dimensions):
-            P_multivariate[i, :] =  P_univariate[j][indices[i,j], :] * temp
-            temp = P_multivariate[i, :]
-
-    # Multiplication buy weights.
-    W = np.diag(quadrature_wts)
-    A_multivariate = W * np.mat(P_multivariate.T)
-    #A_multivariate = np.mat(P_multivariate.T)
-    return np.mat(A_multivariate), quadrature_pts, quadrature_wts
-
+    P = np.mat(PolyParent.getMultivariatePolynomial(polyObject, quadrature_pts, indices))
+    W = np.mat( np.diag(np.sqrt(quadrature_wts)))
+    A = W * P.T
+    return A, quadrature_pts, quadrature_wts
 
 def getSquareA(self, maximum_number_of_evals, points):
 
     # Get A
     A, quadrature_pts, quadrature_wts = getA(self, points)
-
     # Determine the size of A
     m , n = A.shape
     #print m, n
@@ -106,8 +79,8 @@ def getSquareA(self, maximum_number_of_evals, points):
     Asquare =  mat.getRows(np.mat(A), selected_quadrature_points)
     esq_pts = mat.getRows(np.mat(quadrature_pts), selected_quadrature_points)
     esq_wts = quadrature_wts[selected_quadrature_points]
-    return Asquare, esq_pts, esq_wts
-    #return mat.getRows(A, selected_quadrature_points), mat.getRows(quadrature_pts, selected_quadrature_points)
+    W = np.mat(np.diag(0.5 * np.sqrt(esq_wts)))
+    return Asquare, esq_pts, W
 
 def error_function(string_value):
     print string_value

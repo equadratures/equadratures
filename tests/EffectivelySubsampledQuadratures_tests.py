@@ -29,16 +29,16 @@ def main():
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     INPUT SECTION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    order = 5
+    order = 10
     derivative_flag = 0 # derivative flag
-    min_value, max_value = -1, 1
-    q_parameter = 1.0
+    min_value = -1.0
+    max_value = 1.0
+    q_parameter = 1.00
 
     # Decide on the polynomial basis. We recommend total order or hyperbolic cross
     # basis terms. First we create an index set object
-    #hyperbolic_basis = IndexSet("hyperbolic cross", [order-1, order-1], q_parameter)
-    tensor_basis = IndexSet("tensor grid", [order-1, order-1, order-1])
-    maximum_number_of_evals = IndexSet.getCardinality(tensor_basis)
+    hyperbolic_basis = IndexSet("total order", [order-1, order-1, order-1])
+    maximum_number_of_evals = IndexSet.getCardinality(hyperbolic_basis)
 
     # The "UQ" parameters
     uq_parameters = []
@@ -48,13 +48,34 @@ def main():
     uq_parameters.append(uniform_parameter)
 
     # Define the EffectiveSubsampling object and get "A"
-    effectiveQuads = EffectiveSubsampling(uq_parameters, tensor_basis, derivative_flag)
-    A, pts, wts = EffectiveSubsampling.getAsubsampled(effectiveQuads, maximum_number_of_evals)
-    An, normalizations = matrix.rowNormalize(A)
-    b_tall = np.diag(wts) * np.mat(utils.evalfunction(pts, fun))
-    bn = np.dot(normalizations, b_tall)
-    xn = matrix.solveLeastSquares(An, bn)
+    effectiveQuads = EffectiveSubsampling(uq_parameters, hyperbolic_basis, derivative_flag)
+    A, pts, W = EffectiveSubsampling.getAsubsampled(effectiveQuads, maximum_number_of_evals)
+    b = W * np.mat(utils.evalfunction(pts, fun))
+    xn = matrix.solveLeastSquares(A, b)
     print xn[0,0]
+
+
+
+
+
+    """
+
+
+
+
+    #b = np.mat(utils.evalfunction(pts, fun))
+    #An, normalizations = matrix.rowNormalize(A)
+    #b_tall =  np.mat(utils.evalfunction(pts, fun))
+    #print np.mat(utils.evalfunction(pts, fun))
+    #b_tall = np.diag(np.sqrt(wts)) * np.mat(utils.evalfunction(pts, fun))
+
+    #print '-----FINAL ANSWER----'
+    #print A
+    #print '\n'
+    #print b_tall
+    #bn = np.dot(normalizations, b_tall)
+    #xn = matrix.solveLeastSquares(A, b_tall)
+    #print xn[0,0]
     #bn =
     #bn = np.dot(normalizations, bn)
 
@@ -63,9 +84,6 @@ def main():
     #print len(A)
     #print len(A[0,:])
 
-
-
-    """
     ------------------------------------------------------------------------
 
     Solving the effective quadratures problem!

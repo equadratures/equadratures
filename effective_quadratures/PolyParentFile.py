@@ -85,6 +85,14 @@ class PolyParent(object):
         PolyApprox = np.mat(coefficients) * np.mat(P)
         return PolyApprox, evaled_pts
 
+    def getMultivariatePolynomial(self, stackOfPoints, index_set_alternate=None):
+        if index_set_alternate is None:
+            index_set = self.indexsets
+        else:
+            index_set = index_set_alternate
+        return getMultiOrthoPoly(self, stackOfPoints, index_set)
+
+
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                             PRIVATE FUNCTIONS
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
@@ -412,6 +420,7 @@ def getGaussianQuadrature(stackOfParameters, additional_orders=None):
     for i in range(0, dimensions):
         for j in range(0, len(points)):
             if (stackOfParameters[i].param_type == "Uniform"):
+                #points[j,i] = points[j,i] * ( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
                 points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
 
             elif (stackOfParameters[i].param_type == "Beta" ):
@@ -426,17 +435,10 @@ def getGaussianQuadrature(stackOfParameters, additional_orders=None):
 # determines a multivariate orthogonal polynomial corresponding to the stackOfParameters,
 # their corresponding orders and then evaluates the polynomial at the corresponding
 # stackOfPoints.
-def getMultiOrthoPoly(self, stackOfPoints, index_set_alternate=None):
+def getMultiOrthoPoly(self, stackOfPoints, index_set):
 
     # "Unpack" parameters from "self"
     stackOfParameters = self.uq_parameters
-
-    # Now if the user has provided an alternate index set, we use that one.
-    if index_set_alternate is None:
-        index_set = self.indexsets
-    else:
-        index_set = index_set_alternate
-
     dimensions = len(stackOfParameters)
     p = {}
 

@@ -200,12 +200,12 @@ def jacobi_recurrence_coefficients_01(param_A, param_B, order):
     cd = jacobi_recurrence_coefficients(param_A, param_B, order)
     N = order
 
-    for i in range(0,N):
+    for i in range(0,int(N)):
         ab[i,0] = (1 + cd[i,0])/2.0
 
     ab[0,1] = cd[0,1]/(2**(param_A + param_B + 1))
 
-    for i in range(1,N):
+    for i in range(1,int(N)):
         ab[i,1] = cd[i,1]/4.0
 
     return ab
@@ -356,6 +356,18 @@ def getlocalquadrature(self, order_to_use=None):
         local_weights = recurrence_coeffs[0,1] * w  # normalizing step
         local_points = p # re-label
 
+    # Now re-scale the points and return only if its not a Gaussian!
+    #for j in range(0, len(local_points)):
+    #    if (self.param_type == "Uniform"):
+            #local_points[j] = local_points[j] * ( self.upper_bound - self.lower_bound) + self.lower_bound
+            # Uniform distribution is defined on [-1, 1]
+    #        local_points[j] = 0.5 * ( local_points[j] + 1.0 )*( self.upper_bound - self.lower_bound) + self.lower_bound
+
+    #    elif (self.param_type == "Beta" ):
+            # Beta distribution is defined on [0, 1]
+    #        local_points[j] =  ( local_points[j] )*( self.upper_bound - self.lower_bound) + self.lower_bound
+
+
     # Return 1D gauss points and weights
     return local_points, local_weights
 
@@ -372,7 +384,7 @@ def jacobiEigenvectors(self, order=None):
         V = np.mat(V) # convert to matrix
         i = np.argsort(D) # get the sorted indices
         i = np.array(i) # convert to array
-        V = V[:,i]
+        V = V[:,i] 
 
     return V
 

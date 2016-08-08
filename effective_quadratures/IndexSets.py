@@ -60,9 +60,14 @@ class IndexSet(object):
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
     def getCardinality(self):
         # Return the number of elements in the index set!
-        index_set = getindexsetvalues(self)
-        m, n = index_set.shape
-        
+
+        if self.index_set_type == "sparse grid":
+            index_set, a, SG_set = getindexsetvalues(self)
+        else:
+            index_set = getindexsetvalues(self)
+            return len(index_set)
+
+        # Now m or n is equivalent to the
         return len(index_set)
 
     def getIndexSetType(self):

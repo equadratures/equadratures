@@ -14,6 +14,10 @@ import effective_quadratures.Utils as util
     1. Code up Gianluca Geraci's skewness and kurtosis results
 """
 def compute_mean_variance(coefficients, index_set):
+    m, n = coefficients.shape
+    if m > n:
+        coefficients = coefficients.T
+
     mean = coefficients[0,0]
     variance = np.sum(coefficients[0,1::]**2)
     return mean, variance

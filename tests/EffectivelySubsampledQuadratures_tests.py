@@ -3,6 +3,7 @@ from effective_quadratures.PolyParams import PolynomialParam
 from effective_quadratures.PolyParentFile import PolyParent
 from effective_quadratures.IndexSets import IndexSet
 import effective_quadratures.MatrixRoutines as matrix
+import effective_quadratures.ComputeStats as stats
 from effective_quadratures.EffectiveQuadSubsampling import EffectiveSubsampling
 import effective_quadratures.Utils as utils
 from mpl_toolkits.mplot3d import Axes3D
@@ -40,6 +41,7 @@ def main():
     #hyperbolic_basis = IndexSet("total order", [order-1, order-1, order-1, order-1])
     hyperbolic_basis = IndexSet("tensor grid", [order-1])
     maximum_number_of_evals = IndexSet.getCardinality(hyperbolic_basis)
+    index_elements = IndexSet.getIndexSet(hyperbolic_basis)
 
     # The "UQ" parameters
     uq_parameters = []
@@ -52,12 +54,11 @@ def main():
     # Define the EffectiveSubsampling object and get "A"
     effectiveQuads = EffectiveSubsampling(uq_parameters, hyperbolic_basis, derivative_flag)
     A, pts, W = EffectiveSubsampling.getAsubsampled(effectiveQuads, maximum_number_of_evals)
-    print pts
-    print utils.evalfunction(pts, fun)
     b = W * np.mat(utils.evalfunction(pts, fun))
     xn = matrix.solveLeastSquares(A, b)
-    print xn[0,0]
-
+    mean, variance = stats.compute_mean_variance(xn, index_elements)
+    print mean, variance
+    
     uqProblem = PolyParent(uq_parameters, "tensor grid")
     x_full, i, f = PolyParent.getCoefficients(uqProblem, fun)
     print x_full[0,0]

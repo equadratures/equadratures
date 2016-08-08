@@ -356,18 +356,6 @@ def getlocalquadrature(self, order_to_use=None):
         local_weights = recurrence_coeffs[0,1] * w  # normalizing step
         local_points = p # re-label
 
-    # Now re-scale the points and return only if its not a Gaussian!
-    #for j in range(0, len(local_points)):
-    #    if (self.param_type == "Uniform"):
-            #local_points[j] = local_points[j] * ( self.upper_bound - self.lower_bound) + self.lower_bound
-            # Uniform distribution is defined on [-1, 1]
-    #        local_points[j] = 0.5 * ( local_points[j] + 1.0 )*( self.upper_bound - self.lower_bound) + self.lower_bound
-
-    #    elif (self.param_type == "Beta" ):
-            # Beta distribution is defined on [0, 1]
-    #        local_points[j] =  ( local_points[j] )*( self.upper_bound - self.lower_bound) + self.lower_bound
-
-
     # Return 1D gauss points and weights
     return local_points, local_weights
 
@@ -384,7 +372,7 @@ def jacobiEigenvectors(self, order=None):
         V = np.mat(V) # convert to matrix
         i = np.argsort(D) # get the sorted indices
         i = np.array(i) # convert to array
-        V = V[:,i] 
+        V = V[:,i]
 
     return V
 
@@ -419,7 +407,10 @@ def orthoPolynomial_and_derivative(self, gridPoints, order=None):
         gridPointsII[u,0] = gridPoints[u]
 
     # Zeroth order
-    orthopoly[0,:] = (1.0)/(1.0 * np.sqrt(ab[0,1]) ) # Correct!
+    # original!
+    # orthopoly[0,:] = (1.0)/(1.0 * np.sqrt(ab[0,1]) ) # Correct!
+    # New
+    orthopoly[0,:] = 1.0
 
     # Cases
     if order == 1:

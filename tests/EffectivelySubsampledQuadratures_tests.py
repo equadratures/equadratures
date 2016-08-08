@@ -53,7 +53,7 @@ def main():
 
     # Define the EffectiveSubsampling object and get "A"
     effectiveQuads = EffectiveSubsampling(uq_parameters, hyperbolic_basis, derivative_flag)
-    A, pts, W = EffectiveSubsampling.getAsubsampled(effectiveQuads, maximum_number_of_evals)
+    A, pts, W, not_used = EffectiveSubsampling.getAsubsampled(effectiveQuads, maximum_number_of_evals)
     b = W * np.mat(utils.evalfunction(pts, fun))
     xn = matrix.solveLeastSquares(A, b)
     mean, variance = stats.compute_mean_variance(xn, index_elements)

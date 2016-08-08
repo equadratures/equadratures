@@ -82,6 +82,25 @@ class IndexSet(object):
     def getIndexSet(self):
         return getindexsetvalues(self)
 
+    def determineIndexLocation(self, large_index):
+        small_index = getindexsetvalues(self)
+        return getIndexLocation(small_index, large_index)
+
+# From a large index determine the specific locations of entries of the smaller index set.
+# This functionality will be used for error computation. We assume that elements in both
+# small_index and large_index are unique.
+def getIndexLocation(small_index, large_index):
+    index_values = []
+    i = 0
+    while i < len(small_index):
+        for j in range(0, len(large_index)):
+            if np.array_equal(small_index[i,:] , large_index[j,:] ):
+                index_values.append(j)
+        i = i + 1
+
+    return index_values
+
+
 def getindexsetvalues(self):
 
     name = self.index_set_type

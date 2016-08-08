@@ -21,9 +21,9 @@ def main():
     no_pts_x2 = 5
     #k = 5
     #theta = 1
-    #mu = 1
-    #sigma = 2
-    #variance = sigma**2
+    mu = 1
+    sigma = 2
+    variance = sigma**2
     #a = 1
     #b = 5
     lambda_value = 1.5
@@ -32,10 +32,10 @@ def main():
     #x2 = PolynomialParam("Gaussian", [], [], mu, variance, [], no_pts_x2)
     #x1 = PolynomialParam("Weibull", [], [], a, b, [], no_pts_x1)
     #x2 = PolynomialParam("Weibull", [], [], a, b, [], no_pts_x2)
-    x1 = PolynomialParam("Exponential", [], [], lambda_value, [], [], no_pts_x1)
-    x2 = PolynomialParam("Exponential", [], [], lambda_value, [], [], no_pts_x2)
-    #x1 = PolynomialParam("TruncatedGaussian", -15, 15, mu, variance, [], no_pts_x1)
-    #x2 = PolynomialParam("TruncatedGaussian", -15, 15, mu, variance, [], no_pts_x2)
+    #x1 = PolynomialParam("Exponential", [], [], lambda_value, [], [], no_pts_x1)
+    #x2 = PolynomialParam("Exponential", [], [], lambda_value, [], [], no_pts_x2)
+    x1 = PolynomialParam("TruncatedGaussian", -15, 15, mu, variance, [], no_pts_x1)
+    x2 = PolynomialParam("TruncatedGaussian", -15, 15, mu, variance, [], no_pts_x2)
     #x1 = PolynomialParam("Gamma", [], [], k, theta, [], no_pts_x1)
     #x2 = PolynomialParam("Gamma", [], [], k, theta, [], no_pts_x2)
     x1x2 = []

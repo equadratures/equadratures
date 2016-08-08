@@ -18,7 +18,8 @@ or alternatively try
 ```
 
 For details and queries please contact:<br>
-*Pranay Seshadri* <br>
+<br>
+Pranay Seshadri <br>
 *University of Cambridge* <br>
 
 

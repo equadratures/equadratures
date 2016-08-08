@@ -58,82 +58,10 @@ def main():
     xn = matrix.solveLeastSquares(A, b)
     mean, variance = stats.compute_mean_variance(xn, index_elements)
     print mean, variance
-    
+
     uqProblem = PolyParent(uq_parameters, "tensor grid")
     x_full, i, f = PolyParent.getCoefficients(uqProblem, fun)
     print x_full[0,0]
 
 
-
-    """
-
-
-
-
-    #b = np.mat(utils.evalfunction(pts, fun))
-    #An, normalizations = matrix.rowNormalize(A)
-    #b_tall =  np.mat(utils.evalfunction(pts, fun))
-    #print np.mat(utils.evalfunction(pts, fun))
-    #b_tall = np.diag(np.sqrt(wts)) * np.mat(utils.evalfunction(pts, fun))
-
-    #print '-----FINAL ANSWER----'
-    #print A
-    #print '\n'
-    #print b_tall
-    #bn = np.dot(normalizations, b_tall)
-    #xn = matrix.solveLeastSquares(A, b_tall)
-    #print xn[0,0]
-    #bn =
-    #bn = np.dot(normalizations, bn)
-
-
-    #print 'Dimensions of big A'
-    #print len(A)
-    #print len(A[0,:])
-
-    ------------------------------------------------------------------------
-
-    Solving the effective quadratures problem!
-
-    ----------------------------------------------------------------------------
-
-    # Step 1 - QR column pivoting
-    P = matrix.QRColumnPivoting(A.T)
-    print P
-
-    #print P2
-    effective = P[ 0 : maximum_number_of_evals]
-
-    # Step 2 - Subsampling
-    Asquare = A[effective, :]
-    bsquare = utils.evalfunction(pts[effective], fun)
-
-    # Step 3 - Normalize
-    Asquare, smallNormFactor = matrix.rowNormalize(Asquare)
-    bsquare = np.dot(smallNormFactor, bsquare)
-
-    # Step 4 - Solve the least squares problem
-    xapprox = matrix.solveLeastSquares(Asquare, bsquare)
-
-
-    ------------------------------------------------------------------------
-
-    Solving the tensor grid least squares problem!
-
-    ----------------------------------------------------------------------------
-
-    # Get evaluations at all points!
-    b = utils.evalfunction(pts, fun)
-
-    # Normalize
-    Abig, NormFactor = matrix.rowNormalize(A)
-    bbig = np.dot(NormFactor, b)
-
-    # Now let's solve the least squares problem:
-    xfull = matrix.solveLeastSquares(Abig, bbig)
-
-    # Display Output
-    print xapprox
-    print xfull
-    """
 main()

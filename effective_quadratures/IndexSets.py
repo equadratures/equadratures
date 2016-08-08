@@ -61,6 +61,8 @@ class IndexSet(object):
     def getCardinality(self):
         # Return the number of elements in the index set!
         index_set = getindexsetvalues(self)
+        m, n = index_set.shape
+        
         return len(index_set)
 
     def getIndexSetType(self):

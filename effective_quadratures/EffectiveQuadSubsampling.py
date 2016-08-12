@@ -33,7 +33,7 @@ class EffectiveSubsampling(object):
 
     def getAwithDerivatives(self):
         return 0
-    
+
 # A matrix formed by a tensor grid of rows and a user-defined set of columns.
 def getA(self):
 
@@ -77,7 +77,6 @@ def getSquareA(self, maximum_number_of_evals, flag=None):
     A, quadrature_pts, quadrature_wts = getA(self)
     dimension = len(self.uq_parameters)
     m , n = A.shape
-
 
     if maximum_number_of_evals < n :
         print 'Dimensions of A prior to subselection:'

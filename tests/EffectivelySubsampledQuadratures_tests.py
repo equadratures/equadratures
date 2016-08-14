@@ -47,9 +47,7 @@ def main():
     uq_parameters = []
     uniform_parameter = PolynomialParam("Uniform", min_value, max_value, [], [] , derivative_flag, order)
     uq_parameters.append(uniform_parameter)
-    #uq_parameters.append(uniform_parameter)
-    #uq_parameters.append(uniform_parameter)
-    #uq_parameters.append(uniform_parameter)
+
 
     # Define the EffectiveSubsampling object and get "A"
     effectiveQuads = EffectiveSubsampling(uq_parameters, hyperbolic_basis, derivative_flag)

@@ -40,20 +40,13 @@ def main():
     sparse_int = np.mat(sg_wts) * utils.evalfunction(sg_pts, function)
 
     # Now lets do the same by subsampling points from a tensor grid
-    maximum_number_of_evals = IndexSet.getCardinality(hyperbolic_cross)
-    effectiveQuads = EffectiveSubsampling(uq_parameters, hyperbolic_cross, 0)
-    A, esquad_pts, W, selected_pts = EffectiveSubsampling.getAsubsampled(effectiveQuads, maximum_number_of_evals)
-    A, normalizations = mat.rowNormalize(A)
-    b = W * np.mat(utils.evalfunction(esquad_pts, function))
-    b = np.dot(normalizations, b)
-    x = mat.solveLeastSquares(A, b)
-
+    esq_int, no_of_pts, esquad_pts = integrals.effectivelySubsampledGrid(uq_parameters, function)
 
 
     print 'Integrals'
     print tensor_int
     print sparse_int
-    print (max_value - min_value)**2 * x[0]
+    print esq_int
 
     # Plot sparse grid
     plt.scatter(sg_pts[:,0], sg_pts[:,1], s=70, c='r', marker='o')

@@ -2,10 +2,38 @@
 from PolyParams import PolynomialParam
 from PolyParentFile import PolyParent
 from IndexSets import IndexSet
+from EffectiveQuadSubsampling import EffectiveSubsampling
+import Utils as utils
+import MatrixRoutines as mat
 import numpy as np
 """
     Integration utilities.
+    Technically, we should just assume the user wants to integrate over a Uniform
+    weight and then compute the integral accordingly.
 """
+
+# By default this routine uses a hyperbolic cross space
+def effectivelySubsampledGrid(parameter_ranges, function):
+
+    dimensions = len(listOfParameters)
+    no_of_pts = []
+    for u in range(0, dimensions):
+        no_of_pts.append(int(listOfParameters[u].order) )
+
+    # Default value of the hyperbolic cross parameter
+    q = 0.75
+    hyperbolic_cross = IndexSet("hyperbolic cross", no_of_pts, q)
+    maximum_number_of_evals = IndexSet.getCardinality(hyperbolic_cross)
+    effectiveQuads = EffectiveSubsampling(listOfParameters, hyperbolic_cross, 0)
+    A, esquad_pts, W, not_used = EffectiveSubsampling.getAsubsampled(effectiveQuads, maximum_number_of_evals)
+    A, normalizations = mat.rowNormalize(A)
+    b = W * np.mat(utils.evalfunction(esquad_pts, function))
+    b = np.dot(normalizations, b)
+    xn = mat.solveLeastSquares(A, b)
+    integral_esq = xn[0] * 2**dimensions
+
+    return integral_esq, maximum_number_of_evals, esquad_pts
+
 def sparseGrid(listOfParameters, indexSet):
 
     # Get the number of parameters

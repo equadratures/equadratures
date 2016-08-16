@@ -5,6 +5,9 @@ import sys
     Set of utility functions that are used throughout EFFECTIVE-QUADRATURES
 """
 
+def column(matrix, i):
+    return [row[i] for row in matrix]
+    
 # A sample utility to get a 2D meshgrid of points
 def meshgrid(lower_lim, upper_lim, nx1, nx2):
 

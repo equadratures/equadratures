@@ -2,6 +2,7 @@
 from effective_quadratures.IndexSets import IndexSet
 import effective_quadratures.MatrixRoutines as matrix
 from effective_quadratures.EffectiveQuadSubsampling import EffectiveSubsampling
+from effective_quadratures.Utils import column
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import os
@@ -75,7 +76,5 @@ def plot_index_sets_3D():
     plt.show()
 
 
-def column(matrix, i):
-    return [row[i] for row in matrix]
 
-plot_index_sets_3D()
+plot_index_sets_2D()

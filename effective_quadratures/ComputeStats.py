@@ -14,6 +14,10 @@ import effective_quadratures.Utils as util
     1. Code up Gianluca Geraci's skewness and kurtosis results
 """
 def compute_mean_variance(coefficients, index_set):
+    m, n = coefficients.shape
+    if m > n:
+        coefficients = coefficients.T
+
     mean = coefficients[0,0]
     variance = np.sum(coefficients[0,1::]**2)
     return mean, variance
@@ -22,14 +26,14 @@ def compute_mean_variance(coefficients, index_set):
 def compute_first_order_Sobol_indices(coefficients, index_set):
 
     # Allocate memory!
+    index_set = np.mat(index_set)
+    m, dimensions =  index_set.shape
     mean, variance = compute_mean_variance(coefficients, index_set)
-    dimensions = len(index_set[0,:])
-
 
     if dimensions == 1:
         utils.error_function('ERROR: Sobol indices can only be computed for parameter studies with more than one parameter')
     else:
-        index_set_entries = len(index_set[:,0])
+        index_set_entries = m
         local_variance = np.zeros((index_set_entries, dimensions))
         first_order_sobol_indices = np.zeros((1, dimensions))
 

@@ -152,6 +152,15 @@ def recurrence_coefficients(self, order=None):
         x, w  = analytical.WeibullDistribution(N, lambda_value, k)
         ab = custom_recurrence_coefficients(order, x, w)
 
+    # 3. Analytical Truncated Gaussian defined on [a,b]
+    elif self.param_type is "TruncatedGaussian":
+        mu = self.shape_parameter_A
+        sigma = np.sqrt(self.shape_parameter_B)
+        a = self.lower_bound
+        b = self.upper_bound
+        x, w  = analytical.TruncatedGaussian(N, mu, sigma, a, b)
+        ab = custom_recurrence_coefficients(order, x, w)
+
     #elif self.param_type == "Gaussian" or self.param_type == "Normal":
     #    param_B = self.shape_parameter_B - 0.5
     #   if(param_B <= -0.5):
@@ -159,7 +168,7 @@ def recurrence_coefficients(self, order=None):
     #    else:
     #        ab =  hermite_recurrence_coefficients(self.shape_parameter_A, param_B, order)
     else:
-        utils.error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential or Beta')
+        utils.error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential, TruncatedGaussian or Beta')
 
     return ab
 
@@ -191,12 +200,12 @@ def jacobi_recurrence_coefficients_01(param_A, param_B, order):
     cd = jacobi_recurrence_coefficients(param_A, param_B, order)
     N = order
 
-    for i in range(0,N):
+    for i in range(0,int(N)):
         ab[i,0] = (1 + cd[i,0])/2.0
 
     ab[0,1] = cd[0,1]/(2**(param_A + param_B + 1))
 
-    for i in range(1,N):
+    for i in range(1,int(N)):
         ab[i,1] = cd[i,1]/4.0
 
     return ab
@@ -398,7 +407,10 @@ def orthoPolynomial_and_derivative(self, gridPoints, order=None):
         gridPointsII[u,0] = gridPoints[u]
 
     # Zeroth order
-    orthopoly[0,:] = (1.0)/(1.0 * np.sqrt(ab[0,1]) ) # Correct!
+    # original!
+    # orthopoly[0,:] = (1.0)/(1.0 * np.sqrt(ab[0,1]) ) # Correct!
+    # New
+    orthopoly[0,:] = 1.0
 
     # Cases
     if order == 1:

@@ -22,7 +22,7 @@ import os
 # Simple analytical function
 def fun(x):
     #return (1 - x[0])**2 + 100*(x[1] - x[0]**2)**2
-    return x[0]**2 - 13*x[0] + 15
+    return np.exp(x[0] + x[1])
 def main():
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,9 +49,9 @@ def main():
     # Write out the properties for each "uq_parameter". You can have as many
     # as you like!
     uq_parameters = []
-    uq_parameter = PolynomialParam("Gaussian", min_value, max_value, parameter_A, parameter_B, derivative_flag, order)
+    uq_parameter = PolynomialParam("Uniform", -1.0, 1.0, [], [], derivative_flag, order)
     uq_parameters.append(uq_parameter)
-    #uq_parameters.append(uq_parameter)
+    uq_parameters.append(uq_parameter)
 
 
     print '****************************************************************'

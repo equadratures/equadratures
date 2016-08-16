@@ -60,7 +60,14 @@ class IndexSet(object):
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
     def getCardinality(self):
         # Return the number of elements in the index set!
-        index_set = getindexsetvalues(self)
+
+        if self.index_set_type == "sparse grid":
+            index_set, a, SG_set = getindexsetvalues(self)
+        else:
+            index_set = getindexsetvalues(self)
+            return len(index_set)
+
+        # Now m or n is equivalent to the
         return len(index_set)
 
     def getIndexSetType(self):
@@ -74,6 +81,25 @@ class IndexSet(object):
 
     def getIndexSet(self):
         return getindexsetvalues(self)
+
+    def determineIndexLocation(self, large_index):
+        small_index = getindexsetvalues(self)
+        return getIndexLocation(small_index, large_index)
+
+# From a large index determine the specific locations of entries of the smaller index set.
+# This functionality will be used for error computation. We assume that elements in both
+# small_index and large_index are unique.
+def getIndexLocation(small_index, large_index):
+    index_values = []
+    i = 0
+    while i < len(small_index):
+        for j in range(0, len(large_index)):
+            if np.array_equal(small_index[i,:] , large_index[j,:] ):
+                index_values.append(j)
+        i = i + 1
+
+    return index_values
+
 
 def getindexsetvalues(self):
 
@@ -96,6 +122,10 @@ def hyperbolic_index_set(orders, q):
 
     # Initialize a few parameters for the setup
     dimensions = len(orders)
+    #for i in range(0, dimensions):
+    #    orders[i] = orders[i] - 1
+
+
     n_bar = tensor_grid_index_set(orders)
     n_new = []
     summation = np.ones((1, len(n_bar)))

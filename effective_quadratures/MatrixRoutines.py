@@ -9,7 +9,7 @@ import Utils as util
 # Compute the pivot columns
 def QRColumnPivoting(A):
     Q, R, P = sc.qr(A,  pivoting=True)
-    return Q, R, P
+    return P
 
 def solveLeastSquares(A, b):
     rows, cols = A.shape
@@ -19,8 +19,9 @@ def solveLeastSquares(A, b):
 
 # Function that returns a submatrix of specific rows
 def getRows(A, row_indices):
-    m = len(A) # number of rows
-    n = len(A[0,:]) # number of columns
+    
+    # Determine the shape of A
+    m , n = A.shape
 
     # Allocate space for the submatrix
     A2 = np.zeros((len(row_indices), n))

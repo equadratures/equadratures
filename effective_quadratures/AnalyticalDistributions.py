@@ -46,8 +46,8 @@ def TruncatedGaussian(N, mu, sigma, a, b):
     x = np.linspace(a, b, N)
     w = 1.0/( np.sqrt(2 * sigma**2 * np.pi)) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma**2) )
     w = 1.0/sigma * w
-    first_term = GaussianCDF(b, mean, sigma)
-    second_term = GaussianCDF(a, mean, sigma)
+    first_term = GaussianCDF(b, mu, sigma)
+    second_term = GaussianCDF(a, mu, sigma)
     w = w / (first_term - second_term)
     return x, w
 
@@ -57,6 +57,6 @@ def GaussianPDF(mu, sigma, N):
     w = 1.0/( np.sqrt(2 * sigma**2 * np.pi) ) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma**2) )
     return x, w
 
-def GaussianCDF(constant, mean, sigma):
+def GaussianCDF(constant, mu, sigma):
     w = 1.0/2 * (1 + erf((constant - mu)/(sigma * np.sqrt(2))) )
     return w

@@ -26,14 +26,14 @@ def compute_mean_variance(coefficients, index_set):
 def compute_first_order_Sobol_indices(coefficients, index_set):
 
     # Allocate memory!
+    index_set = np.mat(index_set)
+    m, dimensions =  index_set.shape
     mean, variance = compute_mean_variance(coefficients, index_set)
-    dimensions = len(index_set[0,:])
-
 
     if dimensions == 1:
         utils.error_function('ERROR: Sobol indices can only be computed for parameter studies with more than one parameter')
     else:
-        index_set_entries = len(index_set[:,0])
+        index_set_entries = m
         local_variance = np.zeros((index_set_entries, dimensions))
         first_order_sobol_indices = np.zeros((1, dimensions))
 

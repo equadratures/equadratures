@@ -2,9 +2,9 @@
 [![DOI](https://zenodo.org/badge/19437/psesh/Effective-Quadratures.svg)](https://zenodo.org/badge/latestdoi/19437/psesh/Effective-Quadratures)
 # 
 
-Suite of tools for generating polynomials for approximation, uncertainty quantification, optimization and integration. Codes make extensive use of matrix computations for constructing high dimensional polynomials.
+Suite of tools for generating polynomials for approximation, uncertainty quantification, optimization and integration. Codes make extensive use of matrix computations for constructing high dimensional polynomials. For further details, quick-start guides and papers see:
 <br>
-URL: www.effective-quadratures.org
+www.effective-quadratures.org
 <br>
 #
 

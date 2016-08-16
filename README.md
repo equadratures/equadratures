@@ -4,7 +4,8 @@
 
 Suite of tools for generating polynomials for approximation, uncertainty quantification, optimization and integration. Codes make extensive use of matrix computations for constructing high dimensional polynomials.
 <br>
-URL: effective-quadratures.org
+URL: www.effective-quadratures.org
+<br>
 #
 
 WARNING: Coding underway!<br>

@@ -445,15 +445,3 @@ def orthoPolynomial_and_derivative(self, gridPoints, order=None):
     else:
         empty = np.mat([0])
         return orthopoly, empty
-
-#def test():
-#    mu = 0
-#    sigma = np.sqrt(0.5)
-#    x, w = analytical.Gaussian(mu, sigma, 40)
-#    w = w / np.sum(w) # Normalize!
-#    print x, w
-#
-#    ab = custom_recurrence_coefficients(8, x, w)
-#    print ab
-#
-#test()

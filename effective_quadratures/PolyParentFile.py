@@ -297,6 +297,7 @@ def getPseudospectralCoefficients(stackOfParameters, function, additional_orders
                 q0 = np.kron(q0, Qmatrix[0,:])
 
     else:
+        print 'Using custom coefficients!'
         for i in range(0, dimensions):
             orders.append(additional_orders[i])
             Qmatrix = PolynomialParam.getJacobiEigenvectors(stackOfParameters[i], orders[i])
@@ -308,6 +309,7 @@ def getPseudospectralCoefficients(stackOfParameters, function, additional_orders
                 q0 = np.kron(q0, Qmatrix[0,:])
 
     # Compute multivariate Gauss points and weights
+
     p, w = getGaussianQuadrature(stackOfParameters, orders)
 
     # Evaluate the first point to get the size of the system

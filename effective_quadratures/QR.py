@@ -119,18 +119,15 @@ def qrColumnPivoting_house(A):
     return Q, R, pivots
 
 """
-    Modified Gram Schmidt QR column pivoting!
+    Modified Gram Schmidt QR column pivoting. 
 """
-def qrColumnPivoting_mgs(A):
+def mgs(A):
 
     # Determine the size of
+    A = np.matrix(A)
     m , n = A.shape
     u = np.min([m, n])
     h = np.max([m, n])
-
-    # Set Q and P
-    Q = np.mat( np.zeros((m,m)) )
-    R = np.mat( np.zeros((m,n)) )
 
     # Initialize!
     column_norms = np.zeros((n))
@@ -138,77 +135,54 @@ def qrColumnPivoting_mgs(A):
 
     # Compute the column norms
     for j in range(0,n):
-        column_norms[j] = norms(np.array(A[:,j]), 2)**2
-
+        column_norms[j] = np.linalg.norm(A[0:m,j], 2)**2
 
     # Now loop!
     for k in range(0, u):
 
-        #----------------------------------------------
-        # Step 0: Column norm sorting
-        #----------------------------------------------
-        # Find the "j*" column index with the highest
-        # column norm
+        # Compute the highest norm
         j_star = np.argmax(column_norms[k:n])
-        j_star = j_star + k
+        r_star = j_star + k 
 
+        # Retrieve the k-th column of A
+        a_k = A[0:m,k]
+        
+        # Swaping routine
+        if k != r_star:
+            A[0:m, [r_star, k]] = A[0:m, [k, r_star]]
+            pivots[[r_star, k]] = pivots[[k, r_star]]
 
-
-        # If j_star = k, skip to step 1, else swap columns!
-        if k != j_star:
-
-            # Swap columns in A:
-            temp = np.array(A[:,k])
-            A[:,k] = A[:,j_star]
-            A[:,j_star] = temp
-            del temp
-
-            # Swap columns in R accordingly
-            for i in range(0, k-1):
-                temp = R[i,k]
-                R[i,k] = R[i, j_star]
-                R[i, j_star] = temp
-                del temp
-
-            # Swap pivots
-            temp = pivots[k]
-            pivots[k] = pivots[j_star]
-            pivots[j_star] = temp
-            del temp
-
-        #-----------------------------------------------
-        # Step 1: Reorthogonalization
-        #-----------------------------------------------
-        if k != 0:
-            for i in range(0,k):
-                alpha = np.dot(Q[:,i].T , A[:,k] )
-                print R[i,k]
-                R[i,k] = R[i,k] + alpha
-                print R[i,k]
-                A[:,k] = np.array(A[:,k] - alpha[0,0] * Q[:,i])
-
-        #----------------------------------------------
-        # Step 2: Normalization
-        #----------------------------------------------
-        R[k,k] = norms(np.array(A[:,k]), 2)
-        Q[:,k] = np.array(A[:,k] * 1.0/R[k,k])
-
-        #----------------------------------------------
-        # Step 3: Orthogonalization
-        #----------------------------------------------
+        # orthogonalization
         if k != n:
-            for j in range(k,n):
-                R[k,j] = np.dot(Q[:,k].T , A[:,j] )
-                A[:,j] = np.array(A[:,j] - np.mat(R[k,j] * Q[:,k]))
+            for j in range(k+1, n):
+                a_j = A[0:m,j]
+                intermediate_vec = np.multiply(1.0/(1.0 * np.linalg.norm(a_k, 2) ) , a_k)
+                a_j = a_j -  np.multiply( (intermediate_vec.T * a_j) , intermediate_vec )
+                A[0:m,j] = a_j
 
-                # Now re-compute column norms
-                column_norms[j] = norms(np.array(A[:,j]), 2)**2
+                # update remaining column norms
+                column_norms[j] = np.linalg.norm( A[0:m,j] , 2 )**2
+                
+       # re-orthogonalization
+        if k != 0:
+            for i in range(0, k-1):
+                a_i = A[0:m, i]
+                intermediate_vec = np.multiply(1.0/(1.0 *  np.linalg.norm(a_i, 2) ), a_i)
+                a_k = a_k - np.multiply( (intermediate_vec.T * a_k) , intermediate_vec)
+                del intermediate_vec
 
-        # DEBUG: let's print R at each iteration
-        print R
-        print '***************************************'
-    # Ensure that the pivots are integers
-    for k in range(0, len(pivots)):
-        pivots[k] = int(pivots[k])
+        # Final update.
+        A[0:m,k] = a_k
+        del a_k
+        
+    return pivots
 
-    return Q, R, pivots
+def main():
+
+    A = np.matrix([[6.0, 8.0, 4.0 , 5.0, 6.2, 6] , [-2.0, 9.0, -5.0, 14.0, -3.5 , -7], [5.5, 1.0, 0.0, -8.0, 0.0, 3.5], [-7.5, 6.0, -3.0, 1.0, -3.0,  -8], [0.0, 4.0, 0.0, 1.0, 5.0, -1.0]])
+    #print A
+    P = mgs(A)
+    print P
+    Q, R, P = sc.qr(A,  pivoting=True)
+    print P
+main()

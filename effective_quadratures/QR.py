@@ -121,7 +121,7 @@ def qrColumnPivoting_house(A):
 """
     Modified Gram Schmidt QR column pivoting. 
 """
-def mgs(A):
+def mgs_pivoting(A):
 
     # Determine the size of
     A = np.matrix(A)
@@ -131,7 +131,7 @@ def mgs(A):
 
     # Initialize!
     column_norms = np.zeros((n))
-    pivots = np.linspace(0,n-1,n)
+    pivots = range(0, n)
 
     # Compute the column norms
     for j in range(0,n):
@@ -150,7 +150,9 @@ def mgs(A):
         # Swaping routine
         if k != r_star:
             A[0:m, [r_star, k]] = A[0:m, [k, r_star]]
-            pivots[[r_star, k]] = pivots[[k, r_star]]
+            temp = pivots[r_star]
+            pivots[r_star] = pivots[k]
+            pivots[k] = temp
 
         # orthogonalization
         if k != n:
@@ -162,6 +164,10 @@ def mgs(A):
 
                 # update remaining column norms
                 column_norms[j] = np.linalg.norm( A[0:m,j] , 2 )**2
+
+                # updating using pythogorean rule! --- do not use! ---
+                # temp =  (intermediate_vec.T * a_j) 
+                # column_norms[j] = column_norms[j]**2  - (temp / np.linalg.norm(a_j, 2) )**2
                 
        # re-orthogonalization
         if k != 0:
@@ -176,13 +182,3 @@ def mgs(A):
         del a_k
         
     return pivots
-
-def main():
-
-    A = np.matrix([[6.0, 8.0, 4.0 , 5.0, 6.2, 6] , [-2.0, 9.0, -5.0, 14.0, -3.5 , -7], [5.5, 1.0, 0.0, -8.0, 0.0, 3.5], [-7.5, 6.0, -3.0, 1.0, -3.0,  -8], [0.0, 4.0, 0.0, 1.0, 5.0, -1.0]])
-    #print A
-    P = mgs(A)
-    print P
-    Q, R, P = sc.qr(A,  pivoting=True)
-    print P
-main()

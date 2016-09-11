@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from PolyParams import PolynomialParam
 from PolyParentFile import PolyParent
+from QR import mgs_pivoting
 from IndexSets import IndexSet
 import Utils as utils
 import numpy as np
@@ -88,19 +89,24 @@ def getSquareA(self, maximum_number_of_evals, flag=None):
 
     # Now compute the rank revealing QR decomposition of A!
     if option == 1:
-        P = mat.QRColumnPivoting(A.T)
+        P = mgs_pivoting(A.T)
+        #P = mat.QRColumnPivoting(A.T)
+        #print P
     else:
         P = np.random.randint(0, len(quadrature_pts) - 1, len(quadrature_pts) - 1 )
 
     # Now truncate number of rows based on the maximum_number_of_evals
     selected_quadrature_points = P[0:maximum_number_of_evals]
-
+        
     # Form the "square" A matrix.
     Asquare =  mat.getRows(np.mat(A), selected_quadrature_points)
     esq_pts = mat.getRows(np.mat(quadrature_pts), selected_quadrature_points)
     esq_wts = quadrature_wts[selected_quadrature_points]
     W = np.mat(np.diag(np.sqrt(esq_wts)))
     return Asquare, esq_pts, W, selected_quadrature_points
+
+# Returns only the gradients!?
+# def getAwithC(self)
 
 def error_function(string_value):
     print string_value

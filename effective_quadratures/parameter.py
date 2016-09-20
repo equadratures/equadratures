@@ -1,44 +1,50 @@
 #!/usr/bin/env python
 import numpy as np
 from scipy.special import gamma
-import AnalyticalDistributions as analytical
+import analyticaldistributions as analytical
 import Utils as utils
 """
-
-    The PolynomialParam Class
-    Designed to be the base class for all subsequent polynomial / quadrature / optimal quadrature subsampling
-    routines. Coding in progress!
-
-    Pranay Seshadri
-    ps583@cam.ac.uk
-
+Pranay Seshadri
+ps583@cam.ac.uk
 """
-class PolynomialParam(object):
-    """ An uncertain parameter.
-    Attributes:
-        param_type: The distribution associated with the parameter
-        lower_bound: Lower bound of the parameter
-        upper_bound: Upper bound of the parameter
-        shape_parameter_A: Value of the first shape parameter
-        shape_parameter_B: Value of the second shape parameter
-    """
+class Parameter(object):
+    # constructor
+    def __init__(self, lower, upper, points, param_type = None, shape_parameter_A=None, shape_parameter_B=None, derivative_flag=None):
+       
+        # Check that lower is indeed above upper
+        if lower >= upper :
+            utils.error_function('Parameter: upper must be larger than lower')
+            
+        self.lower = lower # double
+        self.upper = upper # double
+        self.order = points # integer
 
-    """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                constructor / initializer
-       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
+        if param_type is None:
+            self.param_type = 'Uniform'
+        else:
+            self.param_type = param_type
 
-    def __init__(self, param_type, lower_bound, upper_bound, shape_parameter_A, shape_parameter_B, derivative_flag, order):
-        """ Return a new uncertain parameter object """
-        self.param_type = param_type # string
-        self.lower_bound = lower_bound # double
-        self.upper_bound = upper_bound # double
-        self.shape_parameter_A = shape_parameter_A # double
-        self.shape_parameter_B = shape_parameter_B # double
-        self.derivative_flag = derivative_flag # integer
-        self.order = order # integer
-    """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                get() methods
-       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
+        if shape_parameter_A is None:
+            self.shape_parameter_A = 0
+        else:
+            self.shape_parameter_A = shape_parameter_A 
+
+        if shape_parameter_B is None:
+            self.shape_parameter_B = 0
+        else:
+            self.shape_parameter_B = shape_parameter_B 
+
+        if derivative_flag is None:
+            self.derivative_flag = 0 
+        else:
+            self.derivative_flag = derivative_flag    
+        
+    def getPDF(self):
+        return 0
+
+    def getCFD(self):
+        return 0
+          
     def getDerivativeFlag(self):
         return self.derivative_flag
 
@@ -90,7 +96,7 @@ class PolynomialParam(object):
 
         return A, C, gridPoints
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                    function definitions -- outside PolyParam Class
+                    function definitions -- outside Parameter Class
                     (these are all technically private!)
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
@@ -99,7 +105,7 @@ def recurrence_coefficients(self, order=None):
 
     # Preliminaries.
     N = 8000 # no. of points for analytical distributions.
-    if order is None:
+    if order  is None:
         order = self.order
 
     # 1. Beta distribution

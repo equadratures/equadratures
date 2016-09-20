@@ -1,6 +1,6 @@
-from effective_quadratures.PolyParams import *
-#from effective_quadrautres.PolyParentFile import *
-#from effective_quadrautres.MatrixRoutines import *
+'Initialization file'
+from effective_quadratures.base import *
+
 # Set default logging handler to avoid "No handler found" warnings.
 import logging
 try:  # Python 2.7+

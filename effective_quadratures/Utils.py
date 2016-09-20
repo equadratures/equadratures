@@ -2,8 +2,28 @@
 import numpy as np
 import sys
 """
-    Set of utility functions that are used throughout EFFECTIVE-QUADRATURES
+    Set of utilities that are used by effective quadratures
+
+    Pranay Seshadri
+    University of Cambridge
+    ps583 <at> cam.ac.uk
+
+    WARNING: Coding in progress!
+
 """
+
+# Function evaluations written in a file. We assume that the file the format:
+# [HEADER]
+# Quadrature Points,  Function values
+def readOutputfromFile(fileName, quadrature_pts):
+    
+    # Read the data from the file. 
+    file = open(fileName, 'r')
+    data = file.readlines()
+    file.close()
+
+    # Now cycle through the file and find the quadrature points that match
+    
 
 def column(matrix, i):
     return [row[i] for row in matrix]

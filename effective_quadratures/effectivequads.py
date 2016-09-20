@@ -1,12 +1,13 @@
 #!/usr/bin/env python
-from PolyParams import PolynomialParam
-from PolyParentFile import PolyParent
+from parameter import Parameter
+from polynomial import Polynomial
 from QR import mgs_pivoting
-from IndexSets import IndexSet
+from indexset import IndexSet
 import Utils as utils
 import numpy as np
 import sys
 import MatrixRoutines as mat
+import scipy.linalg as sc
 
 """
     Effectively Subsamples Quadratures Class
@@ -21,23 +22,46 @@ import MatrixRoutines as mat
 
 class EffectiveSubsampling(object):
 
-    def __init__(self, uq_parameters, index_set, derivative_flag):
+    def __init__(self, uq_parameters, index_set, derivative_flag=None):
 
         self.uq_parameters = uq_parameters
         self.index_set = index_set
+
+        if derivative_flag is None:
+            derivative_flag = 0
+        else:
+            self.derivative_flag = derivative_flag        
 
     def getAmatrix(self):
         return getA(self)
 
     def getAsubsampled(self, maximum_number_of_evals, flag=None):
-        return getSquareA(self, maximum_number_of_evals, flag)
+        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag=None)
+        return Asquare
 
-    def getAwithDerivatives(self):
-        return 0
+    def getPointsToEvaluate(self, maximum_number_of_evals, flag=None):
+        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag=None)
+        return esq_pts
+
+    def solveLeastSquares(self, maximum_number_of_evals, function_values):
+        # need to check if function values are given in as a vector
+        # and that they are the same length as the number of evals!
+        A, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag=None)
+        A, normalizations = rowNormalize(A)
+        b = W * function_values
+        b = np.dot(normalizations, b)
+        x = sc.lstsq(A, b)
+        return x[0].T
+
+def rowNormalize(A):
+    rows, cols = A.shape
+    A_norms = np.sqrt(np.sum(A**2, axis=1)/(1.0 * cols))
+    Normalization = np.diag(1.0/A_norms)
+    A_normalized = np.dot(Normalization, A)
+    return A_normalized, Normalization
 
 # A matrix formed by a tensor grid of rows and a user-defined set of columns.
 def getA(self):
-
     stackOfParameters = self.uq_parameters
     polynomial_basis = self.index_set
     dimensions = len(stackOfParameters)
@@ -45,22 +69,22 @@ def getA(self):
     no_of_indices = len(indices)
 
     # Crate a new PolynomialParam object to get tensor grid points & weights
-    polyObject =  PolyParent(stackOfParameters, "tensor grid")
-    quadrature_pts, quadrature_wts = PolyParent.getPointsAndWeights(polyObject)
+    polyObject =  Polynomial(stackOfParameters, "tensor grid")
+    quadrature_pts, quadrature_wts = Polynomial.getPointsAndWeights(polyObject)
 
     # Allocate memory for "unscaled points!"
     unscaled_quadrature_pts = np.zeros((len(quadrature_pts), dimensions))
     for i in range(0, dimensions):
         for j in range(0, len(quadrature_pts)):
                 if (stackOfParameters[i].param_type == "Uniform"):
-                    unscaled_quadrature_pts[j,i] = ((quadrature_pts[j,i] - stackOfParameters[i].lower_bound)/(stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound))*2.0 - 1.0
+                    unscaled_quadrature_pts[j,i] = ((quadrature_pts[j,i] - stackOfParameters[i].lower)/(stackOfParameters[i].upper - stackOfParameters[i].lower))*2.0 - 1.0
 
                 elif (stackOfParameters[i].param_type == "Beta" ):
-                    unscaled_quadrature_pts[j,i] = (quadrature_pts[j,i] - stackOfParameters[i].lower_bound)/(stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound)
+                    unscaled_quadrature_pts[j,i] = (quadrature_pts[j,i] - stackOfParameters[i].lower)/(stackOfParameters[i].upper - stackOfParameters[i].lower)
 
     # Ensure that the quadrature weights sum up to 1.0
     quadrature_wts = quadrature_wts/np.sum(quadrature_wts)
-    P = np.mat(PolyParent.getMultivariatePolynomial(polyObject, unscaled_quadrature_pts, indices))
+    P = np.mat(Polynomial.getMultivariatePolynomial(polyObject, unscaled_quadrature_pts, indices))
     W = np.mat( np.diag(np.sqrt(quadrature_wts)))
     A = W * P.T
     return A, quadrature_pts, quadrature_wts
@@ -86,12 +110,9 @@ def getSquareA(self, maximum_number_of_evals, flag=None):
         print maximum_number_of_evals
         utils.error_function("ERROR in EffectiveQuadSubsampling --> getAsubsampled(): The maximum number of evaluations must be greater or equal to the number of basis terms")
 
-
     # Now compute the rank revealing QR decomposition of A!
     if option == 1:
         P = mgs_pivoting(A.T)
-        #P = mat.QRColumnPivoting(A.T)
-        #print P
     else:
         P = np.random.randint(0, len(quadrature_pts) - 1, len(quadrature_pts) - 1 )
 

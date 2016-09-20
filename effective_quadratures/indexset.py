@@ -33,6 +33,7 @@ class IndexSet(object):
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
     def __init__(self, index_set_type, orders, level=None, growth_rule=None, dimension=None):
+        
         self.index_set_type = index_set_type # string
         self.orders =  orders # we store order as an array!
 

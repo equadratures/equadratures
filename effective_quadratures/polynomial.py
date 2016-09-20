@@ -1,22 +1,14 @@
 #!/usr/bin/env python
-from PolyParams import PolynomialParam
-from IndexSets import IndexSet
+from parameter import Parameter
+from indexset import IndexSet
 import numpy as np
 import Utils as utils
 """
-
-    Polyparent Class
-
-    Pranay Seshadri
-    ps583@cam.ac.uk
-
+Pranay Seshadri
+ps583@cam.ac.uk
 """
-class PolyParent(object):
-    """
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                constructor / initializer
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-
+class Polynomial(object):
+    # Constructor
     def __init__(self, uq_parameters, method, index_sets=None):
 
         self.uq_parameters = uq_parameters
@@ -38,12 +30,7 @@ class PolyParent(object):
             if(method == "sparse grid" or method == "Sparse grid" or method == "spam" or method == "SPAM"):
                 self.index_sets = index_sets
 
-    """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                    get() methods
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-    def getMultivariatePoly(self, points):
-        return getMultiOrthoPoly(self, points)
-
+    # get methods
     def getCoefficients(self, function):
         if self.method == "tensor grid" or self.method == "Tensor grid":
             return getPseudospectralCoefficients(self.uq_parameters, function)
@@ -61,7 +48,6 @@ class PolyParent(object):
             elif self.method == "sparse grid" or self.method == "Sparse grid" or self.method == "spam":
                 p, w, sets = sparseGrid(self.uq_parameters, overwrite_orders)
                 return p, w
-
         else:
             if self.method == "tensor grid" or self.method == "Tensor grid":
                 return getGaussianQuadrature(self.uq_parameters)
@@ -92,6 +78,14 @@ class PolyParent(object):
             index_set = index_set_alternate
         return getMultiOrthoPoly(self, stackOfPoints, index_set)
 
+    
+   # def getMultivariatePolynomialWithDerivatives(self, stackOfPoints, index_set_alternate=None):
+   #     if index_set_alternate is None:
+   #         index_set = self.indexsets
+   #     else:
+   #         index_set = index_set_alternate
+   #     return getMultiOrthoPolyWithDerivative(self, stackOfPoints, index_set)
+
 
     """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                             PRIVATE FUNCTIONS
@@ -107,11 +101,11 @@ def tensorGrid(listOfParameters, indexSet=None):
         for u in range(0, dimensions):
             max_orders.append(int(listOfParameters[u].order) )
     else:
-        max_orders = IndexSet.getMaxOrders(indexSet)
+        max_orders = indexset.getMaxOrders()
 
     # Call the gaussian quadrature routine
-    tensorObject = PolyParent(listOfParameters, method="tensor grid")
-    points, weights = PolyParent.getPointsAndWeights(tensorObject)
+    tensorObject = Polynomial(listOfParameters, method="tensor grid")
+    points, weights = tensorGrid.getPointsAndWeights()
 
     return points, weights
 
@@ -153,6 +147,7 @@ def sparseGrid(listOfParameters, indexSet):
 
     return points_store, weights_store, sg_set
 
+# DO NOT USE!
 def getSparseCoefficientsViaIntegration(self, function):
 
     # Preliminaries
@@ -181,7 +176,6 @@ def getSparseCoefficientsViaIntegration(self, function):
         coefficients[0,i] = np.mat(P[i,:]) * Wdiag * np.diag(P[0,:]) * f
 
     return coefficients, sg_set_full, pts
-
 
 # The SPAM technique!
 def getSparsePseudospectralCoefficients(self, function):
@@ -402,7 +396,7 @@ def getGaussianQuadrature(stackOfParameters, additional_orders=None):
     for u in range(0,dimensions):
 
         # Call to get local quadrature method (for dimension 'u')
-        local_points, local_weights = PolynomialParam.getLocalQuadrature(stackOfParameters[u], orders[u])
+        local_points, local_weights = stackOfParameters[u].getLocalQuadrature(orders[u])
 
         # Tensor product of the weights
         ww = np.kron(ww, local_weights)
@@ -423,10 +417,10 @@ def getGaussianQuadrature(stackOfParameters, additional_orders=None):
         for j in range(0, len(points)):
             if (stackOfParameters[i].param_type == "Uniform"):
                 #points[j,i] = points[j,i] * ( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
-                points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
+                points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper - stackOfParameters[i].lower) + stackOfParameters[i].lower
 
             elif (stackOfParameters[i].param_type == "Beta" ):
-                points[j,i] =  ( points[j,i] )*( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
+                points[j,i] =  ( points[j,i] )*( stackOfParameters[i].upper - stackOfParameters[i].lower) + stackOfParameters[i].lower
 
             elif (stackOfParameters[i].param_type == "Gaussian"):
                 points[j,i] = points[j,i] # No scaling!
@@ -448,11 +442,11 @@ def getMultiOrthoPoly(self, stackOfPoints, index_set):
     if(dimensions == 1):
         # Here "V" is the derivative. Need to change if we want to use multivariate
         # derivative polynomial.
-        poly , V =  PolynomialParam.getOrthoPoly(stackOfParameters[0], stackOfPoints)
+        poly , V =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
         return poly
     else:
         for i in range(0, dimensions):
-            p[i] = PolynomialParam.getOrthoPoly(stackOfParameters[i], stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
+            p[i] = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
 
     # Now we multiply components according to the index set
     no_of_points = len(stackOfPoints)
@@ -464,3 +458,41 @@ def getMultiOrthoPoly(self, stackOfPoints, index_set):
             temp = polynomial[i,:]
 
     return polynomial
+
+""""
+# Multivariate orthogonal polynomial with derivatives!
+def getMultiOrthoPolyWithDerivative(self, stackOfPoints, index_set):
+    
+    # "Unpack" parameters from "self"
+    stackOfParameters = self.uq_parameters
+    dimensions = len(stackOfParameters)
+    p = {}
+    d = {}
+
+    # Save time by returning if univariate!
+    if(dimensions == 1):
+        # Here "V" is the derivative. Need to change if we want to use multivariate
+        # derivative polynomial.
+        poly , derivatives =  PolynomialParam.getOrthoPoly(stackOfParameters[0], stackOfPoints)
+        return poly, derivatives
+    else:
+        for i in range(0, dimensions):
+            poly, derivatives = PolynomialParam.getOrthoPoly(stackOfParameters[i], stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
+            p[i] = poly
+            d[i] = derivatives
+
+    # Now we multiply components according to the index set
+    no_of_points = len(stackOfPoints)
+    polynomial = np.zeros((len(index_set), no_of_points))
+    derivatives = np.zeros((len(index_set), no_of_points, dimensions))
+
+    for i in range(0, len(index_set)):
+        temp = np.ones((1, no_of_points))
+        for k in range(0, dimensions):
+            polynomial[i,:] = p[k][0][int(index_set[i,k])] * temp
+            temp = polynomial[i,:]
+    
+    for i in range(0, len(index_set)):
+        temp = np.ones((1, ))
+    return polynomial
+"""

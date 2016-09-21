@@ -9,7 +9,6 @@ ps583@cam.ac.uk
 class Statistics(object):
     # constructor
     def __init__(self, coefficients, index_set):
-
         self.coefficients = coefficients
         self.index_set = index_set
 

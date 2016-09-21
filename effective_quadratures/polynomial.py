@@ -459,7 +459,6 @@ def getMultiOrthoPoly(self, stackOfPoints, index_set):
 
     return polynomial
 
-""""
 # Multivariate orthogonal polynomial with derivatives!
 def getMultiOrthoPolyWithDerivative(self, stackOfPoints, index_set):
     
@@ -471,13 +470,11 @@ def getMultiOrthoPolyWithDerivative(self, stackOfPoints, index_set):
 
     # Save time by returning if univariate!
     if(dimensions == 1):
-        # Here "V" is the derivative. Need to change if we want to use multivariate
-        # derivative polynomial.
-        poly , derivatives =  PolynomialParam.getOrthoPoly(stackOfParameters[0], stackOfPoints)
+        poly , derivatives =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
         return poly, derivatives
     else:
         for i in range(0, dimensions):
-            poly, derivatives = PolynomialParam.getOrthoPoly(stackOfParameters[i], stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
+            poly, derivatives = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
             p[i] = poly
             d[i] = derivatives
 
@@ -491,8 +488,10 @@ def getMultiOrthoPolyWithDerivative(self, stackOfPoints, index_set):
         for k in range(0, dimensions):
             polynomial[i,:] = p[k][0][int(index_set[i,k])] * temp
             temp = polynomial[i,:]
+            derivatives[i,:,k] = d[k][0][int(index_set(i,k))] * temp
     
-    for i in range(0, len(index_set)):
-        temp = np.ones((1, ))
-    return polynomial
-"""
+    return polynomial, derivatives
+
+def main():
+
+    # Test poly and gradients!

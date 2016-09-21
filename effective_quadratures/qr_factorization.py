@@ -5,7 +5,34 @@ from utils import error_function
 Pranay Seshadri
 ps583@cam.ac.uk
 """
-# Solve the least squares problem
+# Solve the weighted least squares problem, using the method of row     
+def solve_weightedLSQ(A, b, C, d, alpha):
+    
+
+
+    return x
+    
+# Solve the constrained least squares problem, using method of direct elimination
+def solve_constrainedLSQ(A,b,C,d):
+    # Preliminaries
+    ~ , R = qr_householder(C.T, 1) # Thin QR factorization on C'
+    Q , ~ = qr_householder(C.T) # Regular QR 
+    u = np.linalg.inv(R) * d
+    Ahat = A * Q
+    m, n = Ahat.shape
+    
+    # Now split A
+    Ahat_1 = A_hat[:, 0:len(u)-1]
+    Ahat_2 = A_hat[:, len(u) : n]
+    r = b - Ahat_1 * u
+    
+    # Solve the least squares problem
+    v = solveLSQ(Ahat_2, r)
+    x = Q * [u, v] #----> Need to somehow concatenate this!!!
+    return x
+
+# Solve the least squares problem (done wiht QR factorization!)
+# Perhaps also add LU and SVD techniques to solve least squares!
 def solveLSQ(A, b):
     
     # Direct methods!

@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.special import gamma
 import analyticaldistributions as analytical
-import Utils as utils
+from utils import error_function
 """
 Pranay Seshadri
 ps583@cam.ac.uk
@@ -13,7 +13,7 @@ class Parameter(object):
        
         # Check that lower is indeed above upper
         if lower >= upper :
-            utils.error_function('Parameter: upper must be larger than lower')
+            error_function('Parameter: upper must be larger than lower')
             
         self.lower = lower # double
         self.upper = upper # double
@@ -113,9 +113,9 @@ def recurrence_coefficients(self, order=None):
         param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
         param_B = self.shape_parameter_A - 1
         if(param_B <= 0):
-            utils.error_function('ERROR: parameter_A (beta shape parameter A) must be greater than 1!')
+            error_function('ERROR: parameter_A (beta shape parameter A) must be greater than 1!')
         if(param_A <= 0):
-            utils.error_function('ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
+            error_function('ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
         ab =  jacobi_recurrence_coefficients_01(param_A, param_B , order)
 
     # 2. Uniform distribution
@@ -174,7 +174,7 @@ def recurrence_coefficients(self, order=None):
     #    else:
     #        ab =  hermite_recurrence_coefficients(self.shape_parameter_A, param_B, order)
     else:
-        utils.error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential, TruncatedGaussian or Beta')
+        error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential, TruncatedGaussian or Beta')
 
     return ab
 

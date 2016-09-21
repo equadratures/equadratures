@@ -2,7 +2,7 @@
 from parameter import Parameter
 from indexset import IndexSet
 import numpy as np
-import Utils as utils
+from utils import error_function, evalfunction, find_repeated_elements
 """
 Pranay Seshadri
 ps583@cam.ac.uk
@@ -163,7 +163,7 @@ def getSparseCoefficientsViaIntegration(self, function):
             sg_set_full[i,j] = int(sg_set_full[i,j])
 
     P = getMultiOrthoPoly(self, pts, sg_set_full)
-    f = utils.evalfunction(pts, function)
+    f = evalfunction(pts, function)
     f = np.mat(f)
     Wdiag = np.diag(wts)
 
@@ -231,7 +231,7 @@ def getSparsePseudospectralCoefficients(self, function):
     while(flag != 0):
 
         # find the repeated indices
-        rep = utils.find_repeated_elements(index_to_pick, store)
+        rep = find_repeated_elements(index_to_pick, store)
         coefficient_value = 0.0
 
         # Sum up all the coefficient values

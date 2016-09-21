@@ -1,25 +1,14 @@
 #!/usr/bin/env python
 from parameter import Parameter
 from polynomial import Polynomial
-from QR import mgs_pivoting
+from qr_factorization import mgs_pivoting, solveLSQ
 from indexset import IndexSet
-import Utils as utils
+from utils import error_function, evalfunction
 import numpy as np
-import sys
-import MatrixRoutines as mat
-import scipy.linalg as sc
-
 """
-    Effectively Subsamples Quadratures Class
-
-    Pranay Seshadri
-    University of Cambridge
-    ps583 <at> cam.ac.uk
-
-    WARNING: Coding in progress!
-
+Pranay Seshadri
+ps583@cam.ac.uk
 """
-
 class EffectiveSubsampling(object):
 
     def __init__(self, uq_parameters, index_set, derivative_flag=None):
@@ -44,15 +33,21 @@ class EffectiveSubsampling(object):
         return esq_pts
 
     def solveLeastSquares(self, maximum_number_of_evals, function_values):
-        # need to check if function values are given in as a vector
-        # and that they are the same length as the number of evals!
         A, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag=None)
         A, normalizations = rowNormalize(A)
-        b = W * function_values
+        
+        # Check if user input is a function or a set of function values!
+        if callable(function_values):
+            fun_values = evalfunction(esq_pts, function_values)
+        else:
+            fun_values = function_values
+        
+        b = W * fun_values
         b = np.dot(normalizations, b)
-        x = sc.lstsq(A, b)
-        return x[0].T
+        x = solveLSQ(A, b)
+        return x
 
+# Normalize the rows of A by its 2-norm  
 def rowNormalize(A):
     rows, cols = A.shape
     A_norms = np.sqrt(np.sum(A**2, axis=1)/(1.0 * cols))
@@ -97,7 +92,7 @@ def getSquareA(self, maximum_number_of_evals, flag=None):
     elif flag == "Random":
         option = 2
     else:
-        utils.error_function("ERROR in EffectiveQuadSubsampling --> getAsubsampled(): For the third input choose from either 'QR' or 'Random'")
+        error_function("ERROR in EffectiveQuadSubsampling --> getAsubsampled(): For the third input choose from either 'QR' or 'Random'")
 
     A, quadrature_pts, quadrature_wts = getA(self)
     dimension = len(self.uq_parameters)
@@ -108,7 +103,7 @@ def getSquareA(self, maximum_number_of_evals, flag=None):
         print m, n
         print 'The maximum number of evaluations you requested'
         print maximum_number_of_evals
-        utils.error_function("ERROR in EffectiveQuadSubsampling --> getAsubsampled(): The maximum number of evaluations must be greater or equal to the number of basis terms")
+        error_function("ERROR in EffectiveQuadSubsampling --> getAsubsampled(): The maximum number of evaluations must be greater or equal to the number of basis terms")
 
     # Now compute the rank revealing QR decomposition of A!
     if option == 1:
@@ -120,15 +115,24 @@ def getSquareA(self, maximum_number_of_evals, flag=None):
     selected_quadrature_points = P[0:maximum_number_of_evals]
         
     # Form the "square" A matrix.
-    Asquare =  mat.getRows(np.mat(A), selected_quadrature_points)
-    esq_pts = mat.getRows(np.mat(quadrature_pts), selected_quadrature_points)
+    Asquare =  getRows(np.mat(A), selected_quadrature_points)
+    esq_pts = getRows(np.mat(quadrature_pts), selected_quadrature_points)
     esq_wts = quadrature_wts[selected_quadrature_points]
     W = np.mat(np.diag(np.sqrt(esq_wts)))
     return Asquare, esq_pts, W, selected_quadrature_points
 
-# Returns only the gradients!?
-# def getAwithC(self)
+# Function that returns a submatrix of specific rows
+def getRows(A, row_indices):
+    
+    # Determine the shape of A
+    m , n = A.shape
 
-def error_function(string_value):
-    print string_value
-    sys.exit()
+    # Allocate space for the submatrix
+    A2 = np.zeros((len(row_indices), n))
+
+    # Now loop!
+    for i in range(0, len(A2)):
+        for j in range(0, n):
+            A2[i,j] = A[row_indices[i], j]
+
+    return A2

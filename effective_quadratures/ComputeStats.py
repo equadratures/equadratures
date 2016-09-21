@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import numpy as np
-import effective_quadratures.Utils as util
+from utils import error_function
 """
 Pranay Seshadri
 ps583@cam.ac.uk
@@ -23,7 +23,7 @@ class Statistics(object):
         m, n = coefficients.shape
         if m > n:
             coefficients = coefficients.T
-        variance = np.sum(coefficients[0,1::]**2)
+        variance = np.sum(coefficients[1::]**2)
         return variance
 
     # Function that computes first order Sobol' indices

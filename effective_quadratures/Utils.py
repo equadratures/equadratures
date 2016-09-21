@@ -11,20 +11,6 @@ import sys
     WARNING: Coding in progress!
 
 """
-
-# Function evaluations written in a file. We assume that the file the format:
-# [HEADER]
-# Quadrature Points,  Function values
-def readOutputfromFile(fileName, quadrature_pts):
-    
-    # Read the data from the file. 
-    file = open(fileName, 'r')
-    data = file.readlines()
-    file.close()
-
-    # Now cycle through the file and find the quadrature points that match
-    
-
 def column(matrix, i):
     return [row[i] for row in matrix]
     

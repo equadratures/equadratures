@@ -11,7 +11,8 @@ def solveLSQ(A, b):
     # Direct methods!
     Q, R = qr_householder(A, 1)
     x = np.linalg.inv(R) * Q.T * b
-    return np.mat(x)
+    x = np.array(x)
+    return x
 
 # Householder reflection
 def house(vec):

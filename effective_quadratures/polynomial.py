@@ -491,7 +491,3 @@ def getMultiOrthoPolyWithDerivative(self, stackOfPoints, index_set):
             derivatives[i,:,k] = d[k][0][int(index_set(i,k))] * temp
     
     return polynomial, derivatives
-
-def main():
-
-    # Test poly and gradients!

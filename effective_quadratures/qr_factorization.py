@@ -7,16 +7,14 @@ ps583@cam.ac.uk
 """
 # Solve the weighted least squares problem, using the method of row     
 def solve_weightedLSQ(A, b, C, d, alpha):
-    
-
-
+    x = 0
     return x
     
 # Solve the constrained least squares problem, using method of direct elimination
 def solve_constrainedLSQ(A,b,C,d):
     # Preliminaries
-    ~ , R = qr_householder(C.T, 1) # Thin QR factorization on C'
-    Q , ~ = qr_householder(C.T) # Regular QR 
+    temp , R = qr_householder(C.T, 1) # Thin QR factorization on C'
+    Q , temp = qr_householder(C.T) # Regular QR 
     u = np.linalg.inv(R) * d
     Ahat = A * Q
     m, n = Ahat.shape

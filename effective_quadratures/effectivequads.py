@@ -5,6 +5,7 @@ from qr_factorization import mgs_pivoting, solveLSQ
 from indexset import IndexSet
 from utils import error_function, evalfunction
 import numpy as np
+from scipy.linalg import qr
 """
 Pranay Seshadri
 ps583@cam.ac.uk
@@ -108,6 +109,7 @@ def getSquareA(self, maximum_number_of_evals, flag=None):
     # Now compute the rank revealing QR decomposition of A!
     if option == 1:
         P = mgs_pivoting(A.T)
+        #Q, R, P = qr(A.T, pivoting=True)
     else:
         P = np.random.randint(0, len(quadrature_pts) - 1, len(quadrature_pts) - 1 )
 
@@ -116,6 +118,7 @@ def getSquareA(self, maximum_number_of_evals, flag=None):
         
     # Form the "square" A matrix.
     Asquare =  getRows(np.mat(A), selected_quadrature_points)
+    #print np.linalg.cond(Asquare)
     esq_pts = getRows(np.mat(quadrature_pts), selected_quadrature_points)
     esq_wts = quadrature_wts[selected_quadrature_points]
     W = np.mat(np.diag(np.sqrt(esq_wts)))

@@ -8,7 +8,26 @@ Pranay Seshadri
 ps583@cam.ac.uk
 """
 class Polynomial(object):
-    
+    """An abstract class for response surfaces.
+    Attributes
+    ----------
+    N : int
+        maximum degree of global polynomial in the response surface
+    Rsqr : float
+        the R-squared coefficient for the response surface
+    X : ndarray
+        an ndarray of training points for the response surface. The shape is 
+        M-by-m, where m is the number of dimensions.
+    f : ndarray
+        an ndarray of function values used to train the response surface. The 
+        shape of `f` is M-by-1.
+    See Also
+    --------
+    utils.response_surfaces.PolynomialApproximation
+    utils.response_surfaces.RadialBasisApproximation
+    """
+
+
     # Constructor
     def __init__(self, uq_parameters, method, index_sets=None):
 
@@ -94,6 +113,28 @@ class Polynomial(object):
 # Do not use the function below. It is provided here only for illustrative purposes.
 # SPAM should be used!
 def tensorGrid(listOfParameters, indexSet=None):
+    """Minimize a response surface on the active variables.
+    Parameters
+    ----------
+    avfun : function 
+        a function of the active variables
+    avdom : ActiveVariableDomain 
+        information about the domain of `avfun`
+    avdfun : function 
+        returns the gradient of `avfun`
+    Returns
+    -------
+    ystar : ndarray 
+        the estimated minimizer of `avfun`
+    fstar : float 
+        the estimated minimum of `avfun`
+    See Also
+    --------
+    optimizers.interval_minimize
+    optimizers.zonotope_minimize
+    optimizers.unbounded_minimize
+    """
+
 
     # Get the tensor indices
     dimensions = len(listOfParameters)

@@ -118,6 +118,7 @@ def getSquareA(self, maximum_number_of_evals, flag=None):
         
     # Form the "square" A matrix.
     Asquare =  getRows(np.mat(A), selected_quadrature_points)
+    
     #print np.linalg.cond(Asquare)
     esq_pts = getRows(np.mat(quadrature_pts), selected_quadrature_points)
     esq_wts = quadrature_wts[selected_quadrature_points]

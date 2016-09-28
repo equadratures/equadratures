@@ -22,7 +22,7 @@ class Statistics(object):
         m, n = coefficients.shape
         if m > n:
             coefficients = coefficients.T
-        variance = np.sum( coefficients[0][1:m]**2)
+        variance = np.sum(coefficients[0][1:m]**2)
         return variance
 
     # Function that computes first order Sobol' indices

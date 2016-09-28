@@ -8,6 +8,7 @@ Pranay Seshadri
 ps583@cam.ac.uk
 """
 class Polynomial(object):
+    
     # Constructor
     def __init__(self, uq_parameters, method, index_sets=None):
 
@@ -281,8 +282,8 @@ def getPseudospectralCoefficients(stackOfParameters, function, additional_orders
     # If additional orders are provided, then use those!
     if additional_orders is None:
         for i in range(0, dimensions):
-            orders.append(stackOfParameters[i].order )
-            Qmatrix = PolynomialParam.getJacobiEigenvectors(stackOfParameters[i])
+            orders.append(stackOfParameters[i].order)
+            Qmatrix = stackOfParameters[i].getJacobiEigenvectors()
             Q.append(Qmatrix)
 
             if orders[i] == 1:
@@ -294,7 +295,7 @@ def getPseudospectralCoefficients(stackOfParameters, function, additional_orders
         print 'Using custom coefficients!'
         for i in range(0, dimensions):
             orders.append(additional_orders[i])
-            Qmatrix = PolynomialParam.getJacobiEigenvectors(stackOfParameters[i], orders[i])
+            Qmatrix = stackOfParameters[i].getJacobiEigenvectors(orders[i])
             Q.append(Qmatrix)
 
             if orders[i] == 1:
@@ -303,7 +304,6 @@ def getPseudospectralCoefficients(stackOfParameters, function, additional_orders
                 q0 = np.kron(q0, Qmatrix[0,:])
 
     # Compute multivariate Gauss points and weights
-
     p, w = getGaussianQuadrature(stackOfParameters, orders)
 
     # Evaluate the first point to get the size of the system
@@ -329,13 +329,13 @@ def getPseudospectralCoefficients(stackOfParameters, function, additional_orders
         order_correction.append(temp)
 
     tensor_grid_basis = IndexSet("tensor grid",  order_correction)
-    tensor_set = IndexSet.getIndexSet(tensor_grid_basis)
+    tensor_set = tensor_grid_basis.getIndexSet()
 
 
     # Now we use kronmult
     K = efficient_kron_mult(Q, Uc)
     F = function_values
-
+    K = np.column_stack(K)
     return K, tensor_set, p
 
 # Efficient kronecker product multiplication

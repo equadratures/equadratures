@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -9,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; Effective Quadratures 0.1.1 documentation</title>
+  <title>Parameter &mdash; Effective Quadratures 0.1.1 documentation</title>
   
 
   
@@ -31,7 +30,10 @@
   
 
   
-    <link rel="top" title="Effective Quadratures 0.1.1 documentation" href="index.html"/> 
+    <link rel="top" title="Effective Quadratures 0.1.1 documentation" href="index.html"/>
+        <link rel="up" title="Code Documentation" href="Code.html"/>
+        <link rel="next" title="QR Factorization" href="QR-Factorization.html"/>
+        <link rel="prev" title="Polynomial" href="polynomial.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -83,8 +85,14 @@
           
             
             
-                <ul>
-<li class="toctree-l1"><a class="reference internal" href="Code.html">Code Documentation</a></li>
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="Code.html">Code Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="polynomial.html">Polynomial</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="QR-Factorization.html">QR Factorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="computestats.html">Statistics</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="Contact.html">Contact</a></li>
 <li class="toctree-l1"><a class="reference internal" href="LICENSE.html">LICENSE</a></li>
 </ul>
@@ -109,7 +117,7 @@
         <div class="rst-content">
           
 
-
+ 
 
 
 
@@ -117,9 +125,13 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li></li>
+          <li><a href="Code.html">Code Documentation</a> &raquo;</li>
+      
+    <li>Parameter</li>
       <li class="wy-breadcrumbs-aside">
         
+          
+            <a href="_sources/parameter.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -129,101 +141,38 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
+  <div class="section" id="module-effective_quadratures.parameter">
+<span id="parameter"></span><h1>Parameter<a class="headerlink" href="#module-effective_quadratures.parameter" title="Permalink to this headline">¶</a></h1>
+<p>Utilities for exploiting active subspaces when optimizing.</p>
+<dl class="class">
+<dt id="effective_quadratures.parameter.Parameter">
+<em class="property">class </em><code class="descclassname">effective_quadratures.parameter.</code><code class="descname">Parameter</code><span class="sig-paren">(</span><em>lower</em>, <em>upper</em>, <em>points</em>, <em>param_type=None</em>, <em>shape_parameter_A=None</em>, <em>shape_parameter_B=None</em>, <em>derivative_flag=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>This subclass is an domains.ActiveVariableMap specifically for optimization.</p>
+<p><strong>See Also</strong></p>
+<p>optimizers.BoundedMinVariableMap
+optimizers.UnboundedMinVariableMap</p>
+<p><strong>Notes</strong></p>
+<p>This class&#8217;s train function fits a global quadratic surrogate model to the
+n+2 active variables&#8212;two more than the dimension of the active subspace.
+This quadratic surrogate is used to map points in the space of active
+variables back to the simulation parameter space for minimization.</p>
+</dd></dl>
 
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- <a href="#E"><strong>E</strong></a>
- | <a href="#G"><strong>G</strong></a>
- | <a href="#P"><strong>P</strong></a>
- | <a href="#S"><strong>S</strong></a>
- 
 </div>
-<h2 id="E">E</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="Code.html#module-effective_quadratures">effective_quadratures (module)</a>
-  </dt>
-
-      
-  <dt><a href="computestats.html#module-effective_quadratures.computestats">effective_quadratures.computestats (module)</a>
-  </dt>
-
-      
-  <dt><a href="parameter.html#module-effective_quadratures.parameter">effective_quadratures.parameter (module)</a>
-  </dt>
-
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="polynomial.html#module-effective_quadratures.polynomial">effective_quadratures.polynomial (module)</a>
-  </dt>
-
-      
-  <dt><a href="QR-Factorization.html#module-effective_quadratures.qr_factorization">effective_quadratures.qr_factorization (module)</a>
-  </dt>
-
-  </dl></td>
-</tr></table>
-
-<h2 id="G">G</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="polynomial.html#effective_quadratures.polynomial.Polynomial.getCoefficients">getCoefficients() (effective_quadratures.polynomial.Polynomial method)</a>
-  </dt>
-
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="computestats.html#effective_quadratures.computestats.Statistics.getMean">getMean() (effective_quadratures.computestats.Statistics method)</a>
-  </dt>
-
-  </dl></td>
-</tr></table>
-
-<h2 id="P">P</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="parameter.html#effective_quadratures.parameter.Parameter">Parameter (class in effective_quadratures.parameter)</a>
-  </dt>
-
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="polynomial.html#effective_quadratures.polynomial.Polynomial">Polynomial (class in effective_quadratures.polynomial)</a>
-  </dt>
-
-  </dl></td>
-</tr></table>
-
-<h2 id="S">S</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="QR-Factorization.html#effective_quadratures.qr_factorization.solve_constrainedLSQ">solve_constrainedLSQ() (in module effective_quadratures.qr_factorization)</a>
-  </dt>
-
-      
-  <dt><a href="QR-Factorization.html#effective_quadratures.qr_factorization.solve_weightedLSQ">solve_weightedLSQ() (in module effective_quadratures.qr_factorization)</a>
-  </dt>
-
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="computestats.html#effective_quadratures.computestats.Statistics">Statistics (class in effective_quadratures.computestats)</a>
-  </dt>
-
-  </dl></td>
-</tr></table>
-
 
 
            </div>
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="QR-Factorization.html" class="btn btn-neutral float-right" title="QR Factorization" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="polynomial.html" class="btn btn-neutral" title="Polynomial" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

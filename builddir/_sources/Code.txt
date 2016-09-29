@@ -1,0 +1,14 @@
+Code Documentation
+==================
+
+
+.. toctree::
+   :maxdepth: 2
+
+   polynomial
+   parameter
+   QR-Factorization
+   computestats
+
+.. automodule:: effective_quadratures
+    :members:

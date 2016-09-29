@@ -1,36 +1,38 @@
-#!/usr/bin/env python
+"""Utilities for exploiting active subspaces when optimizing."""
 from parameter import Parameter
 from indexset import IndexSet
 import numpy as np
 from utils import error_function, evalfunction, find_repeated_elements
-"""
-Pranay Seshadri
-ps583@cam.ac.uk
-"""
+
 class Polynomial(object):
-    """An abstract class for response surfaces.
-    Attributes
-    ----------
-    N : int
-        maximum degree of global polynomial in the response surface
-    Rsqr : float
-        the R-squared coefficient for the response surface
-    X : ndarray
-        an ndarray of training points for the response surface. The shape is 
-        M-by-m, where m is the number of dimensions.
-    f : ndarray
-        an ndarray of function values used to train the response surface. The 
-        shape of `f` is M-by-1.
-    See Also
-    --------
-    utils.response_surfaces.PolynomialApproximation
-    utils.response_surfaces.RadialBasisApproximation
+    
+    """
+    This subclass is an domains.ActiveVariableMap specifically for optimization.
+
+    **See Also**
+
+    optimizers.BoundedMinVariableMap
+    optimizers.UnboundedMinVariableMap
+
+    **Notes**
+
+    This class's train function fits a global quadratic surrogate model to the
+    n+2 active variables---two more than the dimension of the active subspace.
+    This quadratic surrogate is used to map points in the space of active
+    variables back to the simulation parameter space for minimization.
     """
 
 
     # Constructor
     def __init__(self, uq_parameters, method, index_sets=None):
+        """
+        Train the global quadratic for the regularization.
 
+        :param ndarray X: input points used to train a global quadratic used in
+            the `regularize_z` function.
+        :param ndarray f: simulation outputs used to train a global quadratic in
+            the `regularize_z` function.
+        """
         self.uq_parameters = uq_parameters
         self.method = method
 
@@ -52,6 +54,25 @@ class Polynomial(object):
 
     # get methods
     def getCoefficients(self, function):
+        """
+        Train the global quadratic for the regularization.
+
+        :param ndarray Y: N-by-n matrix of points in the space of active
+            variables.
+        :param int N: merely there satisfy the interface of `regularize_z`. It
+            should not be anything other than 1.
+
+        :return: Z, N-by-(m-n)-by-1 matrix that contains a value of the inactive
+            variables for each value of the inactive variables.
+        :rtype: ndarray
+
+        **Notes**
+
+        In contrast to the `regularize_z` in BoundedActiveVariableMap and
+        UnboundedActiveVariableMap, this implementation of `regularize_z` uses
+        a quadratic program to find a single value of the inactive variables
+        for each value of the active variables.
+        """
         if self.method == "tensor grid" or self.method == "Tensor grid":
             return getPseudospectralCoefficients(self.uq_parameters, function)
         if self.method == "spam" or self.method == "Spam":
@@ -107,34 +128,9 @@ class Polynomial(object):
    #     return getMultiOrthoPolyWithDerivative(self, stackOfPoints, index_set)
 
 
-    """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                            PRIVATE FUNCTIONS
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 # Do not use the function below. It is provided here only for illustrative purposes.
 # SPAM should be used!
 def tensorGrid(listOfParameters, indexSet=None):
-    """Minimize a response surface on the active variables.
-    Parameters
-    ----------
-    avfun : function 
-        a function of the active variables
-    avdom : ActiveVariableDomain 
-        information about the domain of `avfun`
-    avdfun : function 
-        returns the gradient of `avfun`
-    Returns
-    -------
-    ystar : ndarray 
-        the estimated minimizer of `avfun`
-    fstar : float 
-        the estimated minimum of `avfun`
-    See Also
-    --------
-    optimizers.interval_minimize
-    optimizers.zonotope_minimize
-    optimizers.unbounded_minimize
-    """
-
 
     # Get the tensor indices
     dimensions = len(listOfParameters)

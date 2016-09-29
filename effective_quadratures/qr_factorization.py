@@ -1,17 +1,46 @@
-#!/usr/bin/env python
+"""Utilities for exploiting active subspaces when optimizing."""
 import numpy as np
 from utils import error_function
-"""
-Pranay Seshadri
-ps583@cam.ac.uk
-"""
+
 # Solve the weighted least squares problem, using the method of row     
 def solve_weightedLSQ(A, b, C, d, alpha):
+    """
+    Estimate a collection of gradients from input/output pairs.
+
+    :param ndarray X: M-by-m matrix that contains the m-dimensional inputs.
+    :param ndarray f: M-by-1 matrix that contains scalar outputs.
+    :param int p: How many nearest neighbors to use when constructing the
+        local linear model.
+    :param ndarray weights: M-by-1 matrix that contains the weights for
+        each observation.
+
+    :return df: M-by-m matrix that contains estimated partial derivatives
+        approximated by the local linear models.
+    :rtype: ndarray
+
+    **Notes**
+
+    If `p` is not specified, the default value is floor(1.7*m).
+    """
     x = 0
     return x
     
 # Solve the constrained least squares problem, using method of direct elimination
 def solve_constrainedLSQ(A,b,C,d):
+    """
+    Compute finite difference gradients with a given interface.
+
+    :param ndarray X: M-by-m matrix that contains the points to estimate the
+        gradients with finite differences.
+    :param function fun: Function that returns the simulation's quantity of
+        interest given inputs.
+    :param float h: The finite difference step size.
+
+    :return: df, M-by-m matrix that contains estimated partial derivatives
+        approximated by finite differences
+    :rtype: ndarray
+    """
+
     # Preliminaries
     temp , R = qr_householder(C.T, 1) # Thin QR factorization on C'
     Q , temp = qr_householder(C.T) # Regular QR 

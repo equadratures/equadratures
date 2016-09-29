@@ -1,18 +1,50 @@
-#!/usr/bin/env python
+"""Utilities for exploiting active subspaces when optimizing."""
 import numpy as np
 from utils import error_function
-"""
-Pranay Seshadri
-ps583@cam.ac.uk
->> To do: code up skewness and kurtosis coefficients!
-"""
+
 class Statistics(object):
+    
+    """
+    This subclass is an domains.ActiveVariableMap specifically for optimization.
+
+    **See Also**
+
+    optimizers.BoundedMinVariableMap
+    optimizers.UnboundedMinVariableMap
+
+    **Notes**
+
+    This class's train function fits a global quadratic surrogate model to the
+    n+2 active variables---two more than the dimension of the active subspace.
+    This quadratic surrogate is used to map points in the space of active
+    variables back to the simulation parameter space for minimization.
+    """
+
     # constructor
     def __init__(self, coefficients, index_set):
         self.coefficients = coefficients
         self.index_set = index_set
 
     def getMean(self):
+        """
+        Train the global quadratic for the regularization.
+
+        :param ndarray Y: N-by-n matrix of points in the space of active
+            variables.
+        :param int N: merely there satisfy the interface of `regularize_z`. It
+            should not be anything other than 1.
+
+        :return: Z, N-by-(m-n)-by-1 matrix that contains a value of the inactive
+            variables for each value of the inactive variables.
+        :rtype: ndarray
+
+        **Notes**
+
+        In contrast to the `regularize_z` in BoundedActiveVariableMap and
+        UnboundedActiveVariableMap, this implementation of `regularize_z` uses
+        a quadratic program to find a single value of the inactive variables
+        for each value of the active variables.
+        """        
         coefficients = self.coefficients
         mean = coefficients[0,0]
         return mean

@@ -1,0 +1,5 @@
+Statistics
+===========
+
+.. automodule:: effective_quadratures.computestats
+    :members:

@@ -1,13 +1,26 @@
-#!/usr/bin/env python
+"""Utilities for exploiting active subspaces when optimizing."""
 import numpy as np
 from scipy.special import gamma
 import analyticaldistributions as analytical
 from utils import error_function
-"""
-Pranay Seshadri
-ps583@cam.ac.uk
-"""
 class Parameter(object):
+    
+    """
+    This subclass is an domains.ActiveVariableMap specifically for optimization.
+
+    **See Also**
+
+    optimizers.BoundedMinVariableMap
+    optimizers.UnboundedMinVariableMap
+
+    **Notes**
+
+    This class's train function fits a global quadratic surrogate model to the
+    n+2 active variables---two more than the dimension of the active subspace.
+    This quadratic surrogate is used to map points in the space of active
+    variables back to the simulation parameter space for minimization.
+    """
+
     # constructor
     def __init__(self, lower, upper, points, param_type = None, shape_parameter_A=None, shape_parameter_B=None, derivative_flag=None):
        

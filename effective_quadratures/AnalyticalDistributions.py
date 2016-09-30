@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+"""Analytical definitions of PDFs"""
 import numpy as np
 from scipy.special import erf
-from scipy.special import gamma
+from scipy.special import gamma, beta
 """
-
+   This 
    Analytical definitions for some sample PDFs. Functions in this file are
    called by PolyParams when constructing "custom" orthogonal polynomials,
    which require Stieltejes procedure for computing the recurrence coefficients.
@@ -16,9 +16,18 @@ from scipy.special import gamma
 
     Copyright (c) 2016 by Pranay Seshadri
 """
+def UniformDistribution(N, lower, upper):
+    x = np.linspace(lower, upper, N)
+    w = (1.0)/(upper - lower)
+    return x, w
 
-def Gaussian(mu, sigma, N):
-  x, w = GaussianPDF(mu, sigma, N)
+def BetaDistribution(N, a, b):
+    x = np.linspace(0, 1, N)
+    w = (x**(a - 1) * (1 - x)**(b - 1))/(beta(a, b) )
+    return x, w
+
+def Gaussian(N, mu, sigma):
+  x, w = GaussianPDF(N, mu, sigma)
   return x, w
 
 def WeibullDistribution(N, lambda_value, k):
@@ -38,7 +47,7 @@ def CauchyDistribution(N, x0, gammavalue):
     return x, w
 
 def ExponentialDistribution(N, lambda_value):
-    x = np.linspace(0, 15*lambda_value, N)
+    x = np.linspace(0, 20*lambda_value, N)
     w = lambda_value * np.exp(-lambda_value * x)
     return x, w
 
@@ -51,7 +60,7 @@ def TruncatedGaussian(N, mu, sigma, a, b):
     w = w / (first_term - second_term)
     return x, w
 
-def GaussianPDF(mu, sigma, N):
+def GaussianPDF(N, mu, sigma):
     x = np.linspace(-15*sigma, 15*sigma, N)
     x = x + mu # scaling it by the mean!
     w = 1.0/( np.sqrt(2 * sigma**2 * np.pi) ) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma**2) )

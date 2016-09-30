@@ -1,4 +1,4 @@
-"""Utilities for exploiting active subspaces when optimizing."""
+"""Core class for setting the properties of a univariate parameter."""
 import numpy as np
 from scipy.special import gamma
 import analyticaldistributions as analytical
@@ -6,24 +6,45 @@ from utils import error_function
 class Parameter(object):
     
     """
-    This subclass is an domains.ActiveVariableMap specifically for optimization.
+    This class defines a univariate parameter. Below are details of its constructor.
 
-    **See Also**
+    :param double lower: Lower bound for the parameter. 
+    :param double upper: Upper bound for the parameter
+    :param integer points: Number of quadrature points to be used for subsequent
+         computations. 
+    :param string param_type: The type of distribution that characteristizes the parameter. Options include:
+            `Gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_, `TruncatedGaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_, 
+            `Beta <https://en.wikipedia.org/wiki/Beta_distribution>`_, `Cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_,
+            `Exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_, `Uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_, 
+            `Gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_ and `Weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_. 
+            If no string is provided, a `Uniform` distribution is assumed.
+    :param double shape_parameter_A: Most of the aforementioned distributions are characterized by two shape 
+            parameters. For instance, in the case of a `Gaussian` (or `TruncatedGaussian`), this represents the mean. In the case of a Beta
+            distribution this represents the alpha value. For a uniform distribution this input is not required.
+    :param double shape_parameter_B: This is the second shape parameter that characterizes the distribution selected.
+            In the case of a `Gaussian` or `TruncatedGaussian` this is the variance. 
+    :param derivative_flag: If flag is 
+    **Sample declarations** 
+    ::
+        # Uniform distribution with 5 points on [-2,2]
+        >> Parameter(points=5, lower=-2, upper=2, param_type='Uniform')
 
-    optimizers.BoundedMinVariableMap
-    optimizers.UnboundedMinVariableMap
+        # Gaussian distribution with 3 points with mean=4.0, variance=2.5
+        >> Parameter(points=3, shape_parameter_A=4, shape_parameter_B=2.5, 
+        param_type='Gaussian') 
 
-    **Notes**
+        # Gamma distribution with 15 points with k=1.0 and theta=2.0
+        >> Parameter(points=15, shape_parameter_A=1.0, shape_parameter_B=2.0, 
+        param_type='Gamma')
 
-    This class's train function fits a global quadratic surrogate model to the
-    n+2 active variables---two more than the dimension of the active subspace.
-    This quadratic surrogate is used to map points in the space of active
-    variables back to the simulation parameter space for minimization.
+        # Exponential distribution with 12 points with lambda=0.5
+        >> Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
+
     """
 
     # constructor
-    def __init__(self, lower, upper, points, param_type = None, shape_parameter_A=None, shape_parameter_B=None, derivative_flag=None):
-       
+    def __init__(self, points, lower=None, upper=None, param_type = None, shape_parameter_A=None, shape_parameter_B=None, derivative_flag=None):
+     
         # Check that lower is indeed above upper
         if lower >= upper :
             error_function('Parameter: upper must be larger than lower')
@@ -31,6 +52,10 @@ class Parameter(object):
         self.lower = lower # double
         self.upper = upper # double
         self.order = points # integer
+
+        # Check what lower and upper are...
+        if lower is None:
+            self
 
         if param_type is None:
             self.param_type = 'Uniform'
@@ -52,10 +77,44 @@ class Parameter(object):
         else:
             self.derivative_flag = derivative_flag    
         
-    def getPDF(self):
+    def getPDF(self, N):
+        """
+        Returns the PDF of the parameter 
+
+        :param ndarray x: N-by-n matrix of points in the space of active
+            variables.
+        :param int N: merely there satisfy the interface of `regularize_z`. It
+            should not be anything other than 1.
+
+        :return: x, N-by-(m-n)-by-1 matrix that contains a value of the inactive
+            variables for each value of the inactive variables.
+        :rtype: ndarray
+
+        **Sample declaration**
+        :: 
+            >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
+            >> x, y = var1.getPDF()
+        """
         return 0
 
     def getCFD(self):
+        """
+        Returns the CDF of the parameter 
+
+        :param ndarray x: N-by-n matrix of points in the space of active
+            variables.
+        :param int N: merely there satisfy the interface of `regularize_z`. It
+            should not be anything other than 1.
+
+        :return: x, N-by-(m-n)-by-1 matrix that contains a value of the inactive
+            variables for each value of the inactive variables.
+        :rtype: ndarray
+
+        **Sample declaration**
+        :: 
+            >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
+            >> x, y = var1.getCDF()
+        """
         return 0
           
     def getDerivativeFlag(self):
@@ -80,6 +139,24 @@ class Parameter(object):
         return self.shape_parameter_B
 
     def getRecurrenceCoefficients(self, *argv):
+        """
+        Returns the recurrence coefficients of the parameter 
+
+        :param ndarray x: N-by-n matrix of points in the space of active
+            variables.
+        :param int N: merely there satisfy the interface of `regularize_z`. It
+            should not be anything other than 1.
+
+        :return: x, N-by-(m-n)-by-1 matrix that contains a value of the inactive
+            variables for each value of the inactive variables.
+        :rtype: ndarray
+
+        **Sample declaration**
+        :: 
+            >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
+            >> x, y = var1.getPDF()
+        """
+
         return recurrence_coefficients(self, argv)
 
     def getJacobiMatrix(self, *argv):
@@ -94,24 +171,6 @@ class Parameter(object):
     def getLocalQuadrature(self, order):
         return getlocalquadrature(self, order)
 
-    # Might need another getAmatrix function that doesn't store the full matrix!
-    def getAmatrix(self, *argv):
-
-        # If there is an additional argument, then replace the
-        for arg in argv:
-            gridPoints =  argv[0]
-        else:
-            gridPoints, gridWeights = getlocalquadrature(self)
-
-        A, C = orthoPolynomial_and_derivative(self, gridPoints)
-        A = np.sqrt(2) * A.T # Take the temp_transpose
-        C = np.sqrt(2) * C.T
-
-        return A, C, gridPoints
-    """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                    function definitions -- outside Parameter Class
-                    (these are all technically private!)
-       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
 # Call different methods depending on the choice of the polynomial parameter
 def recurrence_coefficients(self, order=None):

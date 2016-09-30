@@ -1,0 +1,361 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Parameter &mdash; Effective Quadratures 0.1.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Effective Quadratures 0.1.1 documentation" href="index.html"/>
+        <link rel="up" title="Code Documentation" href="Code.html"/>
+        <link rel="next" title="QR Factorization" href="QR-Factorization.html"/>
+        <link rel="prev" title="Polynomial" href="polynomial.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Effective Quadratures
+          
+
+          
+            
+            <img src="_static/logo.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="Code.html">Code Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="polynomial.html">Polynomial</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="QR-Factorization.html">QR Factorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="computestats.html">Statistics</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Contact.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LICENSE.html">LICENSE</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Effective Quadratures</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="Code.html">Code Documentation</a> &raquo;</li>
+      
+    <li>Parameter</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/parameter.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-effective_quadratures.parameter">
+<span id="parameter"></span><h1>Parameter<a class="headerlink" href="#module-effective_quadratures.parameter" title="Permalink to this headline">¶</a></h1>
+<p>Core class for setting the properties of a univariate parameter.</p>
+<dl class="class">
+<dt id="effective_quadratures.parameter.Parameter">
+<em class="property">class </em><code class="descclassname">effective_quadratures.parameter.</code><code class="descname">Parameter</code><span class="sig-paren">(</span><em>points</em>, <em>lower=None</em>, <em>upper=None</em>, <em>param_type=None</em>, <em>shape_parameter_A=None</em>, <em>shape_parameter_B=None</em>, <em>derivative_flag=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class defines a univariate parameter. Below are details of its constructor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>lower</strong> (<em>double</em>) &#8211; Lower bound for the parameter.</li>
+<li><strong>upper</strong> (<em>double</em>) &#8211; Upper bound for the parameter</li>
+<li><strong>points</strong> (<em>integer</em>) &#8211; Number of quadrature points to be used for subsequent
+computations.</li>
+<li><strong>param_type</strong> (<em>string</em>) &#8211; The type of distribution that characteristizes the parameter. Options include:
+<a class="reference external" href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Truncated_normal_distribution">TruncatedGaussian</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Beta_distribution">Beta</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Cauchy_distribution">Cauchy</a>,
+<a class="reference external" href="https://en.wikipedia.org/wiki/Exponential_distribution">Exponential</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)">Uniform</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Gamma_distribution">Gamma</a> and <a class="reference external" href="https://en.wikipedia.org/wiki/Weibull_distribution">Weibull</a>. 
+If no string is provided, a <cite>Uniform</cite> distribution is assumed.</li>
+<li><strong>shape_parameter_A</strong> (<em>double</em>) &#8211; Most of the aforementioned distributions are characterized by two shape 
+parameters. For instance, in the case of a <cite>Gaussian</cite> (or <cite>TruncatedGaussian</cite>), this represents the mean. In the case of a Beta
+distribution this represents the alpha value. For a uniform distribution this input is not required.</li>
+<li><strong>shape_parameter_B</strong> (<em>double</em>) &#8211; This is the second shape parameter that characterizes the distribution selected.
+In the case of a <cite>Gaussian</cite> or <cite>TruncatedGaussian</cite> this is the variance.</li>
+<li><strong>derivative_flag</strong> &#8211; If flag is</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample declarations</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Uniform distribution with 5 points on [-2,2]</span>
+<span class="o">&gt;&gt;</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">lower</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">)</span>
+
+<span class="c1"># Gaussian distribution with 3 points with mean=4.0, variance=2.5</span>
+<span class="o">&gt;&gt;</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">shape_parameter_B</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> 
+<span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Gaussian&#39;</span><span class="p">)</span> 
+
+<span class="c1"># Gamma distribution with 15 points with k=1.0 and theta=2.0</span>
+<span class="o">&gt;&gt;</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">shape_parameter_B</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> 
+<span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Gamma&#39;</span><span class="p">)</span>
+
+<span class="c1"># Exponential distribution with 12 points with lambda=0.5</span>
+<span class="o">&gt;&gt;</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Exponential&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="effective_quadratures.parameter.Parameter.getCFD">
+<code class="descname">getCFD</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter.getCFD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the CDF of the parameter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>ndarray</em>) &#8211; N-by-n matrix of points in the space of active
+variables.</li>
+<li><strong>N</strong> (<em>int</em>) &#8211; merely there satisfy the interface of <cite>regularize_z</cite>. It
+should not be anything other than 1.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">x, N-by-(m-n)-by-1 matrix that contains a value of the inactive
+variables for each value of the inactive variables.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample declaration</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">var1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Exponential&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">var1</span><span class="o">.</span><span class="n">getCDF</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.parameter.Parameter.getPDF">
+<code class="descname">getPDF</code><span class="sig-paren">(</span><em>N</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter.getPDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the PDF of the parameter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>ndarray</em>) &#8211; N-by-n matrix of points in the space of active
+variables.</li>
+<li><strong>N</strong> (<em>int</em>) &#8211; merely there satisfy the interface of <cite>regularize_z</cite>. It
+should not be anything other than 1.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">x, N-by-(m-n)-by-1 matrix that contains a value of the inactive
+variables for each value of the inactive variables.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample declaration</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">var1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Exponential&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">var1</span><span class="o">.</span><span class="n">getPDF</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.parameter.Parameter.getRecurrenceCoefficients">
+<code class="descname">getRecurrenceCoefficients</code><span class="sig-paren">(</span><em>*argv</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter.getRecurrenceCoefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the recurrence coefficients of the parameter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>ndarray</em>) &#8211; N-by-n matrix of points in the space of active
+variables.</li>
+<li><strong>N</strong> (<em>int</em>) &#8211; merely there satisfy the interface of <cite>regularize_z</cite>. It
+should not be anything other than 1.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">x, N-by-(m-n)-by-1 matrix that contains a value of the inactive
+variables for each value of the inactive variables.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample declaration</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">var1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Exponential&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">var1</span><span class="o">.</span><span class="n">getPDF</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="QR-Factorization.html" class="btn btn-neutral float-right" title="QR Factorization" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="polynomial.html" class="btn btn-neutral" title="Polynomial" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Pranay Seshadri.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

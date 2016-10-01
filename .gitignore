@@ -17,14 +17,13 @@ documentation/
 # the etc directory
 etc/
 
-# logs
-gurobi.log
 
 # Python Packages
 *.egg
 *.egg-info
 dist
 source
+.ipynb*
 *_
 eggs
 parts

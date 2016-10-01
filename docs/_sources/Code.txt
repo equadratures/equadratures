@@ -6,6 +6,7 @@ Code Documentation
    :maxdepth: 2
 
    polynomial
+   indexset
    parameter
    QR-Factorization
    computestats

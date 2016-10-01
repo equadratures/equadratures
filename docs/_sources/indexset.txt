@@ -1,0 +1,5 @@
+IndexSet
+===========
+
+.. automodule:: effective_quadratures.indexset
+    :members:

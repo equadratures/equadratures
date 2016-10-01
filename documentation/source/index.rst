@@ -14,9 +14,8 @@ Guide
    LICENSE
 
 
-Indices and tables
+Glossary
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`

@@ -143,19 +143,30 @@
             
   <div class="section" id="module-effective_quadratures.polynomial">
 <span id="polynomial"></span><h1>Polynomial<a class="headerlink" href="#module-effective_quadratures.polynomial" title="Permalink to this headline">¶</a></h1>
-<p>Utilities for exploiting active subspaces when optimizing.</p>
+<p>Operations involving multivariate polynomials</p>
 <dl class="class">
 <dt id="effective_quadratures.polynomial.Polynomial">
 <em class="property">class </em><code class="descclassname">effective_quadratures.polynomial.</code><code class="descname">Polynomial</code><span class="sig-paren">(</span><em>uq_parameters</em>, <em>method</em>, <em>index_sets=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.Polynomial" title="Permalink to this definition">¶</a></dt>
-<dd><p>This subclass is an domains.ActiveVariableMap specifically for optimization.</p>
-<p><strong>See Also</strong></p>
-<p>optimizers.BoundedMinVariableMap
-optimizers.UnboundedMinVariableMap</p>
-<p><strong>Notes</strong></p>
-<p>This class&#8217;s train function fits a global quadratic surrogate model to the
-n+2 active variables&#8212;two more than the dimension of the active subspace.
-This quadratic surrogate is used to map points in the space of active
-variables back to the simulation parameter space for minimization.</p>
+<dd><p>This class defines a polynomial and its associated functions. One can compute multivariate orthogonal polynomials
+and its coefficients for approximation or interpolation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>of Parameters uq_parameters</strong> (<em>array</em>) &#8211; A list of Parameters</li>
+<li><strong>method</strong> (<em>string</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>:</p>
+<p><strong>Sample declarations</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Uniform distribution with 5 points on [-2,2]</span>
+<span class="o">&gt;&gt;</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">lower</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="method">
 <dt id="effective_quadratures.polynomial.Polynomial.getCoefficients">
 <code class="descname">getCoefficients</code><span class="sig-paren">(</span><em>function</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.Polynomial.getCoefficients" title="Permalink to this definition">¶</a></dt>

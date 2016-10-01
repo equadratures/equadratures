@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Operations involving multivariate polynomials"""
 from parameter import Parameter
 from indexset import IndexSet

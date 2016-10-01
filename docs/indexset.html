@@ -1,0 +1,259 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>IndexSet &mdash; Effective Quadratures 0.1.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Effective Quadratures 0.1.1 documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Effective Quadratures
+          
+
+          
+            
+            <img src="_static/logo.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Code.html">Code Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Contact.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LICENSE.html">LICENSE</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Effective Quadratures</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>IndexSet</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/indexset.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-effective_quadratures.indexset">
+<span id="indexset"></span><h1>IndexSet<a class="headerlink" href="#module-effective_quadratures.indexset" title="Permalink to this headline">¶</a></h1>
+<p>Index sets for multivariate polynomials</p>
+<dl class="class">
+<dt id="effective_quadratures.indexset.IndexSet">
+<em class="property">class </em><code class="descclassname">effective_quadratures.indexset.</code><code class="descname">IndexSet</code><span class="sig-paren">(</span><em>index_set_type</em>, <em>orders</em>, <em>level=None</em>, <em>growth_rule=None</em>, <em>dimension=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.indexset.IndexSet" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>This class defines an index set</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>index_set_type</strong> (<em>string</em>) &#8211; The type of index set to be used. Options include:
+<cite>Total order</cite>, <cite>Tensor grid</cite>, <cite>Sparse grid</cite> and <cite>Hyperbolic basis</cite>.</li>
+<li><strong>of integers orders</strong> (<em>ndarray</em>) &#8211; The highest polynomial order in each direction</li>
+<li><strong>level</strong> (<em>integer</em>) &#8211; For sparse grids the level of the sparse grid rule</li>
+<li><strong>growth_rule</strong> (<em>string</em>) &#8211; <dl class="docutils">
+<dt>The type of growth rule associated with the sparse grid. Options include:</dt>
+<dd><cite>linear</cite> and <cite>exponential</cite>.</dd>
+</dl>
+<p><strong>Sample declarations</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Tensor grid&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="o">&gt;&gt;</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Sparse grid&#39;</span><span class="p">,</span> <span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="effective_quadratures.indexset.IndexSet.getCardinality">
+<code class="descname">getCardinality</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.indexset.IndexSet.getCardinality" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the cardinality (total number of elements) of the index set</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>self</strong> (<a class="reference internal" href="parameter.html#effective_quadratures.parameter.Parameter" title="effective_quadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class</li>
+<li><strong>order</strong> (<em>int</em>) &#8211; Number of eigenvectors required. This function makes the call getJacobiMatrix(order) and then computes
+the corresponding eigenvectors.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">V, order-by-order matrix that contains the eigenvectors of the Jacobi matrix</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample declaration</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Code to Jacobi eigenvectors</span>
+<span class="o">&gt;&gt;</span> <span class="n">var4</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Gaussian&#39;</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">shape_parameter_B</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">V</span> <span class="o">=</span> <span class="n">var4</span><span class="o">.</span><span class="n">getJacobiEigenvectors</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Pranay Seshadri.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

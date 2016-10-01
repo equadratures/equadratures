@@ -1,37 +1,29 @@
 #!/usr/bin/env python
+"""Index sets for multivariate polynomials"""
 import numpy as np
 import math as mt
-"""
 
-    The IndexSet Class
-    Designed to be the base class for all subsequent multivariate polynomials
-
-    need to sort out this ordering vs. number of points issue!
-
-    Pranay Seshadri
-    ps583@cam.ac.uk
-
-"""
 class IndexSet(object):
-    """ An index set.
-    Attributes:
-        index_set_type: Choose between:
-                        a. Tensor grid
-                        b. Total order index set
-                        c. Hyperbolic cross space
-                        d. Sparse grids
+    
+    """
+    This class defines an index set
 
-        orders: Maximum orders in each direction
-        level: [For sparse grids only] "density of points"
-        growth_rule: scaling up of points between levels:
-                        a. Linear growth rule
-                        b. Exponential growth rule
+   :param string index_set_type: The type of index set to be used. Options include:
+        `Total order`, `Tensor grid`, `Sparse grid` and `Hyperbolic basis`. 
+   :param ndarray of integers orders: The highest polynomial order in each direction
+   :param integer level: For sparse grids the level of the sparse grid rule
+   :param string growth_rule: The type of growth rule associated with the sparse grid. Options include:
+        `linear` and `exponential`.
 
-       * Need to use recurrence for index sets!
-       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                constructor / initializer
-       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
+    **Sample declarations** 
+    ::
+        
+        >> IndexSet('Tensor grid', [3,3,3])
+        >> IndexSet('Sparse grid', )
+
+
+    """
     def __init__(self, index_set_type, orders, level=None, growth_rule=None, dimension=None):
         
         self.index_set_type = index_set_type # string
@@ -55,13 +47,23 @@ class IndexSet(object):
         else:
             self.dimension = dimension
 
-
-    """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                get() methods
-       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
     def getCardinality(self):
-        # Return the number of elements in the index set!
+        """
+        Returns the cardinality (total number of elements) of the index set
 
+        :param Parameter self: An instance of the Parameter class
+        :param int order: Number of eigenvectors required. This function makes the call getJacobiMatrix(order) and then computes
+            the corresponding eigenvectors.
+
+        :return: V, order-by-order matrix that contains the eigenvectors of the Jacobi matrix
+        :rtype: ndarray
+
+        **Sample declaration**
+        :: 
+            # Code to Jacobi eigenvectors
+            >> var4 = Parameter(points=5, param_type='Gaussian', shape_parameter_A=0, shape_parameter_B=2)
+            >> V = var4.getJacobiEigenvectors()
+        """
         if self.index_set_type == "sparse grid":
             index_set, a, SG_set = getindexsetvalues(self)
         else:
@@ -105,14 +107,14 @@ def getIndexLocation(small_index, large_index):
 def getindexsetvalues(self):
 
     name = self.index_set_type
-    if name == "total order":
+    if name == "Total order":
         index_set = total_order_index_set(self.orders)
-    elif name == "sparse grid":
+    elif name == "Sparse grid":
         sparse_index, a, SG_set = sparse_grid_index_set(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
         return sparse_index, a, SG_set
-    elif name == "tensor grid":
+    elif name == "Tensor grid":
         index_set = tensor_grid_index_set(self.orders )
-    elif name == "hyperbolic cross":
+    elif name == "Hyperbolic basis":
         index_set = hyperbolic_index_set(self.orders, self.level)
     else:
         index_set = [0]

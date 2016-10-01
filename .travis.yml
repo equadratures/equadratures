@@ -1,17 +1,29 @@
 cache: apt
 sudo: false
 
-git:
-  depth: 150
-  
 language: python
 python:
   - "2.7"
 
-install:
- - sudo python setup.py install
- 
-script: 
- - python test.py
+addons:
+  apt:
+    packages:
+    - libatlas-dev
+    - libatlas-base-dev
+    - liblapack-dev
 
-sudo: required
+before_install:
+ - travis_retry wget http://repo.continuum.io/miniconda/Miniconda-3.8.3-Linux-x86_64.sh -O miniconda.sh
+ - chmod +x miniconda.sh
+ - bash miniconda.sh -b -p $HOME/miniconda
+ - export PATH=/home/travis/miniconda/bin:$PATH
+ - conda update --yes conda
+
+install:
+ - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
+ - source activate test
+ - conda install --yes numpy scipy matplotlib pip nose
+ - pip install setuptools
+ - python setup.py install
+
+script: python test.py

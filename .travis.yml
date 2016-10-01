@@ -1,6 +1,9 @@
 cache: apt
 sudo: false
 
+git:
+  depth: 150
+  
 language: python
 python:
   - "2.7"

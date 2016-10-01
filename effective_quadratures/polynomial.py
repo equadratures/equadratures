@@ -6,33 +6,26 @@ import numpy as np
 from utils import error_function, evalfunction, find_repeated_elements
 
 class Polynomial(object):
-    
     """
     This class defines a polynomial and its associated functions. One can compute multivariate orthogonal polynomials
     and its coefficients for approximation or interpolation. 
 
     :param array of Parameters uq_parameters: A list of Parameters
-    :param string method: 
-    :
+    :param string method: Method for computing the multivariate polynomial coefficients. Options are:
+        `Tensor`: Using a tensor grid pseudospectral approximation
+        `Sparse`: Using a sparse pseudospectral approximation
+    :param IndexSet index_set: An instance of the IndexSet class
     
     **Sample declarations** 
     ::
-        # Uniform distribution with 5 points on [-2,2]
-        >> Parameter(points=5, lower=-2, upper=2, param_type='Uniform')
-
+        >> s = Parameter(lower=-2, upper=2, param_type='Uniform')
+        >> T = IndexSet('Tensor grid', [3,3])
+        >> Polynomial([s,s], 'Tensor pseudospectral', T)
     """
-
 
     # Constructor
     def __init__(self, uq_parameters, method, index_sets=None):
-        """
-        Train the global quadratic for the regularization.
-
-        :param ndarray X: input points used to train a global quadratic used in
-            the `regularize_z` function.
-        :param ndarray f: simulation outputs used to train a global quadratic in
-            the `regularize_z` function.
-        """
+    
         self.uq_parameters = uq_parameters
         self.method = method
 
@@ -44,7 +37,7 @@ class Polynomial(object):
             for i in range(0, len(uq_parameters)):
                 highest_orders.append(uq_parameters[i].order)
 
-            if(method == "tensor grid" or method == "Tensor grid"):
+            if(method == "Tensor grid"):
                 indexObject = IndexSet(method, highest_orders)
                 self.index_sets = indexObject
         else:
@@ -52,26 +45,23 @@ class Polynomial(object):
             if(method == "sparse grid" or method == "Sparse grid" or method == "spam" or method == "SPAM"):
                 self.index_sets = index_sets
 
-    # get methods
+   
     def getCoefficients(self, function):
         """
-        Train the global quadratic for the regularization.
+        Get the pseudospectral coefficients.
 
         :param ndarray Y: N-by-n matrix of points in the space of active
             variables.
         :param int N: merely there satisfy the interface of `regularize_z`. It
             should not be anything other than 1.
-
+        
         :return: Z, N-by-(m-n)-by-1 matrix that contains a value of the inactive
             variables for each value of the inactive variables.
         :rtype: ndarray
-
+        
         **Notes**
-
-        In contrast to the `regularize_z` in BoundedActiveVariableMap and
-        UnboundedActiveVariableMap, this implementation of `regularize_z` uses
-        a quadratic program to find a single value of the inactive variables
-        for each value of the active variables.
+        
+        Say something about we use Paul's method for computing the coefficients through SPAM.
         """
         if self.method == "tensor grid" or self.method == "Tensor grid":
             return getPseudospectralCoefficients(self.uq_parameters, function)
@@ -111,22 +101,38 @@ class Polynomial(object):
         P = getMultiOrthoPoly(self, plotting_pts, indexset)
         PolyApprox = np.mat(coefficients) * np.mat(P)
         return PolyApprox, evaled_pts
-
-    def getMultivariatePolynomial(self, stackOfPoints, index_set_alternate=None):
-        if index_set_alternate is None:
-            index_set = self.indexsets
-        else:
-            index_set = index_set_alternate
-        return getMultiOrthoPoly(self, stackOfPoints, index_set)
-
     
-   # def getMultivariatePolynomialWithDerivatives(self, stackOfPoints, index_set_alternate=None):
-   #     if index_set_alternate is None:
-   #         index_set = self.indexsets
-   #     else:
-   #         index_set = index_set_alternate
-   #     return getMultiOrthoPolyWithDerivative(self, stackOfPoints, index_set)
+    def getMultivariatePolynomial(self, stackOfPoints):
 
+        # "Unpack" parameters from "self"
+        stackOfParameters = self.uq_parameters
+        dimensions = len(stackOfParameters)
+        p = {}
+        d = {}
+
+        # Save time by returning if univariate!
+        if(dimensions == 1):
+            poly , derivatives =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
+            return poly, derivatives
+        else:
+            for i in range(0, dimensions):
+                poly, derivatives = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
+                p[i] = poly
+                d[i] = derivatives
+
+        # Now we multiply components according to the index set
+        no_of_points = len(stackOfPoints)
+        polynomial = np.zeros((len(index_set), no_of_points))
+        derivatives = np.zeros((len(index_set), no_of_points, dimensions))
+
+        for i in range(0, len(index_set)):
+            temp = np.ones((1, no_of_points))
+            for k in range(0, dimensions):
+                polynomial[i,:] = p[k][0][int(index_set[i,k])] * temp
+                temp = polynomial[i,:]
+                derivatives[i,:,k] = d[k][0][int(index_set(i,k))] * temp
+    
+    return polynomial, derivatives
 
 # Do not use the function below. It is provided here only for illustrative purposes.
 # SPAM should be used!
@@ -256,7 +262,6 @@ def getSparsePseudospectralCoefficients(self, function):
                  points_saved[counter,d] = points_store[i][j][d]
              counter = counter + 1
 
-
     # Now we use a while loop to iteratively delete the repeated elements while summing up the
     # coefficients!
     index_to_pick = 0
@@ -367,7 +372,6 @@ def getPseudospectralCoefficients(stackOfParameters, function, additional_orders
 
     tensor_grid_basis = IndexSet("tensor grid",  order_correction)
     tensor_set = tensor_grid_basis.getIndexSet()
-
 
     # Now we use kronmult
     K = efficient_kron_mult(Q, Uc)
@@ -499,32 +503,4 @@ def getMultiOrthoPoly(self, stackOfPoints, index_set):
 # Multivariate orthogonal polynomial with derivatives!
 def getMultiOrthoPolyWithDerivative(self, stackOfPoints, index_set):
     
-    # "Unpack" parameters from "self"
-    stackOfParameters = self.uq_parameters
-    dimensions = len(stackOfParameters)
-    p = {}
-    d = {}
-
-    # Save time by returning if univariate!
-    if(dimensions == 1):
-        poly , derivatives =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
-        return poly, derivatives
-    else:
-        for i in range(0, dimensions):
-            poly, derivatives = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
-            p[i] = poly
-            d[i] = derivatives
-
-    # Now we multiply components according to the index set
-    no_of_points = len(stackOfPoints)
-    polynomial = np.zeros((len(index_set), no_of_points))
-    derivatives = np.zeros((len(index_set), no_of_points, dimensions))
-
-    for i in range(0, len(index_set)):
-        temp = np.ones((1, no_of_points))
-        for k in range(0, dimensions):
-            polynomial[i,:] = p[k][0][int(index_set[i,k])] * temp
-            temp = polynomial[i,:]
-            derivatives[i,:,k] = d[k][0][int(index_set(i,k))] * temp
-    
-    return polynomial, derivatives
+   

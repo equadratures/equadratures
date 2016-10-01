@@ -1,21 +1,9 @@
-"""Analytical definitions of PDFs"""
+#!/usr/bin/env python
 import numpy as np
 from scipy.special import erf
 from scipy.special import gamma, beta
-"""
-   This 
-   Analytical definitions for some sample PDFs. Functions in this file are
-   called by PolyParams when constructing "custom" orthogonal polynomials,
-   which require Stieltejes procedure for computing the recurrence coefficients.
-   Note that these definitions are not normalized -- and they are normalized when
-   used in PolyParams.py
 
 
-    Pranay Seshadri
-    ps583@cam.ac.uk
-
-    Copyright (c) 2016 by Pranay Seshadri
-"""
 def UniformDistribution(N, lower, upper):
     x = np.linspace(lower, upper, N)
     w = (1.0)/(upper - lower)

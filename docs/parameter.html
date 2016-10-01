@@ -167,7 +167,7 @@ If no string is provided, a <cite>Uniform</cite> distribution is assumed.</li>
 parameters. For instance, in the case of a <cite>Gaussian</cite> (or <cite>TruncatedGaussian</cite>), this represents the mean. In the case of a Beta
 distribution this represents the alpha value. For a uniform distribution this input is not required.</li>
 <li><strong>shape_parameter_B</strong> (<em>double</em>) &#8211; This is the second shape parameter that characterizes the distribution selected.
-In the case of a <cite>Gaussian</cite> or <cite>TruncatedGaussian</cite> this is the variance.</li>
+In the case of a <cite>Gaussian</cite> or <cite>TruncatedGaussian</cite>, this is the variance.</li>
 <li><strong>derivative_flag</strong> (<em>boolean</em>) &#8211; If flag is set to 1, then derivatives are used in polynomial computations. The default value is set to 0.</li>
 </ul>
 </td>
@@ -191,27 +191,45 @@ In the case of a <cite>Gaussian</cite> or <cite>TruncatedGaussian</cite> this is
 </pre></div>
 </div>
 <dl class="method">
+<dt id="effective_quadratures.parameter.Parameter.computeMean">
+<code class="descname">computeMean</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter.computeMean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the mean of the parameter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.parameter.Parameter" title="effective_quadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">mu, mean of the parameter</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">double</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample declaration</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">var1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Exponential&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">mu</span> <span class="o">=</span> <span class="n">var1</span><span class="o">.</span><span class="n">computeMean</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="effective_quadratures.parameter.Parameter.getJacobiEigenvectors">
-<code class="descname">getJacobiEigenvectors</code><span class="sig-paren">(</span><em>*argv</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter.getJacobiEigenvectors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the 1D quadrature points and weights for the parameter</p>
+<code class="descname">getJacobiEigenvectors</code><span class="sig-paren">(</span><em>order=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter.getJacobiEigenvectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the eigenvectors of the tridiagonal Jacobi matrix. These are used for computing
+quadrature rules for numerical integration.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.parameter.Parameter" title="effective_quadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class</li>
-<li><strong>N</strong> (<em>int</em>) &#8211; Number of quadrature points and weights required. If order is not specified, then
-by default the method will return the number of points defined in the parameter itself.</li>
+<li><strong>order</strong> (<em>int</em>) &#8211; Number of eigenvectors required. This function makes the call getJacobiMatrix(order) and then computes
+the corresponding eigenvectors.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">points, N-by-1 matrix that contains the quadrature points</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">ndarray</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">weights, 1-by-N matrix that contains the quadrature weights</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">V, order-by-order matrix that contains the eigenvectors of the Jacobi matrix</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
@@ -220,35 +238,29 @@ by default the method will return the number of points defined in the parameter 
 </tbody>
 </table>
 <p><strong>Sample declaration</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Code to compute the first 5 quadrature points &amp; weights</span>
-<span class="o">&gt;&gt;</span> <span class="n">var1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Exponential&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;</span> <span class="n">p</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">var1</span><span class="o">.</span><span class="n">getLocalQuadrature</span><span class="p">()</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Code to Jacobi eigenvectors</span>
+<span class="o">&gt;&gt;</span> <span class="n">var4</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Gaussian&#39;</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">shape_parameter_B</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">V</span> <span class="o">=</span> <span class="n">var4</span><span class="o">.</span><span class="n">getJacobiEigenvectors</span><span class="p">()</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="method">
 <dt id="effective_quadratures.parameter.Parameter.getJacobiMatrix">
-<code class="descname">getJacobiMatrix</code><span class="sig-paren">(</span><em>*argv</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter.getJacobiMatrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the 1D quadrature points and weights for the parameter</p>
+<code class="descname">getJacobiMatrix</code><span class="sig-paren">(</span><em>order=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter.getJacobiMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the tridiagonal Jacobi matrix</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.parameter.Parameter" title="effective_quadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class</li>
-<li><strong>N</strong> (<em>int</em>) &#8211; Number of quadrature points and weights required. If order is not specified, then
-by default the method will return the number of points defined in the parameter itself.</li>
+<li><strong>order</strong> (<em>int</em>) &#8211; The number of rows and columns of the JacobiMatrix that is required. By default, this 
+value is set to be the same as the number of points used when the parameter constructor is initiated.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">points, N-by-1 matrix that contains the quadrature points</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">ndarray</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">weights, 1-by-N matrix that contains the quadrature weights</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">J, order-by-order sized Jacobi tridiagonal matrix</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
@@ -258,15 +270,16 @@ by default the method will return the number of points defined in the parameter 
 </table>
 <p><strong>Sample declaration</strong></p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Code to compute the first 5 quadrature points &amp; weights</span>
-<span class="o">&gt;&gt;</span> <span class="n">var1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Exponential&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;</span> <span class="n">p</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">var1</span><span class="o">.</span><span class="n">getLocalQuadrature</span><span class="p">()</span>
+<span class="o">&gt;&gt;</span> <span class="n">var3</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Beta&#39;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> 
+<span class="n">shape_parameter_A</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">shape_parameter_B</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">J</span> <span class="o">=</span> <span class="n">var3</span><span class="o">.</span><span class="n">getJacobiMatrix</span><span class="p">()</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="method">
 <dt id="effective_quadratures.parameter.Parameter.getLocalQuadrature">
-<code class="descname">getLocalQuadrature</code><span class="sig-paren">(</span><em>order</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter.getLocalQuadrature" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getLocalQuadrature</code><span class="sig-paren">(</span><em>order=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter.getLocalQuadrature" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the 1D quadrature points and weights for the parameter</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -303,26 +316,28 @@ by default the method will return the number of points defined in the parameter 
 
 <dl class="method">
 <dt id="effective_quadratures.parameter.Parameter.getOrthoPoly">
-<code class="descname">getOrthoPoly</code><span class="sig-paren">(</span><em>points</em>, <em>*argv</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter.getOrthoPoly" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the 1D quadrature points and weights for the parameter</p>
+<code class="descname">getOrthoPoly</code><span class="sig-paren">(</span><em>points</em>, <em>order=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter.getOrthoPoly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns orthogonal polynomials &amp; its derivatives, evaluated at a set of points.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.parameter.Parameter" title="effective_quadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class</li>
-<li><strong>N</strong> (<em>int</em>) &#8211; Number of quadrature points and weights required. If order is not specified, then
-by default the method will return the number of points defined in the parameter itself.</li>
+<li><strong>points</strong> (<em>ndarray</em>) &#8211; Points at which the orthogonal polynomial (and its derivatives) should be evaluated at</li>
+<li><strong>order</strong> (<em>int</em>) &#8211; This value of order overwrites the order defined for the constructor.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">points, N-by-1 matrix that contains the quadrature points</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">orthopoly, order-by-k matrix where order defines the number of orthogonal polynomials that will be evaluated
+and k defines the points at which these points should be evaluated at.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">ndarray</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">weights, 1-by-N matrix that contains the quadrature weights</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">derivative_orthopoly, order-by-k matrix where order defines the number of derivative of the orthogonal polynomials that will be evaluated
+and k defines the points at which these points should be evaluated at.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
@@ -331,9 +346,9 @@ by default the method will return the number of points defined in the parameter 
 </tbody>
 </table>
 <p><strong>Sample declaration</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Code to compute the first 5 quadrature points &amp; weights</span>
-<span class="o">&gt;&gt;</span> <span class="n">var1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Exponential&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;</span> <span class="n">p</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">var1</span><span class="o">.</span><span class="n">getLocalQuadrature</span><span class="p">()</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">var6</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">poly</span> <span class="o">=</span> <span class="n">var6</span><span class="o">.</span><span class="n">getOrthoPoly</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -377,7 +392,7 @@ no graph is produced</li>
 
 <dl class="method">
 <dt id="effective_quadratures.parameter.Parameter.getRecurrenceCoefficients">
-<code class="descname">getRecurrenceCoefficients</code><span class="sig-paren">(</span><em>*argv</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter.getRecurrenceCoefficients" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getRecurrenceCoefficients</code><span class="sig-paren">(</span><em>order=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.parameter.Parameter.getRecurrenceCoefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the recurrence coefficients of the parameter</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -385,12 +400,12 @@ no graph is produced</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.parameter.Parameter" title="effective_quadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class</li>
-<li><strong>N</strong> (<em>int</em>) &#8211; merely there satisfy the interface of <cite>regularize_z</cite>. It
-should not be anything other than 1.</li>
+<li><strong>order</strong> (<em>int</em>) &#8211; The number of recurrence coefficients required. By default this is
+the same as the number of points used when the parameter constructor is initiated.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">ab, N-by-2 matrix that containts the recurrence coefficients</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">ab, order-by-2 matrix that containts the recurrence coefficients</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
@@ -399,7 +414,8 @@ should not be anything other than 1.</li>
 </tbody>
 </table>
 <p><strong>Sample declaration</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">var1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Exponential&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">var1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> 
+<span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Exponential&#39;</span><span class="p">)</span>
 <span class="o">&gt;&gt;</span> <span class="n">ab</span> <span class="o">=</span> <span class="n">getRecurrenceCoefficients</span><span class="p">()</span>
 </pre></div>
 </div>

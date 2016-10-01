@@ -24,7 +24,7 @@ class Parameter(object):
             parameters. For instance, in the case of a `Gaussian` (or `TruncatedGaussian`), this represents the mean. In the case of a Beta
             distribution this represents the alpha value. For a uniform distribution this input is not required.
     :param double shape_parameter_B: This is the second shape parameter that characterizes the distribution selected.
-            In the case of a `Gaussian` or `TruncatedGaussian` this is the variance. 
+            In the case of a `Gaussian` or `TruncatedGaussian`, this is the variance. 
     :param boolean derivative_flag: If flag is set to 1, then derivatives are used in polynomial computations. The default value is set to 0.
     **Sample declarations** 
     ::
@@ -47,8 +47,7 @@ class Parameter(object):
     # constructor
     def __init__(self, points, lower=None, upper=None, param_type=None, shape_parameter_A=None, shape_parameter_B=None, derivative_flag=None):
      
-        self.order = points # integer
-
+        self.order = points 
         # Check what lower and upper are...
         if lower is None:
             self.lower = -1.0
@@ -80,14 +79,41 @@ class Parameter(object):
         else:
             self.derivative_flag = derivative_flag  
         
-        if self.param_type == 'TruncatedGaussian' and upper is None or lower is None:
-            error_function('parameter __init__: upper and lower bounds are required for a TruncatedGaussian distribution!')
+        if self.param_type == 'TruncatedGaussian' :
+            if upper is None or lower is None:
+                error_function('parameter __init__: upper and lower bounds are required for a TruncatedGaussian distribution!')
 
          # Check that lower is indeed above upper
         if self.lower >= self.upper :
             error_function('parameter __init__: upper bounds must be greater than lower bounds!')
   
-        
+    # Routine for computing the mean of the distributions
+    def computeMean(self):
+        """
+        Returns the mean of the parameter 
+
+        :param Parameter self: An instance of the Parameter class
+        :return: mu, mean of the parameter
+        :rtype: double
+
+        **Sample declaration**
+        :: 
+            >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
+            >> mu = var1.computeMean()
+        """
+        if self.param_type == "Gaussian":
+            mu = self.shape_parameter_A
+        elif self.param_type == "Exponential":
+            mu = 1.0/self.shape_parameter_A
+        elif self.param_type == "Cauchy":
+            mu = self.shape_parameter_A # technically the mean is undefined!
+        elif self.param_type == "Weibull":
+            mu = self.shape_parameter_A * gamma(1.0 + 1.0/self.shape_parameter_B)
+        elif self.param_type == "Gamma":
+            mu = self.shape_parameter_A * self.shape_parameter_B
+        return mu
+
+
     def getPDF(self, N, graph=None):
         """
         Returns the PDF of the parameter 
@@ -138,107 +164,88 @@ class Parameter(object):
 
         return x, y
 
-
-#    def getOrder(self):
-#        return self.order
-
-#    def getParamType(self):
-#        return self.param_type
-
-#    def getLowerBound(self):
-#        return self.lower_bound
-
-#    def getUpperBound(self):
-#        return self.upper_bound
-
-#   def getShapeParameterA(self):
-#        return self.shape_parameter_A
-
- #   def getShapeParameterB(self):
- #       return self.shape_parameter_B
-
-    def getRecurrenceCoefficients(self, *argv):
+    def getRecurrenceCoefficients(self, order=None):
         """
         Returns the recurrence coefficients of the parameter 
 
         :param Parameter self: An instance of the Parameter class
-        :param int N: merely there satisfy the interface of `regularize_z`. It
-            should not be anything other than 1.
-        :return: ab, N-by-2 matrix that containts the recurrence coefficients
+        :param int order: The number of recurrence coefficients required. By default this is
+            the same as the number of points used when the parameter constructor is initiated.
+        :return: ab, order-by-2 matrix that containts the recurrence coefficients
         :rtype: ndarray
         
 
         **Sample declaration**
         :: 
-            >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
+            >> var1 = Parameter(points=12, shape_parameter_A=0.5, 
+            param_type='Exponential')
             >> ab = getRecurrenceCoefficients()
         """
 
-        return recurrence_coefficients(self, argv)
+        return recurrence_coefficients(self, order)
 
-    def getJacobiMatrix(self, *argv):
+    def getJacobiMatrix(self, order=None):
         """
-        Returns the 1D quadrature points and weights for the parameter
+        Returns the tridiagonal Jacobi matrix
 
         :param Parameter self: An instance of the Parameter class
-        :param int N: Number of quadrature points and weights required. If order is not specified, then
-            by default the method will return the number of points defined in the parameter itself.
-        :return: points, N-by-1 matrix that contains the quadrature points
-        :rtype: ndarray
-        :return: weights, 1-by-N matrix that contains the quadrature weights
+        :param int order: The number of rows and columns of the JacobiMatrix that is required. By default, this 
+            value is set to be the same as the number of points used when the parameter constructor is initiated.
+        :return: J, order-by-order sized Jacobi tridiagonal matrix
         :rtype: ndarray
 
         **Sample declaration**
         :: 
             # Code to compute the first 5 quadrature points & weights
-            >> var1 = Parameter(points=5, shape_parameter_A=0.5, param_type='Exponential')
-            >> p, w = var1.getLocalQuadrature()
+            >> var3 = Parameter(points=5, param_type='Beta', lower=0, upper=1, 
+            shape_parameter_A=2, shape_parameter_B=3)
+            >> J = var3.getJacobiMatrix()
         """
-        return jacobiMatrix(self, *argv)
+        return jacobiMatrix(self, order)
 
-    def getJacobiEigenvectors(self, *argv):
+    def getJacobiEigenvectors(self, order=None):
         """
-        Returns the 1D quadrature points and weights for the parameter
+        Returns the eigenvectors of the tridiagonal Jacobi matrix. These are used for computing
+        quadrature rules for numerical integration.
 
         :param Parameter self: An instance of the Parameter class
-        :param int N: Number of quadrature points and weights required. If order is not specified, then
-            by default the method will return the number of points defined in the parameter itself.
+        :param int order: Number of eigenvectors required. This function makes the call getJacobiMatrix(order) and then computes
+            the corresponding eigenvectors.
 
-        :return: points, N-by-1 matrix that contains the quadrature points
-        :rtype: ndarray
-        :return: weights, 1-by-N matrix that contains the quadrature weights
+        :return: V, order-by-order matrix that contains the eigenvectors of the Jacobi matrix
         :rtype: ndarray
 
         **Sample declaration**
         :: 
-            # Code to compute the first 5 quadrature points & weights
-            >> var1 = Parameter(points=5, shape_parameter_A=0.5, param_type='Exponential')
-            >> p, w = var1.getLocalQuadrature()
+            # Code to Jacobi eigenvectors
+            >> var4 = Parameter(points=5, param_type='Gaussian', shape_parameter_A=0, shape_parameter_B=2)
+            >> V = var4.getJacobiEigenvectors()
         """
-        return jacobiEigenvectors(self, *argv)
+        return jacobiEigenvectors(self, order)
 
-    def getOrthoPoly(self, points, *argv):
+    def getOrthoPoly(self, points, order=None):
         """
-        Returns the 1D quadrature points and weights for the parameter
+        Returns orthogonal polynomials & its derivatives, evaluated at a set of points.
 
         :param Parameter self: An instance of the Parameter class
-        :param int N: Number of quadrature points and weights required. If order is not specified, then
-            by default the method will return the number of points defined in the parameter itself.
-
-        :return: points, N-by-1 matrix that contains the quadrature points
+        :param ndarray points: Points at which the orthogonal polynomial (and its derivatives) should be evaluated at
+        :param int order: This value of order overwrites the order defined for the constructor.
+        :return: orthopoly, order-by-k matrix where order defines the number of orthogonal polynomials that will be evaluated
+            and k defines the points at which these points should be evaluated at.
         :rtype: ndarray
-        :return: weights, 1-by-N matrix that contains the quadrature weights
+        :return: derivative_orthopoly, order-by-k matrix where order defines the number of derivative of the orthogonal polynomials that will be evaluated
+            and k defines the points at which these points should be evaluated at.
         :rtype: ndarray
 
         **Sample declaration**
         :: 
-            # Code to compute the first 5 quadrature points & weights
-            >> var1 = Parameter(points=5, shape_parameter_A=0.5, param_type='Exponential')
-            >> p, w = var1.getLocalQuadrature()
+            >> x = np.linspace(-1,1,10)
+            >> var6 = Parameter(points=10, param_type='Uniform', lower=-1, upper=1)
+            >> poly = var6.getOrthoPoly(x)
         """
-        return orthoPolynomial_and_derivative(self, points, *argv)
+        return orthoPolynomial_and_derivative(self, points, order)
 
-    def getLocalQuadrature(self, order):
+    def getLocalQuadrature(self, order=None):
         """
         Returns the 1D quadrature points and weights for the parameter
 
@@ -259,7 +266,11 @@ class Parameter(object):
         """
         return getlocalquadrature(self, order)
 
-
+#-----------------------------------------------------------------------------------
+#
+#                               PRIVATE FUNCTIONS BELOW
+#
+#-----------------------------------------------------------------------------------
 # Call different methods depending on the choice of the polynomial parameter
 def recurrence_coefficients(self, order=None):
 
@@ -322,8 +333,8 @@ def recurrence_coefficients(self, order=None):
     elif self.param_type is "TruncatedGaussian":
         mu = self.shape_parameter_A
         sigma = np.sqrt(self.shape_parameter_B)
-        a = self.lower_bound
-        b = self.upper_bound
+        a = self.lower
+        b = self.upper
         x, w  = analytical.TruncatedGaussian(N, mu, sigma, a, b)
         ab = custom_recurrence_coefficients(order, x, w)
 
@@ -452,13 +463,12 @@ def custom_recurrence_coefficients(order, x, w):
 
 # Compute the Jacobi matrix. The eigenvalues and eigenvectors of this matrix
 # forms the basis of gaussian quadratures
-def jacobiMatrix(self, order_to_use=None):
+def jacobiMatrix(self, order=None):
 
-    if order_to_use is None:
+    if order is None:
         ab = recurrence_coefficients(self)
         order = self.order
     else:
-        order = order_to_use
         ab = recurrence_coefficients(self, order)
 
     order = int(order)
@@ -485,14 +495,12 @@ def jacobiMatrix(self, order_to_use=None):
     return JacobiMatrix
 
 # Computes 1D quadrature points and weights between [-1,1]
-def getlocalquadrature(self, order_to_use=None):
+def getlocalquadrature(self, order=None):
 
     # Check for extra input argument!
-    if order_to_use is None:
+    if order is None:
         order = self.order
-    else:
-        order = order_to_use
-
+   
     # Get the recurrence coefficients & the jacobi matrix
     recurrence_coeffs = recurrence_coefficients(self, order)
     JacobiMat = jacobiMatrix(self, order)
@@ -542,20 +550,6 @@ def jacobiEigenvectors(self, order=None):
 
     return V
 
-# This routine computes the mean of the distribution, depending on which distribution
-# is selected. This function is called by getlocalquadratures()
-def computeMean(self):
-    if self.param_type == "Gaussian":
-        mu = self.shape_parameter_A
-    elif self.param_type == "Exponential":
-        mu = 1.0/self.shape_parameter_A
-    elif self.param_type == "Cauchy":
-        mu = self.shape_parameter_A # technically the mean is undefined!
-    elif self.param_type == "Weibull":
-        mu = self.shape_parameter_A * gamma(1.0 + 1.0/self.shape_parameter_B)
-    elif self.param_type == "Gamma":
-        mu = self.shape_parameter_A * self.shape_parameter_B
-    return mu
 
 # Univariate orthogonal polynomial correspoding to the weight of the parameter
 def orthoPolynomial_and_derivative(self, gridPoints, order=None):
@@ -572,10 +566,7 @@ def orthoPolynomial_and_derivative(self, gridPoints, order=None):
     for u in range(0, len(gridPoints)):
         gridPointsII[u,0] = gridPoints[u]
 
-    # Zeroth order
-    # original!
-    # orthopoly[0,:] = (1.0)/(1.0 * np.sqrt(ab[0,1]) ) # Correct!
-    # New
+    # First orthonormal polynomial is always 1
     orthopoly[0,:] = 1.0
 
     # Cases
@@ -609,8 +600,7 @@ def orthoPolynomial_and_derivative(self, gridPoints, order=None):
         return orthopoly, derivative_orthopoly
 
     else:
-        empty = np.mat([0])
-        return orthopoly, empty
+        return orthopoly
 
 def main():
     
@@ -618,10 +608,48 @@ def main():
     var1 = Parameter(points=12, shape_parameter_A=2, shape_parameter_B=3, param_type='TruncatedGaussian', lower=3, upper=10)
     x, y = var1.getPDF(50)
     print x, y
+    print '\n'
 
     # Parameter test 2: getRecurrenceCoefficients()
-    
+    var2 = Parameter(points=15, param_type='Uniform', lower=-1, upper=1)
+    ab = var2.getRecurrenceCoefficients()
+    print ab
+    print '\n'
+
+    # Parameter test 3: getJacobiMatrix()
+    var3 = Parameter(points=5, param_type='Beta', lower=0, upper=1, shape_parameter_A=2, shape_parameter_B=3)
+    J = var3.getJacobiMatrix()
+    print J
+    print '\n'
+
+    # Parameter test 4: getJacobiEigenvectors()
+    var4 = Parameter(points=5, param_type='Gaussian', shape_parameter_A=0, shape_parameter_B=2)
+    V = var4.getJacobiEigenvectors()
+    print V
+    print '\n'
+
+    # Parameter test 5: computeMean()
+    var5 = Parameter(points=10, param_type='Weibull', shape_parameter_A=1, shape_parameter_B=5)
+    mu = var5.computeMean()
+    print mu
+    print '\n'
+
+    # Parameter test 6: getOrthoPoly(points):
+    x = np.linspace(-1,1,15)
+    var6 = Parameter(points=10, param_type='Uniform', lower=-1, upper=1)
+    poly = var6.getOrthoPoly(x)
+    print poly
+    print '\n'
+
+    # Parameter test 7: Now with derivatives
+    var7 = Parameter(points=7, param_type='Uniform', lower=-1, upper=1, derivative_flag=1)
+    poly, derivatives = var7.getOrthoPoly(x)
+    print poly, derivatives
+    print '\n'
+
+    # Parameter test 8: getLocalQuadrature():
+    var8 = Parameter(points=5, shape_parameter_A=0.8, param_type='Exponential')
+    p, w = var8.getLocalQuadrature()
+    print p, w
+    print '\n'
     return 0
-
-
-#main()

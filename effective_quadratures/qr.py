@@ -1,4 +1,4 @@
-"""Utilities for exploiting active subspaces when optimizing."""
+#!/usr/bin/env python
 import numpy as np
 from utils import error_function
 

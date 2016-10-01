@@ -2,6 +2,7 @@
 """Index sets for multivariate polynomials"""
 import numpy as np
 import math as mt
+from utils import error_function
 
 class IndexSet(object):
     
@@ -15,20 +16,26 @@ class IndexSet(object):
    :param string growth_rule: The type of growth rule associated with the sparse grid. Options include:
         `linear` and `exponential`.
 
-
     **Sample declarations** 
     ::
         
         >> IndexSet('Tensor grid', [3,3,3])
-        >> IndexSet('Sparse grid', )
-
+        >> IndexSet('Sparse grid', level=3, growth_rule=5, dimension=3)
+        >> IndexSet('Total order' [3, 3, 3])
+        >> IndexSet('Hyperbolic basis', [3,3], q=0.75)
 
     """
-    def __init__(self, index_set_type, orders, level=None, growth_rule=None, dimension=None):
+    def __init__(self, index_set_type, orders=None, level=None, growth_rule=None, dimension=None, q=None):
         
+        # Required
         self.index_set_type = index_set_type # string
-        self.orders =  orders # we store order as an array!
-
+        
+        # Orders
+        if orders is None:
+            self.orders = []
+        else:
+            self.orders = orders
+        
         # Check for the levels (only for sparse grids)
         if level is None:
             self.level = []
@@ -47,24 +54,22 @@ class IndexSet(object):
         else:
             self.dimension = dimension
 
+        # For hyperbolic basis index set, there is a "q" parameter:
+        if q is None:
+            self.q = []
+        else:
+            self.q = q
+        
     def getCardinality(self):
         """
         Returns the cardinality (total number of elements) of the index set
 
-        :param Parameter self: An instance of the Parameter class
-        :param int order: Number of eigenvectors required. This function makes the call getJacobiMatrix(order) and then computes
-            the corresponding eigenvectors.
+        :param IndexSet self: An instance of the IndexSet class
 
-        :return: V, order-by-order matrix that contains the eigenvectors of the Jacobi matrix
-        :rtype: ndarray
-
-        **Sample declaration**
-        :: 
-            # Code to Jacobi eigenvectors
-            >> var4 = Parameter(points=5, param_type='Gaussian', shape_parameter_A=0, shape_parameter_B=2)
-            >> V = var4.getJacobiEigenvectors()
+        :return: cardinality: Total number of elements in the index set
+        :rtype: integer
         """
-        if self.index_set_type == "sparse grid":
+        if self.index_set_type == "Sparse grid":
             index_set, a, SG_set = getindexsetvalues(self)
         else:
             index_set = getindexsetvalues(self)
@@ -73,25 +78,33 @@ class IndexSet(object):
         # Now m or n is equivalent to the
         return len(index_set)
 
-    def getIndexSetType(self):
-        return self.index_set_type
-
-    def getOrders(self):
-        return self.orders
-
-    def getMaxOrders(self):
-        return self.orders
-
     def getIndexSet(self):
-        return getindexsetvalues(self)
+        """
+        Returns all the elements of an index set
 
-    def determineIndexLocation(self, large_index):
-        small_index = getindexsetvalues(self)
-        return getIndexLocation(small_index, large_index)
+        :param IndexSet self: An instance of the IndexSet class
 
-# From a large index determine the specific locations of entries of the smaller index set.
-# This functionality will be used for error computation. We assume that elements in both
-# small_index and large_index are unique.
+        :return: iset: An n-by-d array of index set elements. Here n represents the cardinality of the index set
+            while d represents the number of dimensions.
+        :rtype: ndarray
+        """
+        name = self.index_set_type
+        if name == "Total order":
+            index_set = total_order_index_set(self.orders)
+        elif name == "Sparse grid":
+            sparse_index, a, SG_set = sparse_grid_index_set(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
+            return sparse_index, a, SG_set
+        elif name == "Tensor grid":
+            index_set = tensor_grid_index_set(self.orders)
+        elif name == "Hyperbolic basis":
+            index_set = hyperbolic_index_set(self.orders, self.q)
+        else:
+            error_function('indexset __init__: invalid value for index_set_type!')
+            index_set = [0]
+        
+        return index_set
+
+
 def getIndexLocation(small_index, large_index):
     index_values = []
     i = 0
@@ -103,32 +116,10 @@ def getIndexLocation(small_index, large_index):
 
     return index_values
 
-
-def getindexsetvalues(self):
-
-    name = self.index_set_type
-    if name == "Total order":
-        index_set = total_order_index_set(self.orders)
-    elif name == "Sparse grid":
-        sparse_index, a, SG_set = sparse_grid_index_set(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
-        return sparse_index, a, SG_set
-    elif name == "Tensor grid":
-        index_set = tensor_grid_index_set(self.orders )
-    elif name == "Hyperbolic basis":
-        index_set = hyperbolic_index_set(self.orders, self.level)
-    else:
-        index_set = [0]
-    return index_set
-
-
 def hyperbolic_index_set(orders, q):
 
     # Initialize a few parameters for the setup
     dimensions = len(orders)
-    #for i in range(0, dimensions):
-    #    orders[i] = orders[i] - 1
-
-
     n_bar = tensor_grid_index_set(orders)
     n_new = []
     summation = np.ones((1, len(n_bar)))
@@ -153,9 +144,6 @@ def hyperbolic_index_set(orders, q):
 # Double checked April 7th, 2016 --> Works!
 def total_order_index_set(orders):
 
-    # For a total order index set, the sum of all the elements of a particular
-    # order cannot exceed that of the polynomial.
-
     # Initialize a few parameters for the setup
     dimensions = len(orders)
     n_bar = tensor_grid_index_set(orders)
@@ -176,8 +164,6 @@ def total_order_index_set(orders):
             total_index[i,j] = r[j]
 
     return total_index
-
-
 
 def sparse_grid_index_set(level, growth_rule, dimensions):
 
@@ -261,7 +247,3 @@ def tensor_grid_index_set(orders):
     index_set = I[:,1::]
 
     return index_set
-
-def error_function(string_value):
-    print string_value
-    sys.exit()

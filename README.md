@@ -33,4 +33,4 @@ ps583 <at> cam.ac.uk
 
 # Status
 
-[![Build Status](https://travis-ci.org/psesh/Effective-Quadratures.svg?branch=pranay-branch)](https://travis-ci.org/psesh/Effective-Quadratures/)
+[![Build Status](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures.svg?branch=pranay-branch)](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures)

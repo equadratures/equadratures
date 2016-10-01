@@ -14,3 +14,4 @@ install:
 script: 
  - python test.py
 
+sudo: required

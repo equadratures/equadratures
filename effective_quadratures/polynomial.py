@@ -1,4 +1,4 @@
-"""Utilities for exploiting active subspaces when optimizing."""
+"""Operations involving multivariate polynomials"""
 from parameter import Parameter
 from indexset import IndexSet
 import numpy as np
@@ -7,19 +7,18 @@ from utils import error_function, evalfunction, find_repeated_elements
 class Polynomial(object):
     
     """
-    This subclass is an domains.ActiveVariableMap specifically for optimization.
+    This class defines a polynomial and its associated functions. One can compute multivariate orthogonal polynomials
+    and its coefficients for approximation or interpolation. 
 
-    **See Also**
+    :param array of Parameters uq_parameters: A list of Parameters
+    :param string method: 
+    :
+    
+    **Sample declarations** 
+    ::
+        # Uniform distribution with 5 points on [-2,2]
+        >> Parameter(points=5, lower=-2, upper=2, param_type='Uniform')
 
-    optimizers.BoundedMinVariableMap
-    optimizers.UnboundedMinVariableMap
-
-    **Notes**
-
-    This class's train function fits a global quadratic surrogate model to the
-    n+2 active variables---two more than the dimension of the active subspace.
-    This quadratic surrogate is used to map points in the space of active
-    variables back to the simulation parameter space for minimization.
     """
 
 

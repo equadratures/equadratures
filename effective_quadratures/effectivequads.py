@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from parameter import Parameter
 from polynomial import Polynomial
-from qr_factorization import mgs_pivoting, solveLSQ
+from qr import mgs_pivoting, solveLSQ
 from indexset import IndexSet
 from utils import error_function, evalfunction
 import numpy as np

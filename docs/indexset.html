@@ -30,7 +30,10 @@
   
 
   
-    <link rel="top" title="Effective Quadratures 0.1.1 documentation" href="index.html"/> 
+    <link rel="top" title="Effective Quadratures 0.1.1 documentation" href="index.html"/>
+        <link rel="up" title="Code Documentation" href="Code.html"/>
+        <link rel="next" title="Parameter" href="parameter.html"/>
+        <link rel="prev" title="Polynomial" href="polynomial.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -82,8 +85,15 @@
           
             
             
-                <ul>
-<li class="toctree-l1"><a class="reference internal" href="Code.html">Code Documentation</a></li>
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="Code.html">Code Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="polynomial.html">Polynomial</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">IndexSet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="QR-Factorization.html">QR Factorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="computestats.html">Statistics</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="Contact.html">Contact</a></li>
 <li class="toctree-l1"><a class="reference internal" href="LICENSE.html">LICENSE</a></li>
 </ul>
@@ -116,6 +126,8 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
+          <li><a href="Code.html">Code Documentation</a> &raquo;</li>
+      
     <li>IndexSet</li>
       <li class="wy-breadcrumbs-aside">
         
@@ -135,7 +147,7 @@
 <p>Index sets for multivariate polynomials</p>
 <dl class="class">
 <dt id="effective_quadratures.indexset.IndexSet">
-<em class="property">class </em><code class="descclassname">effective_quadratures.indexset.</code><code class="descname">IndexSet</code><span class="sig-paren">(</span><em>index_set_type</em>, <em>orders</em>, <em>level=None</em>, <em>growth_rule=None</em>, <em>dimension=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.indexset.IndexSet" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">effective_quadratures.indexset.</code><code class="descname">IndexSet</code><span class="sig-paren">(</span><em>index_set_type</em>, <em>orders=None</em>, <em>level=None</em>, <em>growth_rule=None</em>, <em>dimension=None</em>, <em>q=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.indexset.IndexSet" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div>This class defines an index set</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
@@ -153,7 +165,9 @@
 </dl>
 <p><strong>Sample declarations</strong></p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Tensor grid&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
-<span class="o">&gt;&gt;</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Sparse grid&#39;</span><span class="p">,</span> <span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Sparse grid&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">growth_rule</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Total order&#39;</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="o">&gt;&gt;</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Hyperbolic basis&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="n">q</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)</span>
 </pre></div>
 </div>
 </li>
@@ -170,27 +184,33 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="parameter.html#effective_quadratures.parameter.Parameter" title="effective_quadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class</li>
-<li><strong>order</strong> (<em>int</em>) &#8211; Number of eigenvectors required. This function makes the call getJacobiMatrix(order) and then computes
-the corresponding eigenvectors.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.indexset.IndexSet" title="effective_quadratures.indexset.IndexSet"><em>IndexSet</em></a>) &#8211; An instance of the IndexSet class</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">V, order-by-order matrix that contains the eigenvectors of the Jacobi matrix</p>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">cardinality: Total number of elements in the index set</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
-</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">integer</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Sample declaration</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Code to Jacobi eigenvectors</span>
-<span class="o">&gt;&gt;</span> <span class="n">var4</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Gaussian&#39;</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">shape_parameter_B</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="o">&gt;&gt;</span> <span class="n">V</span> <span class="o">=</span> <span class="n">var4</span><span class="o">.</span><span class="n">getJacobiEigenvectors</span><span class="p">()</span>
-</pre></div>
-</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.indexset.IndexSet.getIndexSet">
+<code class="descname">getIndexSet</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.indexset.IndexSet.getIndexSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all the elements of an index set</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.indexset.IndexSet" title="effective_quadratures.indexset.IndexSet"><em>IndexSet</em></a>) &#8211; An instance of the IndexSet class</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">iset: An n-by-d array of index set elements. Here n represents the cardinality of the index set
+while d represents the number of dimensions.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -201,6 +221,15 @@ the corresponding eigenvectors.</li>
            </div>
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="parameter.html" class="btn btn-neutral float-right" title="Parameter" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="polynomial.html" class="btn btn-neutral" title="Polynomial" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

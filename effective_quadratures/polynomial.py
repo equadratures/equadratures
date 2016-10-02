@@ -24,42 +24,34 @@ class Polynomial(object):
     """
 
     # Constructor
-    def __init__(self, uq_parameters, method, index_sets=None):
+    def __init__(self, uq_parameters, method, index_sets):
     
         self.uq_parameters = uq_parameters
         self.method = method
-
+        self.index_sets = index_sets
+        
         # Here we set the index sets!
-        if index_sets is None:
+        #if index_sets is None:
 
             # Determine the highest orders for a tensor grid
-            highest_orders = []
-            for i in range(0, len(uq_parameters)):
-                highest_orders.append(uq_parameters[i].order)
+            #highest_orders = []
+            #for i in range(0, len(uq_parameters)):
+            #    highest_orders.append(uq_parameters[i].order)
 
-            if(method == "Tensor grid"):
-                indexObject = IndexSet(method, highest_orders)
-                self.index_sets = indexObject
-        else:
+            #if(method == "Tensor"):
+            #    indexObject = IndexSet(method, highest_orders)
+            #    self.index_sets = indexObject
+        #else:
 
-            if(method == "sparse grid" or method == "Sparse grid" or method == "spam" or method == "SPAM"):
-                self.index_sets = index_sets
+            #if(method == "Sparse"):
+            #    self.index_sets = index_sets
 
    
     def getCoefficients(self, function):
         """
         Get the pseudospectral coefficients.
 
-        :param ndarray Y: N-by-n matrix of points in the space of active
-            variables.
-        :param int N: merely there satisfy the interface of `regularize_z`. It
-            should not be anything other than 1.
-        
-        :return: Z, N-by-(m-n)-by-1 matrix that contains a value of the inactive
-            variables for each value of the inactive variables.
-        :rtype: ndarray
-        
-        **Notes**
+     
         
         Say something about we use Paul's method for computing the coefficients through SPAM.
         """
@@ -106,6 +98,11 @@ class Polynomial(object):
 
         # "Unpack" parameters from "self"
         stackOfParameters = self.uq_parameters
+
+        print self
+
+        isets = self.index_sets
+        index_set = isets.getIndexSet()
         dimensions = len(stackOfParameters)
         p = {}
         d = {}
@@ -116,7 +113,8 @@ class Polynomial(object):
             return poly, derivatives
         else:
             for i in range(0, dimensions):
-                poly, derivatives = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
+                G = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
+                print G
                 p[i] = poly
                 d[i] = derivatives
 
@@ -132,7 +130,7 @@ class Polynomial(object):
                 temp = polynomial[i,:]
                 derivatives[i,:,k] = d[k][0][int(index_set(i,k))] * temp
     
-    return polynomial, derivatives
+        return polynomial, derivatives
 
 # Do not use the function below. It is provided here only for illustrative purposes.
 # SPAM should be used!
@@ -499,8 +497,3 @@ def getMultiOrthoPoly(self, stackOfPoints, index_set):
             temp = polynomial[i,:]
 
     return polynomial
-
-# Multivariate orthogonal polynomial with derivatives!
-def getMultiOrthoPolyWithDerivative(self, stackOfPoints, index_set):
-    
-   

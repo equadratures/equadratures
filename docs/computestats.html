@@ -88,6 +88,7 @@
                 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="Code.html">Code Documentation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="polynomial.html">Polynomial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="indexset.html">IndexSet</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="QR-Factorization.html">QR Factorization</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Statistics</a></li>
@@ -143,46 +144,41 @@
             
   <div class="section" id="module-effective_quadratures.computestats">
 <span id="statistics"></span><h1>Statistics<a class="headerlink" href="#module-effective_quadratures.computestats" title="Permalink to this headline">¶</a></h1>
-<p>Utilities for exploiting active subspaces when optimizing.</p>
 <dl class="class">
 <dt id="effective_quadratures.computestats.Statistics">
 <em class="property">class </em><code class="descclassname">effective_quadratures.computestats.</code><code class="descname">Statistics</code><span class="sig-paren">(</span><em>coefficients</em>, <em>index_set</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.computestats.Statistics" title="Permalink to this definition">¶</a></dt>
-<dd><p>This subclass is an domains.ActiveVariableMap specifically for optimization.</p>
-<p><strong>See Also</strong></p>
-<p>optimizers.BoundedMinVariableMap
-optimizers.UnboundedMinVariableMap</p>
-<p><strong>Notes</strong></p>
-<p>This class&#8217;s train function fits a global quadratic surrogate model to the
+<dd><p>This subclass is an domains.ActiveVariableMap specifically for optimization.
+<strong>See Also</strong>
+optimizers.BoundedMinVariableMap
+optimizers.UnboundedMinVariableMap
+<strong>Notes</strong>
+This class&#8217;s train function fits a global quadratic surrogate model to the
 n+2 active variables&#8212;two more than the dimension of the active subspace.
 This quadratic surrogate is used to map points in the space of active
 variables back to the simulation parameter space for minimization.</p>
 <dl class="method">
 <dt id="effective_quadratures.computestats.Statistics.getMean">
 <code class="descname">getMean</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.computestats.Statistics.getMean" title="Permalink to this definition">¶</a></dt>
-<dd><p>Train the global quadratic for the regularization.</p>
+<dd><p>Train the global quadratic for the regularization.
+:param ndarray Y: N-by-n matrix of points in the space of active</p>
+<blockquote>
+<div>variables.</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>Y</strong> (<em>ndarray</em>) &#8211; N-by-n matrix of points in the space of active
-variables.</li>
-<li><strong>N</strong> (<em>int</em>) &#8211; merely there satisfy the interface of <cite>regularize_z</cite>. It
-should not be anything other than 1.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>N</strong> (<em>int</em>) &#8211; merely there satisfy the interface of <cite>regularize_z</cite>. It
+should not be anything other than 1.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Z, N-by-(m-n)-by-1 matrix that contains a value of the inactive
-variables for each value of the inactive variables.</p>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Z, N-by-(m-n)-by-1 matrix that contains a value of the inactive
+variables for each value of the inactive variables.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
-</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Notes</strong></p>
-<p>In contrast to the <cite>regularize_z</cite> in BoundedActiveVariableMap and
+<p><strong>Notes</strong>
+In contrast to the <cite>regularize_z</cite> in BoundedActiveVariableMap and
 UnboundedActiveVariableMap, this implementation of <cite>regularize_z</cite> uses
 a quadratic program to find a single value of the inactive variables
 for each value of the active variables.</p>

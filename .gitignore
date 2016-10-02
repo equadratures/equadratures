@@ -47,3 +47,5 @@ nosetests.xml
 # Translations
 *.mo
 .eggs
+
+*.html

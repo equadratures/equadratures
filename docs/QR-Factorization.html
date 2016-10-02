@@ -88,6 +88,7 @@
                 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="Code.html">Code Documentation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="polynomial.html">Polynomial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="indexset.html">IndexSet</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">QR Factorization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="computestats.html">Statistics</a></li>
@@ -141,12 +142,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-effective_quadratures.qr_factorization">
-<span id="qr-factorization"></span><h1>QR Factorization<a class="headerlink" href="#module-effective_quadratures.qr_factorization" title="Permalink to this headline">¶</a></h1>
-<p>Utilities for exploiting active subspaces when optimizing.</p>
+  <div class="section" id="module-effective_quadratures.qr">
+<span id="qr-factorization"></span><h1>QR Factorization<a class="headerlink" href="#module-effective_quadratures.qr" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
-<dt id="effective_quadratures.qr_factorization.solve_constrainedLSQ">
-<code class="descclassname">effective_quadratures.qr_factorization.</code><code class="descname">solve_constrainedLSQ</code><span class="sig-paren">(</span><em>A</em>, <em>b</em>, <em>C</em>, <em>d</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.qr_factorization.solve_constrainedLSQ" title="Permalink to this definition">¶</a></dt>
+<dt id="effective_quadratures.qr.solve_constrainedLSQ">
+<code class="descclassname">effective_quadratures.qr.</code><code class="descname">solve_constrainedLSQ</code><span class="sig-paren">(</span><em>A</em>, <em>b</em>, <em>C</em>, <em>d</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.qr.solve_constrainedLSQ" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute finite difference gradients with a given interface.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -173,8 +173,8 @@ approximated by finite differences</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="effective_quadratures.qr_factorization.solve_weightedLSQ">
-<code class="descclassname">effective_quadratures.qr_factorization.</code><code class="descname">solve_weightedLSQ</code><span class="sig-paren">(</span><em>A</em>, <em>b</em>, <em>C</em>, <em>d</em>, <em>alpha</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.qr_factorization.solve_weightedLSQ" title="Permalink to this definition">¶</a></dt>
+<dt id="effective_quadratures.qr.solve_weightedLSQ">
+<code class="descclassname">effective_quadratures.qr.</code><code class="descname">solve_weightedLSQ</code><span class="sig-paren">(</span><em>A</em>, <em>b</em>, <em>C</em>, <em>d</em>, <em>alpha</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.qr.solve_weightedLSQ" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate a collection of gradients from input/output pairs.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

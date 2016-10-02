@@ -32,7 +32,7 @@
   
     <link rel="top" title="Effective Quadratures 0.1.1 documentation" href="index.html"/>
         <link rel="up" title="Code Documentation" href="Code.html"/>
-        <link rel="next" title="Parameter" href="parameter.html"/>
+        <link rel="next" title="IndexSet" href="indexset.html"/>
         <link rel="prev" title="Code Documentation" href="Code.html"/> 
 
   
@@ -88,6 +88,7 @@
                 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="Code.html">Code Documentation</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Polynomial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="indexset.html">IndexSet</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="QR-Factorization.html">QR Factorization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="computestats.html">Statistics</a></li>
@@ -155,22 +156,25 @@ and its coefficients for approximation or interpolation.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>of Parameters uq_parameters</strong> (<em>array</em>) &#8211; A list of Parameters</li>
-<li><strong>method</strong> (<em>string</em>) &#8211; </li>
+<li><strong>method</strong> (<em>string</em>) &#8211; Method for computing the multivariate polynomial coefficients. Options are:
+<cite>Tensor</cite>: Using a tensor grid pseudospectral approximation
+<cite>Sparse</cite>: Using a sparse pseudospectral approximation</li>
+<li><strong>index_set</strong> (<a class="reference internal" href="indexset.html#effective_quadratures.indexset.IndexSet" title="effective_quadratures.indexset.IndexSet"><em>IndexSet</em></a>) &#8211; An instance of the IndexSet class</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>:</p>
 <p><strong>Sample declarations</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Uniform distribution with 5 points on [-2,2]</span>
-<span class="o">&gt;&gt;</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">lower</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">lower</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">T</span> <span class="o">=</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Tensor grid&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="o">&gt;&gt;</span> <span class="n">Polynomial</span><span class="p">([</span><span class="n">s</span><span class="p">,</span><span class="n">s</span><span class="p">],</span> <span class="s1">&#39;Tensor pseudospectral&#39;</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="method">
 <dt id="effective_quadratures.polynomial.Polynomial.getCoefficients">
 <code class="descname">getCoefficients</code><span class="sig-paren">(</span><em>function</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.Polynomial.getCoefficients" title="Permalink to this definition">¶</a></dt>
-<dd><p>Train the global quadratic for the regularization.</p>
+<dd><p>Get the pseudospectral coefficients.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -193,10 +197,7 @@ variables for each value of the inactive variables.</p>
 </tbody>
 </table>
 <p><strong>Notes</strong></p>
-<p>In contrast to the <cite>regularize_z</cite> in BoundedActiveVariableMap and
-UnboundedActiveVariableMap, this implementation of <cite>regularize_z</cite> uses
-a quadratic program to find a single value of the inactive variables
-for each value of the active variables.</p>
+<p>Say something about we use Paul&#8217;s method for computing the coefficients through SPAM.</p>
 </dd></dl>
 
 </dd></dl>
@@ -210,7 +211,7 @@ for each value of the active variables.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="parameter.html" class="btn btn-neutral float-right" title="Parameter" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="indexset.html" class="btn btn-neutral float-right" title="IndexSet" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="Code.html" class="btn btn-neutral" title="Code Documentation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>

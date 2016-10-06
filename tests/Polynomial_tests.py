@@ -21,17 +21,22 @@ def main():
     print D
 
     # 2D Case!************************************************************
-    s = Parameter(lower=-2, upper=2, param_type='Uniform', points=3)
+    s = Parameter(lower=-1, upper=1, param_type='Uniform', points=3, derivative_flag=1)
     T = IndexSet('Tensor grid', [3,3])
+    print T.getIndexSet()
     uq_parameters = [s,s]
     uq = Polynomial(uq_parameters, method='Tensor', index_sets=T)
 
     # Creats an array of pts in 2D
-    num_elements = 10
+    num_elements = 4
     pts, x1, x2 = meshgrid(-1.0, 1.0, num_elements,num_elements)
 
     # Now get the Polynomial
-    P = uq.getMultivariatePolynomial(pts)
+    P , Q = uq.getMultivariatePolynomial(pts)
+    print '###############'
+    print P
+    print '~~~~~~~~~'
+    print Q
     Z = np.reshape(P, (num_elements,num_elements) )
 
     # Plot!

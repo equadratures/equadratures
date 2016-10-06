@@ -65,8 +65,10 @@ def getA(self):
     no_of_indices = len(indices)
 
     # Crate a new PolynomialParam object to get tensor grid points & weights
-    polyObject =  Polynomial(stackOfParameters, "tensor grid")
-    quadrature_pts, quadrature_wts = Polynomial.getPointsAndWeights(polyObject)
+    polyObject_for_pts =  Polynomial(stackOfParameters)
+    quadrature_pts, quadrature_wts = polyObject_for_pts.getPointsAndWeights()
+
+    polyObject_for_basis = Polynomial(stackOfParameters, polynomial_basis) 
 
     # Allocate memory for "unscaled points!"
     unscaled_quadrature_pts = np.zeros((len(quadrature_pts), dimensions))
@@ -80,7 +82,15 @@ def getA(self):
 
     # Ensure that the quadrature weights sum up to 1.0
     quadrature_wts = quadrature_wts/np.sum(quadrature_wts)
-    P = np.mat(Polynomial.getMultivariatePolynomial(polyObject, unscaled_quadrature_pts, indices))
+
+    # Now we create another Polynomial object for the basis set!
+    polynomial_expansions, no_used = polyObject_for_basis.getMultivariatePolynomial(unscaled_quadrature_pts)
+    #print unscaled_quadrature_pts
+    P = np.mat(polynomial_expansions)
+    m, n = P.shape
+    #print m, n
+    #print 'XXXXXXX'
+    #print P
     W = np.mat( np.diag(np.sqrt(quadrature_wts)))
     A = W * P.T
     return A, quadrature_pts, quadrature_wts

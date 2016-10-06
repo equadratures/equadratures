@@ -28,6 +28,7 @@ class Polynomial(object):
     def __init__(self, uq_parameters, index_sets=None):
     
         self.uq_parameters = uq_parameters
+        self.method = method
 
         # Here we set the index sets if they are not provided
         if index_sets is None:
@@ -40,8 +41,44 @@ class Polynomial(object):
         else:
             self.index_sets = index_sets
 
+    def getCoefficients(self, function):
+        """
+        Get the pseudospectral coefficients.
+
+     
+        
+        Say something about we use Paul's method for computing the coefficients through SPAM.
+        """
+        if self.method == "tensor grid" or self.method == "Tensor grid":
+            return getPseudospectralCoefficients(self.uq_parameters, function)
+        if self.method == "spam" or self.method == "Spam":
+            return getSparsePseudospectralCoefficients(self, function)
+        if self.method == "sparse grid" or self.method == "Sparse grid":
+            print('WARNING: Use spam as a method instead!')
+            return getSparseCoefficientsViaIntegration(self, function)
+
     def getPointsAndWeights(self):
-        return getGaussianQuadrature(self.uq_parameters)
+        if self.method == "tensor grid" or self.method == "Tensor grid":
+            return getGaussianQuadrature(self.uq_parameters)
+
+        elif self.method == "sparse grid" or self.method == "Sparse grid" or self.method == "spam":
+            p, w, sets = sparseGrid(self.uq_parameters, self.index_sets)
+            return p, w
+
+    def getPolynomialApproximation(self, function, plotting_pts):
+
+        # Get the right polynomial coefficients
+        if self.method == "tensor grid" or self.method == "Tensor grid":
+            coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self.uq_parameters, function)
+        if self.method == "spam" or self.method == "Spam":
+            coefficients, indexset, evaled_pts = getSparsePseudospectralCoefficients(self, function)
+        if self.method == "sparse grid" or self.method == "Sparse grid":
+            print('WARNING: Use spam as a method instead!')
+            coefficients, indexset, evaled_pts = getSparseCoefficientsViaIntegration(self, function)
+
+        P = getMultiOrthoPoly(self, plotting_pts, indexset)
+        PolyApprox = np.mat(coefficients) * np.mat(P)
+        return PolyApprox, evaled_pts
     
     def getMultivariatePolynomial(self, stackOfPoints):
 
@@ -59,10 +96,10 @@ class Polynomial(object):
             return poly, derivatives
         else:
             for i in range(0, dimensions):
-                p[i] = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
-                #print G
-                #p[i] = G
-                #d[i] = D
+                G, D = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
+                p[i] = G
+                d[i] = D
+
         # Now we multiply components according to the index set
         no_of_points = len(stackOfPoints)
         polynomial = np.zeros((len(index_set), no_of_points))
@@ -74,7 +111,6 @@ class Polynomial(object):
             for k in range(0, dimensions):
                 polynomial[i,:] = p[k][0][int(index_set[i,k])] * temp
                 temp = polynomial[i,:]
-                #print polynomial
         
         # Second loop for derivatives!
         if stackOfParameters[0].derivative_flag == 1:

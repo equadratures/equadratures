@@ -69,11 +69,18 @@ class IndexSet(object):
         :return: cardinality: Total number of elements in the index set
         :rtype: integer
         """
-        if self.index_set_type == "Sparse grid":
-            index_set, a, SG_set = getindexsetvalues(self)
+        name = self.index_set_type
+        if name == "Total order":
+            index_set = total_order_index_set(self.orders)
+        elif name == "Sparse grid":
+            index_set, a, SG_set = sparse_grid_index_set(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
+            return sparse_index, a, SG_set
+        elif name == "Tensor grid":
+            index_set = tensor_grid_index_set(self.orders)
+        elif name == "Hyperbolic basis":
+            index_set = hyperbolic_index_set(self.orders, self.q)
         else:
-            index_set = getindexsetvalues(self)
-            return len(index_set)
+            error_function('indexset __init__: invalid value for index_set_type!')
 
         # Now m or n is equivalent to the
         return len(index_set)

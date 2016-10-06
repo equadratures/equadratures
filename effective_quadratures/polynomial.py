@@ -3,7 +3,7 @@
 from parameter import Parameter
 from indexset import IndexSet
 import numpy as np
-from utils import error_function, evalfunction, find_repeated_elements
+from utils import error_function, evalfunction, find_repeated_elements, meshgrid
 
 class Polynomial(object):
     """
@@ -35,6 +35,9 @@ class Polynomial(object):
             self.index_sets = IndexSet('Tensor grid', highest_orders)
         else:
             self.index_sets = index_sets
+    
+    def getIndexSet(self):
+        return self.index_sets.getIndexSet()
 
     def getPointsAndWeights(self, additional_orders=None):
     
@@ -88,44 +91,75 @@ class Polynomial(object):
                 elif (stackOfParameters[i].param_type == "Gaussian"):
                     points[j,i] = points[j,i] # No scaling!
 
-    # Return tensor grid quad-points and weights
-    return points, weights
+        # Return tensor grid quad-points and weights
+        return points, weights
     
     def getMultivariatePolynomial(self, stackOfPoints):
 
         # "Unpack" parameters from "self"
+        empty = np.mat([0])
         stackOfParameters = self.uq_parameters
         isets = self.index_sets
         index_set = isets.getIndexSet()
         dimensions = len(stackOfParameters)
         p = {}
         d = {}
+        C_all = {}
 
         # Save time by returning if univariate!
-        if(dimensions == 1):
+        if dimensions == 1 and stackOfParameters[0].derivative_flag == 0:
+            poly , derivatives =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
+            derivatives = empty
+            return poly, derivatives
+        elif dimensions == 1 and stackOfParameters[0].derivative_flag == 1:
             poly , derivatives =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
             return poly, derivatives
         else:
             for i in range(0, dimensions):
-                p[i] = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
-                #print G
-                #p[i] = G
-                #d[i] = D
+                p[i] , d[i] = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
+
         # Now we multiply components according to the index set
         no_of_points = len(stackOfPoints)
         polynomial = np.zeros((len(index_set), no_of_points))
         derivatives = np.zeros((len(index_set), no_of_points, dimensions))
+        
 
         # One loop for polynomials
         for i in range(0, len(index_set)):
             temp = np.ones((1, no_of_points))
             for k in range(0, dimensions):
-                polynomial[i,:] = p[k][0][int(index_set[i,k])] * temp
+                polynomial[i,:] = p[k][int(index_set[i,k])] * temp
                 temp = polynomial[i,:]
-                #print polynomial
         
         # Second loop for derivatives!
         if stackOfParameters[0].derivative_flag == 1:
-            print 'WIP'
+            P_others = np.zeros((len(index_set), no_of_points))
 
-        return polynomial, derivatives
+            # Going into for loop!
+            for j in range(0, dimensions):
+                # Now what are the remaining dimnensions?
+                C_local = np.zeros((len(index_set), no_of_points))
+                remaining_dimensions = np.arange(0, dimensions)
+                remaining_dimensions = np.delete(remaining_dimensions, j)
+                total_elements = remaining_dimensions.__len__
+
+                # Now we compute the "C" matrix
+                for i in range(0, len(index_set)): 
+                    # Temporary variable!
+                    P_others = np.zeros((len(index_set), no_of_points))
+                    temp = np.ones((1, no_of_points))
+
+                    # Multiply ortho-poly components in these "remaining" dimensions   
+                    for k in range(0, len(remaining_dimensions)):
+                        entry = remaining_dimensions[k]
+                        P_others[i,:] = p[entry][int(index_set[i, entry])] * temp
+                        temp = P_others[i,:]
+                        if len(remaining_dimensions) == 0: # in which case it is emtpy!
+                            C_all[i,:] = d[j][int(index_set[i,j])]
+                        else:
+                            C_local[i,:] = d[j][int(index_set[i, j])] * P_others[i,:]       
+                C_all[j] = C_local
+                del C_local
+            return polynomial, C_all
+        empty = np.mat([0])
+        return polynomial, empty

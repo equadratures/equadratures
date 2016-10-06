@@ -40,8 +40,60 @@ class Polynomial(object):
         else:
             self.index_sets = index_sets
 
-    def getPointsAndWeights(self):
-        return getGaussianQuadrature(self.uq_parameters)
+    def getPointsAndWeights(self, additional_orders=None):
+    
+        # Initialize some temporary variables
+        dimensions = int(len(stackOfParameters))
+        orders = []
+
+    # Check for extra input argument!
+    if additional_orders is None:
+        for i in range(0, dimensions):
+            orders.append(stackOfParameters[i].order)
+    else:
+        for i in range(0, dimensions):
+            orders.append(additional_orders[i])
+
+    # Initialize points and weights
+    pp = [1.0]
+    ww = [1.0]
+
+     # number of parameters
+    # For loop across each dimension
+    for u in range(0,dimensions):
+
+        # Call to get local quadrature method (for dimension 'u')
+        local_points, local_weights = stackOfParameters[u].getLocalQuadrature(orders[u])
+
+        # Tensor product of the weights
+        ww = np.kron(ww, local_weights)
+
+        # Tensor product of the points
+        dummy_vec = np.ones((len(local_points), 1))
+        dummy_vec2 = np.ones((len(pp), 1))
+        left_side = np.array(np.kron(pp, dummy_vec))
+        right_side = np.array( np.kron(dummy_vec2, local_points) )
+        pp = np.concatenate((left_side, right_side), axis = 1)
+
+    # Ignore the first column of pp
+    points = pp[:,1::]
+    weights = ww
+
+    # Now re-scale the points and return only if its not a Gaussian!
+    for i in range(0, dimensions):
+        for j in range(0, len(points)):
+            if (stackOfParameters[i].param_type == "Uniform"):
+                #points[j,i] = points[j,i] * ( stackOfParameters[i].upper_bound - stackOfParameters[i].lower_bound) + stackOfParameters[i].lower_bound
+                points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper - stackOfParameters[i].lower) + stackOfParameters[i].lower
+
+            elif (stackOfParameters[i].param_type == "Beta" ):
+                points[j,i] =  ( points[j,i] )*( stackOfParameters[i].upper - stackOfParameters[i].lower) + stackOfParameters[i].lower
+
+            elif (stackOfParameters[i].param_type == "Gaussian"):
+                points[j,i] = points[j,i] # No scaling!
+
+    # Return tensor grid quad-points and weights
+    return points, weights
     
     def getMultivariatePolynomial(self, stackOfPoints):
 

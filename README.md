@@ -1,7 +1,7 @@
 ![EFFECTIVE-QUADRATURES](https://static.wixstatic.com/media/dad873_3938470ea83849db8b53716c94dd20e8~mv2.png/v1/fill/w_269,h_66,al_c,usm_0.66_1.00_0.01/dad873_3938470ea83849db8b53716c94dd20e8~mv2.png)
 
 # Effective Quadratures
-[![Gitter](https://badges.gitter.im/gitterHQ/gitter.svg)](https://gitter.im/Effective-Quadratures)  [![Build Status](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures.svg?branch=pranay-branch)](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures)
+[![Gitter](https://badges.gitter.im/gitterHQ/gitter.svg)](https://gitter.im/Effective-Quadratures)  [![Build Status](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures.svg?branch=dev)](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures)
 
 Suite of tools for generating polynomials for approximation, uncertainty quantification, optimization and integration. For further details, quick-start guides and papers see:
 <br>

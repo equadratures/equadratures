@@ -15,11 +15,14 @@ class Polynomial(object):
     
     **Sample declarations** 
     ::
+        >> s = Parameter(lower=-2, upper=2, param_type='Uniform', points=4)
+        >> T = IndexSet('Total order', [3,3])
+        >> polyObject = Polynomial([s,s],T) # basis is defined by T
+
         >> s = Parameter(lower=-2, upper=2, param_type='Uniform')
         >> T = IndexSet('Tensor grid', [3,3])
-        >> Polynomial([s,s],T)
+        >> polyObject = Polynomial([s,s]) # Tensor basis is used
     """
-
     # Constructor
     def __init__(self, uq_parameters, index_sets=None):
     
@@ -37,22 +40,38 @@ class Polynomial(object):
             self.index_sets = index_sets
     
     def getIndexSet(self):
+        """
+        Returns orthogonal polynomials & its derivatives, evaluated at a set of points.
+
+        :param Parameter self: An instance of the Parameter class
+        :param ndarray points: Points at which the orthogonal polynomial (and its derivatives) should be evaluated at
+        :param int order: This value of order overwrites the order defined for the constructor.
+        :return: orthopoly, order-by-k matrix where order defines the number of orthogonal polynomials that will be evaluated
+            and k defines the points at which these points should be evaluated at.
+        :rtype: ndarray
+        :return: derivative_orthopoly, order-by-k matrix where order defines the number of derivative of the orthogonal polynomials that will be evaluated
+            and k defines the points at which these points should be evaluated at.
+        :rtype: ndarray
+
+        **Sample declaration**
+        :: 
+            >> x = np.linspace(-1,1,10)
+            >> var6 = Parameter(points=10, param_type='Uniform', lower=-1, upper=1)
+            >> poly = var6.getOrthoPoly(x)
+        """
         return self.index_sets.getIndexSet()
 
-    def getPointsAndWeights(self, additional_orders=None):
+    # Do we really need additional_orders?
+    def getPointsAndWeights(self):
     
         # Initialize some temporary variables
+        stackOfParameters = self.uq_parameters
         dimensions = int(len(stackOfParameters))
+        
         orders = []
-
-        # Check for extra input argument!
-        if additional_orders is None:
-            for i in range(0, dimensions):
-                orders.append(stackOfParameters[i].order)
-        else:
-            for i in range(0, dimensions):
-                orders.append(additional_orders[i])
-
+        for i in range(0, dimensions):
+            orders.append(stackOfParameters[i].order)
+        
         # Initialize points and weights
         pp = [1.0]
         ww = [1.0]
@@ -122,7 +141,6 @@ class Polynomial(object):
         no_of_points = len(stackOfPoints)
         polynomial = np.zeros((len(index_set), no_of_points))
         derivatives = np.zeros((len(index_set), no_of_points, dimensions))
-        
 
         # One loop for polynomials
         for i in range(0, len(index_set)):

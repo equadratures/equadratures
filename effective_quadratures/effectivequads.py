@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Effectively subsampled quadratures for least squares polynomial approximations"""
 from parameter import Parameter
 from polynomial import Polynomial
 from qr import mgs_pivoting, solveLSQ
@@ -6,35 +7,44 @@ from indexset import IndexSet
 from utils import error_function, evalfunction
 import numpy as np
 from scipy.linalg import qr
-"""
-Pranay Seshadri
-ps583@cam.ac.uk
-"""
+
 class EffectiveSubsampling(object):
-
-    def __init__(self, uq_parameters, index_set, derivative_flag=None):
-
+    # Constructor
+    def __init__(self, uq_parameters, index_set):
         self.uq_parameters = uq_parameters
         self.index_set = index_set
 
-        if derivative_flag is None:
-            derivative_flag = 0
-        else:
-            self.derivative_flag = derivative_flag        
 
+""""
+    Function calls that are useful:
+    1. get es-quadrature points
+    2. get A subsampled and its condition number
+    3. get C subsampled and its condition number 
+    4. Solve lsq with Ax = b
+    5. Solve lsq with Ax = b and Cx = d.
+
+"""
     def getAmatrix(self):
         return getA(self)
 
     def getAsubsampled(self, maximum_number_of_evals, flag=None):
         Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag=None)
         return Asquare
+    
+    def getCsubsampled(self, quadrature_subsamples):
+        stackOfParameters = self.uq_parameters
+        polynomial_basis = self.index_set
+        dimensions = len(stackOfParameters)
+        polyObject_for_basis = Polynomial(stackOfParameters, polynomial_basis) 
+        not_used, C = polyObject_for_basis.getMultivariatePolynomial(quadrature_subsamples)
+        return C
 
     def getPointsToEvaluate(self, maximum_number_of_evals, flag=None):
-        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag=None)
+        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag)
         return esq_pts
 
-    def solveLeastSquares(self, maximum_number_of_evals, function_values):
-        A, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag=None)
+    def solveLeastSquares(self, maximum_number_of_evals, function_values, flag=None):
+        A, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag)
         A, normalizations = rowNormalize(A)
         
         # Check if user input is a function or a set of function values!
@@ -47,6 +57,11 @@ class EffectiveSubsampling(object):
         b = np.dot(normalizations, b)
         x = solveLSQ(A, b)
         return x
+
+    def computeCoefficientsWithGradients(self, maximum_number_of_evals, function_values, grad_values, flag=None):)
+
+        return 0
+
 
 # Normalize the rows of A by its 2-norm  
 def rowNormalize(A):
@@ -85,12 +100,8 @@ def getA(self):
 
     # Now we create another Polynomial object for the basis set!
     polynomial_expansions, no_used = polyObject_for_basis.getMultivariatePolynomial(unscaled_quadrature_pts)
-    #print unscaled_quadrature_pts
     P = np.mat(polynomial_expansions)
     m, n = P.shape
-    #print m, n
-    #print 'XXXXXXX'
-    #print P
     W = np.mat( np.diag(np.sqrt(quadrature_wts)))
     A = W * P.T
     return A, quadrature_pts, quadrature_wts

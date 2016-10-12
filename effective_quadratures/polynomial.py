@@ -10,8 +10,9 @@ class Polynomial(object):
     This class defines a polynomial and its associated functions. 
 
     :param array of Parameters uq_parameters: A list of Parameters
-    :param IndexSet index_set: An instance of the IndexSet class, in case user wants to overwrite the indices
-        that are obtained using the orders of the univariate parameters in Parameters uq_parameters
+    :param IndexSet index_set: An instance of the IndexSet class, in case the user wants to overwrite the indices
+        that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter 
+        corresponds to a tensor grid index set and is the default option if no index_set parameter input is given.
     
     **Sample declarations** 
     ::
@@ -20,7 +21,6 @@ class Polynomial(object):
         >> polyObject = Polynomial([s,s],T) # basis is defined by T
 
         >> s = Parameter(lower=-2, upper=2, param_type='Uniform')
-        >> T = IndexSet('Tensor grid', [3,3])
         >> polyObject = Polynomial([s,s]) # Tensor basis is used
     """
     # Constructor
@@ -41,29 +41,40 @@ class Polynomial(object):
     
     def getIndexSet(self):
         """
-        Returns orthogonal polynomials & its derivatives, evaluated at a set of points.
+        Returns the index set used for computing the multivariate polynomials
 
-        :param Parameter self: An instance of the Parameter class
-        :param ndarray points: Points at which the orthogonal polynomial (and its derivatives) should be evaluated at
-        :param int order: This value of order overwrites the order defined for the constructor.
-        :return: orthopoly, order-by-k matrix where order defines the number of orthogonal polynomials that will be evaluated
-            and k defines the points at which these points should be evaluated at.
-        :rtype: ndarray
-        :return: derivative_orthopoly, order-by-k matrix where order defines the number of derivative of the orthogonal polynomials that will be evaluated
-            and k defines the points at which these points should be evaluated at.
+        :param Polynomial self: An instance of the Polynomial class
+        :return: index_set, cardinality-by-dimension matrix which is obtained by calling the getIndexSet() routine of the IndexSet object
         :rtype: ndarray
 
         **Sample declaration**
         :: 
-            >> x = np.linspace(-1,1,10)
-            >> var6 = Parameter(points=10, param_type='Uniform', lower=-1, upper=1)
-            >> poly = var6.getOrthoPoly(x)
+            >> s = Parameter(lower=-2, upper=2, param_type='Uniform')
+            >> polyObject = Polynomial([s,s])
+            >> I = polyObject.getIndexSet()
         """
         return self.index_sets.getIndexSet()
 
     # Do we really need additional_orders?
     def getPointsAndWeights(self):
-    
+        """
+        Returns the nD Gaussian quadrature points and weights based on the recurrence coefficients of each Parameter. This function
+        computes anisotropic and isotropic tensor product rules using a series of Kronecker product operations on univariate Gauss 
+        quadrature points and weights. For details on the univariate rules, see Parameter.getLocalQuadrature()
+
+        :param Polynomial self: An instance of the Polynomial class
+        :return: points, N-by-d matrix that contains the tensor grid Gauss quadrature points
+        :rtype: ndarray
+        :return: weights, 1-by-N matrix that contains the tensor grid Gauss quadrature weights
+        :rtype: ndarray
+
+
+        **Sample declaration**
+        :: 
+            >> s = Parameter(lower=-2, upper=2, param_type='Uniform')
+            >> polyObject = Polynomial([s,s])
+            >> p, w = polyObject.getPointsAndWeights()
+        """
         # Initialize some temporary variables
         stackOfParameters = self.uq_parameters
         dimensions = int(len(stackOfParameters))
@@ -114,6 +125,29 @@ class Polynomial(object):
         return points, weights
     
     def getMultivariatePolynomial(self, stackOfPoints):
+        """
+        Returns multivariate orthonormal polynomials and their derivatives
+
+        :param Polynomial self: An instance of the Polynomial class
+        :param: ndarray stackOfPoints: An m-by-d matrix that contains points along which the polynomials (and their derivatives) must be evaluated
+            at; here m represents the total number of points across d dimensions. Note that the derivatives are only computed if the Parameters 
+            have the derivative_flag set to 1.
+        :return: polynomial, m-by-N matrix where m are the number of points at which the multivariate orthonormal polynomial must be evaluated at, and
+            N is the cardinality of the index set used when declaring a Polynomial object.
+        :rtype: ndarray
+        :return: derivatives, m-by-N matrix for each cell (total cells are d) where m are the number of points at which the multivariate orthonormal polynomial must be evaluated at, and
+            N is the cardinality of the index set used when declaring a Polynomial object.
+        :rtype: cell object
+
+
+        **Sample declaration**
+        :: 
+            >> s = Parameter(lower=-1, upper=1, param_type='Uniform', points=2, derivative_flag=1)
+            >> uq_parameters = [s,s]
+            >> uq = Polynomial(uq_parameters)
+            >> pts, x1, x2 = utils.meshgrid(-1.0, 1.0, 10, 10)
+            >> P , Q = uq.getMultivariatePolynomial(pts)
+        """
 
         # "Unpack" parameters from "self"
         empty = np.mat([0])

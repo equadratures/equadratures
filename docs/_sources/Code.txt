@@ -10,6 +10,7 @@ Code Documentation
    parameter
    QR-Factorization
    computestats
+   effective
 
 .. automodule:: effective_quadratures
     :members:

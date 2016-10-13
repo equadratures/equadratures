@@ -1,3 +1,4 @@
+"""Utilities with QR factorization"""
 #!/usr/bin/env python
 import numpy as np
 from utils import error_function
@@ -5,22 +6,19 @@ from utils import error_function
 # Solve the weighted least squares problem, using the method of row     
 def solve_weightedLSQ(A, b, C, d, alpha):
     """
-    Estimate a collection of gradients from input/output pairs.
+    Solve the stacked least squares problem [A;C] x = [b;d]
 
-    :param ndarray X: M-by-m matrix that contains the m-dimensional inputs.
-    :param ndarray f: M-by-1 matrix that contains scalar outputs.
-    :param int p: How many nearest neighbors to use when constructing the
-        local linear model.
-    :param ndarray weights: M-by-1 matrix that contains the weights for
-        each observation.
+    :param ndarray A: m-by-n matrix of linear equations
+    :param ndarray b: m-by-1 matrix of right-hand side of the linear equations given by A
+    :param ndarray C: m-by-n matrix of linear equations
+    :param ndarray d: m-by-1 matrix of right-hand side of the linear equations given by C
 
-    :return df: M-by-m matrix that contains estimated partial derivatives
-        approximated by the local linear models.
+    :return x: n-by-1 matrix that contains coefficients to the weighted least squares problem.
     :rtype: ndarray
 
     **Notes**
 
-    If `p` is not specified, the default value is floor(1.7*m).
+    We utilize the 
     """
     x = 0
     return x

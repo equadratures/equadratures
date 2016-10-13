@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Operations involving multivariate polynomials"""
+"""Operations involving pseudospectral approximations and interpolations"""
 from parameter import Parameter
 from indexset import IndexSet
 import numpy as np

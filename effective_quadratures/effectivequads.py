@@ -6,24 +6,79 @@ from qr import mgs_pivoting, solveLSQ
 from indexset import IndexSet
 from utils import error_function, evalfunction
 import numpy as np
-from scipy.linalg import qr
 
 class EffectiveSubsampling(object):
+    """
+    This class defines an EffectiveSubsampling object. Below are details of its constructor.
+
+    :param array of Parameters uq_parameters: A list of Parameters
+    :param IndexSet index_set: The index set corresponding to a polynomial basis
+    :param string method: Subsampling strategy; options include: 'QR', which is the default option and 'Random'. See this `paper <https://arxiv.org/abs/1601.05470>`_, for further details. 
+   
+    **Sample declarations** 
+    ::
+        
+        >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
+        >> I = IndexSet('Total order' [3, 3, 3])
+        >> eq = EffectiveSubsampling([var1, var1], I)
+    """
     # Constructor
     def __init__(self, uq_parameters, index_set, method=None):
         self.uq_parameters = uq_parameters
         self.index_set = index_set
         if method is not None:
             self.method = method
+        else:
+            self.method = 'QR'
             
     def getAmatrix(self):
+        """
+        Returns a matrix of multivariate orthogonal polynomials evaluated at a tensor grid of quadrature points.
+
+        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
+        :return: A, an m-by-k matrix where m is the cardinality of the index set used to define the EffectiveSubsampling object
+            and k are the number of tensor grid quadrature points formed by the order prescribed when defining each Parameter in 
+            the EffectiveSubsampling object
+        :rtype: numpy matrix
+
+        **Sample declaration**
+        :: 
+            >> eq.getAMatrix()
+        """
         return getA(self)
 
-    def getAsubsampled(self, maximum_number_of_evals, method=None):
-        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, method)
+    def getAsubsampled(self, maximum_number_of_evals):
+        """
+        Returns a matrix of multivariate orthogonal polynomials evaluated at a subsample of the tensor grid of quadrature points.
+
+        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
+        :param integer maximum_number_of_evals: The maximum number of evaluations the user would like. This value has to be atleast equivalent to the
+            total number of basis terms of the index set.
+        :return: A, an m-by-k matrix where m is the cardinality of the index set used to define the EffectiveSubsampling object
+            and k are the number of subsamples given by the integer maximum_number_of_evals.
+
+        **Sample declaration**
+        :: 
+            >> eq.getASubsampled()
+        """
+        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals)
         return Asquare
     
     def getCsubsampled(self, quadrature_subsamples):
+        """
+        Returns a matrix of multivariate derivative orthogonal polynomials evaluated at a set of quadrature points.
+
+        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
+        :param ndarray quadrature_subsamples: The quadrature points are which the matrix of derivative orthogonal polynomials must be evaluated at.
+        :return: C, a cell with d matrices of size m-by-l matrix where m is the cardinality of the index set used to define the EffectiveSubsampling object
+            and l is the number of points in quadrature_subsamples. The integer d represents the dimensionality of the problem, equivalent to the number of
+            parameters defined when initializing the constructor.
+        :rtype: numpy matrix
+
+        **Sample declaration**
+        :: 
+            >> eq.getCSubsampled()
+        """
         stackOfParameters = self.uq_parameters
         polynomial_basis = self.index_set
         dimensions = len(stackOfParameters)
@@ -32,10 +87,38 @@ class EffectiveSubsampling(object):
         return C
 
     def getEffectivelySubsampledPoints(self, maximum_number_of_evals, flag=None):
+        """
+        Returns the effectively subsampled quadrature points. See this `paper <https://arxiv.org/abs/1601.05470>`_, for further details. 
+
+        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
+        :param integer maximum_number_of_evals: The maximum number of evaluations the user would like. This value has to be atleast equivalent to the
+            total number of basis terms of the index set.        
+        :return: esq_pts, a maximum_number_of_evals-by-d matrix of quadrature points, where d represents the dimensionality of the problem.
+        :rtype: numpy matrix
+
+        **Sample declaration**
+        :: 
+            >> eq.getEffectivelySubsampledPoints(30)
+        """
         Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag)
         return esq_pts
 
-    def solveLeastSquares(self, maximum_number_of_evals, function_values, flag=None):
+    def solveLeastSquares(self, maximum_number_of_evals, function_values):
+        """
+        Returns the coefficients for the effectively subsampled quadratures least squares problem. 
+
+        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
+        :param integer maximum_number_of_evals: The maximum number of evaluations the user would like. This value has to be atleast equivalent to the
+            total number of basis terms of the index set.    
+        :param callable function_values: A function call to the simulation model, that takes in d inputs and returns one output. If users know the 
+            quadrature subsamples required, they may also input all the simulation outputs as a single ndarray.     
+        :return: x, the coefficients of the least squares problem.
+        :rtype: ndarray
+
+        **Sample declaration**
+        :: 
+            >> x = eq.solveLeastSquares(150, function_call)
+        """
         A, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag)
         A, normalizations = rowNormalize(A)
         
@@ -51,8 +134,26 @@ class EffectiveSubsampling(object):
         return x
 
     def solveLeastSquaresWithGradients(self, maximum_number_of_evals, function_values, grad_values):
+        """
+        Returns the coefficients for the effectively subsampled quadratures least squares problem. 
 
-        #* Now here we code up the weighted and constr
+        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
+        :param integer maximum_number_of_evals: The maximum number of evaluations the user would like. This value has to be atleast equivalent to the
+            total number of basis terms of the index set.    
+        :param callable function_values: A function call to the simulation model, that takes in d inputs and returns one output. If users know the 
+            quadrature subsamples required, they may also input all the simulation outputs as a single ndarray.     
+        :return: x, the coefficients of the least squares problem.
+        :rtype: ndarray
+
+        **Sample declaration**
+        :: 
+            >> x = eq.solveLeastSquares(150, function_call)
+        """
+        A, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag)
+        A, normalizations = rowNormalize(A)
+        
+        C = getSubsampled(self, esq_pts)
+
         return 0
 
 
@@ -100,8 +201,9 @@ def getA(self):
     return A, quadrature_pts, quadrature_wts
 
 # The subsampled A matrix based on either randomized selection of rows or a QR column pivoting approach
-def getSquareA(self, maximum_number_of_evals, flag=None):
-
+def getSquareA(self, maximum_number_of_evals):
+    
+    flag = self.method
     if flag == "QR" or flag is None:
         option = 1 # default option!
     elif flag == "Random":

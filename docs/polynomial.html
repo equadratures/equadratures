@@ -147,57 +147,119 @@
 <p>Operations involving multivariate polynomials</p>
 <dl class="class">
 <dt id="effective_quadratures.polynomial.Polynomial">
-<em class="property">class </em><code class="descclassname">effective_quadratures.polynomial.</code><code class="descname">Polynomial</code><span class="sig-paren">(</span><em>uq_parameters</em>, <em>method</em>, <em>index_sets=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.Polynomial" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class defines a polynomial and its associated functions. One can compute multivariate orthogonal polynomials
-and its coefficients for approximation or interpolation.</p>
+<em class="property">class </em><code class="descclassname">effective_quadratures.polynomial.</code><code class="descname">Polynomial</code><span class="sig-paren">(</span><em>uq_parameters</em>, <em>index_sets=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.Polynomial" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class defines a polynomial and its associated functions.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>of Parameters uq_parameters</strong> (<em>array</em>) &#8211; A list of Parameters</li>
-<li><strong>method</strong> (<em>string</em>) &#8211; Method for computing the multivariate polynomial coefficients. Options are:
-<cite>Tensor</cite>: Using a tensor grid pseudospectral approximation
-<cite>Sparse</cite>: Using a sparse pseudospectral approximation</li>
-<li><strong>index_set</strong> (<a class="reference internal" href="indexset.html#effective_quadratures.indexset.IndexSet" title="effective_quadratures.indexset.IndexSet"><em>IndexSet</em></a>) &#8211; An instance of the IndexSet class</li>
+<li><strong>index_set</strong> (<a class="reference internal" href="indexset.html#effective_quadratures.indexset.IndexSet" title="effective_quadratures.indexset.IndexSet"><em>IndexSet</em></a>) &#8211; An instance of the IndexSet class, in case the user wants to overwrite the indices
+that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter 
+corresponds to a tensor grid index set and is the default option if no index_set parameter input is given.</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
 <p><strong>Sample declarations</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">lower</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;</span> <span class="n">T</span> <span class="o">=</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Tensor grid&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
-<span class="o">&gt;&gt;</span> <span class="n">Polynomial</span><span class="p">([</span><span class="n">s</span><span class="p">,</span><span class="n">s</span><span class="p">],</span> <span class="s1">&#39;Tensor pseudospectral&#39;</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">lower</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">T</span> <span class="o">=</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Total order&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="o">&gt;&gt;</span> <span class="n">polyObject</span> <span class="o">=</span> <span class="n">Polynomial</span><span class="p">([</span><span class="n">s</span><span class="p">,</span><span class="n">s</span><span class="p">],</span><span class="n">T</span><span class="p">)</span> <span class="c1"># basis is defined by T</span>
+
+<span class="o">&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">lower</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">polyObject</span> <span class="o">=</span> <span class="n">Polynomial</span><span class="p">([</span><span class="n">s</span><span class="p">,</span><span class="n">s</span><span class="p">])</span> <span class="c1"># Tensor basis is used</span>
 </pre></div>
 </div>
 <dl class="method">
-<dt id="effective_quadratures.polynomial.Polynomial.getCoefficients">
-<code class="descname">getCoefficients</code><span class="sig-paren">(</span><em>function</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.Polynomial.getCoefficients" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the pseudospectral coefficients.</p>
+<dt id="effective_quadratures.polynomial.Polynomial.getIndexSet">
+<code class="descname">getIndexSet</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.Polynomial.getIndexSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the index set used for computing the multivariate polynomials</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>Y</strong> (<em>ndarray</em>) &#8211; N-by-n matrix of points in the space of active
-variables.</li>
-<li><strong>N</strong> (<em>int</em>) &#8211; merely there satisfy the interface of <cite>regularize_z</cite>. It
-should not be anything other than 1.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.polynomial.Polynomial" title="effective_quadratures.polynomial.Polynomial"><em>Polynomial</em></a>) &#8211; An instance of the Polynomial class</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Z, N-by-(m-n)-by-1 matrix that contains a value of the inactive
-variables for each value of the inactive variables.</p>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">index_set, cardinality-by-dimension matrix which is obtained by calling the getIndexSet() routine of the IndexSet object</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
-</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Notes</strong></p>
-<p>Say something about we use Paul&#8217;s method for computing the coefficients through SPAM.</p>
+<p><strong>Sample declaration</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">lower</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">polyObject</span> <span class="o">=</span> <span class="n">Polynomial</span><span class="p">([</span><span class="n">s</span><span class="p">,</span><span class="n">s</span><span class="p">])</span>
+<span class="o">&gt;&gt;</span> <span class="n">I</span> <span class="o">=</span> <span class="n">polyObject</span><span class="o">.</span><span class="n">getIndexSet</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.polynomial.Polynomial.getMultivariatePolynomial">
+<code class="descname">getMultivariatePolynomial</code><span class="sig-paren">(</span><em>stackOfPoints</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.Polynomial.getMultivariatePolynomial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns multivariate orthonormal polynomials and their derivatives</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.polynomial.Polynomial" title="effective_quadratures.polynomial.Polynomial"><em>Polynomial</em></a>) &#8211; An instance of the Polynomial class</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Param:</th><td class="field-body">ndarray stackOfPoints: An m-by-d matrix that contains points along which the polynomials (and their derivatives) must be evaluated
+at; here m represents the total number of points across d dimensions. Note that the derivatives are only computed if the Parameters 
+have the derivative_flag set to 1.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">polynomial, m-by-N matrix where m are the number of points at which the multivariate orthonormal polynomial must be evaluated at, and
+N is the cardinality of the index set used when declaring a Polynomial object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">derivatives, m-by-N matrix for each cell (total cells are d) where m are the number of points at which the multivariate orthonormal polynomial must be evaluated at, and
+N is the cardinality of the index set used when declaring a Polynomial object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">cell object</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample declaration</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">lower</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">derivative_flag</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">uq_parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="p">,</span><span class="n">s</span><span class="p">]</span>
+<span class="o">&gt;&gt;</span> <span class="n">uq</span> <span class="o">=</span> <span class="n">Polynomial</span><span class="p">(</span><span class="n">uq_parameters</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">pts</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">P</span> <span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">uq</span><span class="o">.</span><span class="n">getMultivariatePolynomial</span><span class="p">(</span><span class="n">pts</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.polynomial.Polynomial.getPointsAndWeights">
+<code class="descname">getPointsAndWeights</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.Polynomial.getPointsAndWeights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the nD Gaussian quadrature points and weights based on the recurrence coefficients of each Parameter. This function
+computes anisotropic and isotropic tensor product rules using a series of Kronecker product operations on univariate Gauss 
+quadrature points and weights. For details on the univariate rules, see Parameter.getLocalQuadrature()</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.polynomial.Polynomial" title="effective_quadratures.polynomial.Polynomial"><em>Polynomial</em></a>) &#8211; An instance of the Polynomial class</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">points, N-by-d matrix that contains the tensor grid Gauss quadrature points</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">weights, 1-by-N matrix that contains the tensor grid Gauss quadrature weights</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample declaration</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">lower</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">polyObject</span> <span class="o">=</span> <span class="n">Polynomial</span><span class="p">([</span><span class="n">s</span><span class="p">,</span><span class="n">s</span><span class="p">])</span>
+<span class="o">&gt;&gt;</span> <span class="n">p</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">polyObject</span><span class="o">.</span><span class="n">getPointsAndWeights</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>

@@ -10,25 +10,17 @@ from scipy.linalg import qr
 
 class EffectiveSubsampling(object):
     # Constructor
-    def __init__(self, uq_parameters, index_set):
+    def __init__(self, uq_parameters, index_set, method=None):
         self.uq_parameters = uq_parameters
         self.index_set = index_set
-
-
-""""
-    Function calls that are useful:
-    1. get es-quadrature points
-    2. get A subsampled and its condition number
-    3. get C subsampled and its condition number 
-    4. Solve lsq with Ax = b
-    5. Solve lsq with Ax = b and Cx = d.
-
-"""
+        if method is not None:
+            self.method = method
+            
     def getAmatrix(self):
         return getA(self)
 
-    def getAsubsampled(self, maximum_number_of_evals, flag=None):
-        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag=None)
+    def getAsubsampled(self, maximum_number_of_evals, method=None):
+        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, method)
         return Asquare
     
     def getCsubsampled(self, quadrature_subsamples):
@@ -39,7 +31,7 @@ class EffectiveSubsampling(object):
         not_used, C = polyObject_for_basis.getMultivariatePolynomial(quadrature_subsamples)
         return C
 
-    def getPointsToEvaluate(self, maximum_number_of_evals, flag=None):
+    def getEffectivelySubsampledPoints(self, maximum_number_of_evals, flag=None):
         Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag)
         return esq_pts
 
@@ -58,8 +50,9 @@ class EffectiveSubsampling(object):
         x = solveLSQ(A, b)
         return x
 
-    def computeCoefficientsWithGradients(self, maximum_number_of_evals, function_values, grad_values, flag=None):)
+    def solveLeastSquaresWithGradients(self, maximum_number_of_evals, function_values, grad_values):
 
+        #* Now here we code up the weighted and constr
         return 0
 
 

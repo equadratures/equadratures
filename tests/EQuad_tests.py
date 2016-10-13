@@ -23,7 +23,7 @@ def main():
 
     # Set up effective quadrature subsampling
     esq = EffectiveSubsampling(parameters, polybasis)
-    points = esq.getPointsToEvaluate(maximum_number_of_evals)
+    points = esq.getEffectivelySubsampledPoints(maximum_number_of_evals)
     print points
 
     # Use the output from simulation data

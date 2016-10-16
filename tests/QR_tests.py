@@ -74,6 +74,28 @@ def main():
     #-----------------------------------------------------------------
     # Test 4: Check if constraint least squares works!
     #-----------------------------------------------------------------
-
+    A = [ [0.8147 ,   0.0975 ,   0.1576],
+    [0.9058  ,  0.2785  ,  0.9706],
+    [0.1270  ,  0.5469  ,  0.9572],
+    [0.9134  ,  0.9575  ,  0.4854],
+    [0.6324  ,  0.9649  ,  0.8003]]
+    b = [0.1419 ,   0.4218  ,  0.9157 ,   0.7922  ,  0.9595]
+    b = np.mat(b)
+    b = b.T
+    C = [ [0.7060 ,   0.0462 ,   0.6948],
+    [0.0318,    0.0971,    0.3171],
+    [0.2769,   0.8235,    0.9502] ]
+    d = [0.0344,    0.4387,    0.3816]
+    d = np.mat(d)
+    d = d.T
+    x = qr.solve_constrainedLSQ(A, b, C, d)
+    x_MATLAB = [-1.7588,   -1.1531,    1.9134]
+    x_MATLAB = np.mat(x_MATLAB)
+    x_MATLAB = x_MATLAB.T
+    residual = x - x_MATLAB
+    if np.linalg.norm(residual, 2) < 2e-3 :
+        print 'Success!'
+    else:
+        error_function('ERROR: Least squares routine not working!')
 
 main()

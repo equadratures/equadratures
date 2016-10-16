@@ -20,37 +20,58 @@ def solve_weightedLSQ(A, b, C, d, alpha):
     """
     x = 0
     return x
-    
-# Solve the constrained least squares problem, using method of direct elimination
+
+# Solve the constrained least squares problem, using method of direct elimination 
 def solve_constrainedLSQ(A,b,C,d):
     """
     
-
     **Notes**
     To be implemented
     """
+    A = np.mat(A)
+    C = np.mat(C)
+   
+    # Size of matrices!
+    m, n = A.shape
+    p, q = b.shape
+    k, l = C.shape
+    s, t = d.shape
 
-    # Preliminaries
-    temp , R = qr_Householder(C.T, 1) # Thin QR factorization on C'
-    Q , temp = qr_Householder(C.T) # Regular QR 
-    u = np.linalg.inv(R) * d
-    Ahat = A * Q
-    m, n = Ahat.shape
+    # Check that the number of elements in b are equivalent to the number of rows in A
+    if m != p:
+        error_function('ERROR: mismatch in sizes of A and b')
+    elif k != s:
+        error_function('ERROR: mismatch in sizes of C and d') 
+    
+    Q , R = qr_Householder(C.T, 1) # Thin QR factorization on C'
+    R = R[0:n, 0:n]
+    u = np.linalg.inv(R.T) * d
+    A_hat = A * Q
+    z, w = A_hat.shape
     
     # Now split A
-    Ahat_1 = A_hat[:, 0:len(u)-1]
-    Ahat_2 = A_hat[:, len(u) : n]
+    Ahat_1 = A_hat[:, 0:len(u)]
+    Ahat_2 = A_hat[:, len(u) : w]
     r = b - Ahat_1 * u
     
     # Solve the least squares problem
     v = solveLSQ(Ahat_2, r)
-    x = Q * [u, v] #----> Need to somehow concatenate this!!!
+    x = Q * np.vstack([u, v]) 
     return x
 
 # Solve the least squares problem (done wiht QR factorization!)
 # Perhaps also add LU and SVD techniques to solve least squares!
 def solveLSQ(A, b):
-    
+    """
+    Solves the direct least squares problem ||Ax-b||_2 using the method of QR factorization
+
+    :param numpy ndarray A: an m-by-n A matrix
+    :param numpy ndarray b: an m-by-1 b matrix
+      
+    :return: x, the coefficients of the least squares problem.
+    :rtype: ndarray
+
+    """
     # Direct methods!
     Q, R = qr_Householder(A, 1)
     x = np.linalg.inv(R) * Q.T * b
@@ -68,9 +89,6 @@ def house(vec):
     :return: x, the coefficients of the least squares problem.
     :rtype: ndarray
 
-        **Sample declaration**
-        :: 
-            >> Q, R = qr_Householder(A)
     """
     m = len(vec)
     sigma = np.dot(vec[1:m].T , vec[1:m] )
@@ -128,7 +146,7 @@ def qr_Householder(A, thin=None):
     if thin == 1:
         Q = Q[0:m, 0:n]
         R = R[0:n, 0:n]
-    
+
     return Q, R
 
 # Modified Gram Schmit QR column pivoting
@@ -205,7 +223,3 @@ def norms(vector, integer):
     else:
         error_function('Norm: Either using 1 or 2 as the second argument for the norm')
 
-#def main():
-
-
-#main()

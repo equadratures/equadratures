@@ -61,7 +61,7 @@ class EffectiveSubsampling(object):
         :: 
             >> eq.getASubsampled()
         """
-        Asquare, esq_pts, W, points = self.getSquareA(maximum_number_of_evals)
+        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals)
         return Asquare
     
     def getCsubsampled(self, quadrature_subsamples):
@@ -100,7 +100,7 @@ class EffectiveSubsampling(object):
         :: 
             >> eq.getEffectivelySubsampledPoints(30)
         """
-        Asquare, esq_pts, W, points = self.getSquareA(maximum_number_of_evals, flag)
+        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals)
         return esq_pts
 
     def solveLeastSquares(self, maximum_number_of_evals, function_values):
@@ -119,7 +119,7 @@ class EffectiveSubsampling(object):
         :: 
             >> x = eq.solveLeastSquares(150, function_call)
         """
-        A, esq_pts, W, points = self.getSquareA(maximum_number_of_evals, flag)
+        A, esq_pts, W, points = getSquareA(self, maximum_number_of_evals)
         A, normalizations = rowNormalize(A)
         
         # Check if user input is a function or a set of function values!
@@ -142,6 +142,8 @@ class EffectiveSubsampling(object):
             total number of basis terms of the index set.    
         :param callable function_values: A function call to the simulation model, that takes in d inputs and returns one output. If users know the 
             quadrature subsamples required, they may also input all the simulation outputs as a single ndarray.     
+        :param callable gradient_values: A function call to the simulation model, that takes in d inputs and returns the dx1 gradient vector at those inputs.
+            If the user knows the quadrature subsampled required, they may also input all the simulation gradients as an nd array. 
         :return: x, the coefficients of the least squares problem.
         :rtype: ndarray
 
@@ -172,7 +174,7 @@ class EffectiveSubsampling(object):
         # Assume that the gradient values are given as a matrix
         # First check if the dimensions make sense...then weight them
         # Then send them to the lsqr routine...
-        d = 
+        d = 0
 
         # Now solve the constrained least squares problem
         x = solve_constrainedLSQ(A, b, C, d)

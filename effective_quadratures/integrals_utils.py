@@ -6,9 +6,19 @@ from IndexSets import IndexSet
 from EffectiveQuadSubsampling import EffectiveSubsampling
 
 # A tensor grid routine!
-def tensorGrid(uq_parameters, function=None):
+def tensorgrid(uq_parameters, function=None):
     """
-    
+    Returns a matrix of multivariate orthogonal polynomials evaluated at a tensor grid of quadrature points.
+
+    :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
+    :return: A, an m-by-k matrix where m is the cardinality of the index set used to define the EffectiveSubsampling object
+           and k are the number of tensor grid quadrature points formed by the order prescribed when defining each Parameter in 
+          the EffectiveSubsampling object
+    :rtype: numpy matrix
+
+    **Sample declaration**
+    :: 
+        >> eq.getAMatrix()
 
     """
     # Get the tensor indices

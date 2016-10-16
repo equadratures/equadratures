@@ -2,7 +2,7 @@
 """Effectively subsampled quadratures for least squares polynomial approximations"""
 from parameter import Parameter
 from polynomial import Polynomial
-from qr import mgs_pivoting, solveLSQ
+from qr import mgs_pivoting, solveLSQ, solve_constrainedLSQ
 from indexset import IndexSet
 from utils import error_function, evalfunction
 import numpy as np
@@ -61,7 +61,7 @@ class EffectiveSubsampling(object):
         :: 
             >> eq.getASubsampled()
         """
-        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals)
+        Asquare, esq_pts, W, points = self.getSquareA(maximum_number_of_evals)
         return Asquare
     
     def getCsubsampled(self, quadrature_subsamples):
@@ -100,7 +100,7 @@ class EffectiveSubsampling(object):
         :: 
             >> eq.getEffectivelySubsampledPoints(30)
         """
-        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag)
+        Asquare, esq_pts, W, points = self.getSquareA(maximum_number_of_evals, flag)
         return esq_pts
 
     def solveLeastSquares(self, maximum_number_of_evals, function_values):
@@ -119,7 +119,7 @@ class EffectiveSubsampling(object):
         :: 
             >> x = eq.solveLeastSquares(150, function_call)
         """
-        A, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag)
+        A, esq_pts, W, points = self.getSquareA(maximum_number_of_evals, flag)
         A, normalizations = rowNormalize(A)
         
         # Check if user input is a function or a set of function values!
@@ -133,7 +133,7 @@ class EffectiveSubsampling(object):
         x = solveLSQ(A, b)
         return x
 
-    def solveLeastSquaresWithGradients(self, maximum_number_of_evals, function_values, grad_values):
+    def solveLeastSquaresWithGradients(self, maximum_number_of_evals, function_values, gradient_values):
         """
         Returns the coefficients for the effectively subsampled quadratures least squares problem. 
 
@@ -153,6 +153,30 @@ class EffectiveSubsampling(object):
         A, normalizations = rowNormalize(A)     
         C = getSubsampled(self, esq_pts)
         
+        # Check if user input is a function or a set of function values!
+        if callable(function_values):
+            fun_values = evalfunction(esq_pts, function_values)
+        else:
+            fun_values = function_values
+        
+        if callable(gradient_values):
+            grad_values = evalfunction(esq_pts, gradient_values)
+        else:
+            grad_values = gradient_values
+
+        # Weight and row normalize function values!
+        b = W * fun_values
+        b = np.dot(normalizations, b)
+
+        # Weight and row normalize gradient values!
+        # Assume that the gradient values are given as a matrix
+        # First check if the dimensions make sense...then weight them
+        # Then send them to the lsqr routine...
+        d = 
+
+        # Now solve the constrained least squares problem
+        x = solve_constrainedLSQ(A, b, C, d)
+
         return 0
 
 

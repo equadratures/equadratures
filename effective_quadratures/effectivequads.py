@@ -150,10 +150,9 @@ class EffectiveSubsampling(object):
             >> x = eq.solveLeastSquares(150, function_call)
         """
         A, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag)
-        A, normalizations = rowNormalize(A)
-        
+        A, normalizations = rowNormalize(A)     
         C = getSubsampled(self, esq_pts)
-
+        
         return 0
 
 

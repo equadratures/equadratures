@@ -21,11 +21,8 @@ def main():
 
     # Set up effective quadrature subsampling
     esq = EffectiveSubsampling(parameters, polybasis)
-    Asquare, esq_pts, W, points = esq.getAsubsampled(maximum_number_of_evals)
+    Asquare = esq.getAsubsampled(maximum_number_of_evals)
     print Asquare
-    print esq_pts
-    print W
-    print points
 
     # Solve the least squares problem and compare the result to 
     # what we know!

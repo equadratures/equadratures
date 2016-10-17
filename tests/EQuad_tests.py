@@ -5,6 +5,7 @@ from effective_quadratures.indexset import IndexSet
 from effective_quadratures.effectivequads import EffectiveSubsampling
 from effective_quadratures.computestats import Statistics
 import numpy as np
+
 # Vegetation study example Test
 def main():
 

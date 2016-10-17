@@ -1,0 +1,5 @@
+Integrals
+====================
+
+.. automodule:: effective_quadratures.integrals
+    :members:

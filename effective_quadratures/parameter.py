@@ -509,10 +509,10 @@ def getlocalquadrature(self, order=None):
     if order == 1:
 
         # Check to see whether upper and lower bound are defined:
-        if not self.lower_bound or not self.upper_bound:
+        if not self.lower or not self.upper:
             local_points = [computeMean(self)]
         else:
-            local_points = [(self.upper_bound - self.lower_bound)/(2.0) + self.lower_bound]
+            local_points = [(self.upper - self.lower)/(2.0) + self.lower]
         local_weights = [1.0]
     else:
         # Compute eigenvalues & eigenvectors of Jacobi matrix

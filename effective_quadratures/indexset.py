@@ -5,7 +5,6 @@ import math as mt
 from utils import error_function
 
 class IndexSet(object):
-    
     """
     This class defines an index set
 

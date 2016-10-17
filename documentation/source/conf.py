@@ -52,7 +52,7 @@ author = u'Pranay Seshadri'
 # built documents.
 #
 # The short X.Y version.
-version = '0.1.1'
+version = '1.0'
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -216,10 +216,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
-latex_documents = [
-  (master_doc, 'effective_quadratures.tex', u'active\\_subspaces Documentation',
-   u'Paul Constantine', 'manual'),
-]
+
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
@@ -261,7 +258,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'effective_quadratures', u'active_subspaces Documentation',
+  (master_doc, 'effective_quadratures', u'effective-quadratures Documentation',
    author, 'effective_quadratures', 'One line description of project.',
    'Miscellaneous'),
 ]

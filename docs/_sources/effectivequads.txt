@@ -1,5 +1,5 @@
-EffectiveSubsampling
-====================
+Effective-Subsampling
+======================
 
 .. automodule:: effective_quadratures.effectivequads
     :members:

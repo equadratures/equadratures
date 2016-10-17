@@ -56,7 +56,8 @@ class EffectiveSubsampling(object):
             total number of basis terms of the index set.
         :return: A, an m-by-k matrix where m is the cardinality of the index set used to define the EffectiveSubsampling object
             and k are the number of subsamples given by the integer maximum_number_of_evals.
-
+        :rtype: numpy matrix
+        
         **Sample declaration**
         :: 
             >> eq.getASubsampled()

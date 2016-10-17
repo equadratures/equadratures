@@ -1,19 +1,15 @@
 #!/usr/bin/env python
+"""Computing Statistics from Polynomial Expansions"""
 import numpy as np
 from utils import error_function
 
 class Statistics(object):
-    
     """
-    This subclass is an domains.ActiveVariableMap specifically for optimization.
-    **See Also**
-    optimizers.BoundedMinVariableMap
-    optimizers.UnboundedMinVariableMap
-    **Notes**
-    This class's train function fits a global quadratic surrogate model to the
-    n+2 active variables---two more than the dimension of the active subspace.
-    This quadratic surrogate is used to map points in the space of active
-    variables back to the simulation parameter space for minimization.
+    This class defines a Statistics object
+
+    :param numpy matrix coefficients: polynomial coefficients (can be from any of the methods)
+    :param IndexSet index_set: The index set corresponding to the polynomial basis that was used to compute the coefficients
+
     """
 
     # constructor
@@ -23,25 +19,30 @@ class Statistics(object):
 
     def getMean(self):
         """
-        Train the global quadratic for the regularization.
-        :param ndarray Y: N-by-n matrix of points in the space of active
-            variables.
-        :param int N: merely there satisfy the interface of `regularize_z`. It
-            should not be anything other than 1.
-        :return: Z, N-by-(m-n)-by-1 matrix that contains a value of the inactive
-            variables for each value of the inactive variables.
-        :rtype: ndarray
+        Computes the mean of a polynomial expansion using its coefficients.
+
+        :param Statistics self: An instance of the Statistics class
+        :return: mean
+        :rtype: double
+
         **Notes**
-        In contrast to the `regularize_z` in BoundedActiveVariableMap and
-        UnboundedActiveVariableMap, this implementation of `regularize_z` uses
-        a quadratic program to find a single value of the inactive variables
-        for each value of the active variables.
+        The mean is simply the first coefficient of the expansion.
         """        
         coefficients = self.coefficients
         mean = coefficients[0,0]
         return mean
     
     def getVariance(self):
+        """
+        Computes the variance of a polynomial expansion using its coefficients.
+
+        :param Statistics self: An instance of the Statistics class
+        :return: variance
+        :rtype: double
+
+        **Notes**
+        The variance is the sum of the squares of all the coefficients except the first coefficient.
+        """  
         coefficients = self.coefficients
         m, n = coefficients.shape
         if m > n:
@@ -51,7 +52,13 @@ class Statistics(object):
 
     # Function that computes first order Sobol' indices
     def getFirstOrderSobol(self):
+        """
+        Computes the first order Sobol indices.
 
+        :param Statistics self: An instance of the Statistics class
+        :return: first_order_sobol_indices
+        :rtype: numpy ndarray
+        """ 
         coefficients = self.coefficients
         m, n = coefficients.shape
         if m > n:

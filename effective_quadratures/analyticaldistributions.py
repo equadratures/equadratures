@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Sample probability density functions"""
 import numpy as np
 from scipy.special import erf
 from scipy.special import gamma, beta

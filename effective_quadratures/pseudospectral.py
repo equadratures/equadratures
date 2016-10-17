@@ -1,69 +1,78 @@
 #!/usr/bin/env python
-"""Operations involving pseudospectral approximations and interpolations"""
+"""Operations involving polynomial coefficients"""
 from parameter import Parameter
 from indexset import IndexSet
 import numpy as np
 from utils import error_function, evalfunction, find_repeated_elements
 
-class Polynomial(object):
-    """
-    This class defines a polynomial and its associated functions. One can compute multivariate orthogonal polynomials
-    and its coefficients for approximation or interpolation. 
 
-    :param array of Parameters uq_parameters: A list of Parameters
-    :param string method: Method for computing the multivariate polynomial coefficients. Options are:
-        `Tensor`: Using a tensor grid pseudospectral approximation
-        `Sparse`: Using a sparse pseudospectral approximation
-    :param IndexSet index_set: An instance of the IndexSet class, in case user wants to overwrite the indices
-        that are obtained using the orders of the univariate parameters in Parameters uq_parameters
+def getPseudospectralCoefficients(stackOfParameters, function, additional_orders=None):
     
-    **Sample declarations** 
-    ::
-        >> s = Parameter(lower=-2, upper=2, param_type='Uniform')
-        >> T = IndexSet('Tensor grid', [3,3])
-        >> Polynomial([s,s], 'Tensor pseudospectral', T)
-    """
+    dimensions = len(stackOfParameters)
+    q0 = [1]
+    Q = []
+    orders = []
 
-    # Constructor
-    def __init__(self, uq_parameters, index_sets=None):
-    
-        self.uq_parameters = uq_parameters
-        self.method = method
+    # If additional orders are provided, then use those!
+    if additional_orders is None:
+        for i in range(0, dimensions):
+            orders.append(stackOfParameters[i].order)
+            Qmatrix = stackOfParameters[i].getJacobiEigenvectors()
+            Q.append(Qmatrix)
 
-        # Here we set the index sets if they are not provided
-        if index_sets is None:
-            # Determine the highest orders for a tensor grid
-            highest_orders = []
-            for i in range(0, len(uq_parameters)):
-                highest_orders.append(uq_parameters[i].order)
-            
-            self.index_sets = IndexSet('Tensor grid', highest_orders)
-        else:
-            self.index_sets = index_sets
+            if orders[i] == 1:
+                q0 = np.kron(q0, Qmatrix)
+            else:
+                q0 = np.kron(q0, Qmatrix[0,:])
 
-    def getCoefficients(self, function):
-        """
-        Get the pseudospectral coefficients.
+    else:
+        print 'Using custom coefficients!'
+        for i in range(0, dimensions):
+            orders.append(additional_orders[i])
+            Qmatrix = stackOfParameters[i].getJacobiEigenvectors(orders[i])
+            Q.append(Qmatrix)
 
-     
-        
-        Say something about we use Paul's method for computing the coefficients through SPAM.
-        """
-        if self.method == "tensor grid" or self.method == "Tensor grid":
-            return getPseudospectralCoefficients(self.uq_parameters, function)
-        if self.method == "spam" or self.method == "Spam":
-            return getSparsePseudospectralCoefficients(self, function)
-        if self.method == "sparse grid" or self.method == "Sparse grid":
-            print('WARNING: Use spam as a method instead!')
-            return getSparseCoefficientsViaIntegration(self, function)
+            if orders[i] == 1:
+                q0 = np.kron(q0, Qmatrix)
+            else:
+                q0 = np.kron(q0, Qmatrix[0,:])
 
-    def getPointsAndWeights(self):
-        if self.method == "tensor grid" or self.method == "Tensor grid":
-            return getGaussianQuadrature(self.uq_parameters)
+    # Compute multivariate Gauss points and weights
+    p, w = getGaussianQuadrature(stackOfParameters, orders)
 
-        elif self.method == "sparse grid" or self.method == "Sparse grid" or self.method == "spam":
-            p, w, sets = sparseGrid(self.uq_parameters, self.index_sets)
-            return p, w
+    # Evaluate the first point to get the size of the system
+    fun_value_first_point = function(p[0,:])
+    u0 =  q0[0,0] * fun_value_first_point
+    N = 1
+    gn = int(np.prod(orders))
+    Uc = np.zeros((N, gn))
+    Uc[0,1] = u0
+
+    function_values = np.zeros((1,gn))
+    for i in range(0, gn):
+        function_values[0,i] = function(p[i,:])
+
+    # Now we evaluate the solution at all the points
+    for j in range(0, gn): # 0
+        Uc[0,j]  = q0[0,j] * function_values[0,j]
+
+    # Compute the corresponding tensor grid index set:
+    order_correction = []
+    for i in range(0, len(orders)):
+        temp = orders[i] - 1
+        order_correction.append(temp)
+
+    tensor_grid_basis = IndexSet("tensor grid",  order_correction)
+    tensor_set = tensor_grid_basis.getIndexSet()
+
+    # Now we use kronmult
+    K = efficient_kron_mult(Q, Uc)
+    F = function_values
+    K = np.column_stack(K)
+    return K, tensor_set, p
+
+
+
 
     def getPolynomialApproximation(self, function, plotting_pts):
 
@@ -299,70 +308,6 @@ def getSparsePseudospectralCoefficients(self, function):
     return coefficients, indices, points_saved
 
 # Tensor grid pseudospectral method
-def getPseudospectralCoefficients(stackOfParameters, function, additional_orders=None):
-
-    dimensions = len(stackOfParameters)
-    q0 = [1]
-    Q = []
-    orders = []
-
-    # If additional orders are provided, then use those!
-    if additional_orders is None:
-        for i in range(0, dimensions):
-            orders.append(stackOfParameters[i].order)
-            Qmatrix = stackOfParameters[i].getJacobiEigenvectors()
-            Q.append(Qmatrix)
-
-            if orders[i] == 1:
-                q0 = np.kron(q0, Qmatrix)
-            else:
-                q0 = np.kron(q0, Qmatrix[0,:])
-
-    else:
-        print 'Using custom coefficients!'
-        for i in range(0, dimensions):
-            orders.append(additional_orders[i])
-            Qmatrix = stackOfParameters[i].getJacobiEigenvectors(orders[i])
-            Q.append(Qmatrix)
-
-            if orders[i] == 1:
-                q0 = np.kron(q0, Qmatrix)
-            else:
-                q0 = np.kron(q0, Qmatrix[0,:])
-
-    # Compute multivariate Gauss points and weights
-    p, w = getGaussianQuadrature(stackOfParameters, orders)
-
-    # Evaluate the first point to get the size of the system
-    fun_value_first_point = function(p[0,:])
-    u0 =  q0[0,0] * fun_value_first_point
-    N = 1
-    gn = int(np.prod(orders))
-    Uc = np.zeros((N, gn))
-    Uc[0,1] = u0
-
-    function_values = np.zeros((1,gn))
-    for i in range(0, gn):
-        function_values[0,i] = function(p[i,:])
-
-    # Now we evaluate the solution at all the points
-    for j in range(0, gn): # 0
-        Uc[0,j]  = q0[0,j] * function_values[0,j]
-
-    # Compute the corresponding tensor grid index set:
-    order_correction = []
-    for i in range(0, len(orders)):
-        temp = orders[i] - 1
-        order_correction.append(temp)
-
-    tensor_grid_basis = IndexSet("tensor grid",  order_correction)
-    tensor_set = tensor_grid_basis.getIndexSet()
-
-    # Now we use kronmult
-    K = efficient_kron_mult(Q, Uc)
-    F = function_values
-    K = np.column_stack(K)
-    return K, tensor_set, p
 
 # Efficient kronecker product multiplication
 # Adapted from David Gelich and Paul Constantine's kronmult.m

@@ -13,20 +13,18 @@ from utils import error_function
 # 6. The 'Practical QR' algorithm
 # 7. Randomized QR 
 #****************************************************************************
-def solve_weightedLSQ(A, b, C, d, alpha):
-    """
-    **Notes**
-    To be implemented
-    """
-    x = 0
-    return x
-
-# Solve the constrained least squares problem, using method of direct elimination 
 def solve_constrainedLSQ(A,b,C,d):
     """
-    
-    **Notes**
-    To be implemented
+    Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d using 
+    the method of direct elimination
+
+    :param numpy matrix A: an m-by-n matrix
+    :param numpy matrix b: an m-by-1 matrix
+    :param numpy ndarray C: an k-by-n matrix
+    :param numpy ndarray d: an k-by-1 matrix
+    :return: x, the coefficients of the least squares problem.
+    :rtype: ndarray
+
     """
     A = np.mat(A)
     C = np.mat(C)
@@ -81,13 +79,18 @@ def solveLSQ(A, b):
 # Householder reflection
 def house(vec):
     """
-    Returns the Householder vector 
+    Returns a scalar and a vector that may be used to form a Householder matrix
 
-    :param numpy ndarray A: A matrix
-    :param boolean thin: Use a value of 1 for a thin QR 
-      
-    :return: x, the coefficients of the least squares problem.
+    :param numpy ndarray vec: The input vector that needs to be reflected in the hyperplane
+        spanned by the Householder vector, v
+
+    :return: v, the Householder vector
     :rtype: ndarray
+    :return: beta, the Householder scalar
+    :rtype: double
+
+    **Notes**
+        The Householder vector is given by P = I - beta * v * v'
 
     """
     m = len(vec)
@@ -116,17 +119,18 @@ def house(vec):
 # QR factorization via the method of Householder
 def qr_Householder(A, thin=None):
     """
-    Returns the Householder QR factorization of a matrix A
+    Returns the Householder QR factorization of a matrix A using the method of Householder
 
-    :param numpy ndarray A: A matrix
-    :param boolean thin: Use a value of 1 for a thin QR 
-      
-    :return: x, the coefficients of the least squares problem.
-    :rtype: ndarray
+    :param numpy matrix A: Matrix input for QR factorization
+    :param boolean thin: Set thin to 1 to compute a thin QR factorization. The default is a regular QR factorization.
+    :return: Q, the orthogonal matrix
+    :rtype: numpy matrix
+    :return: R, the upper triangular matrix
+    :rtype: numpy matrix
 
-        **Sample declaration**
-        :: 
-            >> Q, R = qr_Householder(A)
+    **Sample declaration**
+    :: 
+        >> Q, R = qr_Householder(A)
     """
     A = np.mat(A)
     m, n = A.shape
@@ -143,7 +147,7 @@ def qr_Householder(A, thin=None):
     R = np.triu(A)
 
     # For making it thin!
-    if thin == 1:0
+    if thin == 1:
         Q = Q[0:m, 0:n]
         R = R[0:n, 0:n]
 
@@ -151,7 +155,14 @@ def qr_Householder(A, thin=None):
 
 # Modified Gram Schmit QR column pivoting
 def mgs_pivoting(A):
+    """
+    Modified Gram Schmidt QR Column pivoting
 
+    :param numpy matrix A: Matrix input for QR factorization
+    :return: pivots: Index of pivoted columns
+    :rtype: numpy ndarray
+
+    """
     # Determine the size of
     A = np.matrix(A)
     m , n = A.shape
@@ -211,15 +222,3 @@ def mgs_pivoting(A):
         del a_k
         
     return pivots
-
-def norms(vector, integer):
-
-    # l1 norm
-    if integer == 1:
-        return np.sum(np.abs(vector))
-    elif integer == 2:
-        # l2 norm
-        return np.sqrt(np.sum(vector**2))
-    else:
-        error_function('Norm: Either using 1 or 2 as the second argument for the norm')
-

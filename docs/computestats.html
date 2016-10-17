@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Statistics &mdash; Effective Quadratures 0.1.1 documentation</title>
+  <title>Statistics &mdash; Effective Quadratures 1.0 documentation</title>
   
 
   
@@ -30,10 +30,10 @@
   
 
   
-    <link rel="top" title="Effective Quadratures 0.1.1 documentation" href="index.html"/>
+    <link rel="top" title="Effective Quadratures 1.0 documentation" href="index.html"/>
         <link rel="up" title="Code Documentation" href="Code.html"/>
-        <link rel="next" title="Contact" href="Contact.html"/>
-        <link rel="prev" title="QR Factorization" href="QR-Factorization.html"/> 
+        <link rel="next" title="Effective-Subsampling" href="effectivequads.html"/>
+        <link rel="prev" title="QR Factorization" href="qr.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.1.1
+                1.0
               </div>
             
           
@@ -90,8 +90,10 @@
 <li class="toctree-l2"><a class="reference internal" href="polynomial.html">Polynomial</a></li>
 <li class="toctree-l2"><a class="reference internal" href="indexset.html">IndexSet</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="QR-Factorization.html">QR Factorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qr.html">QR Factorization</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Statistics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="effectivequads.html">Effective-Subsampling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="integrals.html">Integrals</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Contact.html">Contact</a></li>
@@ -144,44 +146,70 @@
             
   <div class="section" id="module-effective_quadratures.computestats">
 <span id="statistics"></span><h1>Statistics<a class="headerlink" href="#module-effective_quadratures.computestats" title="Permalink to this headline">¶</a></h1>
+<p>Computing Statistics from Polynomial Expansions</p>
 <dl class="class">
 <dt id="effective_quadratures.computestats.Statistics">
 <em class="property">class </em><code class="descclassname">effective_quadratures.computestats.</code><code class="descname">Statistics</code><span class="sig-paren">(</span><em>coefficients</em>, <em>index_set</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.computestats.Statistics" title="Permalink to this definition">¶</a></dt>
-<dd><p>This subclass is an domains.ActiveVariableMap specifically for optimization.
-<strong>See Also</strong>
-optimizers.BoundedMinVariableMap
-optimizers.UnboundedMinVariableMap
-<strong>Notes</strong>
-This class&#8217;s train function fits a global quadratic surrogate model to the
-n+2 active variables&#8212;two more than the dimension of the active subspace.
-This quadratic surrogate is used to map points in the space of active
-variables back to the simulation parameter space for minimization.</p>
-<dl class="method">
-<dt id="effective_quadratures.computestats.Statistics.getMean">
-<code class="descname">getMean</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.computestats.Statistics.getMean" title="Permalink to this definition">¶</a></dt>
-<dd><p>Train the global quadratic for the regularization.
-:param ndarray Y: N-by-n matrix of points in the space of active</p>
-<blockquote>
-<div>variables.</div></blockquote>
+<dd><p>This class defines a Statistics object</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>N</strong> (<em>int</em>) &#8211; merely there satisfy the interface of <cite>regularize_z</cite>. It
-should not be anything other than 1.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>matrix coefficients</strong> (<em>numpy</em>) &#8211; polynomial coefficients (can be from any of the methods)</li>
+<li><strong>index_set</strong> (<a class="reference internal" href="indexset.html#effective_quadratures.indexset.IndexSet" title="effective_quadratures.indexset.IndexSet"><em>IndexSet</em></a>) &#8211; The index set corresponding to the polynomial basis that was used to compute the coefficients</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Z, N-by-(m-n)-by-1 matrix that contains a value of the inactive
-variables for each value of the inactive variables.</td>
+</tbody>
+</table>
+<dl class="method">
+<dt id="effective_quadratures.computestats.Statistics.getFirstOrderSobol">
+<code class="descname">getFirstOrderSobol</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.computestats.Statistics.getFirstOrderSobol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the first order Sobol indices
+:param Statistics self: An instance of the Statistics class
+:return: first_order_sobol_indices
+:rtype: numpy ndarray</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.computestats.Statistics.getMean">
+<code class="descname">getMean</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.computestats.Statistics.getMean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the mean of a polynomial expansion using its coefficients</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.computestats.Statistics" title="effective_quadratures.computestats.Statistics"><em>Statistics</em></a>) &#8211; An instance of the Statistics class</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">mean</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">double</td>
 </tr>
 </tbody>
 </table>
 <p><strong>Notes</strong>
-In contrast to the <cite>regularize_z</cite> in BoundedActiveVariableMap and
-UnboundedActiveVariableMap, this implementation of <cite>regularize_z</cite> uses
-a quadratic program to find a single value of the inactive variables
-for each value of the active variables.</p>
+The mean is simply the first coefficient of the expansion.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.computestats.Statistics.getVariance">
+<code class="descname">getVariance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.computestats.Statistics.getVariance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the variance of a polynomial expansion using its coefficients</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.computestats.Statistics" title="effective_quadratures.computestats.Statistics"><em>Statistics</em></a>) &#8211; An instance of the Statistics class</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">variance</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">double</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notes</strong>
+The variance is the sum of the squares of all the coefficients except the first coefficient.</p>
 </dd></dl>
 
 </dd></dl>
@@ -195,10 +223,10 @@ for each value of the active variables.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="Contact.html" class="btn btn-neutral float-right" title="Contact" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="effectivequads.html" class="btn btn-neutral float-right" title="Effective-Subsampling" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="QR-Factorization.html" class="btn btn-neutral" title="QR Factorization" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="qr.html" class="btn btn-neutral" title="QR Factorization" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -229,7 +257,7 @@ for each value of the active variables.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.1.1',
+            VERSION:'1.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

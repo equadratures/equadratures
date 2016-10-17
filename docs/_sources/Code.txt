@@ -8,9 +8,10 @@ Code Documentation
    polynomial
    indexset
    parameter
-   QR-Factorization
+   qr
    computestats
-   effective
+   effectivequads
+   integrals
 
 .. automodule:: effective_quadratures
     :members:

@@ -7,7 +7,7 @@ from effective_quadratures.computestats import Statistics
 import numpy as np
 
 # Vegetation study example Test
-def main():
+def test():
 
     # Set the parameters
     x1 = Parameter(lower=38.2, upper=250.4, points=3)
@@ -47,4 +47,4 @@ def main():
     print sobol
 
 
-main()
+test()

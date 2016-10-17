@@ -34,5 +34,12 @@ def main():
     #-----------------------------------------------------------------
     # Test 3: Pseudospectral coefficients
     #-----------------------------------------------------------------
+    def expfun(x):
+        return np.exp(x(1) +  x(2))
+
+    s = Parameter(lower=-1, upper=1, points=5)
+    uq = Polynomial([s,s])
+    m = uq.getPolynomialCoefficients(expfun)
+    
 
 main()

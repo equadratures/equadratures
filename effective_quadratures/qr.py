@@ -81,7 +81,7 @@ def solveLSQ(A, b):
 # Householder reflection
 def house(vec):
     """
-    Returns the Householder QR factorization of a matrix A
+    Returns the Householder vector 
 
     :param numpy ndarray A: A matrix
     :param boolean thin: Use a value of 1 for a thin QR 
@@ -143,7 +143,7 @@ def qr_Householder(A, thin=None):
     R = np.triu(A)
 
     # For making it thin!
-    if thin == 1:
+    if thin == 1:0
         Q = Q[0:m, 0:n]
         R = R[0:n, 0:n]
 

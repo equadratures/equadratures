@@ -157,7 +157,10 @@ class Polynomial(object):
         empty = np.mat([0])
         stackOfParameters = self.uq_parameters
         isets = self.index_sets
-        index_set = isets.getIndexSet()
+        if isets.index_set_type == 'Sparse grid':
+            not_used, not_used, index_set = isets.getIndexSet()
+        else:
+            index_set = isets.getIndexSet()
         dimensions = len(stackOfParameters)
         p = {}
         d = {}
@@ -172,7 +175,9 @@ class Polynomial(object):
             poly , derivatives =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
             return poly, derivatives
         else:
+            print index_set
             for i in range(0, dimensions):
+                print index_set
                 p[i] , d[i] = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
 
         # Now we multiply components according to the index set
@@ -220,8 +225,22 @@ class Polynomial(object):
         empty = np.mat([0])
         return polynomial, empty
 
- # compute coefficients
+
     def getPolynomialCoefficients(self, function):  
+        """
+        Returns multivariate orthonormal polynomial coefficients. Depending on the choice of the index set, this function will either return a tensor grid
+        of pseudospectral coefficients or a sparse grid using the SPAM technique by Constantine et al (2012). 
+    
+        :param Polynomial self: An instance of the Polynomial class
+        :param: callable function: The function that needs to be approximated (or interpolated)
+        :return: coefficients: The pseudospectral coefficients
+        :rtype: ndarray
+        :return: indexset: The indices used for the pseudospectral computation
+        :rtype: ndarray
+        :return: evaled_pts: The points at which the function was evaluated
+        :rtype: ndarray
+
+        """
         # Method to compute the coefficients
         method = self.index_sets.index_set_type
         # Get the right polynomial coefficients
@@ -236,16 +255,22 @@ class Polynomial(object):
 
     # Compute polynomial approximation --- to do!
     def getPolynomialApproximation(self, function, plotting_pts, coefficients=None):
-    
-        # Get the right polynomial coefficients
-        if self.method == "tensor grid" or self.method == "Tensor grid":
-            coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self.uq_parameters, function)
-        if self.method == "spam" or self.method == "Spam":
-            coefficients, indexset, evaled_pts = getSparsePseudospectralCoefficients(self, function)
+        
+        # Check to see if we need to call the coefficients
+        if coefficients is None:
+            coefficients,  indexset, evaled_pts = self.getPolynomialCoefficients(function)
 
-        P = getMultiOrthoPoly(self, plotting_pts, indexset)
-        PolyApprox = np.mat(coefficients) * np.mat(P)
-        return PolyApprox, evaled_pts
+        P , Q = self.getMultivariatePolynomial(plotting_pts)
+        P = np.mat(P)
+        print 'Printing polynomial'
+        print P
+        m, n = P.shape
+        C = np.mat(coefficients)
+        p, q = C.shape
+        print m, n, p, q
+        print '*******************************'
+        PolyApprox = P.T * C
+        return PolyApprox
 
 #--------------------------------------------------------------------------------------------------------------
 #
@@ -273,9 +298,8 @@ def getPseudospectralCoefficients(self, function, override_orders=None):
                 q0 = np.kron(q0, Qmatrix[0,:])   
             
     else:
-        print 'Using custom coefficients!'
         for i in range(0, dimensions):
-            orders.append(additional_orders[i])
+            orders.append(override_orders[i])
             Qmatrix = stackOfParameters[i].getJacobiEigenvectors(orders[i])
             Q.append(Qmatrix)
 
@@ -340,23 +364,23 @@ def getSparsePseudospectralCoefficients(self, function):
     individual_tensor_coefficients = {}
     individual_tensor_indices = {}
     points_store = {}
-    indices = np.zeros((rows,1))
+    indices = np.zeros((rows))
 
     for i in range(0,rows):
         orders = sparse_indices[i,:]
-        K, I, points = getPseudospectralCoefficients(self.uq_parameters, function, orders)
+        K, I, points = getPseudospectralCoefficients(self, function, orders + 1)
         individual_tensor_indices[i] = I
         individual_tensor_coefficients[i] =  K
         points_store[i] = points
-        indices[i,0] = len(I)
+        indices[i] = len(I)
 
     sum_indices = int(np.sum(indices))
     store = np.zeros((sum_indices, dimensions+1))
     points_saved = np.zeros((sum_indices, dimensions))
     counter = int(0)
     for i in range(0,rows):
-        for j in range(0, int(indices[i][0])):
-             store[counter,0] = sparse_factors[i] * individual_tensor_coefficients[i][0][j]
+        for j in range(0, int(indices[i])):
+             store[counter,0] = sparse_factors[i] * individual_tensor_coefficients[i][j]
              for d in range(0, dimensions):
                  store[counter,d+1] = individual_tensor_indices[i][j][d]
                  points_saved[counter,d] = points_store[i][j][d]

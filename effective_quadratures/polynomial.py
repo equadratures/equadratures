@@ -128,7 +128,7 @@ class Polynomial(object):
         # Return tensor grid quad-points and weights
         return points, weights
 
-    def getMultivariatePolynomial(self, stackOfPoints):
+    def getMultivariatePolynomial(self, stackOfPoints, indexsets=None):
         """
         Returns multivariate orthonormal polynomials and their derivatives
 
@@ -157,10 +157,14 @@ class Polynomial(object):
         empty = np.mat([0])
         stackOfParameters = self.uq_parameters
         isets = self.index_sets
-        if isets.index_set_type == 'Sparse grid':
-            not_used, not_used, index_set = isets.getIndexSet()
+        if indexsets is None:
+            if isets.index_set_type == 'Sparse grid':
+                ic, not_used, index_set = isets.getIndexSet()
+            else:
+                index_set = isets.getIndexSet()
         else:
-            index_set = isets.getIndexSet()
+            index_set = indexsets
+
         dimensions = len(stackOfParameters)
         p = {}
         d = {}
@@ -260,7 +264,7 @@ class Polynomial(object):
         if coefficients is None:
             coefficients,  indexset, evaled_pts = self.getPolynomialCoefficients(function)
 
-        P , Q = self.getMultivariatePolynomial(plotting_pts)
+        P , Q = self.getMultivariatePolynomial(plotting_pts, indexset)
         P = np.mat(P)
         print 'Printing polynomial'
         print P
@@ -353,12 +357,19 @@ def getSparsePseudospectralCoefficients(self, function):
     indexSets = self.index_sets
     dimensions = len(stackOfParameters)
     sparse_indices, sparse_factors, not_used = IndexSet.getIndexSet(indexSets)
+    
+    
+    print 'ALL SPARSE INDICES'
+    print sparse_indices
+    print '~~~~~~~~~~~~'
+    print not_used
+
     rows = len(sparse_indices)
     cols = len(sparse_indices[0])
 
-    for i in range(0,rows):
-        for j in range(0, cols):
-            sparse_indices[i,j] = int(sparse_indices[i,j])
+    #for i in range(0,rows):
+    #    for j in range(0, cols):
+    #        sparse_indices[i,j] = int(sparse_indices[i,j]) # SOMETHING NOT QUITE RIGHT OVER HERE!!!!!!!!!
 
     # For storage we use dictionaries
     individual_tensor_coefficients = {}
@@ -434,8 +445,9 @@ def getSparsePseudospectralCoefficients(self, function):
     for i in range(0, len(indices)):
         for j in range(0, dimensions):
             indices[i,j] = int(indices[i,j])
-
-    return coefficients, indices, points_saved
+    
+    coefficients = np.mat(coefficients)
+    return coefficients.T, indices, points_saved
 
 # Efficient kronecker product multiplication
 # Adapted from David Gelich and Paul Constantine's kronmult.m

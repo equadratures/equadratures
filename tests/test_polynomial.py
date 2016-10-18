@@ -105,23 +105,23 @@ class TestParameter(TestCase):
         num_elements = 10
         coefficients, index_set, evaled_pts = uq.getPolynomialCoefficients(expfun)
         pts, x1, x2 = meshgrid(-1.0, 1.0, num_elements,num_elements)
-        Approx = uq.getPolynomialApproximation(expfun, pts, coefficients)
-        #A = np.reshape(Approx, (num_elements,num_elements))
-        #fun = evalfunction(pts, expfun)
+        Approx = uq.getPolynomialApproximation(expfun, pts)
+        A = np.reshape(Approx, (num_elements,num_elements))
+        fun = evalfunction(evaled_pts, expfun)
 
         # Now plot this surface
-        #fig = plt.figure()
-        #ax = fig.gca(projection='3d')
-        #surf = ax.plot_surface(x1, x2, A, rstride=1, cstride=1, cmap=cm.winter,
-         #              linewidth=0, antialiased=False,  alpha=0.5)
-        #ax.scatter(x1, x2, fun, 'ko')
-        #ax.set_zlim(0, 10)
-        #ax.set_xlabel('x1')
-        #ax.set_ylabel('x2')
-        #ax.set_zlabel('Response')
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        surf = ax.plot_surface(x1, x2, A, rstride=1, cstride=1, cmap=cm.winter,
+                       linewidth=0, antialiased=False,  alpha=0.5)
+        ax.scatter(evaled_pts[:,0], evaled_pts[:,1], fun, 'ko')
+        ax.set_zlim(0, 10)
+        ax.set_xlabel('x1')
+        ax.set_ylabel('x2')
+        ax.set_zlabel('Response')
 
-        #fig.colorbar(surf, shrink=0.5, aspect=5)
-        #plt.show()
+        fig.colorbar(surf, shrink=0.5, aspect=5)
+        plt.show()
 
 
 if __name__ == '__main__':

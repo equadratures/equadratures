@@ -11,7 +11,7 @@ def meshgrid(lower_lim, upper_lim, nx1, nx2):
     total_points = nx1 * nx2 # total points required!
     x1_pts = np.linspace(lower_lim, upper_lim, nx1)
     x2_pts = np.linspace(lower_lim, upper_lim, nx2)
-    
+
     # Code segment below is solely for resizing *(must be a better way to do this!)
     x1, x2 = np.meshgrid(x1_pts, x2_pts, indexing='ij') # combined grid
     x1o = np.reshape(x1, (total_points, 1))
@@ -25,6 +25,7 @@ def twoDgrid(coefficients, index_set):
 
     # First determine the maximum tensor grid order!
     max_order = int( np.max(index_set) ) + 1
+    coefficients = coefficients.T
 
     # Now create a tensor grid with this max. order
     y, x = np.mgrid[0:max_order, 0:max_order]

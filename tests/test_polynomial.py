@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import numpy.ma as ma
 
 class TestParameter(TestCase):
-    """
+    
     def test_polynomial_and_derivative_constructions(self):
         s = Parameter(lower=-1, upper=1, param_type='Uniform', points=2, derivative_flag=1)
         uq_parameters = [s,s]
@@ -45,8 +45,6 @@ class TestParameter(TestCase):
         T = IndexSet('Sparse grid', level=3, growth_rule='linear', dimension=2)
         uq = Polynomial([s,s], T)
         coefficients, index_set, evaled_pts = uq.getPolynomialCoefficients(expfun)
-        print coefficients
-        print evaled_pts
         x,y,z, max_order = twoDgrid(coefficients, index_set)
         z = np.log10(np.abs(z))
 
@@ -91,8 +89,8 @@ class TestParameter(TestCase):
         ax.set_zlabel('Response')
 
         fig.colorbar(surf, shrink=0.5, aspect=5)
-        plt.show()
-    """
+        #plt.show()
+    
     def test_pseudospectral_approximation_spam(self):
             
         def expfun(x):
@@ -121,7 +119,7 @@ class TestParameter(TestCase):
         ax.set_zlabel('Response')
 
         fig.colorbar(surf, shrink=0.5, aspect=5)
-        plt.show()
+        #plt.show()
 
 
 if __name__ == '__main__':

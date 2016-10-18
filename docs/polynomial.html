@@ -200,7 +200,7 @@ corresponds to a tensor grid index set and is the default option if no index_set
 
 <dl class="method">
 <dt id="effective_quadratures.polynomial.Polynomial.getMultivariatePolynomial">
-<code class="descname">getMultivariatePolynomial</code><span class="sig-paren">(</span><em>stackOfPoints</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.Polynomial.getMultivariatePolynomial" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getMultivariatePolynomial</code><span class="sig-paren">(</span><em>stackOfPoints</em>, <em>indexsets=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.Polynomial.getMultivariatePolynomial" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns multivariate orthonormal polynomials and their derivatives</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -271,6 +271,58 @@ This functionality is used by the integrals function.</li>
 <span class="o">&gt;&gt;</span> <span class="n">p</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">polyObject</span><span class="o">.</span><span class="n">getPointsAndWeights</span><span class="p">()</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.polynomial.Polynomial.getPolynomialApproximation">
+<code class="descname">getPolynomialApproximation</code><span class="sig-paren">(</span><em>function</em>, <em>plotting_pts</em>, <em>coefficients=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.Polynomial.getPolynomialApproximation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the polynomial approximation of a function. This routine effectively multiplies the coefficients of a polynomial
+expansion with its corresponding basis polynomials.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.polynomial.Polynomial" title="effective_quadratures.polynomial.Polynomial"><em>Polynomial</em></a>) &#8211; An instance of the Polynomial class</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Param:</th><td class="field-body">callable function: The function that needs to be approximated (or interpolated)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Param:</th><td class="field-body">ndarray plotting_pts: The points at which the polynomial approximation should be evaluated at</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">polyapprox: The polynomial expansion of a function</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy matrix</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.polynomial.Polynomial.getPolynomialCoefficients">
+<code class="descname">getPolynomialCoefficients</code><span class="sig-paren">(</span><em>function</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.Polynomial.getPolynomialCoefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns multivariate orthonormal polynomial coefficients. Depending on the choice of the index set, this function will either return a tensor grid
+of pseudospectral coefficients or a sparse grid using the SPAM technique by Constantine et al (2012).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.polynomial.Polynomial" title="effective_quadratures.polynomial.Polynomial"><em>Polynomial</em></a>) &#8211; An instance of the Polynomial class</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Param:</th><td class="field-body">callable function: The function that needs to be approximated (or interpolated)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">coefficients: The pseudospectral coefficients</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">indexset: The indices used for the pseudospectral computation</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">evaled_pts: The points at which the function was evaluated</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>

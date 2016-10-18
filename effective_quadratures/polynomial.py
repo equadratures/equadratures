@@ -257,24 +257,30 @@ class Polynomial(object):
             coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self, function)
         return coefficients,  indexset, evaled_pts
 
-    # Compute polynomial approximation --- to do!
-    def getPolynomialApproximation(self, function, plotting_pts, coefficients=None):
+    def getPolynomialApproximation(self, function, plotting_pts, coefficients=None, indexset=None):
         
+        """
+        Returns the polynomial approximation of a function. This routine effectively multiplies the coefficients of a polynomial
+        expansion with its corresponding basis polynomials. 
+    
+        :param Polynomial self: An instance of the Polynomial class
+        :param: callable function: The function that needs to be approximated (or interpolated)
+        :param: ndarray plotting_pts: The points at which the polynomial approximation should be evaluated at
+        :return: polyapprox: The polynomial expansion of a function
+        :rtype: numpy matrix
+
+        """
+
+
         # Check to see if we need to call the coefficients
-        if coefficients is None:
+        if coefficients is None or indexset is None:
             coefficients,  indexset, evaled_pts = self.getPolynomialCoefficients(function)
 
         P , Q = self.getMultivariatePolynomial(plotting_pts, indexset)
         P = np.mat(P)
-        print 'Printing polynomial'
-        print P
-        m, n = P.shape
         C = np.mat(coefficients)
-        p, q = C.shape
-        print m, n, p, q
-        print '*******************************'
-        PolyApprox = P.T * C
-        return PolyApprox
+        polyapprox = P.T * C
+        return polyapprox
 
 #--------------------------------------------------------------------------------------------------------------
 #
@@ -357,19 +363,8 @@ def getSparsePseudospectralCoefficients(self, function):
     indexSets = self.index_sets
     dimensions = len(stackOfParameters)
     sparse_indices, sparse_factors, not_used = IndexSet.getIndexSet(indexSets)
-    
-    
-    print 'ALL SPARSE INDICES'
-    print sparse_indices
-    print '~~~~~~~~~~~~'
-    print not_used
-
     rows = len(sparse_indices)
     cols = len(sparse_indices[0])
-
-    #for i in range(0,rows):
-    #    for j in range(0, cols):
-    #        sparse_indices[i,j] = int(sparse_indices[i,j]) # SOMETHING NOT QUITE RIGHT OVER HERE!!!!!!!!!
 
     # For storage we use dictionaries
     individual_tensor_coefficients = {}

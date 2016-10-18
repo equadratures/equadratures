@@ -118,10 +118,10 @@ class Polynomial(object):
             for j in range(0, len(points)):
                 if (stackOfParameters[i].param_type == "Uniform"):
                     points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper - stackOfParameters[i].lower) + stackOfParameters[i].lower
-
+        
                 elif (stackOfParameters[i].param_type == "Beta" ):
                     points[j,i] =  ( points[j,i] )*( stackOfParameters[i].upper - stackOfParameters[i].lower) + stackOfParameters[i].lower
-
+        
                 elif (stackOfParameters[i].param_type == "Gaussian"):
                     points[j,i] = points[j,i] # No scaling!
 
@@ -221,20 +221,18 @@ class Polynomial(object):
         return polynomial, empty
 
  # compute coefficients
-    def getPolynomialCoefficients(self, function):
-        
+    def getPolynomialCoefficients(self, function):  
         # Method to compute the coefficients
         method = self.index_sets.index_set_type
-
         # Get the right polynomial coefficients
         if method == "Tensor grid":
-            coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self.uq_parameters, function)
+            coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self, function)
         if method == "Sparse grid":
             coefficients, indexset, evaled_pts = getSparsePseudospectralCoefficients(self, function)
         else:
-            error_function('ERROR: getPolynomialCoefficients() can only be used with a tensor grid or a sparse one. For hyperbolic basis see EffectiveQuadratures')
-
-        return coefficients
+            print 'WARNING: No explicit index has been provided. Will assume user wants a tensor grid'
+            coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self, function)
+        return coefficients,  indexset, evaled_pts
 
     # Compute polynomial approximation --- to do!
     def getPolynomialApproximation(self, function, plotting_pts, coefficients=None):
@@ -254,15 +252,16 @@ class Polynomial(object):
 #  PRIVATE FUNCTIONS!
 #
 #--------------------------------------------------------------------------------------------------------------
-def getPseudospectralCoefficients(stackOfParameters, function, additional_orders=None):
+def getPseudospectralCoefficients(self, function, override_orders=None):
     
+    stackOfParameters = self.uq_parameters
     dimensions = len(stackOfParameters)
     q0 = [1]
     Q = []
     orders = []
 
     # If additional orders are provided, then use those!
-    if additional_orders is None:
+    if override_orders is None:
         for i in range(0, dimensions):
             orders.append(stackOfParameters[i].order)
             Qmatrix = stackOfParameters[i].getJacobiEigenvectors()
@@ -271,8 +270,8 @@ def getPseudospectralCoefficients(stackOfParameters, function, additional_orders
             if orders[i] == 1:
                 q0 = np.kron(q0, Qmatrix)
             else:
-                q0 = np.kron(q0, Qmatrix[0,:])
-
+                q0 = np.kron(q0, Qmatrix[0,:])   
+            
     else:
         print 'Using custom coefficients!'
         for i in range(0, dimensions):
@@ -285,8 +284,11 @@ def getPseudospectralCoefficients(stackOfParameters, function, additional_orders
             else:
                 q0 = np.kron(q0, Qmatrix[0,:])
 
-    # Compute multivariate Gauss points and weights
-    p, w = getGaussianQuadrature(stackOfParameters, orders)
+    # Compute multivariate Gauss points and weights!
+    if override_orders is None:
+        p, w = self.getPointsAndWeights()
+    else:
+        p, w = self.getPointsAndWeights(override_orders)
 
     # Evaluate the first point to get the size of the system
     fun_value_first_point = function(p[0,:])

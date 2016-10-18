@@ -150,7 +150,9 @@ def qr_Householder(A, thin=None):
     if thin == 1:
         Q = Q[0:m, 0:n]
         R = R[0:n, 0:n]
-
+    
+    Q = np.mat(Q)
+    R = np.mat(R)
     return Q, R
 
 # Modified Gram Schmit QR column pivoting

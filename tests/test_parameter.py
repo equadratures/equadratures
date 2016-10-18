@@ -16,13 +16,15 @@ class TestParameter(TestCase):
 
         # Parameter test 2: getRecurrenceCoefficients()
         var2 = Parameter(points=15, param_type='Uniform', lower=-1, upper=1)
+        x, y = var2.getPDF(300, graph=1)
         ab = var2.getRecurrenceCoefficients()
         print ab
         print '\n'
 
         # Parameter test 3: getJacobiMatrix()
-        var3 = Parameter(points=5, param_type='Beta', lower=0, upper=1, shape_parameter_A=2, shape_parameter_B=3)
+        var3 = Parameter(points=5, param_type='Beta', lower=0, upper=5, shape_parameter_A=2, shape_parameter_B=3)
         J = var3.getJacobiMatrix()
+        x, y = var3.getPDF(300, graph=1)
         print J
         print '\n'
 

@@ -7,13 +7,15 @@ from scipy.special import gamma, beta
 
 def UniformDistribution(N, lower, upper):
     x = np.linspace(lower, upper, N)
-    w = (1.0)/(upper - lower)
+    w = 0*x + (1.0)/(upper - lower)
     return x, w
 
-def BetaDistribution(N, a, b):
+def BetaDistribution(N, a, b, lower, upper):
     x = np.linspace(0, 1, N)
     w = (x**(a - 1) * (1 - x)**(b - 1))/(beta(a, b) )
-    return x, w
+    xreal = np.linspace(lower, upper, N)
+    wreal = w * (1.0)/(upper - lower)
+    return xreal, wreal
 
 def Gaussian(N, mu, sigma):
   x, w = GaussianPDF(N, mu, sigma)

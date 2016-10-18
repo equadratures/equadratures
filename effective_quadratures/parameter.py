@@ -135,7 +135,7 @@ class Parameter(object):
         if self.param_type is "Gaussian":
             x, y = analytical.Gaussian(N, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Beta":
-            x, y = analytical.Beta(N, self.shape_parameter_A, self.shape_parameter_B) 
+            x, y = analytical.BetaDistribution(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper) 
         elif self.param_type is "Gamma":
             x, y = analytical.Gamma(N, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Weibull":
@@ -281,19 +281,29 @@ def recurrence_coefficients(self, order=None):
 
     # 1. Beta distribution
     if self.param_type is "Beta":
-        param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
-        param_B = self.shape_parameter_A - 1
-        if(param_B <= 0):
-            error_function('ERROR: parameter_A (beta shape parameter A) must be greater than 1!')
-        if(param_A <= 0):
-            error_function('ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
-        ab =  jacobi_recurrence_coefficients_01(param_A, param_B , order)
+        #param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
+        #param_B = self.shape_parameter_A - 1
+        #if(param_B <= 0):
+        #    error_function('ERROR: parameter_A (beta shape parameter A) must be greater than 1!')
+        #if(param_A <= 0):
+        #    error_function('ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
+        #ab =  jacobi_recurrence_coefficients_01(param_A, param_B , order)
+        alpha = self.shape_parameter_A
+        beta = self.shape_parameter_B
+        lower = self.lower
+        upper = self.upper
+        x, w = analytical.BetaDistribution(N, alpha, beta, lower, upper)
+        ab = custom_recurrence_coefficients(order, x, w)
 
     # 2. Uniform distribution
     elif self.param_type is "Uniform":
         self.shape_parameter_A = 0.0
         self.shape_parameter_B = 0.0
         ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, order)
+        #lower = self.lower
+        #upper = self.upper
+        #x, w = analytical.UniformDistribution(N, lower, upper)
+        #ab = custom_recurrence_coefficients(order, x, w)
 
     # 3. Analytical Gaussian defined on [-inf, inf]
     elif self.param_type is "Gaussian":
@@ -353,7 +363,7 @@ def recurrence_coefficients(self, order=None):
 def jacobi_recurrence_coefficients(param_A, param_B, order):
 
     a0 = (param_B - param_A)/(param_A + param_B + 2.0)
-    ab = np.zeros((order,2))
+    ab = np.zeros((int(order),2))
     b2a2 = param_B**2 - param_A**2
 
     if order > 0 :
@@ -528,6 +538,9 @@ def getlocalquadrature(self, order=None):
             p[u,0] = local_points[u]
 
         local_weights = recurrence_coeffs[0,1] * w  # normalizing step
+        #local_weights =  w
+        #if self.param_type == 'Uniform':
+        #    local_weights = w * (self.upper - self.lower)
         local_points = p # re-label
 
     # Return 1D gauss points and weights

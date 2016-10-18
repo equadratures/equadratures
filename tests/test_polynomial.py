@@ -35,11 +35,13 @@ def main():
     # Test 3: Pseudospectral coefficients
     #-----------------------------------------------------------------
     def expfun(x):
-        return np.exp(x(1) +  x(2))
+        return np.exp(x[0] +  x[1])
 
     s = Parameter(lower=-1, upper=1, points=5)
-    uq = Polynomial([s,s])
-    m = uq.getPolynomialCoefficients(expfun)
-    
+    T = IndexSet('Sparse grid', level=3, growth_rule='linear', dimension=2)
+    uq = Polynomial([s,s], T)
+    coefficients, index_set, evaled_pts = uq.getPolynomialCoefficients(expfun)
+    print coefficients
+    print evaled_pts
 
 main()

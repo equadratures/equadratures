@@ -26,7 +26,7 @@ class TestIntegrals(TestCase):
             print 'Success!'
         else:
             error_function('ERROR: Uniform integration routine not working!')    
-
+    
     def test_gaussian_tensorgrid(self):
 
         # 4D function for testing!
@@ -48,7 +48,7 @@ class TestIntegrals(TestCase):
 
         # Test to see if we get points and weights when function is not callable!
         points, weights = integrals.tensorgrid(parameters) 
-
+    
     def test_uniform_sparsegrid(self):
         
         # 4D function for testing!
@@ -86,6 +86,6 @@ class TestIntegrals(TestCase):
             print 'Success!'
         else:
             error_function('ERROR: Effective-Quadratures integration routine not working!') 
-
+    
 if __name__ == '__main__':
     unittest.main()

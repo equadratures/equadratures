@@ -4,7 +4,12 @@ from parameter import Parameter
 from indexset import IndexSet
 import numpy as np
 from utils import error_function, evalfunction, find_repeated_elements, meshgrid
-
+#****************************************************************************
+# Functions to code:
+#    
+# 1. a getPDF function that samples the polynomial using independent samples from parameters
+# 2. a getSamples function that can generate random indepepndent samples based on parameters
+#****************************************************************************
 class Polynomial(object):
     """
     This class defines a polynomial and its associated functions. 
@@ -270,8 +275,6 @@ class Polynomial(object):
         :rtype: numpy matrix
 
         """
-
-
         # Check to see if we need to call the coefficients
         if coefficients is None or indexset is None:
             coefficients,  indexset, evaled_pts = self.getPolynomialCoefficients(function)
@@ -281,6 +284,7 @@ class Polynomial(object):
         C = np.mat(coefficients)
         polyapprox = P.T * C
         return polyapprox
+
 
 #--------------------------------------------------------------------------------------------------------------
 #

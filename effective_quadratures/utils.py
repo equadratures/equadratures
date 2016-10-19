@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Utilities for plotting and catching errors"""
 import numpy as np
 import sys
 

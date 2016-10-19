@@ -24,6 +24,11 @@ For installation on Windows, you will need [Anaconda] (https://www.continuum.io/
 ```
 This should build the code. Just make sure you include the location of effective_quadratures folder to your python file and you should be good to go. 
 
+# Testing
+Effective-Quadratures uses [Travis](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures) for testing. Our objective is to ensure that regardless of the platform used, the modules will provide the same numerical answer. For testing the suite of tools type
+```bash
+> python test.py
+```
 # Documentation
 We use Sphinx for code documentation. See [Read the Docs] (http://www-edc.eng.cam.ac.uk/~ps583/docs/) for more information.
 
@@ -32,3 +37,6 @@ For details and queries please contact:<br>
 <br>
 Pranay Seshadri <br>
 *University of Cambridge* <br>
+
+# Funding
+This tool has been supported by funding from the Air Force Office of Scientific Research (AFOSR) under grant number FA9550-15-1-0018 and from the Engineering Physical Sciences Research Council (EPSRC) U.K. 

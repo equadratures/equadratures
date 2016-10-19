@@ -121,7 +121,7 @@ def sparsegrid(stackOfParameters, level, growth_rule, function=None):
         # points and weights for each order~
         tensor = IndexSet('Tensor grid', orders)
         polyObject = Polynomial(stackOfParameters, tensor)
-        points, weights = polyObject.getPointsAndWeights(orders[i,:])
+        points, weights = polyObject.getPointsAndWeights(orders[i,:] )
 
         # Multiply weights by constant 'a':
         weights = weights * sparse_coeffs[i]
@@ -190,7 +190,6 @@ def effectivequadratures(stackOfParameters, q_parameter, function):
     points = effectiveQuads.getEffectivelySubsampledPoints(maximum_number_of_evals)
     xn = effectiveQuads.solveLeastSquares(maximum_number_of_evals, function)
     integral_esq = xn[0]
-    print xn
 
     # For normalizing!
     for i in range(0, dimensions):

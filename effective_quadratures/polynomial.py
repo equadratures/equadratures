@@ -184,9 +184,7 @@ class Polynomial(object):
             poly , derivatives =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
             return poly, derivatives
         else:
-            print index_set
             for i in range(0, dimensions):
-                print index_set
                 p[i] , d[i] = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
 
         # Now we multiply components according to the index set
@@ -258,7 +256,6 @@ class Polynomial(object):
         if method == "Sparse grid":
             coefficients, indexset, evaled_pts = getSparsePseudospectralCoefficients(self, function)
         else:
-            print 'WARNING: No explicit index has been provided. Will assume user wants a tensor grid'
             coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self, function)
         return coefficients,  indexset, evaled_pts
 
@@ -445,8 +442,8 @@ def getSparsePseudospectralCoefficients(self, function):
         for j in range(0, dimensions):
             indices[i,j] = int(indices[i,j])
     
-    coefficients = np.mat(coefficients)
-    return coefficients.T, indices, points_saved
+    K = np.column_stack(coefficients)
+    return K, indices, points_saved
 
 # Efficient kronecker product multiplication
 # Adapted from David Gelich and Paul Constantine's kronmult.m

@@ -8,12 +8,9 @@ Suite of tools for generating polynomials for approximation, uncertainty quantif
 <br>
 www.effective-quadratures.org
 <br>
-#
-
-WARNING: Coding underway!<br>
 
 # Installation
-
+For installation on Mac and Linux systems, simply type the following into the terminal. 
 ```bash
 > sudo pip install effective-quadratures
 ```
@@ -21,13 +18,17 @@ or alternatively try
 ```bash
 > sudo python setup.py install
 ```
-# Documentation
+For installation on Windows, you will need [Anaconda] (https://www.continuum.io/downloads#windows); select the Python 2.7 option. Upon successful installation, open the Sypder IDE and go into the Effective-Quadratures-MAIN directory and type the following in the command window
+```bash
+> python setup.py install
+```
+This should build the code. Just make sure you include the location of effective_quadratures folder to your python file and you should be good to go. 
 
-Sphinx is used for code documentation. See [EQ-Documentation] (http://www-edc.eng.cam.ac.uk/~ps583/docs/) for more information.
+# Documentation
+We use Sphinx for code documentation. See [Read the Docs] (http://www-edc.eng.cam.ac.uk/~ps583/docs/) for more information.
 
 # Contact
 For details and queries please contact:<br>
 <br>
 Pranay Seshadri <br>
 *University of Cambridge* <br>
-ps583 <at> cam.ac.uk

@@ -18,7 +18,7 @@ or alternatively try
 ```bash
 > sudo python setup.py install
 ```
-For installation on Windows, you will need [Anaconda] (https://www.continuum.io/downloads#windows); select the Python 2.7 option. Upon successful installation, open the Sypder IDE and go into the Effective-Quadratures-MAIN directory and type the following in the command window
+For installation on Windows, you will need [Anaconda] (https://www.continuum.io/downloads#windows); select the Python 2.7 option. Upon successful installation, open the Sypder IDE and go into the Effective-Quadratures-master directory and type the following in the command window
 ```bash
 > python setup.py install
 ```

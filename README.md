@@ -22,10 +22,10 @@ For installation on Windows, you will need [Anaconda] (https://www.continuum.io/
 ```bash
 > python setup.py install
 ```
-Make sure you add the location of Effective-Quadratures to your python file. 
+This should build the code. Just make sure you include the location of effective_quadratures folder to your python file and you should be good to go. 
 
 # Documentation
-Sphinx is used for code documentation. See [Read the Docs] (http://www-edc.eng.cam.ac.uk/~ps583/docs/) for more information.
+We use Sphinx for code documentation. See [Read the Docs] (http://www-edc.eng.cam.ac.uk/~ps583/docs/) for more information.
 
 # Contact
 For details and queries please contact:<br>

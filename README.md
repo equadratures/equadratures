@@ -3,6 +3,7 @@
 # Effective Quadratures
 [![Gitter](https://badges.gitter.im/gitterHQ/gitter.svg)](https://gitter.im/Effective-Quadratures)  [![Build Status](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures.svg?branch=dev)](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/hyperium/hyper/master/LICENSE)
+[![Coverage Status](https://coveralls.io/repos/github/Effective-Quadratures/Effective-Quadratures/badge.svg?branch=MAIN)](https://coveralls.io/github/Effective-Quadratures/Effective-Quadratures?branch=MAIN)
 
 Suite of tools for generating polynomials for approximation, uncertainty quantification, optimization and integration. For further details, quick-start guides and papers see:
 <br>

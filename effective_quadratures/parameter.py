@@ -359,6 +359,11 @@ def recurrence_coefficients(self, order=None):
 
     return ab
 
+# Chebyshev recurrence coefficients
+def chebyshev_recurrence_coefficients(param_A, param_B, order):
+    
+    
+
 # Recurrence coefficients for Jacobi type parameters
 def jacobi_recurrence_coefficients(param_A, param_B, order):
 

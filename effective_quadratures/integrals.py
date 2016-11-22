@@ -10,6 +10,8 @@ import numpy as np
 #    
 # 1. Faster Gauss quadrature rules (see work by Alex Townsend & Nick Hale)
 # 2. Sparse grid quadrature rules with different growth rules
+# 3. Spherical quadrature rules
+# 4. Padua quadrature rules -- add 2D!
 #****************************************************************************
 def tensorgrid(stackOfParameters, function=None):
     """

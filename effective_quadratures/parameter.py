@@ -164,6 +164,53 @@ class Parameter(object):
 
         return x, y
 
+    def getSamples(self, m):
+        """
+        Returns samples of the Parameter
+
+        :param Parameter self: An instance of the Parameter class
+        :param integer m: Number of random samples 
+
+        ** Notes **
+        This function generates random uniform samples, and then 
+        1. generate a random number u from U[0,1]
+        2. Let F be the CDF of the parameter. Compute x, such that F(x) = u 
+        3. Take x to be the random number drawn from the distribution defined by F.
+        """"
+        return 0
+
+    def getiCFD(self, x):
+        """
+        Returns values of the inverse CFD
+
+        : param Parameter self: An instance of the Parameter class
+        : param numpy array x: 1-by-N array of doubles where each entry is between [0,1]
+        : return: y, 1-by-N array where each entry is the inverse CDF of input x
+        : rtype: ndarray
+
+        **Notes**
+        This routine is called by the getSamples function. It makes a call to analyticalDistributions
+        """    
+        if self.param_type is "Gaussian":
+            y = analytical.iCDF_Gaussian(x, self.shape_parameter_A, self.shape_parameter_B)
+        elif self.param_type is "Beta":
+            y = analytical.iCDF_BetaDistribution(x, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper) 
+        elif self.param_type is "Gamma":
+            y = analytical.iCDF_Gamma(x, self.shape_parameter_A, self.shape_parameter_B)
+        elif self.param_type is "Weibull":
+            y = analytical.iCDF_WeibullDistribution(x, self.shape_parameter_A, self.shape_parameter_B)
+        elif self.param_type is "Cauchy":
+            y = analytical.iCDF_CauchyDistribution(x, self.shape_parameter_A, self.shape_parameter_B)
+        elif self.param_type is "Uniform":
+            y = analytical.iCDF_UniformDistribution(x, self.lower, self.upper)
+        elif self.param_type is "TruncatedGaussian":
+            y = analytical.iCDF_TruncatedGaussian(x, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
+        elif self.param_type is "Exponential":
+            y = analytical.iCDF_ExponentialDistribution(x, self.shape_parameter_A)
+        else:
+            error_function('parameter getiCDF(): invalid parameter type!')
+        return y
+    
     def getRecurrenceCoefficients(self, order=None):
         """
         Returns the recurrence coefficients of the parameter 

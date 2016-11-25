@@ -300,7 +300,9 @@ class Polynomial(object):
         
         # For each UQ parameter in self, store the samples
         number_of_samples = 1e5 # default value!
-        #for i in range(0, dimensions):
+        plotting_pts = np.zeros((number_of_samples, dimensions))
+        for i in range(0, dimensions):
+            plotting_pts.self.uq_parameters[i].getSamples()
             
 
         P , Q = self.getMultivariatePolynomial(plotting_pts, indexset)

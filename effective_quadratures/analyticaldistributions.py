@@ -20,6 +20,7 @@ def iCDF_ExponentialDistribution(xx, lambda_value):
     return (-np.log(1 - xx))/(lambda_value)
 
 def iCDF_BetaDistribution(xx, a, b, lower, upper):
+    # Insert code for computing an inverse beta CDF here!
     return xx
 
 def iCDF_TruncatedGaussian(xx, mu, sigma, a, b):

@@ -164,12 +164,12 @@ class Parameter(object):
 
         return x, y
 
-    def getSamples(self, m):
+    def getSamples(self, m=None, graph=None):
         """
         Returns samples of the Parameter
 
         :param Parameter self: An instance of the Parameter class
-        :param integer m: Number of random samples 
+        :param integer m: Number of random samples. If no value is provided, a default of 1e5 is assumed. 
 
         ** Notes **
         This function generates random uniform samples, and then 
@@ -177,11 +177,27 @@ class Parameter(object):
         2. Let F be the CDF of the parameter. Compute x, such that F(x) = u 
         3. Take x to be the random number drawn from the distribution defined by F.
         """"
-        return 0
+        if m is None:
+            number_of_random_samples = 1e5
+        else:
+            number_of_random_samples = m
+        
+        uniform_samples = np.random.rand(number_of_random_samples, 1)
+        yy = getiCDF(self, uniform_samples)
 
-    def getiCFD(self, x):
+        if graph is not None:   
+            fig = plt.figure()
+            n, bins, patches = plt.hist(yy, 50, normed=1, facecolor='blue', alpha=0.75)
+            plt.xlabel('x')
+            plt.ylabel('PDF')
+            plt.show()
+            
+        return yy
+    
+
+    def get_iCDF(self, x):
         """
-        Returns values of the inverse CFD
+        Returns values of the inverse CDF
 
         : param Parameter self: An instance of the Parameter class
         : param numpy array x: 1-by-N array of doubles where each entry is between [0,1]
@@ -202,7 +218,7 @@ class Parameter(object):
         elif self.param_type is "Cauchy":
             y = analytical.iCDF_CauchyDistribution(x, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Uniform":
-            y = analytical.iCDF_UniformDistribution(x, self.lower, self.upper)
+            y = x * 1.0
         elif self.param_type is "TruncatedGaussian":
             y = analytical.iCDF_TruncatedGaussian(x, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Exponential":

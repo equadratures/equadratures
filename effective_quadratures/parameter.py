@@ -168,28 +168,24 @@ class Parameter(object):
         """
         Returns samples of the Parameter
 
-        :param Parameter self: An instance of the Parameter class
-        :param integer m: Number of random samples. If no value is provided, a default of 1e5 is assumed. 
+        : param Parameter self: An instance of the Parameter class
+        : param integer m: Number of random samples. If no value is provided, a default of 1e5 is assumed. 
 
-        ** Notes **
-        This function generates random uniform samples, and then 
-        1. generate a random number u from U[0,1]
-        2. Let F be the CDF of the parameter. Compute x, such that F(x) = u 
-        3. Take x to be the random number drawn from the distribution defined by F.
-        """"
+        """
         if m is None:
-            number_of_random_samples = 1e5
+            number_of_random_samples = 5e5
         else:
             number_of_random_samples = m
         
-        uniform_samples = np.random.rand(number_of_random_samples, 1)
-        yy = getiCDF(self, uniform_samples)
+        uniform_samples = np.random.random((number_of_random_samples, 1))
+        yy = self.get_iCDF(uniform_samples)
 
         if graph is not None:   
             fig = plt.figure()
-            n, bins, patches = plt.hist(yy, 50, normed=1, facecolor='blue', alpha=0.75)
+            n, bins, patches = plt.hist(yy, 30, normed=1, facecolor='blue', alpha=0.75)
             plt.xlabel('x')
             plt.ylabel('PDF')
+            plt.xlim(1.2*np.min(yy), 1.2*np.max(yy))
             plt.show()
             
         return yy
@@ -421,10 +417,6 @@ def recurrence_coefficients(self, order=None):
         error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential, TruncatedGaussian or Beta')
 
     return ab
-
-# Chebyshev recurrence coefficients
-def chebyshev_recurrence_coefficients(param_A, param_B, order):
-    
     
 
 # Recurrence coefficients for Jacobi type parameters

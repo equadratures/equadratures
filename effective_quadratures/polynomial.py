@@ -259,8 +259,7 @@ class Polynomial(object):
             coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self, function)
         return coefficients,  indexset, evaled_pts
 
-    def getPolynomialApproximation(self, function, plotting_pts, coefficients=None, indexset=None):
-        
+    def getPolynomialApproximation(self, function, plotting_pts, coefficients=None, indexset=None): 
         """
         Returns the polynomial approximation of a function. This routine effectively multiplies the coefficients of a polynomial
         expansion with its corresponding basis polynomials. 
@@ -282,7 +281,33 @@ class Polynomial(object):
         polyapprox = P.T * C
         return polyapprox
 
+    def getPDF(self, function, coefficients=None, indexset=None):
+        """
+        Returns the PDF of the model output. This routine effectively multiplies the coefficients of a polynomial
+        expansion with its corresponding basis polynomials. 
+    
+        :param Polynomial self: An instance of the Polynomial class
+        :param: callable function: The function that needs to be approximated (or interpolated)
+        :return: polyapprox: The polynomial expansion of a function
+        :rtype: numpy matrix
 
+        """
+        dimensions = len(self.uq_parameters)
+
+        # Check to see if we need to call the coefficients
+        if coefficients is None or indexset is None:
+            coefficients,  indexset, evaled_pts = self.getPolynomialCoefficients(function)
+        
+        # For each UQ parameter in self, store the samples
+        number_of_samples = 1e5 # default value!
+        #for i in range(0, dimensions):
+            
+
+        P , Q = self.getMultivariatePolynomial(plotting_pts, indexset)
+        P = np.mat(P)
+        C = np.mat(coefficients)
+        polyapprox = P.T * C
+        return polyapprox
 #--------------------------------------------------------------------------------------------------------------
 #
 #  PRIVATE FUNCTIONS!

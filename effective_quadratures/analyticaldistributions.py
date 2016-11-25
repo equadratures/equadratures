@@ -8,7 +8,7 @@ from scipy.special import erf, erfinv, gamma, beta
 #    To do: inverse Beta CDF
 #-----------------------------------------------------------------------
 def iCDF_Gaussian(xx, mu, sigma):
-    return mu + sigma * np.sqrt(2) * erfinv(xx)
+    return mu + sigma * np.sqrt(2) * erfinv(2*xx - 1)
 
 def iCDF_CauchyDistribution(xx, x0, gammavalue):
     return x0 + gamma * np.tan(np.pi * (xx - 0.5))
@@ -25,9 +25,7 @@ def iCDF_BetaDistribution(xx, a, b, lower, upper):
 def iCDF_TruncatedGaussian(xx, mu, sigma, a, b):
     yy = iCDF_Gaussian(xx, mu, sigma)
     for i in range(0, len(xx)):
-        if(yy[i,0] > a and yy[i,0] < b)
-            # do nothing
-        else:
+        if(yy[i,0] < a or yy[i,0] > b):
             yy[i,0] = 0
     return yy
 

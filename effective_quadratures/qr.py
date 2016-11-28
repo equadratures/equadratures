@@ -27,34 +27,58 @@ def solve_constrainedLSQ(A,b,C,d):
 
     """
     A = np.mat(A)
-    C = np.mat(C)
+    dimensions = len(C)
+    C0 = C[0] # Which by default has to exist!
+    rows, cols = C0.shape
+    BigC = np.zeros((rows*dimensions, cols))
+    counter = 0
+    dims = 0
+    while dims < dimensions:
+        for i in range(0, rows):
+            for j in range(0, cols):
+                BigC[counter, j] = C[dims][i,j]
+            counter = counter + 1 
+        dims = dims + 1
+
+    # BigC stacks all the C matrices 
+    BigC = np.mat(BigC)
    
     # Size of matrices!
     m, n = A.shape
     p, q = b.shape
-    k, l = C.shape
+    k, l = BigC.shape
     s, t = d.shape
 
+    print k, s
+    print m, n
     # Check that the number of elements in b are equivalent to the number of rows in A
     if m != p:
         error_function('ERROR: mismatch in sizes of A and b')
     elif k != s:
         error_function('ERROR: mismatch in sizes of C and d') 
     
-    Q , R = qr_Householder(C.T, 1) # Thin QR factorization on C'
-    R = R[0:n, 0:n]
-    u = np.linalg.inv(R.T) * d
-    A_hat = A * Q
-    z, w = A_hat.shape
+    # Method 1: Stacked least squares approach!
+    BigA = np.vstack([A, BigC])
+    Bigb = np.vstack([b, d])
+    print BigA
+    print '~~~~~~~~~~~'
+    print Bigb
+    x = solveLSQ(BigA, Bigb)
+    #Q , R = qr_Householder(BigC, 1) # Thin QR factorization on C'
+    #R = R[0:n, 0:n]
+    #u = np.linalg.inv(R.T) * d
+    #A_hat = A * Q
+    #z, w = A_hat.shape
     
     # Now split A
-    Ahat_1 = A_hat[:, 0:len(u)]
-    Ahat_2 = A_hat[:, len(u) : w]
-    r = b - Ahat_1 * u
+    #Ahat_1 = A_hat[:, 0:len(u)]
+    #Ahat_2 = A_hat[:, len(u) : w]
+    #r = b - Ahat_1 * u
     
     # Solve the least squares problem
-    v = solveLSQ(Ahat_2, r)
-    x = Q * np.vstack([u, v]) 
+    #v = solveLSQ(Ahat_2, r)
+    #x = Q * np.vstack([u, v]) 
+    
     return x
 
 # Solve the least squares problem (done wiht QR factorization!)

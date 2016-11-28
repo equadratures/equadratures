@@ -152,9 +152,9 @@ class EffectiveSubsampling(object):
         :: 
             >> x = eq.solveLeastSquares(150, function_call)
         """
-        A, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag)
+        A, esq_pts, W, points = getSquareA(self, maximum_number_of_evals)
         A, normalizations = rowNormalize(A)     
-        C = getSubsampled(self, esq_pts)
+        C = self.getCsubsampled(esq_pts)
         
         # Check if user input is a function or a set of function values!
         if callable(function_values):
@@ -175,12 +175,21 @@ class EffectiveSubsampling(object):
         # Assume that the gradient values are given as a matrix
         # First check if the dimensions make sense...then weight them
         # Then send them to the lsqr routine...
-        d = 0
+
+        # Now the gradient values will usually be arranged as a N-by-d matrix,
+        # where N are the number of points and d is the number of dimensions.
+        # This needs to be changed into a single vector
+        p, q = grad_values.shape
+        d_vec = np.zeros((p*q,1))
+        counter = 0
+        for j in range(0,q):
+            for i in range(0,p):
+                d_vec[counter] = grad_values[i,j]
+                counter = counter + 1
 
         # Now solve the constrained least squares problem
-        x = solve_constrainedLSQ(A, b, C, d)
+        return solve_constrainedLSQ(A, b, C, d_vec)
 
-        return 0
 
 
 # Normalize the rows of A by its 2-norm  

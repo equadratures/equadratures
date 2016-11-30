@@ -51,6 +51,7 @@ def solve_constrainedLSQ(A,b,C,d):
 
     print k, s
     print m, n
+    
     # Check that the number of elements in b are equivalent to the number of rows in A
     if m != p:
         error_function('ERROR: mismatch in sizes of A and b')
@@ -64,6 +65,8 @@ def solve_constrainedLSQ(A,b,C,d):
     print '~~~~~~~~~~~'
     print Bigb
     x = solveLSQ(BigA, Bigb)
+    
+
     #Q , R = qr_Householder(BigC, 1) # Thin QR factorization on C'
     #R = R[0:n, 0:n]
     #u = np.linalg.inv(R.T) * d

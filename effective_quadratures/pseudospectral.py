@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Operations involving polynomial coefficients"""
 from parameter import Parameter
 from indexset import IndexSet

@@ -14,6 +14,7 @@ from utils import error_function
 # 7. Randomized QR 
 #****************************************************************************
 # Comment by Tiziano
+# Second Comment by Tiziano
 def solve_constrainedLSQ(A,b,C,d):
     """
     Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d using 

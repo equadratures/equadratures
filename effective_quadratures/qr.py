@@ -96,7 +96,7 @@ def solveLSQ(A, b):
     :return: x, the coefficients of the least squares problem.
     :rtype: ndarray
 
-    """
+    """ 
     # Direct methods!
     Q, R = qr_Householder(A, 1)
     x = np.linalg.inv(R) * Q.T * b

@@ -214,7 +214,6 @@ def getA(self):
     # Now we create another Polynomial object for the basis set!
     polynomial_expansions, no_used = polyObject_for_basis.getMultivariatePolynomial(unscaled_quadrature_pts)
     P = np.mat(polynomial_expansions)
-    m, n = P.shape
     W = np.mat( np.diag(np.sqrt(quadrature_wts)))
     A = W * P.T
     return A, quadrature_pts, quadrature_wts
@@ -235,11 +234,7 @@ def getSquareA(self, maximum_number_of_evals):
     m , n = A.shape
 
     if maximum_number_of_evals < n :
-        #print 'Dimensions of A prior to subselection:'
-        #print m, n
-        #print 'The maximum number of evaluations you requested'
-        #print maximum_number_of_evals
-
+        
         # Now if the derivative flag option is activated, we do not raise an error. Otherwise an error is raised!
         if self.uq_parameters[0].derivative_flag is None:
             error_function("ERROR in EffectiveQuadSubsampling --> getAsubsampled(): The maximum number of evaluations must be greater or equal to the number of basis terms")

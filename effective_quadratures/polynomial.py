@@ -182,7 +182,8 @@ class Polynomial(object):
             return poly, derivatives
         elif dimensions == 1 and stackOfParameters[0].derivative_flag == 1:
             poly , derivatives =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
-            return poly, derivatives
+            C_all[0] = derivatives
+            return poly, C_all
         else:
             for i in range(0, dimensions):
                 p[i] , d[i] = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )

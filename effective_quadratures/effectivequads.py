@@ -105,6 +105,7 @@ class EffectiveSubsampling(object):
         Cfull = cell2matrix(C)
         return Cfull
 
+    # Method below will change shortly!    
     def getCsubsampled(self, maximum_number_of_evals):
         """
         Returns a matrix of multivariate derivative orthogonal polynomials evaluated at a set of quadrature points.

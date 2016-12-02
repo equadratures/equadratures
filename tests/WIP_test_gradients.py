@@ -9,6 +9,28 @@ from effective_quadratures.utils import meshgrid, twoDgrid, evalfunction, evalgr
 import numpy as np
 " Template for deciding how best to code effectivequads.py"
 
+
+# We assume here that C is output as a cell!
+def getRowsFromCell(G, row_indices):
+    small_rows = len(row_indices)
+    dimensions = len(G)
+    G0 = G[0] # Which by default has to exist!
+    C0 = G0.T
+    C0 = getRows(C0, row_indices)
+    rows, cols = C0.shape
+    BigC = np.zeros((dimensions*rows, cols))
+    counter = 0
+    for i in range(0, dimensions):
+        K = G[i].T
+        K = getRows(K, row_indices)
+        for j in range(0, rows):
+            for k in range(0,cols):
+                BigC[counter,k] = K[j,k]
+            counter = counter + 1 
+    BigC = np.mat(BigC)
+    return BigC
+    
+
 def getRows(A, row_indices):
     
     # Determine the shape of A
@@ -25,10 +47,10 @@ def getRows(A, row_indices):
     return A2
 
 def fun(x):
-    return np.exp(x[0])
+    return np.exp(x[0] + x[1])
 
 def fungrad(x):
-    return [np.exp(x[0]) ] 
+    return [np.exp(x[0] + x[1]), np.exp(x[0] + x[1]) ] 
 
 # Normalize the rows of A by its 2-norm  
 def rowNormalize(A):
@@ -57,36 +79,50 @@ def nogradients_univariate():
 def gradients_univariate():
     
     # Parameters!
-    pt = 6
+    pt = 5
     x1 = Parameter(param_type="Uniform", lower=-1.0, upper=1.0, points=pt, derivative_flag=1)
     x2 = Parameter(param_type="Uniform", lower=-1.0, upper=1.0, points=pt, derivative_flag=1)
     parameters = [x1, x2]
-    dims = 1
+    dims = len(parameters)
 
     # Basis selection!
-    hyperbolic_cross = IndexSet("Hyperbolic basis", orders=[pt-1,pt-1], q=1.0)
+    hyperbolic_cross = IndexSet("Total order", orders=[pt-1,pt-1])
     esq = EffectiveSubsampling(parameters, hyperbolic_cross)
     A , p, w = esq.getAmatrix()
+    C = esq.getCmatrix()
 
     basis_terms_required = hyperbolic_cross.getCardinality() 
-    s = np.int( (basis_terms_required + dims)/(dims + 1.) ) 
+    minimum_points = np.int( (basis_terms_required + dims)/(dims + 1.) ) + 4
     
     # Now do QR column pivoting on A
     P = qr.mgs_pivoting(A.T)
-    selected_quadrature_points = P[0:s]
-    Afat =  getRows(np.mat(A), selected_quadrature_points)
-
-    # What is the size of Asub?
-    m, n = Afat.shape
-    esq_pts = getRows(np.mat(quadrature_pts), selected_quadrature_points)
-    esq_wts = quadrature_wts[selected_quadrature_points]
+    selected_nodes = P[0:minimum_points]
+    Afat =  getRows(np.mat(A), selected_nodes)
+    m , n = Afat.shape
+    print m , n    
+    esq_pts = getRows(np.mat(p), selected_nodes)
+    esq_wts = w[selected_nodes]
     W = np.mat(np.diag(np.sqrt(esq_wts)))
+
+    # Function and gradient evaluation!
+    f = W.T * evalfunction(esq_pts, fun)
+    df = evalgradients(esq_pts, fungrad, 'vector')
+
+    Ccell = esq.getCmatrix()
+    #print Ccell
+    Cfat = getRowsFromCell(Ccell, selected_nodes)
+    #print '\n'
+    #print '************'
+    print selected_nodes
+    #print Cfat
+    #print '\n'
+    m, n = Cfat.shape
     print m, n
 
-    f = W.T * evalfunction(esq_pts, fun)
-    #df = evalgradients(esq_pts, fungrad, 'vector')
-    #Csub = esq.getCsubsampled(s)
-    #x = qr.solveLSQ(np.vstack([Asub, Csub]), np.vstack([f, df])  )
-    #print x
+    # Now solve the least squares problem!
+    print np.vstack([Afat, Cfat])
+    x = qr.solveLSQ(np.vstack([Afat, Cfat]), np.vstack([f, df])  )
+    print x
+
 
 gradients_univariate()

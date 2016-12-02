@@ -94,7 +94,7 @@ class EffectiveSubsampling(object):
     
     def getCmatrix(self):
         """
-        put some comments here!
+        Returns the full C matrix
         """
         stackOfParameters = self.uq_parameters
         polynomial_basis = self.index_set
@@ -102,8 +102,8 @@ class EffectiveSubsampling(object):
         polyObject_for_basis = Polynomial(stackOfParameters, polynomial_basis) 
         points, weights = polyObject_for_basis.getPointsAndWeights()
         not_used, C = polyObject_for_basis.getMultivariatePolynomial(points)
-        Cfull = cell2matrix(C)
-        return Cfull
+        #Cfull = cell2matrix(C)
+        return C
 
     # Method below will change shortly!    
     def getCsubsampled(self, maximum_number_of_evals):
@@ -127,8 +127,8 @@ class EffectiveSubsampling(object):
         polyObject_for_basis = Polynomial(stackOfParameters, polynomial_basis) 
         Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals)
         not_used, C = polyObject_for_basis.getMultivariatePolynomial(esq_pts)
-        Cfull = cell2matrix(C)
-        return Cfull
+        #Cfull = cell2matrix(C)
+        return C
 
     def getEffectivelySubsampledPoints(self, maximum_number_of_evals, flag=None):
         """

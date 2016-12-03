@@ -102,8 +102,8 @@ class EffectiveSubsampling(object):
         polyObject_for_basis = Polynomial(stackOfParameters, polynomial_basis) 
         points, weights = polyObject_for_basis.getPointsAndWeights()
         not_used, C = polyObject_for_basis.getMultivariatePolynomial(points)
-        #Cfull = cell2matrix(C)
-        return C
+        Cfull = cell2matrix(C)
+        return Cfull
 
     # Method below will change shortly!    
     def getCsubsampled(self, maximum_number_of_evals):

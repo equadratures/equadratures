@@ -9,6 +9,24 @@ from effective_quadratures.utils import meshgrid, twoDgrid, evalfunction, evalgr
 import numpy as np
 " Template for deciding how best to code effectivequads.py"
 
+# Get rows from C 
+def getRowsC(C,row_indices,dims):
+    m, n = C.shape
+    rows = np.zeros
+    v =  len(row_indices)
+    Cnew = np.zeros((v*dims, n))
+
+    # New row indices
+    indices = np.zeros((v*dims), dtype=int)
+    small_length = m / dims
+    print small_length
+    direction = range(0, dims)
+    counter = 0
+    for i in range(0, dims):
+        for j in range(0, len(row_indices)):
+            indices[counter] = row_indices[j] + direction[i]*small_length
+            counter = counter + 1
+    return C[indices, :]
 
 # We assume here that C is output as a cell!
 def getRowsFromCell(G, row_indices):
@@ -65,7 +83,7 @@ def nogradients_univariate():
     # Parameters!
     pt = 6
     x1 = Parameter(param_type="Uniform", lower=-1.0, upper=1.0, points=pt)
-    parameters = [x1]
+    parameters = [x1, x1]
 
     # Effective subsampling object!
     esq = EffectiveSubsampling(parameters)
@@ -75,11 +93,15 @@ def nogradients_univariate():
     W = np.mat(np.diag(np.sqrt(w) ) )
     b = W.T  * evalfunction(p, fun)
     x = qr.solveLSQ(A,b)
+    print x
 
-def gradients_univariate():
+
+# Do a univariate version of the same thing!!!
+
+def gradients_multivariate():
     
     # Parameters!
-    pt = 5
+    pt = 8
     x1 = Parameter(param_type="Uniform", lower=-1.0, upper=1.0, points=pt, derivative_flag=1)
     x2 = Parameter(param_type="Uniform", lower=-1.0, upper=1.0, points=pt, derivative_flag=1)
     parameters = [x1, x2]
@@ -91,6 +113,65 @@ def gradients_univariate():
     A , p, w = esq.getAmatrix()
     C = esq.getCmatrix()
 
+    # Matrix sizes
+    m, n  = A.shape
+    print m, n
+    print '*****************'
+    m, n = C.shape
+    print m, n
+    
+    # Now perform least squares!
+    W = np.mat(np.diag(np.sqrt(w)))
+    b = W.T * evalfunction(p, fun)
+    d = evalgrad/ients(p, fungrad, 'vector')
+    x = qr.solveLSQ(np.vstack([A, C]), np.vstack([b, d])  )
+    print x
+
+def gradients_multivariate_subsampled():
+    
+    # Parameters!
+    pt = 3
+    x1 = Parameter(param_type="Uniform", lower=-1.0, upper=1.0, points=pt, derivative_flag=1)
+    x2 = Parameter(param_type="Uniform", lower=-1.0, upper=1.0, points=pt, derivative_flag=1)
+    parameters = [x1, x2]
+    dims = len(parameters)
+
+    # Basis selection!
+    basis = IndexSet("Total order", orders=[pt-1,pt-1])
+    esq = EffectiveSubsampling(parameters, basis)
+    A , p, w = esq.getAmatrix()
+    C = esq.getCmatrix()
+
+    # QR column pivotings
+    P = qr.mgs_pivoting(A.T)
+    
+    # Now perform least squares!
+    basis_terms_required = basis.getCardinality() 
+    minimum_points = np.int( (basis_terms_required + dims)/(dims + 1.) )  + 5 
+    nodes = P[0:minimum_points]
+    A = getRows(A, nodes)
+    C = getRowsC(C, nodes, dims)
+
+    m, n = A.shape
+    #print m , n
+    m, n = C.shape
+    #print m, n
+
+    w = w[nodes]
+    p = p[nodes,:]
+    #print p, w
+    W = np.mat(np.diag(np.sqrt(w)))
+    b = W.T * evalfunction(p, fun)
+    d = evalgradients(p, fungrad, 'vector')
+    R = np.vstack([A, C])
+    print np.linalg.cond(R)
+    print R
+    print np.vstack([b, d])
+    x = qr.solveLSQ(np.vstack([A, C]), np.vstack([b, d])  )
+    print '\n'
+    print x
+
+    """
     basis_terms_required = hyperbolic_cross.getCardinality() 
     minimum_points = np.int( (basis_terms_required + dims)/(dims + 1.) ) + 4
     
@@ -109,7 +190,6 @@ def gradients_univariate():
     df = evalgradients(esq_pts, fungrad, 'vector')
 
     Ccell = esq.getCmatrix()
-    #print Ccell
     Cfat = getRowsFromCell(Ccell, selected_nodes)
     #print '\n'
     #print '************'
@@ -123,6 +203,7 @@ def gradients_univariate():
     print np.vstack([Afat, Cfat])
     x = qr.solveLSQ(np.vstack([Afat, Cfat]), np.vstack([f, df])  )
     print x
+    """
 
-
-gradients_univariate()
+#nogradients_univariate()
+gradients_multivariate_subsampled()

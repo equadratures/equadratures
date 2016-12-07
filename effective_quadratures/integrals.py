@@ -13,6 +13,36 @@ import numpy as np
 # 3. Spherical quadrature rules
 # 4. Padua quadrature rules -- add 2D!
 #****************************************************************************
+class IntegrationRules(object):
+    def __init__(self, order, method, coordinates=None):
+        self.order = order
+        self.method = method
+        if coordinates is None:
+            self.coordinates = 'Cartesian'
+        else:
+            self.coordinates = coordinates
+    
+    def getPointsAndWeights(self):
+        if self.coordinates is "Spherical":
+            p, w = getSphericalPointsAndWeights(self.order, self.method)
+        else:
+            p, w = getCartesianPointsAndWeights(self,order, self.method)
+        return p, w
+
+def getSphericalPointsAndWeights(order, method):
+    # 1. 
+
+
+def getCartesianPointsAndWeights(order, method):
+    if method is 'Gauss':
+        p, w = getGauss(order)
+    elif method is 'Clenshaw-Curtis':
+        p, w = getClenshawCurtis(order)
+    elif method is 'Padua':
+        p, w = getPadua(order)
+    
+         
+    
 def tensorgrid(stackOfParameters, function=None):
     """
     Computes a tensor grid of quadrature points based on the distributions for each Parameter in stackOfParameters 

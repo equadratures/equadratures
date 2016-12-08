@@ -13,6 +13,16 @@ from utils import error_function
 # 6. The 'Practical QR' algorithm
 # 7. Randomized QR 
 #****************************************************************************
+
+# SVD via QR!
+def tsvd(A):
+    return 0
+
+# Using Demmel's algorithm for QR
+def qrblocks(A, n):
+    # n is the number of blocks!
+    return 0
+    
 def solve_constrainedLSQ(A,b,C,d):
     """
     Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d using 

@@ -65,10 +65,10 @@ def getRows(A, row_indices):
     return A2
 
 def fun(x):
-    return np.exp(x[0] + x[1])
+    return np.exp(x[0])
 
 def fungrad(x):
-    return [np.exp(x[0] + x[1]), np.exp(x[0] + x[1]) ] 
+    return [np.exp(x[0])] 
 
 # Normalize the rows of A by its 2-norm  
 def rowNormalize(A):
@@ -97,6 +97,106 @@ def nogradients_univariate():
 
 
 # Do a univariate version of the same thing!!!
+def gradients_univariate():
+    
+    # Parameters!
+    pt = 8
+    x1 = Parameter(param_type="Uniform", lower=-1.0, upper=1.0, points=pt, derivative_flag=1)
+    x2 = Parameter(param_type="Uniform", lower=-1.0, upper=1.0, points=pt, derivative_flag=1)
+    parameters = [x1, x2]
+    dims = len(parameters)
+
+    # Basis selection!
+    hyperbolic_cross = IndexSet("Total order", orders=[pt-1,pt-1])
+    esq = EffectiveSubsampling(parameters, hyperbolic_cross)
+    A , p, w = esq.getAmatrix()
+    C = esq.getCmatrix()
+
+    # Matrix sizes
+    m, n  = A.shape
+    print m, n
+    print '*****************'
+    m, n = C.shape
+    print m, n
+    
+    # Now perform least squares!
+    W = np.mat(np.diag(np.sqrt(w)))
+    b = W.T * evalfunction(p, fun)
+    d = evalgradients(p, fungrad, 'vector')
+    x = qr.solveLSQ(np.vstack([A, C]), np.vstack([b, d])  )
+    print x
+
+def gradients_univariate_subsampled():
+    
+    # Parameters!
+    pt = 8
+    x1 = Parameter(param_type="Uniform", lower=-1.0, upper=1.0, points=pt, derivative_flag=1)
+    parameters = [x1]
+    dims = len(parameters)
+
+    # Basis selection!
+    basis = IndexSet("Total order", orders=[pt-1])
+    esq = EffectiveSubsampling(parameters, basis)
+    A , p, w = esq.getAmatrix()
+    C = esq.getCmatrix()
+
+    # QR column pivotings
+    P = qr.mgs_pivoting(A.T)
+    
+    # Now perform least squares!
+    basis_terms_required = basis.getCardinality() 
+    minimum_points = np.int( (basis_terms_required + dims)/(dims + 1.) )  
+    nodes = P[0:minimum_points]
+    A = getRows(A, nodes)
+    C = getRows(C, nodes)
+
+    print 'Size of subsampled matrices!'
+    m, n = A.shape
+    print m , n
+    m, n = C.shape
+    print m, n
+
+    w = w[nodes]
+    p = p[nodes,:]
+    #print p, w
+
+    W = np.mat(np.diag(np.sqrt(w)))
+    b = W.T * evalfunction(p, fun)
+    d = evalgradients(p, fungrad, 'vector')
+    R = np.vstack([A, C])
+
+    # Stacked least squares problem!
+    x = qr.solveLSQ(np.vstack([A, C]), np.vstack([b, d])  )
+    print '\n'
+    print 'Final Solution!'
+    print x
+
+
+    print A
+    print C
+    print b
+    print d
+    
+    # Direct Elimination least squares!
+    x = qr.solveCLSQ(A, b, C, d)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def gradients_multivariate():
     
@@ -126,6 +226,8 @@ def gradients_multivariate():
     d = evalgrad/ients(p, fungrad, 'vector')
     x = qr.solveLSQ(np.vstack([A, C]), np.vstack([b, d])  )
     print x
+
+
 
 def gradients_multivariate_subsampled():
     
@@ -206,4 +308,4 @@ def gradients_multivariate_subsampled():
     """
 
 #nogradients_univariate()
-gradients_multivariate_subsampled()
+gradients_univariate_subsampled()

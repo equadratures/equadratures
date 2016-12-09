@@ -13,6 +13,7 @@ from utils import error_function
 # 6. The 'Practical QR' algorithm
 # 7. Randomized QR 
 #****************************************************************************
+<<<<<<< Updated upstream
 
 # SVD via QR!
 def tsvd(A):
@@ -23,6 +24,55 @@ def qrblocks(A, n):
     # n is the number of blocks!
     return 0
     
+=======
+def solveCLSQ(A,b,C,d):
+    """
+    Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d using 
+    the method of direct elimination
+
+    :param numpy matrix A: an m-by-n matrix
+    :param numpy matrix b: an m-by-1 matrix
+    :param numpy ndarray C: an k-by-n matrix
+    :param numpy ndarray d: an k-by-1 matrix
+    :return: x, the coefficients of the least squares problem.
+    :rtype: ndarray
+
+    """
+    A = np.mat(A)
+    C = np.mat(C)
+   
+    # Size of matrices!
+    m, n = A.shape
+    p, q = b.shape
+    k, l = C.shape
+    s, t = d.shape
+
+    print k, s
+    print m, n
+    
+    # Check that the number of elements in b are equivalent to the number of rows in A
+    if m != p:
+        error_function('ERROR: mismatch in sizes of A and b')
+    elif k != s:
+        error_function('ERROR: mismatch in sizes of C and d') 
+
+    Q , R = qr_Householder(C, 1) # Thin QR factorization on C'
+    R = R[0:n, 0:n]
+    u = np.linalg.inv(R.T) * d
+    A_hat = A * Q
+    z, w = A_hat.shape
+    
+    # Now split A
+    Ahat_1 = A_hat[:, 0:len(u)]
+    Ahat_2 = A_hat[:, len(u) : w]
+    r = b - Ahat_1 * u
+    
+    # Solve the least squares problem
+    v = solveLSQ(Ahat_2, r)
+    x = Q * np.vstack([u, v]) 
+    return x
+
+>>>>>>> Stashed changes
 def solve_constrainedLSQ(A,b,C,d):
     """
     Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d using 

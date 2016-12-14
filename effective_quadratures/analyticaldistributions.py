@@ -1,10 +1,55 @@
 #!/usr/bin/env python
 """Sample probability density functions"""
 import numpy as np
-from scipy.special import erf
-from scipy.special import gamma, beta
+from scipy.special import erf, erfinv, gamma, beta
+#-----------------------------------------------------------------------
+#
+#    Analytical definitions of iCDFs
+#    To do: inverse Beta CDF
+#-----------------------------------------------------------------------
+def iCDF_Gaussian(xx, mu, sigma):
+    return mu + sigma * np.sqrt(2) * erfinv(2*xx - 1)
 
+def iCDF_CauchyDistribution(xx, x0, gammavalue):
+    return x0 + gamma * np.tan(np.pi * (xx - 0.5))
 
+def iCDF_WeibullDistribution(xx, lambda_value, k):
+    return lambda_value * (-np.log(1 - xx))**(1/k) 
+
+def iCDF_ExponentialDistribution(xx, lambda_value):
+    return (-np.log(1 - xx))/(lambda_value)
+
+def iCDF_BetaDistribution(xx, a, b, lower, upper):
+    # Insert code for computing an inverse beta CDF here!
+    [x,y]=BetaDistribution(1000,a,b,lower,upper)
+    c=[]
+    c.append(0)
+    for i in range(1, len(x)):
+       c.append(c[i-1]+(x[i]-x[i-1])*(y[i]+y[i-1])*.5)
+    
+    for i in range(1, len(x)):
+       c[i]=c[i]/c[len(x)-1]
+
+    for i in range(0, len(x)-1):
+       if ( (xx>=c[i]) and (xx<=c[i+1]) ): 
+          yy=(xx-c[i])/(c[i+1]-c[i])*(x[i+1]-x[i])+x[i]
+          break
+ 
+
+    return yy
+
+def iCDF_TruncatedGaussian(xx, mu, sigma, a, b):
+    yy = iCDF_Gaussian(xx, mu, sigma)
+    for i in range(0, len(xx)):
+        if(yy[i,0] < a or yy[i,0] > b):
+            yy[i,0] = 0
+    return yy
+
+#-----------------------------------------------------------------------
+#
+#    Analytical definitions of PDFs
+#
+#-----------------------------------------------------------------------
 def UniformDistribution(N, lower, upper):
     x = np.linspace(lower, upper, N)
     w = 0*x + (1.0)/(upper - lower)

@@ -155,10 +155,10 @@ def gradients_univariate_subsampled():
     print m , n
     m, n = C.shape
     print m, n
-
+    
+    # Subselection!
     w = w[nodes]
     p = p[nodes,:]
-    #print p, w
 
     W = np.mat(np.diag(np.sqrt(w)))
     b = W.T * evalfunction(p, fun)
@@ -180,7 +180,7 @@ def gradients_univariate_subsampled():
     # Direct Elimination least squares!
     x = qr.solveCLSQ(A, b, C, d)
 
-
+    print x
 
 
 

@@ -13,8 +13,6 @@ from utils import error_function
 # 6. The 'Practical QR' algorithm
 # 7. Randomized QR 
 #****************************************************************************
-<<<<<<< Updated upstream
-
 # SVD via QR!
 def tsvd(A):
     return 0
@@ -24,7 +22,6 @@ def qrblocks(A, n):
     # n is the number of blocks!
     return 0
     
-=======
 def solveCLSQ(A,b,C,d):
     """
     Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d using 
@@ -56,23 +53,44 @@ def solveCLSQ(A,b,C,d):
     elif k != s:
         error_function('ERROR: mismatch in sizes of C and d') 
 
-    Q , R = qr_Householder(C, 1) # Thin QR factorization on C'
-    R = R[0:n, 0:n]
+    notused , R = qr(C.T, thin=1)#qr_Householder(C.T, 1) # Thin QR factorization on C'
+    Q , notused = qr(C.T, thin=0)#qr_Householder(C.T)
+
+    print '***Debugging from qr.py****'
+    print Q
+    print R
+    print '~~~~~~~~~~~~~~~'
+    # up to here is OK! - Pranay Dec 16th 2016
+
     u = np.linalg.inv(R.T) * d
+    print '---- Check u ----'
+    print u
+    print '####################'
     A_hat = A * Q
     z, w = A_hat.shape
-    
+
     # Now split A
     Ahat_1 = A_hat[:, 0:len(u)]
     Ahat_2 = A_hat[:, len(u) : w]
     r = b - Ahat_1 * u
+    print '***Check Ahat_1 and Ahat_2 ****'
+    print Ahat_1
+    print Ahat_2
+    print '~'
+    print A_hat
+    print r
+    print '$$$$$$$$$$$$$'
+    
     
     # Solve the least squares problem
     v = solveLSQ(Ahat_2, r)
     x = Q * np.vstack([u, v]) 
+    print '** Final steps ***'
+    print v
+    print x
+    print '~~~~~~~~~~~~~~~~'
     return x
 
->>>>>>> Stashed changes
 def solve_constrainedLSQ(A,b,C,d):
     """
     Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d using 
@@ -203,10 +221,74 @@ def house(vec):
     v = v.T
     return v, beta
 
+
+# QR factorization via the Modified Gram Schmidt Method!
+def qr(A, thin=None):
+    """
+    Returns the QR factorization via the Modified Gram Schmidt Method
+
+    :param numpy matrix A: Matrix input for QR factorization
+    :param boolean thin: Set thin to 1 to compute a thin QR factorization. The default is a regular QR factorization.
+    :return: Q, the orthogonal matrix
+    :rtype: numpy matrix
+    :return: R, the upper triangular matrix
+    :rtype: numpy matrix
+
+    **Sample declaration**
+    :: 
+        >> Q, R = qr(A)
+    """
+    A = np.matrix(A)
+    m , n = A.shape
+    #u = np.min([m, n])
+    #h = np.max([m, n])
+
+    if thin == 1:
+        Q = np.mat(np.eye(m,n), dtype='float64')
+        R = np.mat(np.zeros((n, n)), dtype='float64')
+        u = n
+    else:
+        Q = np.mat(np.eye(m,m), dtype='float64')
+        R = np.mat(np.zeros((m, n)), dtype='float64')
+        u = n 
+
+
+    # Now loop!
+    for k in range(0, u):
+        
+        # re-orthogonalization
+        if k != 0:
+            for i in range(0, k-1):
+                alpha = (Q[0:m,i]).T * A[0:m,k]
+                R[i,k] = R[i,k] + alpha[0,0]
+                A[0:m,k] = A[0:m,k] - alpha[0,0]*Q[0:m,i]
+
+        # normalization
+        R[k,k] = np.linalg.norm(A[0:m, k], 2)
+        const = R[k,k]
+        Q[0:m, k] = A[0:m, k] * 1.0/(const)
+
+        # orthogonalization
+        if k != n:
+            for j in range(k+1, n):
+                R[k,j] = (Q[0:m,k]).T * A[0:m,j];
+                A[0:m,j] = A[0:m,j] - R[k,j]* Q[0:m,k];          
+                
+    # Now sort out Q using backward accumulation (but only for the remaining columns!)
+    k = np.min([m,n])
+    for j in range(k, 0, -1):
+        chunk_of_A = A[j+1:m, j]
+        v = np.mat( np.vstack([1, chunk_of_A ]) )
+        betav = 2.0/(1 + np.linalg(chunk_of_A, 2)**2)
+        Q[j:m, j:m] = Q[j:m, j:m] - (betav * v * v.T ) * Q[j:m, j:m]
+
+
+    return Q, R
+
 # QR factorization via the method of Householder
 def qr_Householder(A, thin=None):
     """
-    Returns the Householder QR factorization of a matrix A using the method of Householder
+    Returns the Householder QR factorization of a matrix A 
 
     :param numpy matrix A: Matrix input for QR factorization
     :param boolean thin: Set thin to 1 to compute a thin QR factorization. The default is a regular QR factorization.
@@ -311,3 +393,5 @@ def mgs_pivoting(A):
         del a_k
         
     return pivots
+
+

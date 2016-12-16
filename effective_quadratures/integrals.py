@@ -30,7 +30,7 @@ class IntegrationRules(object):
         return p, w
 
 def getSphericalPointsAndWeights(order, method):
-    # 1. 
+    return 0
 
 
 def getCartesianPointsAndWeights(order, method):
@@ -40,7 +40,7 @@ def getCartesianPointsAndWeights(order, method):
         p, w = getClenshawCurtis(order)
     elif method is 'Padua':
         p, w = getPadua(order)
-    
+    return 0
          
     
 def tensorgrid(stackOfParameters, function=None):

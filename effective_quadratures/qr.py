@@ -240,22 +240,14 @@ def qr(A, thin=None):
     """
     A = np.matrix(A)
     m , n = A.shape
-    #u = np.min([m, n])
-    #h = np.max([m, n])
-
-    if thin == 1:
-        Q = np.mat(np.eye(m,n), dtype='float64')
-        R = np.mat(np.zeros((n, n)), dtype='float64')
-        u = n
-    else:
-        Q = np.mat(np.eye(m,m), dtype='float64')
-        R = np.mat(np.zeros((m, n)), dtype='float64')
-        u = n 
-
+    Q = np.mat(np.eye(m,m), dtype='float64')
+    R = np.mat(np.zeros((m, n)), dtype='float64')
+    u = np.min([m,n]) 
+    h = np.max([m,n])
 
     # Now loop!
     for k in range(0, u):
-        
+
         # re-orthogonalization
         if k != 0:
             for i in range(0, k-1):
@@ -276,10 +268,10 @@ def qr(A, thin=None):
                 
     # Now sort out Q using backward accumulation (but only for the remaining columns!)
     k = np.min([m,n])
-    for j in range(k, 0, -1):
+    for j in range(k, (h-u), -1):
         chunk_of_A = A[j+1:m, j]
         v = np.mat( np.vstack([1, chunk_of_A ]) )
-        betav = 2.0/(1 + np.linalg(chunk_of_A, 2)**2)
+        betav = 2.0/(1 + np.linalg.norm(chunk_of_A, 2)**2)
         Q[j:m, j:m] = Q[j:m, j:m] - (betav * v * v.T ) * Q[j:m, j:m]
 
 
@@ -395,3 +387,20 @@ def mgs_pivoting(A):
     return pivots
 
 
+def main():
+    A = np.mat( np.random.rand(4,8), dtype='float64')
+    print A
+    Q, R = qr(A)
+
+    print '\n'
+    print Q
+    print '\n'
+    print R
+    print '\n'
+    print Q * R
+    print '\n'
+    print Q.T * Q
+
+
+
+main()

@@ -228,7 +228,7 @@ def qr(A, thin=None):
     Returns the QR factorization via the Modified Gram Schmidt Method
 
     :param numpy matrix A: Matrix input for QR factorization
-    :param boolean thin: Set thin to 1 to compute a thin QR factorization. The default is a regular QR factorization.
+    :param string thin: Set thin to 'yes' to compute a thin QR factorization. The default is a regular QR factorization, i.e., the string is set to 'no'.
     :return: Q, the orthogonal matrix
     :rtype: numpy matrix
     :return: R, the upper triangular matrix
@@ -240,40 +240,54 @@ def qr(A, thin=None):
     """
     A = np.matrix(A)
     m , n = A.shape
-    Q = np.mat(np.eye(m,m), dtype='float64')
-    R = np.mat(np.zeros((m, n)), dtype='float64')
+
+    if thin is None or thin is 'no':
+        Q = np.mat(np.eye(m,m), dtype='float64')
+        R = np.mat(np.zeros((m, n)), dtype='float64')
+    elif thin is 'yes':
+        Q = np.mat(np.eye(m,n), dtype='float64')
+        R = np.mat(np.zeros((n, n)), dtype='float64')
+    else:
+        raise(ValueError, 'Invalid second input for qr()')
+    
+    # Min and maximum values
     u = np.min([m,n]) 
     h = np.max([m,n])
 
-    # Now loop!
+    # Outer for loop for MGS QR factorization
     for k in range(0, u):
 
-        # re-orthogonalization
+        # Re-orthogonalization
         if k != 0:
             for i in range(0, k-1):
                 alpha = (Q[0:m,i]).T * A[0:m,k]
                 R[i,k] = R[i,k] + alpha[0,0]
                 A[0:m,k] = A[0:m,k] - alpha[0,0]*Q[0:m,i]
 
-        # normalization
+        # Normalization
         R[k,k] = np.linalg.norm(A[0:m, k], 2)
         const = R[k,k]
         Q[0:m, k] = A[0:m, k] * 1.0/(const)
 
-        # orthogonalization
+        # Orthogonalization
         if k != n:
             for j in range(k+1, n):
                 R[k,j] = (Q[0:m,k]).T * A[0:m,j];
                 A[0:m,j] = A[0:m,j] - R[k,j]* Q[0:m,k];          
                 
     # Now sort out Q using backward accumulation (but only for the remaining columns!)
-    k = np.min([m,n])
-    for j in range(k, (h-u), -1):
-        chunk_of_A = A[j+1:m, j]
-        v = np.mat( np.vstack([1, chunk_of_A ]) )
-        betav = 2.0/(1 + np.linalg.norm(chunk_of_A, 2)**2)
-        Q[j:m, j:m] = Q[j:m, j:m] - (betav * v * v.T ) * Q[j:m, j:m]
-
+    if thin is None or thin is 'no':
+        if m < n:
+            for j in range(h-1, h-u, -1):
+                chunk_of_A = A[j+1:m, j]
+                if not chunk_of_A:
+                    chunk_of_A = 0.0
+                    betav = 2.0
+                    Q[j:m, j:m] = Q[j:m, j:m] - 2.0 * Q[j:m, j:m]
+                else:
+                    betav = 2.0/(1 + np.linalg.norm(chunk_of_A, 2)**2)
+                    v = np.mat( np.vstack([1, chunk_of_A ]) )
+                    Q[j:m, j:m] = Q[j:m, j:m] - (betav * v * v.T ) * Q[j:m, j:m]
 
     return Q, R
 
@@ -388,9 +402,9 @@ def mgs_pivoting(A):
 
 
 def main():
-    A = np.mat( np.random.rand(4,8), dtype='float64')
+    A = np.mat( np.random.rand(8,18), dtype='float64')
     print A
-    Q, R = qr(A)
+    Q, R = qr(A, thin='yes')
 
     print '\n'
     print Q

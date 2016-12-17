@@ -224,7 +224,7 @@ def qr_MGS(A):
     h = np.max([m,n])
 
     # Outer for loop for MGS QR factorization
-    for k in range(0, n):
+    for k in range(0, u):
 
         # Re-orthogonalization
         if k != 0:
@@ -403,10 +403,10 @@ def main():
 
 
 def main2():
-    A = np.mat(np.random.randn(5,10), dtype='float64')
+    A = np.mat(np.random.randn(10,10), dtype='float64')
     print A
     Q, R = qr_MGS(A)
-    #print Q * R
+    print Q * R
     print Q.T * Q
 
 main2()

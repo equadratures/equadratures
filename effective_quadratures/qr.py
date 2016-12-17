@@ -2,6 +2,8 @@
 """Utilities with QR factorization"""
 import numpy as np
 from utils import error_function
+np.set_printoptions(precision=4)
+np.set_printoptions(suppress=True)
 #****************************************************************************
 # Functions to code:
 #    
@@ -35,17 +37,12 @@ def solveCLSQ(A,b,C,d):
     :rtype: ndarray
 
     """
-    A = np.mat(A)
-    C = np.mat(C)
-   
     # Size of matrices!
     m, n = A.shape
     p, q = b.shape
     k, l = C.shape
     s, t = d.shape
 
-    print k, s
-    print m, n
     
     # Check that the number of elements in b are equivalent to the number of rows in A
     if m != p:
@@ -53,19 +50,10 @@ def solveCLSQ(A,b,C,d):
     elif k != s:
         error_function('ERROR: mismatch in sizes of C and d') 
 
-    notused , R = qr(C.T, thin=1)#qr_Householder(C.T, 1) # Thin QR factorization on C'
-    Q , notused = qr(C.T, thin=0)#qr_Householder(C.T)
-
-    print '***Debugging from qr.py****'
-    print Q
-    print R
-    print '~~~~~~~~~~~~~~~'
-    # up to here is OK! - Pranay Dec 16th 2016
-
+    #notused , R = qr(C.T, thin='yes') #qr_Householder(C.T, 1) # Thin QR factorization on C'
+    Q , R = qr_Householder(C.T)
+    
     u = np.linalg.inv(R.T) * d
-    print '---- Check u ----'
-    print u
-    print '####################'
     A_hat = A * Q
     z, w = A_hat.shape
 
@@ -73,23 +61,10 @@ def solveCLSQ(A,b,C,d):
     Ahat_1 = A_hat[:, 0:len(u)]
     Ahat_2 = A_hat[:, len(u) : w]
     r = b - Ahat_1 * u
-    print '***Check Ahat_1 and Ahat_2 ****'
-    print Ahat_1
-    print Ahat_2
-    print '~'
-    print A_hat
-    print r
-    print '$$$$$$$$$$$$$'
-    
-    
-    # Solve the least squares problem
-    v = solveLSQ(Ahat_2, r)
+    v = np.linalg.lstsq(Ahat_2, r)
     x = Q * np.vstack([u, v]) 
-    print '** Final steps ***'
-    print v
-    print x
-    print '~~~~~~~~~~~~~~~~'
-    return x
+  
+    return 0
 
 def solve_constrainedLSQ(A,b,C,d):
     """
@@ -176,7 +151,7 @@ def solveLSQ(A, b):
 
     """ 
     # Direct methods!
-    Q, R = qr_Householder(A, 1)
+    Q, R = qr_Householder(A)
     x = np.linalg.inv(R) * Q.T * b
     x = np.array(x)
     return x
@@ -223,9 +198,9 @@ def house(vec):
 
 
 # QR factorization via the Modified Gram Schmidt Method!
-def qr(A, thin=None):
+def qr_MGS(A):
     """
-    Returns the QR factorization via the Modified Gram Schmidt Method
+    Returns the thin QR factorization via the Modified Gram Schmidt Method
 
     :param numpy matrix A: Matrix input for QR factorization
     :param string thin: Set thin to 'yes' to compute a thin QR factorization. The default is a regular QR factorization, i.e., the string is set to 'no'.
@@ -240,22 +215,16 @@ def qr(A, thin=None):
     """
     A = np.matrix(A)
     m , n = A.shape
+    Q = np.mat(np.eye(m,n), dtype='float64')
+    R = np.mat(np.zeros((n, n)), dtype='float64')
 
-    if thin is None or thin is 'no':
-        Q = np.mat(np.eye(m,m), dtype='float64')
-        R = np.mat(np.zeros((m, n)), dtype='float64')
-    elif thin is 'yes':
-        Q = np.mat(np.eye(m,n), dtype='float64')
-        R = np.mat(np.zeros((n, n)), dtype='float64')
-    else:
-        raise(ValueError, 'Invalid second input for qr()')
     
     # Min and maximum values
     u = np.min([m,n]) 
     h = np.max([m,n])
 
     # Outer for loop for MGS QR factorization
-    for k in range(0, u):
+    for k in range(0, n):
 
         # Re-orthogonalization
         if k != 0:
@@ -274,25 +243,11 @@ def qr(A, thin=None):
             for j in range(k+1, n):
                 R[k,j] = (Q[0:m,k]).T * A[0:m,j];
                 A[0:m,j] = A[0:m,j] - R[k,j]* Q[0:m,k];          
-                
-    # Now sort out Q using backward accumulation (but only for the remaining columns!)
-    if thin is None or thin is 'no':
-        if m < n:
-            for j in range(h-1, h-u, -1):
-                chunk_of_A = A[j+1:m, j]
-                if not chunk_of_A:
-                    chunk_of_A = 0.0
-                    betav = 2.0
-                    Q[j:m, j:m] = Q[j:m, j:m] - 2.0 * Q[j:m, j:m]
-                else:
-                    betav = 2.0/(1 + np.linalg.norm(chunk_of_A, 2)**2)
-                    v = np.mat( np.vstack([1, chunk_of_A ]) )
-                    Q[j:m, j:m] = Q[j:m, j:m] - (betav * v * v.T ) * Q[j:m, j:m]
-
+            
     return Q, R
 
 # QR factorization via the method of Householder
-def qr_Householder(A, thin=None):
+def qr_Householder(A):
     """
     Returns the Householder QR factorization of a matrix A 
 
@@ -307,27 +262,33 @@ def qr_Householder(A, thin=None):
     :: 
         >> Q, R = qr_Householder(A)
     """
-    A = np.mat(A)
     m, n = A.shape
-    k = min([m,n])
-    Q = np.identity(m)
+    k = np.min([m,n])
+    Q = np.mat(np.eye(m,m), dtype='float64')
+    R = np.mat(np.eye(m,n), dtype='float64')
 
     for j in range(0, k):
-        v, betav = house(A[j:m, j])
-        K = np.multiply(betav,  v * (v.T) )
-        H = (np.identity(m-j) - K )
-        A[j:m, j:n] =  H * A[j:m, j:n]
-        Q[:, j:m] = Q[:, j:m] - Q[:, j:m] * K
+        v, beta = house(A[j:m, j])
+        A[j:m, j:n] = (np.identity(m-j) - np.multiply(beta,  v * v.T )) * A[j:m, j:n]
+        # The section below ensures that the lower triangular portion of A stores the Householder
+        # vectors that will be used when computing Q!
+        if j < m :
+            A[j+1:m, j] = v[2-1:m-j+1] 
 
     R = np.triu(A)
 
-    # For making it thin!
-    if thin == 1:
-        Q = Q[0:m, 0:n]
-        R = R[0:n, 0:n]
-    
-    Q = np.mat(Q)
-    R = np.mat(R)
+    # Computing Q using backward accumulation of lower triangular part of A!
+    for j in range(n-1, -1, -1):
+        if j >= m - 1:
+            if not A[j+1:m, j]:
+                beta = 2.0
+                Q[j:m, j:m] = Q[j:m, j:m] - ( np.multiply( beta,  Q[j:m, j:m] ) )
+        else:
+            v = np.mat(np.vstack([1.0, A[j+1:m, j] ]), dtype='float64')
+            beta =  2.0/(1.0 + np.linalg.norm(A[j+1:m, j], 2)**2)
+            Q[j:m, j:m] = Q[j:m, j:m] - ( ( np.multiply( beta,  v) ) * (v.T  * Q[j:m, j:m] ) )
+
+
     return Q, R
 
 # Modified Gram Schmit QR column pivoting
@@ -402,19 +363,50 @@ def mgs_pivoting(A):
 
 
 def main():
-    A = np.mat( np.random.rand(8,18), dtype='float64')
-    print A
-    Q, R = qr(A, thin='yes')
+    
 
-    print '\n'
-    print Q
-    print '\n'
-    print R
-    print '\n'
+    A = np.mat([ [ 0.22497615,  0.37419627,  0.44432189, 0.46035715 , 0.43012769 , 0.36028308, 0.25875463,  0.13507237],
+    [0.42584257,-0.1352979,  -0.42804599,  0.29262113,  0.32420127, -0.4117993, -0.17415016,  0.47590828],
+    [0.33345242, -0.46011993,  0.33703336, -0.06093221, -0.24280944,  0.4460431, -0.46503932,  0.29261317],
+    [0.39604712, -0.36050143, -0.07591575,  0.44579303, -0.3884936,  -0.04077974, 0.43180574, -0.41187899]], dtype='float64')
+
+    C = np.mat([[ 0.0 ,        0.0    ,     0.0       ,  0.0],
+    [1.7321,    1.7321 ,   1.7321,    1.7321],
+    [6.4418 ,  -1.2305 ,  -5.3442,   -3.5254],
+    [14.3299 ,  -3.3009 ,   8.6254,    1.5117],
+    [24.8842 ,   3.8032 ,  -8.6204,    4.2044],
+    [36.9864 ,   3.4371 ,   3.5673,   -7.8650],
+    [49.0574 ,  -6.9930,    5.6356,    3.8218],
+    [59.2517 ,  -1.6971  ,-15.3091,    6.0407]], dtype='float64')
+    C = C.T
+
+    b = np.mat([[ 0.58773975],
+    [0.35447403],
+    [0.15033013],
+    [0.2341591]], dtype='float64')
+ 
+    d = np.mat([[ 2.6124536], 
+    [0.83240628],
+    [0.45082931],
+    [0.5912405] ], dtype='float64')
+
+    Q, R = qr_Householder(C.T)
+    #print C.T
+    #Q1, R1 = qr_MGS(C.T)
+    print 'Sols'
     print Q * R
-    print '\n'
+    print Q
+    print R
+    print Q.T * Q
+    
+    print A * Q
+
+
+def main2():
+    A = np.mat(np.random.randn(5,10), dtype='float64')
+    print A
+    Q, R = qr_MGS(A)
+    #print Q * R
     print Q.T * Q
 
-
-
-main()
+main2()

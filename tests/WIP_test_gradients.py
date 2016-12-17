@@ -150,11 +150,11 @@ def gradients_univariate_subsampled():
     A = getRows(A, nodes)
     C = getRows(C, nodes)
 
-    print 'Size of subsampled matrices!'
-    m, n = A.shape
-    print m , n
-    m, n = C.shape
-    print m, n
+    #print 'Size of subsampled matrices!'
+    #m, n = A.shape
+    #print m , n
+    #m, n = C.shape
+    #print m, n
     
     # Subselection!
     w = w[nodes]
@@ -166,21 +166,21 @@ def gradients_univariate_subsampled():
     R = np.vstack([A, C])
 
     # Stacked least squares problem!
-    x = qr.solveLSQ(np.vstack([A, C]), np.vstack([b, d])  )
-    print '\n'
-    print 'Final Solution!'
-    print x
+    #x = qr.solveLSQ(np.vstack([A, C]), np.vstack([b, d])  )
+    #print '\n'
+    #print 'Final Solution!'
+    #print x
 
 
-    print A
-    print C
-    print b
-    print d
+    #print A
+    #print C
+    #print b
+    #print d
     
     # Direct Elimination least squares!
     x = qr.solveCLSQ(A, b, C, d)
 
-    print x
+    #print x
 
 
 

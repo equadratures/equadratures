@@ -7,23 +7,66 @@ np.set_printoptions(suppress=True)
 #****************************************************************************
 # Functions to code:
 #    
-# 1. Block & Block Recursive QR
+# 1. Block & Block Recursive QR (see GVL and Demmel)
 # 2. Constrained & weighted least squares - direct elimination & null space
 # 3. Singular value decomposition & bidiagonalization
 # 4. Routines for total least squares problem
 # 5. Rank 1 updates for QR factorization
 # 6. The 'Practical QR' algorithm
 # 7. Randomized QR 
-#****************************************************************************
-# SVD via QR!
-def tsvd(A):
-    return 0
 
-# Using Demmel's algorithm for QR
-def qrblocks(A, n):
-    # n is the number of blocks!
-    return 0
-    
+
+# Bidiagonalization, symmetric QR, CS decomposition, SVD, gSVD!
+#****************************************************************************
+def cs(A, B):
+    """
+    Computes the CS decomposition!
+    """
+
+
+def gsvd(A,B):
+    """
+    Computes a generalized singular value decomposition
+    """
+
+def svd(A):
+    """
+    Computes the singular value decomposition of a matrix!
+    """
+
+def bidiag(A):
+    """
+    Computes a bidiagionalization of a matrix
+
+    ** Notes **
+    Uses the algorithm of Golub and Kahan (1965) and requires 4mn^2 - 4n^3/3 flops.
+    """
+    m, n = A.shape
+    G = np.mat(np.eye(m,n), dtype='float64') # For storing U and V Householder vectors
+    for j in range(0, n):
+        v, beta = house(A[j:m, j])
+        A[j:m, j:n] = (np.identity(m-j) - np.multiply(beta,  v * v.T )) * A[j:m, j:n]
+        G[j+1:m, j] = v[1:m-j+1]
+        #print 'Pass'
+
+        if j <= n - 2 : 
+            v, beta = house(A[j,j+1:n].T)
+            A[j:m, j+1:n] = A[j:m, j+1:n] * (np.identity(n-j-1) -  np.multiply(beta,  v * v.T ) )
+            G[j,j+2:n] = v[1 : n-j].T
+            
+    # Unpack U and V -- using backward accumulation!?
+    for j in range(n-1, -1, -1):
+        if j >= m - 1:
+            if not A[j+1:m, j]:
+                beta = 2.0
+                Q[j:m, j:m] = Q[j:m, j:m] - ( np.multiply( beta,  Q[j:m, j:m] ) )
+        else:
+            v = np.mat(np.vstack([1.0, A[j+1:m, j] ]), dtype='float64')
+            beta =  2.0/(1.0 + np.linalg.norm(A[j+1:m, j], 2)**2)
+            Q[j:m, j:m] = Q[j:m, j:m] - ( ( np.multiply( beta,  v) ) * (v.T  * Q[j:m, j:m] ) )
+
+    return U, A, V
+
 def solveCLSQ(A,b,C,d):
     """
     Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d using 
@@ -42,99 +85,23 @@ def solveCLSQ(A,b,C,d):
     p, q = b.shape
     k, l = C.shape
     s, t = d.shape
-
     
     # Check that the number of elements in b are equivalent to the number of rows in A
     if m != p:
-        error_function('ERROR: mismatch in sizes of A and b')
+        raise(ValueError, 'solveCLSQ(): mismatch in sizes of A and b')
     elif k != s:
-        error_function('ERROR: mismatch in sizes of C and d') 
+        raise(ValueError, 'solveCLSQ(): mismatch in sizes of C and d') 
 
-    #notused , R = qr(C.T, thin='yes') #qr_Householder(C.T, 1) # Thin QR factorization on C'
     Q , R = qr_Householder(C.T)
-    
+    R = R[0:m, 0:m]
     u = np.linalg.inv(R.T) * d
     A_hat = A * Q
     z, w = A_hat.shape
-
-    # Now split A
     Ahat_1 = A_hat[:, 0:len(u)]
     Ahat_2 = A_hat[:, len(u) : w]
     r = b - Ahat_1 * u
-    v = np.linalg.lstsq(Ahat_2, r)
-    x = Q * np.vstack([u, v]) 
-  
-    return 0
-
-def solve_constrainedLSQ(A,b,C,d):
-    """
-    Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d using 
-    the method of direct elimination
-
-    :param numpy matrix A: an m-by-n matrix
-    :param numpy matrix b: an m-by-1 matrix
-    :param numpy ndarray C: an k-by-n matrix
-    :param numpy ndarray d: an k-by-1 matrix
-    :return: x, the coefficients of the least squares problem.
-    :rtype: ndarray
-
-    """
-    A = np.mat(A)
-    dimensions = len(C)
-    C0 = C[0] # Which by default has to exist!
-    rows, cols = C0.shape
-    BigC = np.zeros((rows*dimensions, cols))
-    counter = 0
-    dims = 0
-    while dims < dimensions:
-        for i in range(0, rows):
-            for j in range(0, cols):
-                BigC[counter, j] = C[dims][i,j]
-            counter = counter + 1 
-        dims = dims + 1
-
-    # BigC stacks all the C matrices 
-    BigC = np.mat(BigC)
-   
-    # Size of matrices!
-    m, n = A.shape
-    p, q = b.shape
-    k, l = BigC.shape
-    s, t = d.shape
-
-    print k, s
-    print m, n
-    
-    # Check that the number of elements in b are equivalent to the number of rows in A
-    if m != p:
-        error_function('ERROR: mismatch in sizes of A and b')
-    elif k != s:
-        error_function('ERROR: mismatch in sizes of C and d') 
-    
-    # Method 1: Stacked least squares approach!
-    BigA = np.vstack([A, BigC])
-    Bigb = np.vstack([b, d])
-    print BigA
-    print '~~~~~~~~~~~'
-    print Bigb
-    x = solveLSQ(BigA, Bigb)
-    
-
-    #Q , R = qr_Householder(BigC, 1) # Thin QR factorization on C'
-    #R = R[0:n, 0:n]
-    #u = np.linalg.inv(R.T) * d
-    #A_hat = A * Q
-    #z, w = A_hat.shape
-    
-    # Now split A
-    #Ahat_1 = A_hat[:, 0:len(u)]
-    #Ahat_2 = A_hat[:, len(u) : w]
-    #r = b - Ahat_1 * u
-    
-    # Solve the least squares problem
-    #v = solveLSQ(Ahat_2, r)
-    #x = Q * np.vstack([u, v]) 
-    
+    v = solveLSQ(Ahat_2, r)
+    x = Q * np.mat(np.vstack([u, v]) , dtype='float64')
     return x
 
 # Solve the least squares problem (done wiht QR factorization!)
@@ -196,17 +163,15 @@ def house(vec):
     v = v.T
     return v, beta
 
-
-# QR factorization via the Modified Gram Schmidt Method!
 def qr_MGS(A):
     """
     Returns the thin QR factorization via the Modified Gram Schmidt Method
 
     :param numpy matrix A: Matrix input for QR factorization
     :param string thin: Set thin to 'yes' to compute a thin QR factorization. The default is a regular QR factorization, i.e., the string is set to 'no'.
-    :return: Q, the orthogonal matrix
+    :return: Q, the m x n orthogonal matrix
     :rtype: numpy matrix
-    :return: R, the upper triangular matrix
+    :return: R, the n x n upper triangular matrix
     :rtype: numpy matrix
 
     **Sample declaration**
@@ -253,9 +218,9 @@ def qr_Householder(A):
 
     :param numpy matrix A: Matrix input for QR factorization
     :param boolean thin: Set thin to 1 to compute a thin QR factorization. The default is a regular QR factorization.
-    :return: Q, the orthogonal matrix
+    :return: Q, the m x m orthogonal matrix
     :rtype: numpy matrix
-    :return: R, the upper triangular matrix
+    :return: R, the m x n upper triangular matrix
     :rtype: numpy matrix
 
     **Sample declaration**
@@ -361,6 +326,10 @@ def mgs_pivoting(A):
         
     return pivots
 
+def main2():
+    
+    A = np.mat(np.random.rand(16,5), dtype='float64')
+    print bidiag(A)
 
 def main():
     
@@ -390,23 +359,7 @@ def main():
     [0.45082931],
     [0.5912405] ], dtype='float64')
 
-    Q, R = qr_Householder(C.T)
-    #print C.T
-    #Q1, R1 = qr_MGS(C.T)
-    print 'Sols'
-    print Q * R
-    print Q
-    print R
-    print Q.T * Q
-    
-    print A * Q
+    x = solveCLSQ(A, b, C, d)
 
-
-def main2():
-    A = np.mat(np.random.randn(10,10), dtype='float64')
-    print A
-    Q, R = qr_MGS(A)
-    print Q * R
-    print Q.T * Q
 
 main2()

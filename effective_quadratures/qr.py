@@ -34,11 +34,59 @@ def svd(A):
     Computes the singular value decomposition of a matrix!
     """
 
+def implicitSymmetricQR(T):
+    """
+    Computes an implicit step for a symmetric QR factorization
+    see Golub and Van Loan (4th Ed., page 462)
+    """
+    d = ( T[n-1, n-1] - T[n, n] )/(2.0)
+    mu = T[n,n
+
+
+def givens(a, b):
+    """ 
+    Computes a Givens rotation; computes c = cos(theta), s = sin(theta) so that
+        [ c   s]' [ a ] = [ r ]
+        [-s   c]  [ b ]   [ 0 ]
+    for scalars a and b.
+
+    """
+    G = np.mat(np.eye(2), dtype='float64')
+    if b == 0:
+        c = 1
+        s = 1
+    else:
+        if np.abs(b) > np.abs(a):
+            tau = -(1.0 * a)/(b * 1.0)
+            s = 1.0/np.sqrt(1 + tau**2)
+            c = s * tau
+        else:
+            tau = (-1.0 * b)/(a * 1.0)
+            c = 1.0/np.sqrt(1 + tau**2)
+            s = c * tau
+            
+    # Place values of c and s into G
+    G[0,0] = c
+    G[0,1] = s
+    G[1,0] = -1.0 * s
+    G[1,1] = c
+
+    return G
+
 def bidiag(A):
     """
     Computes the bidiagonalization of the m-by-n matrix A := U B V', where
     m >=n. Here U is an m-by-n orthogonal matrix, B is a n-by-n bi-diagonal matrix
     and V is a n-by-n orthogonal matrix.
+
+    >> clean up comments below!
+
+    :param numpy matrix A: an m-by-n matrix
+    :param numpy matrix b: an m-by-1 matrix
+    :param numpy ndarray C: an k-by-n matrix
+    :param numpy ndarray d: an k-by-1 matrix
+    :return: x, the coefficients of the least squares problem.
+    :rtype: ndarray
 
     ** Notes **
     Uses the algorithm of Golub and Kahan (1965) and requires 4mn^2 - 4n^3/3 flops.
@@ -51,8 +99,6 @@ def bidiag(A):
     U = np.mat(np.vstack( [np.eye(n), np.zeros((m-n,n)) ] ), dtype='float64')
     V = np.mat(np.eye(n,n), dtype='float64')
     G = np.mat(np.eye(m,n), dtype='float64') # For storing U and V Householder vectors
-
-    
 
     # For loop for computing bi-diagional matrix A
     for j in range(0, n):
@@ -351,18 +397,14 @@ def mgs_pivoting(A):
 
 def main2():
     
-    A = np.mat(np.random.rand(8,20), dtype='float64')
+    a = -5
+    b = -18
+    A = np.mat([[-5],
+    [-18]], dtype = 'float64')
+    G = givens(a,b)
     print A
-    print '\n'
-    U, B, V = bidiag(A)
-    print B
-    print '\n'
-    print U.T * U
-    print '\n'
-    print V.T * V
-    print '\n'
-    print U * B * V.T
-    #print U * U.T
+    print G.T * A 
+    print G.T * G
 
 def main():
     

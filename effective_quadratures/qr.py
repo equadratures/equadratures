@@ -36,35 +36,58 @@ def svd(A):
 
 def bidiag(A):
     """
-    Computes a bidiagionalization of a matrix
+    Computes the bidiagonalization of the m-by-n matrix A := U B V', where
+    m >=n. Here U is an m-by-n orthogonal matrix, B is a n-by-n bi-diagonal matrix
+    and V is a n-by-n orthogonal matrix.
 
     ** Notes **
     Uses the algorithm of Golub and Kahan (1965) and requires 4mn^2 - 4n^3/3 flops.
     """
     m, n = A.shape
+    if m < n :
+        raise(ValueError, 'bidiag(A): Only valid for an m-by-n matrix A, wher m>=n.')
+
+    # Allocate space
+    U = np.mat(np.vstack( [np.eye(n), np.zeros((m-n,n)) ] ), dtype='float64')
+    V = np.mat(np.eye(n,n), dtype='float64')
     G = np.mat(np.eye(m,n), dtype='float64') # For storing U and V Householder vectors
+
+    
+
+    # For loop for computing bi-diagional matrix A
     for j in range(0, n):
         v, beta = house(A[j:m, j])
         A[j:m, j:n] = (np.identity(m-j) - np.multiply(beta,  v * v.T )) * A[j:m, j:n]
         G[j+1:m, j] = v[1:m-j+1]
-        #print 'Pass'
 
         if j <= n - 2 : 
             v, beta = house(A[j,j+1:n].T)
             A[j:m, j+1:n] = A[j:m, j+1:n] * (np.identity(n-j-1) -  np.multiply(beta,  v * v.T ) )
             G[j,j+2:n] = v[1 : n-j].T
-            
-    # Unpack U and V -- using backward accumulation!?
+   
+    # Unpack U 
     for j in range(n-1, -1, -1):
         if j >= m - 1:
-            if not A[j+1:m, j]:
+            if not G[j+1:m, j]:
                 beta = 2.0
-                Q[j:m, j:m] = Q[j:m, j:m] - ( np.multiply( beta,  Q[j:m, j:m] ) )
-        else:
-            v = np.mat(np.vstack([1.0, A[j+1:m, j] ]), dtype='float64')
-            beta =  2.0/(1.0 + np.linalg.norm(A[j+1:m, j], 2)**2)
-            Q[j:m, j:m] = Q[j:m, j:m] - ( ( np.multiply( beta,  v) ) * (v.T  * Q[j:m, j:m] ) )
+                U[j:m, j:n] = U[j:m, j:m] - ( np.multiply( beta,  U[j:m, j:m] ) )
+        else:    
+            v = np.mat(np.vstack([1.0, G[j+1:m, j] ]), dtype='float64')
+            beta =  2.0/(1.0 + np.linalg.norm(G[j+1:m, j], 2)**2)
+            U[j:m, j:n] = U[j:m, j:n] - ( ( np.multiply( beta,  v) ) * (v.T  * U[j:m, j:n] ) )
 
+    # Unpack V 
+    for j in range(n-2, -1, -1):
+        if j == n-2:
+            beta = 2.0
+            V[j+1:n, j:n] = V[j+1:n, j:n] - ( np.multiply( beta,  V[j+1:n, j:n] ) )
+        else:
+            v = np.mat( np.vstack([1.0, G[j, j+2:n].T  ]), dtype='float64')
+            beta =  2.0/(1.0 + np.linalg.norm(G[j,j+2:n], 2)**2)
+            V[j+1:n, j:n] = V[j+1:n, j:n] - ( ( np.multiply( beta,  v) ) * (v.T  * V[j+1:n, j:n] ) )
+
+    # Remove trailing zeros from A
+    A = A[0:n, 0:n]
     return U, A, V
 
 def solveCLSQ(A,b,C,d):
@@ -328,8 +351,18 @@ def mgs_pivoting(A):
 
 def main2():
     
-    A = np.mat(np.random.rand(16,5), dtype='float64')
-    print bidiag(A)
+    A = np.mat(np.random.rand(8,20), dtype='float64')
+    print A
+    print '\n'
+    U, B, V = bidiag(A)
+    print B
+    print '\n'
+    print U.T * U
+    print '\n'
+    print V.T * V
+    print '\n'
+    print U * B * V.T
+    #print U * U.T
 
 def main():
     

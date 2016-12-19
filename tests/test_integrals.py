@@ -3,7 +3,6 @@ from unittest import TestCase
 import unittest
 from effective_quadratures.parameter import Parameter
 import effective_quadratures.integrals as integrals
-from effective_quadratures.utils import error_function
 import numpy as np
 
 class TestIntegrals(TestCase):
@@ -25,7 +24,7 @@ class TestIntegrals(TestCase):
             print np.linalg.norm(result - 99.39829845, 2)
             print 'Success!'
         else:
-            error_function('ERROR: Uniform integration routine not working!')    
+            raise(RuntimeError, 'Integration testing failed')
     
     def test_gaussian_tensorgrid(self):
 
@@ -44,7 +43,7 @@ class TestIntegrals(TestCase):
             print np.linalg.norm(result - 1.606, 2)
             print 'Success!'
         else:
-            error_function('ERROR: Normal integration routine not working!')     
+            raise(RuntimeError, 'Integration testing failed')
 
         # Test to see if we get points and weights when function is not callable!
         points, weights = integrals.tensorgrid(parameters) 
@@ -66,7 +65,7 @@ class TestIntegrals(TestCase):
             print np.linalg.norm(result - 99.3982, 2)
             print 'Success!'
         else:
-            error_function('ERROR: Sparse grid integration routine not working!') 
+            raise(RuntimeError, 'Integration testing failed')
     
     def test_effective_quadratures_rule(self):
         
@@ -85,7 +84,7 @@ class TestIntegrals(TestCase):
             print np.abs(result- 99.3982)
             print 'Success!'
         else:
-            error_function('ERROR: Effective-Quadratures integration routine not working!') 
+            raise(RuntimeError, 'Integration testing failed')
     
 if __name__ == '__main__':
     unittest.main()

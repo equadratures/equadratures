@@ -2,7 +2,7 @@
 """Effectively subsampled quadratures for least squares polynomial approximations"""
 from parameter import Parameter
 from polynomial import Polynomial
-from qr import mgs_pivoting, solveLSQ, solve_constrainedLSQ
+from qr import mgs_pivoting, solveLSQ, solveCLSQ
 from indexset import IndexSet
 from utils import error_function, evalfunction
 import numpy as np
@@ -22,10 +22,37 @@ class EffectiveSubsampling(object):
         >> I = IndexSet('Total order' [3, 3, 3])
         >> eq = EffectiveSubsampling([var1, var1], I)
     """
+
     # Constructor
-    def __init__(self, uq_parameters, index_set, method=None):
+    def __init__(self, uq_parameters, index_set=None, method=None):
         self.uq_parameters = uq_parameters
-        self.index_set = index_set
+        dimensions = len(uq_parameters)
+
+        # For increased flexibility, if the index_set is not given, we will assume a tensor grid basis
+        if index_set is None:
+
+            # determine the orders!
+            orders_to_use = []
+            for u in range(0, dimensions):
+                orders_to_use.append(np.int(uq_parameters[u].order - 1) )
+
+            # Use the tensor grid option!
+            self.index_set = IndexSet("Tensor grid", orders_to_use)    
+
+        else:
+            # Now before we set self.index_set = index_set, we check to make sure that
+            # the number of basis used is -1 the number of points!
+            orders_to_use = []
+            count = 0
+            for u in range(0, dimensions):
+                orders_to_use.append( np.int(uq_parameters[u].order) )
+                if orders_to_use[u] <= index_set.orders[u] :
+                    count = count + 1
+            if count > 0:
+                error_function('IndexSet: Basis orders: Ensure that the basis order is always -1 the number of points!')
+            
+            self.index_set = index_set
+
         if method is not None:
             self.method = method
         else:
@@ -63,9 +90,23 @@ class EffectiveSubsampling(object):
             >> eq.getASubsampled()
         """
         Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals)
-        return Asquare
+        return Asquare, esq_pts, W, points
     
-    def getCsubsampled(self, quadrature_subsamples):
+    def getCmatrix(self):
+        """
+        Returns the full C matrix
+        """
+        stackOfParameters = self.uq_parameters
+        polynomial_basis = self.index_set
+        dimensions = len(stackOfParameters)
+        polyObject_for_basis = Polynomial(stackOfParameters, polynomial_basis) 
+        points, weights = polyObject_for_basis.getPointsAndWeights()
+        not_used, C = polyObject_for_basis.getMultivariatePolynomial(points)
+        Cfull = cell2matrix(C)
+        return Cfull
+
+    # Method below will change shortly!    
+    def getCsubsampled(self, maximum_number_of_evals):
         """
         Returns a matrix of multivariate derivative orthogonal polynomials evaluated at a set of quadrature points.
 
@@ -84,7 +125,9 @@ class EffectiveSubsampling(object):
         polynomial_basis = self.index_set
         dimensions = len(stackOfParameters)
         polyObject_for_basis = Polynomial(stackOfParameters, polynomial_basis) 
-        not_used, C = polyObject_for_basis.getMultivariatePolynomial(quadrature_subsamples)
+        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals)
+        not_used, C = polyObject_for_basis.getMultivariatePolynomial(esq_pts)
+        #Cfull = cell2matrix(C)
         return C
 
     def getEffectivelySubsampledPoints(self, maximum_number_of_evals, flag=None):
@@ -134,55 +177,6 @@ class EffectiveSubsampling(object):
         x = solveLSQ(A, b)
         return x
 
-    def solveLeastSquaresWithGradients(self, maximum_number_of_evals, function_values, gradient_values):
-        """
-        Returns the coefficients for the effectively subsampled quadratures least squares problem. 
-
-        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
-        :param integer maximum_number_of_evals: The maximum number of evaluations the user would like. This value has to be atleast equivalent to the
-            total number of basis terms of the index set.    
-        :param callable function_values: A function call to the simulation model, that takes in d inputs and returns one output. If users know the 
-            quadrature subsamples required, they may also input all the simulation outputs as a single ndarray.     
-        :param callable gradient_values: A function call to the simulation model, that takes in d inputs and returns the dx1 gradient vector at those inputs.
-            If the user knows the quadrature subsampled required, they may also input all the simulation gradients as an nd array. 
-        :return: x, the coefficients of the least squares problem.
-        :rtype: ndarray
-
-        **Sample declaration**
-        :: 
-            >> x = eq.solveLeastSquares(150, function_call)
-        """
-        A, esq_pts, W, points = getSquareA(self, maximum_number_of_evals, flag)
-        A, normalizations = rowNormalize(A)     
-        C = getSubsampled(self, esq_pts)
-        
-        # Check if user input is a function or a set of function values!
-        if callable(function_values):
-            fun_values = evalfunction(esq_pts, function_values)
-        else:
-            fun_values = function_values
-        
-        if callable(gradient_values):
-            grad_values = evalfunction(esq_pts, gradient_values)
-        else:
-            grad_values = gradient_values
-
-        # Weight and row normalize function values!
-        b = W * fun_values
-        b = np.dot(normalizations, b)
-
-        # Weight and row normalize gradient values!
-        # Assume that the gradient values are given as a matrix
-        # First check if the dimensions make sense...then weight them
-        # Then send them to the lsqr routine...
-        d = 0
-
-        # Now solve the constrained least squares problem
-        x = solve_constrainedLSQ(A, b, C, d)
-
-        return 0
-
-
 # Normalize the rows of A by its 2-norm  
 def rowNormalize(A):
     rows, cols = A.shape
@@ -221,7 +215,6 @@ def getA(self):
     # Now we create another Polynomial object for the basis set!
     polynomial_expansions, no_used = polyObject_for_basis.getMultivariatePolynomial(unscaled_quadrature_pts)
     P = np.mat(polynomial_expansions)
-    m, n = P.shape
     W = np.mat( np.diag(np.sqrt(quadrature_wts)))
     A = W * P.T
     return A, quadrature_pts, quadrature_wts
@@ -242,11 +235,10 @@ def getSquareA(self, maximum_number_of_evals):
     m , n = A.shape
 
     if maximum_number_of_evals < n :
-        print 'Dimensions of A prior to subselection:'
-        print m, n
-        print 'The maximum number of evaluations you requested'
-        print maximum_number_of_evals
-        error_function("ERROR in EffectiveQuadSubsampling --> getAsubsampled(): The maximum number of evaluations must be greater or equal to the number of basis terms")
+        
+        # Now if the derivative flag option is activated, we do not raise an error. Otherwise an error is raised!
+        if self.uq_parameters[0].derivative_flag is None:
+            error_function("ERROR in EffectiveQuadSubsampling --> getAsubsampled(): The maximum number of evaluations must be greater or equal to the number of basis terms")
 
     # Now compute the rank revealing QR decomposition of A!
     if option == 1:
@@ -282,3 +274,75 @@ def getRows(A, row_indices):
             A2[i,j] = A[row_indices[i], j]
 
     return A2
+
+def cell2matrix(G):
+    dimensions = len(G)
+    G0 = G[0] # Which by default has to exist!
+    C0 = G0.T
+    rows, cols = C0.shape
+    BigC = np.zeros((dimensions*rows, cols))
+    counter = 0
+    for i in range(0, dimensions):
+        K = G[i].T
+        for j in range(0, rows):
+            for k in range(0,cols):
+                BigC[counter,k] = K[j,k]
+            counter = counter + 1 
+    BigC = np.mat(BigC)
+    return BigC
+
+    def solveLeastSquaresWithGradients(self, maximum_number_of_evals, function_values, gradient_values):
+        """
+        Returns the coefficients for the effectively subsampled quadratures least squares problem. 
+
+        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
+        :param integer maximum_number_of_evals: The maximum number of evaluations the user would like. This value has to be atleast equivalent to the
+            total number of basis terms of the index set.    
+        :param callable function_values: A function call to the simulation model, that takes in d inputs and returns one output. If users know the 
+            quadrature subsamples required, they may also input all the simulation outputs as a single ndarray.     
+        :param callable gradient_values: A function call to the simulation model, that takes in d inputs and returns the dx1 gradient vector at those inputs.
+            If the user knows the quadrature subsampled required, they may also input all the simulation gradients as an nd array. 
+        :return: x, the coefficients of the least squares problem.
+        :rtype: ndarray
+
+        **Sample declaration**
+        :: 
+            >> x = eq.solveLeastSquares(150, function_call)
+        """
+        A, esq_pts, W, points = getSquareA(self, maximum_number_of_evals)
+        A, normalizations = rowNormalize(A)     
+        C = self.getCsubsampled(esq_pts)
+        
+        # Check if user input is a function or a set of function values!
+        if callable(function_values):
+            fun_values = evalfunction(esq_pts, function_values)
+        else:
+            fun_values = function_values
+        
+        if callable(gradient_values):
+            grad_values = evalfunction(esq_pts, gradient_values)
+        else:
+            grad_values = gradient_values
+
+        # Weight and row normalize function values!
+        b = W * fun_values
+        b = np.dot(normalizations, b)
+
+        # Weight and row normalize gradient values!
+        # Assume that the gradient values are given as a matrix
+        # First check if the dimensions make sense...then weight them
+        # Then send them to the lsqr routine...
+
+        # Now the gradient values will usually be arranged as a N-by-d matrix,
+        # where N are the number of points and d is the number of dimensions.
+        # This needs to be changed into a single vector
+        p, q = grad_values.shape
+        d_vec = np.zeros((p*q,1))
+        counter = 0
+        for j in range(0,q):
+            for i in range(0,p):
+                d_vec[counter] = grad_values[i,j]
+                counter = counter + 1
+
+        # Now solve the constrained least squares problem
+        return solveCLSQ(A, b, C, d_vec)

@@ -50,6 +50,32 @@ def compute_b_vector(quad_pts, function, quad_weights):
     W = np.diag( quad_weights )
     return W * f.T
 
+# Evaluate the gradient of the function at given points
+def evalgradients(points, fungrad, format):
+    dimensions = len(points[0,:])
+
+    if format is 'matrix':
+        grad_values = np.zeros((len(points), dimensions))
+        # For loop through all the points
+        for i in range(0, len(points)):
+            output_from_gradient_call = fungrad(points[i,:])
+            for j in range(0, dimensions):
+                grad_values[i,j] = output_from_gradient_call[j]
+        return grad_values
+    elif format is 'vector':
+        grad_values = np.zeros((len(points) * dimensions, 1))
+        # For loop through all the points
+        counter = 0
+        for i in range(0, len(points)):
+            output_from_gradient_call = fungrad(points[i,:])
+            for j in range(0, dimensions):
+                grad_values[counter, 0] = output_from_gradient_call[j]
+                counter = counter + 1
+        return grad_values
+    else:
+        error_function('evalgradients(): Format must be either matrix or vector!')
+        return 0
+
 # Evaluate the function (above) at certain points
 def evalfunction(points, function):
     function_values = np.zeros((len(points), 1))

@@ -4,6 +4,7 @@ from parameter import Parameter
 from indexset import IndexSet
 import numpy as np
 from utils import error_function, evalfunction, find_repeated_elements, meshgrid
+import matplotlib.pyplot as plt
 #****************************************************************************
 # Functions to code:
 #    
@@ -182,7 +183,8 @@ class Polynomial(object):
             return poly, derivatives
         elif dimensions == 1 and stackOfParameters[0].derivative_flag == 1:
             poly , derivatives =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
-            return poly, derivatives
+            C_all[0] = derivatives
+            return poly, C_all
         else:
             for i in range(0, dimensions):
                 p[i] , d[i] = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
@@ -259,8 +261,7 @@ class Polynomial(object):
             coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self, function)
         return coefficients,  indexset, evaled_pts
 
-    def getPolynomialApproximation(self, function, plotting_pts, coefficients=None, indexset=None):
-        
+    def getPolynomialApproximation(self, function, plotting_pts, coefficients=None, indexset=None): 
         """
         Returns the polynomial approximation of a function. This routine effectively multiplies the coefficients of a polynomial
         expansion with its corresponding basis polynomials. 
@@ -282,7 +283,46 @@ class Polynomial(object):
         polyapprox = P.T * C
         return polyapprox
 
+    def getPDF(self, function, graph=1, coefficients=None, indexset=None):
+        """
+        Returns the PDF of the model output. This routine effectively multiplies the coefficients of a polynomial
+        expansion with its corresponding basis polynomials. 
+    
+        :param Polynomial self: An instance of the Polynomial class
+        :param: callable function: The function that needs to be approximated (or interpolated)
+        :return: polyapprox: The polynomial expansion of a function
+        :rtype: numpy matrix
 
+        """
+        dimensions = len(self.uq_parameters)
+
+        # Check to see if we need to call the coefficients
+        if coefficients is None or indexset is None:
+            coefficients,  indexset, evaled_pts = self.getPolynomialCoefficients(function)
+        
+        # For each UQ parameter in self, store the samples
+        number_of_samples = 10000 # default value!
+        plotting_pts = np.zeros((number_of_samples, dimensions))
+        for i in range(0, dimensions):
+                univariate_samples = self.uq_parameters[i].getSamples(number_of_samples)
+                for j in range(0, number_of_samples):
+                    plotting_pts[j, i] = univariate_samples[j]
+            
+
+        P , Q = self.getMultivariatePolynomial(plotting_pts, indexset)
+        P = np.mat(P)
+        C = np.mat(coefficients)
+        polyapprox = P.T * C
+
+        if graph is not None:   
+            fig = plt.figure()
+            n, bins, patches = plt.hist(polyapprox, 30, normed=1, facecolor='red', alpha=0.75)
+            plt.xlabel('f(x)')
+            plt.ylabel('PDF')
+            plt.xlim(np.min(polyapprox)-1.0, np.max(polyapprox)+1.0)
+            plt.show()
+
+        return polyapprox
 #--------------------------------------------------------------------------------------------------------------
 #
 #  PRIVATE FUNCTIONS!

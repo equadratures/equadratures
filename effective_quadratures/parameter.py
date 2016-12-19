@@ -164,6 +164,65 @@ class Parameter(object):
 
         return x, y
 
+    def getSamples(self, m=None, graph=None):
+        """
+        Returns samples of the Parameter
+
+        : param Parameter self: An instance of the Parameter class
+        : param integer m: Number of random samples. If no value is provided, a default of 1e5 is assumed. 
+
+        """
+        if m is None:
+            number_of_random_samples = 5e5
+        else:
+            number_of_random_samples = m
+        
+        uniform_samples = np.random.random((number_of_random_samples, 1))
+        yy = self.get_iCDF(uniform_samples)
+
+        if graph is not None:   
+            fig = plt.figure()
+            n, bins, patches = plt.hist(yy, 30, normed=1, facecolor='blue', alpha=0.75)
+            plt.xlabel('x')
+            plt.ylabel('PDF')
+            plt.xlim(1.2*np.min(yy), 1.2*np.max(yy))
+            plt.show()
+            
+        return yy
+    
+
+    def get_iCDF(self, x):
+        """
+        Returns values of the inverse CDF
+
+        : param Parameter self: An instance of the Parameter class
+        : param numpy array x: 1-by-N array of doubles where each entry is between [0,1]
+        : return: y, 1-by-N array where each entry is the inverse CDF of input x
+        : rtype: ndarray
+
+        **Notes**
+        This routine is called by the getSamples function. It makes a call to analyticalDistributions
+        """    
+        if self.param_type is "Gaussian":
+            y = analytical.iCDF_Gaussian(x, self.shape_parameter_A, self.shape_parameter_B)
+        elif self.param_type is "Beta":
+            y = analytical.iCDF_BetaDistribution(x, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper) 
+        elif self.param_type is "Gamma":
+            y = analytical.iCDF_Gamma(x, self.shape_parameter_A, self.shape_parameter_B)
+        elif self.param_type is "Weibull":
+            y = analytical.iCDF_WeibullDistribution(x, self.shape_parameter_A, self.shape_parameter_B)
+        elif self.param_type is "Cauchy":
+            y = analytical.iCDF_CauchyDistribution(x, self.shape_parameter_A, self.shape_parameter_B)
+        elif self.param_type is "Uniform":
+            y = x * 1.0
+        elif self.param_type is "TruncatedGaussian":
+            y = analytical.iCDF_TruncatedGaussian(x, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
+        elif self.param_type is "Exponential":
+            y = analytical.iCDF_ExponentialDistribution(x, self.shape_parameter_A)
+        else:
+            error_function('parameter getiCDF(): invalid parameter type!')
+        return y
+    
     def getRecurrenceCoefficients(self, order=None):
         """
         Returns the recurrence coefficients of the parameter 
@@ -358,10 +417,6 @@ def recurrence_coefficients(self, order=None):
         error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential, TruncatedGaussian or Beta')
 
     return ab
-
-# Chebyshev recurrence coefficients
-def chebyshev_recurrence_coefficients(param_A, param_B, order):
-    
     
 
 # Recurrence coefficients for Jacobi type parameters

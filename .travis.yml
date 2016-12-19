@@ -25,5 +25,9 @@ install:
  - conda install --yes numpy scipy matplotlib pip nose
  - pip install setuptools
  - python setup.py install
+ - pip install coveralls
 
-script: python test.py
+script: coverage run --source=python test.py
+
+after_success:
+ coveralls

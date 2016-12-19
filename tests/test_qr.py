@@ -25,7 +25,7 @@ class TestQR(TestCase):
         A =  [ [0.8147,    0.0975,    0.1576,    0.1419], [0.9058,    0.2785,    0.9706,    0.4218], [0.1270,    0.5469 ,   0.9572 ,   0.9157], [0.9134  ,  0.9575 ,   0.4854   , 0.7922], [0.6324 ,   0.9649,    0.8003 ,   0.9595]]
         Q, R = qr.qr_Householder(A)
         Q1, R1 = qr.qr_MGS(A)
-        if np.linalg.norm(A - ( Q * R), 2) < 1e-15 and np.linalg.norm(A - ( Q1 * R1), 2) < 1e-15 :
+        if np.linalg.norm(A - ( Q * R), 2) < 1e-12 and np.linalg.norm(A - ( Q1 * R1), 2) < 1e-12 :
             print 'Success!'
         else:
             raise(RuntimeError, 'QR testing failed')

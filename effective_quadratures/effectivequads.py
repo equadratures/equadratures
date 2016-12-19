@@ -2,7 +2,7 @@
 """Effectively subsampled quadratures for least squares polynomial approximations"""
 from parameter import Parameter
 from polynomial import Polynomial
-from qr import mgs_pivoting, solveLSQ, solveCLSQ
+from qr import qr_MGS, solveLSQ, solveCLSQ
 from indexset import IndexSet
 from utils import error_function, evalfunction
 import numpy as np
@@ -180,8 +180,15 @@ class EffectiveSubsampling(object):
 # Normalize the rows of A by its 2-norm  
 def rowNormalize(A):
     rows, cols = A.shape
-    A_norms = np.sqrt(np.sum(A**2, axis=1)/(1.0 * cols))
-    Normalization = np.diag(1.0/A_norms)
+    row_norms = np.mat(np.zeros((rows, 1)), dtype='float64')
+    Normalization = np.mat(np.eye(rows), dtype='float64')
+    for i in range(0, rows):
+        temp = 0.0
+        for j in range(0, cols):
+            row_norms[i] = temp + A[i,j]**2
+            temp = row_norms[i]
+        row_norms[i] = (row_norms[i] * 1.0/np.float64(cols))**(-1)
+        Normalization[i,i] = row_norms[i]
     A_normalized = np.dot(Normalization, A)
     return A_normalized, Normalization
 
@@ -242,8 +249,8 @@ def getSquareA(self, maximum_number_of_evals):
 
     # Now compute the rank revealing QR decomposition of A!
     if option == 1:
-        P = mgs_pivoting(A.T)
-        #Q, R, P = qr(A.T, pivoting=True)
+       Q_notused, R_notused, P = qr_MGS(A.T, pivoting=True)
+       #Q, R, P = qr(A.T, pivoting=True)
     else:
         P = np.random.randint(0, len(quadrature_pts) - 1, len(quadrature_pts) - 1 )
 
@@ -251,7 +258,7 @@ def getSquareA(self, maximum_number_of_evals):
     selected_quadrature_points = P[0:maximum_number_of_evals]
         
     # Form the "square" A matrix.
-    Asquare =  getRows(np.mat(A), selected_quadrature_points)
+    Asquare = A[selected_quadrature_points, :]
     
     #print np.linalg.cond(Asquare)
     esq_pts = getRows(np.mat(quadrature_pts), selected_quadrature_points)

@@ -2,7 +2,6 @@
 from unittest import TestCase
 import unittest
 import effective_quadratures.qr as qr
-from effective_quadratures.utils import error_function
 import numpy as np
 
 class TestIntegrals(TestCase):
@@ -20,7 +19,7 @@ class TestIntegrals(TestCase):
         if np.linalg.norm(real_v - v, 2) < 1e-07:
             print 'Success!'
         else:
-            error_function('ERROR: Householder vector incorrect!')
+            raise(RuntimeError, 'QR testing failed')
     
     def test_qr_factorization(self):
         A =  [ [0.8147,    0.0975,    0.1576,    0.1419], [0.9058,    0.2785,    0.9706,    0.4218], [0.1270,    0.5469 ,   0.9572 ,   0.9157], [0.9134  ,  0.9575 ,   0.4854   , 0.7922], [0.6324 ,   0.9649,    0.8003 ,   0.9595]]
@@ -29,7 +28,7 @@ class TestIntegrals(TestCase):
         if np.linalg.norm(A - ( Q * R), 2) < 1e-15 and np.linalg.norm(A - ( Q1 * R1), 2) < 1e-15 :
             print 'Success!'
         else:
-            error_function('ERROR: QR Householder not working!')
+            raise(RuntimeError, 'QR testing failed')
     
     def test_qr_factorization_fat_matrix(self):
         A = [[ 0.549723608291140 ,  0.380445846975357 ,  0.779167230102011 ,  0.011902069501241 ,  0.528533135506213 ,  0.689214503140008 ,  0.913337361501670 ,  0.078175528753184   ,0.774910464711502], 
@@ -43,7 +42,7 @@ class TestIntegrals(TestCase):
         if np.linalg.norm(A - ( Q * R), 2) < 2e-15 and np.linalg.norm(A - ( Q1 * R1), 2) < 2e-15 :
             print 'Success!'
         else:
-            error_function('ERROR: QR Householder not working!')
+            raise(RuntimeError, 'QR testing failed')
     
     def test_least_squares(self):
         A = [[   0.129783563321146 ,  0.693035803160460 ,  0.542987352374312],
@@ -62,7 +61,7 @@ class TestIntegrals(TestCase):
         if np.linalg.norm(residual, 2) < 4e-15 :
             print 'Success!'
         else:
-            error_function('ERROR: Least squares routine not working!')
+            raise(RuntimeError, 'QR testing failed')
 
     def test_constrained_least_squares(self):
         A = [ [0.8147 ,   0.0975 ,   0.1576],
@@ -87,7 +86,7 @@ class TestIntegrals(TestCase):
         if np.linalg.norm(residual, 2) < 2e-3 :
             print 'Success!'
         else:
-            error_function('ERROR: Least squares routine not working!')
+            raise(RuntimeError, 'QR testing failed')
 
 if __name__ == '__main__':
     unittest.main()

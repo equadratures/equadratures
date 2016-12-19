@@ -103,7 +103,7 @@ def cs(Q1, Q2):
     if m == 1 and p > 1:
         S[0,0] = 0
 
-    if k < np.min([n,p])
+    if k < np.min([n,p]):
         r = np.min([n,p])
         i = range(k+1, n, 1)
         j = range(k+1, r, 1)

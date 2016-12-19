@@ -25,7 +25,7 @@ class TestIntegrals(TestCase):
     def test_qr_factorization(self):
         A =  [ [0.8147,    0.0975,    0.1576,    0.1419], [0.9058,    0.2785,    0.9706,    0.4218], [0.1270,    0.5469 ,   0.9572 ,   0.9157], [0.9134  ,  0.9575 ,   0.4854   , 0.7922], [0.6324 ,   0.9649,    0.8003 ,   0.9595]]
         Q, R = qr.qr_Householder(A)
-        Q1, R1 = qr.qr_Householder(A,1)
+        Q1, R1 = qr.qr_MGS(A)
         if np.linalg.norm(A - ( Q * R), 2) < 1e-15 and np.linalg.norm(A - ( Q1 * R1), 2) < 1e-15 :
             print 'Success!'
         else:
@@ -39,7 +39,7 @@ class TestIntegrals(TestCase):
         [ 0.753729094278495 ,  0.530797553008973 ,  0.469390641058206 ,  0.311215042044805 ,  0.654079098476782 ,  0.228976968716819 ,  0.996134716626885 ,  0.004634224134067 ,  0.399782649098896]]
 
         Q, R = qr.qr_Householder(A)
-        Q1, R1 = qr.qr_Householder(A, 1)
+        Q1, R1 = qr.qr_MGS(A)
         if np.linalg.norm(A - ( Q * R), 2) < 2e-15 and np.linalg.norm(A - ( Q1 * R1), 2) < 2e-15 :
             print 'Success!'
         else:
@@ -79,7 +79,7 @@ class TestIntegrals(TestCase):
         d = [0.0344,    0.4387,    0.3816]
         d = np.mat(d)
         d = d.T
-        x = qr.solve_constrainedLSQ(A, b, C, d)
+        x = qr.solveCLSQ(A, b, C, d)
         x_MATLAB = [-1.7588,   -1.1531,    1.9134]
         x_MATLAB = np.mat(x_MATLAB)
         x_MATLAB = x_MATLAB.T

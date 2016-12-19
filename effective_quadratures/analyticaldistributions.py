@@ -21,7 +21,21 @@ def iCDF_ExponentialDistribution(xx, lambda_value):
 
 def iCDF_BetaDistribution(xx, a, b, lower, upper):
     # Insert code for computing an inverse beta CDF here!
-    return xx
+    # Insert code for computing an inverse beta CDF here!
+     [x,y]=BetaDistribution(1000,a,b,lower,upper)
+     c=[]
+     c.append(0)
+     for i in range(1, len(x)):
+        c.append(c[i-1]+(x[i]-x[i-1])*(y[i]+y[i-1])*.5)
+     
+     for i in range(1, len(x)):
+        c[i]=c[i]/c[len(x)-1]
+ 
+     for i in range(0, len(x)-1):
+        if ( (xx>=c[i]) and (xx<=c[i+1]) ): 
+           yy=(xx-c[i])/(c[i+1]-c[i])*(x[i+1]-x[i])+x[i]
+           break
+     return xx
 
 def iCDF_TruncatedGaussian(xx, mu, sigma, a, b):
     yy = iCDF_Gaussian(xx, mu, sigma)

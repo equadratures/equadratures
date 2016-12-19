@@ -18,30 +18,142 @@ np.set_printoptions(suppress=True)
 
 # Bidiagonalization, symmetric QR, CS decomposition, SVD, gSVD!
 #****************************************************************************
-def cs(A, B):
-    """
-    Computes the CS decomposition!
-    """
-
-
 def gsvd(A,B):
     """
     Computes a generalized singular value decomposition
     """
+    m, n = A.shape
 
-def svd(A):
+
+    # Step 1. Compute a QR factorization of [A;B]
+    Q, R = qr_MGS(np.vstack([A, B]))
+
+    # Step 2. CS decomposition of 
+
+    return 0
+
+def svd(A, eps):
     """
-    Computes the singular value decomposition of a matrix!
+    Computes the singular value decomposition of a matrix based on Golub-Kahan
     """
+
+    # Step 1. Compute a bidiagionalization of the matrix A:
+    U, A, V = bidiag(A)
+
+    return 0
+
+
+def svd_step(B):
+    """
+    Computes a single step of the Golub-Kahan SVD iteration. 
+    """
+    # trailing eigenvalue
+    mu = T[n,n] - (T[n, n-1]**2)/(d + np.sign(d) * np.sqrt(d**2 + T[n,n-1]**2))
+    return 0
+
+    
+def cs(Q1, Q2):
+    """
+    Computes a cosine-sine decomposition
+    """
+    m, p = Q1.shape
+    n, pb = Q2.shape
+
+    if p != pb:
+        raise(ValueError, 'cs(): Number of columns in Q1 must be equivalent to number of columns in Q2')
+    
+    if m < n:
+        V, U, Z, S, C = cs(Q2, Q1)
+        j = range(p, 0, -1)
+        C = C[:, j]
+        S = S[:, j]
+        Z = Z[:, j]
+        m = np.min([m,p])
+        n = np.min([n, p])
+        i = range(m,0, -1)
+        C[0:m, :] = C[i,:]
+        U[:, 0:m] = U[:, i]
+        i = range(n,0, -1)
+        S[0:n, :] = S[i, :]
+        V[:, 0:n] = V[:, i]
+        return U, V, Z, C, S
+    
+    # Compute the svd
+    U, C, Z = np.linalg.svd(Q1)
+    q = np.min([m,p])
+    i = range(0, q, 1)
+    j = range(q, 0, -1)
+    C[i,i] = C[j,j]
+    U[:,i] = U[:,j]
+    Z[:,i] = Z[:,j]
+    S = Q2 * Z
+
+    if q == 1:
+        k = 0
+    elif m < p:
+        k = n
+    else:
+        entries = np.diag(C)
+        k = np.max([np.nonzero(entries <= 2)])
+    
+    V, R = qr_Householder(S[:, 0:k])
+    S = V.T * S
+    r = np.min([k,m])
+    S[:, 0:r] = np.diag(S[:, 0:r])
+    if m == 1 and p > 1:
+        S[0,0] = 0
+
+    if k < np.min([n,p])
+        r = np.min([n,p])
+        i = range(k+1, n, 1)
+        j = range(k+1, r, 1)
+
+        # Compute svd!
+        [UT, ST, VT] = np.linalg.svd(S[i, j])
+        
+        if k > 0:
+            S[1:k, j] = ST
+        
+        C[:, j] = C[:, j] * VT
+        V[:, i] = V[:, i] * UT
+        Z[:, j] = Z[:, j] * VT
+        i = range(k,q,1)
+        Q, R = qr(C[i,j])
+        C[i,j] = np.triu(np.tril(R))
+        U[:,i] = U[:, i] * Q
+        
+    if m < p:
+
+       return 0 
+
 
 def implicitSymmetricQR(T):
     """
     Computes an implicit step for a symmetric QR factorization
     see Golub and Van Loan (4th Ed., page 462)
     """
+    # Preliminary parameters
+    m, n = T.shape # but because its symmetric m = n!
     d = ( T[n-1, n-1] - T[n, n] )/(2.0)
-    mu = T[n,n
+    mu = ( T[n, n] - T[n, n-1]**2 )/( d + np.sign(d) * np.sqrt(d**2 + T[n, n-1]**2 ) )
+    x = T[0, 0] - mu
+    z = T[1, 0]
 
+    # For loop with Givens rotation
+    for k in range(0, n-1):
+        [c, s] = givens(x, z)
+        G = np.mat(np.eye(n), dtype='float64')
+        G[k,k] = c
+        G[k, k+1] = -s 
+        G[k+1, k] = s
+        G[k+1, k+1] = c
+        T = G.T * T * G
+        if k < n - 1:
+            x = T[k+1, k] 
+            z = T[k+2, k]
+    
+    return T
+        
 
 def givens(a, b):
     """ 
@@ -51,7 +163,7 @@ def givens(a, b):
     for scalars a and b.
 
     """
-    G = np.mat(np.eye(2), dtype='float64')
+    #G = np.mat(np.eye(2), dtype='float64')
     if b == 0:
         c = 1
         s = 1
@@ -66,12 +178,12 @@ def givens(a, b):
             s = c * tau
             
     # Place values of c and s into G
-    G[0,0] = c
-    G[0,1] = s
-    G[1,0] = -1.0 * s
-    G[1,1] = c
+    #G[0,0] = c
+    #G[0,1] = s
+    #G[1,0] = -1.0 * s
+    #G[1,1] = c
 
-    return G
+    return c, s
 
 def bidiag(A):
     """
@@ -394,47 +506,3 @@ def mgs_pivoting(A):
         del a_k
         
     return pivots
-
-def main2():
-    
-    a = -5
-    b = -18
-    A = np.mat([[-5],
-    [-18]], dtype = 'float64')
-    G = givens(a,b)
-    print A
-    print G.T * A 
-    print G.T * G
-
-def main():
-    
-
-    A = np.mat([ [ 0.22497615,  0.37419627,  0.44432189, 0.46035715 , 0.43012769 , 0.36028308, 0.25875463,  0.13507237],
-    [0.42584257,-0.1352979,  -0.42804599,  0.29262113,  0.32420127, -0.4117993, -0.17415016,  0.47590828],
-    [0.33345242, -0.46011993,  0.33703336, -0.06093221, -0.24280944,  0.4460431, -0.46503932,  0.29261317],
-    [0.39604712, -0.36050143, -0.07591575,  0.44579303, -0.3884936,  -0.04077974, 0.43180574, -0.41187899]], dtype='float64')
-
-    C = np.mat([[ 0.0 ,        0.0    ,     0.0       ,  0.0],
-    [1.7321,    1.7321 ,   1.7321,    1.7321],
-    [6.4418 ,  -1.2305 ,  -5.3442,   -3.5254],
-    [14.3299 ,  -3.3009 ,   8.6254,    1.5117],
-    [24.8842 ,   3.8032 ,  -8.6204,    4.2044],
-    [36.9864 ,   3.4371 ,   3.5673,   -7.8650],
-    [49.0574 ,  -6.9930,    5.6356,    3.8218],
-    [59.2517 ,  -1.6971  ,-15.3091,    6.0407]], dtype='float64')
-    C = C.T
-
-    b = np.mat([[ 0.58773975],
-    [0.35447403],
-    [0.15033013],
-    [0.2341591]], dtype='float64')
- 
-    d = np.mat([[ 2.6124536], 
-    [0.83240628],
-    [0.45082931],
-    [0.5912405] ], dtype='float64')
-
-    x = solveCLSQ(A, b, C, d)
-
-
-main2()

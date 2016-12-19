@@ -262,6 +262,10 @@ def solveCLSQ(A,b,C,d):
 
     """
     # Size of matrices!
+    A = np.mat(A)
+    C = np.mat(C)
+    b = np.mat(b)
+    d = np.mat(d)
     m, n = A.shape
     p, q = b.shape
     k, l = C.shape
@@ -274,7 +278,7 @@ def solveCLSQ(A,b,C,d):
         raise(ValueError, 'solveCLSQ(): mismatch in sizes of C and d') 
 
     Q , R = qr_Householder(C.T)
-    R = R[0:m, 0:m]
+    R = R[0:k, 0:k]
     u = np.linalg.inv(R.T) * d
     A_hat = A * Q
     z, w = A_hat.shape
@@ -299,7 +303,9 @@ def solveLSQ(A, b):
 
     """ 
     # Direct methods!
-    Q, R = qr_Householder(A)
+    A = np.mat(A)
+    b = np.mat(b)
+    Q, R = qr_MGS(A)
     x = np.linalg.inv(R) * Q.T * b
     x = np.array(x)
     return x
@@ -408,6 +414,7 @@ def qr_Householder(A):
     :: 
         >> Q, R = qr_Householder(A)
     """
+    A = np.mat(A)
     m, n = A.shape
     k = np.min([m,n])
     Q = np.mat(np.eye(m,m), dtype='float64')

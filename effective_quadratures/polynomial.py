@@ -4,6 +4,7 @@ from parameter import Parameter
 from indexset import IndexSet
 import numpy as np
 from utils import error_function, evalfunction, find_repeated_elements, meshgrid
+import matplotlib.pyplot as plt
 #****************************************************************************
 # Functions to code:
 #    
@@ -282,7 +283,7 @@ class Polynomial(object):
         polyapprox = P.T * C
         return polyapprox
 
-    def getPDF(self, function, coefficients=None, indexset=None):
+    def getPDF(self, function, graph=1, coefficients=None, indexset=None):
         """
         Returns the PDF of the model output. This routine effectively multiplies the coefficients of a polynomial
         expansion with its corresponding basis polynomials. 
@@ -300,16 +301,27 @@ class Polynomial(object):
             coefficients,  indexset, evaled_pts = self.getPolynomialCoefficients(function)
         
         # For each UQ parameter in self, store the samples
-        number_of_samples = 1e5 # default value!
+        number_of_samples = 10000 # default value!
         plotting_pts = np.zeros((number_of_samples, dimensions))
         for i in range(0, dimensions):
-            plotting_pts.self.uq_parameters[i].getSamples()
+                univariate_samples = self.uq_parameters[i].getSamples(number_of_samples)
+                for j in range(0, number_of_samples):
+                    plotting_pts[j, i] = univariate_samples[j]
             
 
         P , Q = self.getMultivariatePolynomial(plotting_pts, indexset)
         P = np.mat(P)
         C = np.mat(coefficients)
         polyapprox = P.T * C
+
+        if graph is not None:   
+            fig = plt.figure()
+            n, bins, patches = plt.hist(polyapprox, 30, normed=1, facecolor='red', alpha=0.75)
+            plt.xlabel('f(x)')
+            plt.ylabel('PDF')
+            plt.xlim(np.min(polyapprox)-1.0, np.max(polyapprox)+1.0)
+            plt.show()
+
         return polyapprox
 #--------------------------------------------------------------------------------------------------------------
 #

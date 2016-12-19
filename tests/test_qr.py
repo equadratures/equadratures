@@ -4,7 +4,7 @@ import unittest
 import effective_quadratures.qr as qr
 import numpy as np
 
-class TestIntegrals(TestCase):
+class TestQR(TestCase):
     
     def test_householder_vector(self):
         x = [4., 2., 1., -2., 4., 1.]

@@ -2,7 +2,7 @@
 """Effectively subsampled quadratures for least squares polynomial approximations"""
 from parameter import Parameter
 from polynomial import Polynomial
-from qr import mgs_pivoting, solveLSQ, solve_constrainedLSQ
+from qr import mgs_pivoting, solveLSQ, solveCLSQ
 from indexset import IndexSet
 from utils import error_function, evalfunction
 import numpy as np
@@ -291,38 +291,6 @@ def cell2matrix(G):
     BigC = np.mat(BigC)
     return BigC
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     def solveLeastSquaresWithGradients(self, maximum_number_of_evals, function_values, gradient_values):
         """
         Returns the coefficients for the effectively subsampled quadratures least squares problem. 
@@ -377,4 +345,4 @@ def cell2matrix(G):
                 counter = counter + 1
 
         # Now solve the constrained least squares problem
-        return solve_constrainedLSQ(A, b, C, d_vec)
+        return solveCLSQ(A, b, C, d_vec)

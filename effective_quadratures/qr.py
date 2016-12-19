@@ -2,8 +2,8 @@
 """Utilities with QR factorization"""
 import numpy as np
 from utils import error_function
-np.set_printoptions(precision=4)
-np.set_printoptions(suppress=True)
+#np.set_printoptions(precision=15)
+#np.set_printoptions(suppress=True)
 #****************************************************************************
 # Functions to code:
 #    
@@ -350,7 +350,7 @@ def house(vec):
     v = v.T
     return v, beta
 
-def qr_MGS(A):
+def qr_MGS(A, pivoting=None):
     """
     Returns the thin QR factorization via the Modified Gram Schmidt Method
 
@@ -365,6 +365,9 @@ def qr_MGS(A):
     :: 
         >> Q, R = qr(A)
     """
+    if pivoting is not None:
+        return qr_MGS_Pivoting(A)
+    
     A = np.matrix(A)
     m , n = A.shape
     Q = np.mat(np.eye(m,n), dtype='float64')
@@ -398,6 +401,133 @@ def qr_MGS(A):
             
     return Q, R
 
+# Modified Gram Schmit QR column pivoting
+def qr_MGS_Pivoting(A):
+
+    # Determine the size of
+    A = np.matrix(A)
+    m , n = A.shape
+    u = np.min([m, n])
+    h = np.max([m, n])
+    Q = np.mat(np.eye(m,n), dtype='float64')
+    R = np.mat(np.zeros((n, n)), dtype='float64')
+
+    # Initialize!
+    column_norms = np.zeros((n))
+    pivots = np.linspace(0,n-1,n, dtype='int16')
+
+    # Compute the column norms
+    for j in range(0,n):
+        column_norms[j] = np.linalg.norm(np.array(A[:,j]), 2)**2
+
+
+    # Now loop!
+    for k in range(0, u):
+
+        #----------------------------------------------
+        # Step 0: Column norm sorting
+        #----------------------------------------------
+        # Find the "j*" column index with the highest
+        # column norm
+        j_star = np.argmax(column_norms[k:n])
+        r_star = j_star + k
+
+
+        # If j_star = k, skip to step 1, else swap columns!
+        if k != j_star:
+
+            # Swap columns in A:
+            A[0:m, [r_star, k]] = A[0:m, [k, r_star]]
+            R[0:m, [r_star, k]] = R[0:m, [k, r_star]]
+            temp = pivots[r_star]
+            pivots[r_star] = pivots[k]
+            pivots[k] = temp
+            del temp
+        #-----------------------------------------------
+        # Step 1: Reorthogonalization
+        #-----------------------------------------------
+        if k != 0:
+            for i in range(0,k):
+                alpha = np.dot(Q[:,i].T , A[:,k] )
+                R[i,k] = R[i,k] + alpha
+                A[:,k] = np.array(A[:,k] - alpha[0,0] * Q[:,i])
+
+        #----------------------------------------------
+        # Step 2: Normalization
+        #----------------------------------------------
+        R[k,k] = np.linalg.norm(np.array(A[:,k]), 2)
+        Q[:,k] = np.array(A[:,k] * 1.0/R[k,k])
+
+        #----------------------------------------------
+        # Step 3: Orthogonalization
+        #----------------------------------------------
+        if k != n:
+            for j in range(k,n):
+                R[k,j] = np.dot(Q[:,k].T , A[:,j] )
+                A[:,j] = np.array(A[:,j] - np.mat(R[k,j] * Q[:,k]))
+
+                # Now re-compute column norms
+                column_norms[j] = np.linalg.norm(np.array(A[:,j]), 2)**2
+
+    return Q, R, pivots
+
+    """
+    # Initialize!
+    column_norms = np.zeros((n))
+    pivots = range(0, n)
+
+    # Compute the column norms
+    for j in range(0,n):
+        column_norms[j] = np.linalg.norm(A[0:m,j], 2)**2
+
+    # Now loop!
+    for k in range(0, u):
+
+        # Compute the highest norm
+        j_star = np.argmax(column_norms[k:n])
+        r_star = j_star + k 
+
+        # Retrieve the k-th column of A
+        a_k = A[0:m,k]
+        
+        # Swaping routine
+        if k != r_star:
+            A[0:m, [r_star, k]] = A[0:m, [k, r_star]]
+            temp = pivots[r_star]
+            pivots[r_star] = pivots[k]
+            pivots[k] = temp
+        
+        # re-orthogonalization
+        if k != 0:
+            for i in range(0, k-1):
+                a_i = A[0:m, i]
+                intermediate_vec = np.multiply(1.0/(1.0 *  np.linalg.norm(a_i, 2) ), a_i)
+                a_k = a_k - np.multiply( (intermediate_vec.T * a_k) , intermediate_vec)
+                del intermediate_vec
+
+        # normalization!
+        A[0:m,k] = a_k
+
+        # orthogonalization
+        if k != n:
+            for j in range(k+1, n):
+                a_j = A[0:m,j]
+                intermediate_vec = np.multiply(1.0/(1.0 * np.linalg.norm(a_k, 2) ) , a_k)
+                a_j = a_j -  np.multiply( (intermediate_vec.T * a_j) , intermediate_vec )
+                A[0:m,j] = a_j
+
+                # update remaining column norms
+                column_norms[j] = np.linalg.norm( A[0:m,j] , 2 )**2
+
+                # updating using pythogorean rule! --- do not use! ---
+                # temp =  (intermediate_vec.T * a_j) 
+                # column_norms[j] = column_norms[j]**2  - (temp / np.linalg.norm(a_j, 2) )**2
+                
+       
+        del a_k
+        
+    return pivots
+    """
 # QR factorization via the method of Householder
 def qr_Householder(A):
     """
@@ -444,72 +574,3 @@ def qr_Householder(A):
 
     return Q, R
 
-# Modified Gram Schmit QR column pivoting
-def mgs_pivoting(A):
-    """
-    Modified Gram Schmidt QR Column pivoting
-
-    :param numpy matrix A: Matrix input for QR factorization
-    :return: pivots: Index of pivoted columns
-    :rtype: numpy ndarray
-
-    """
-    # Determine the size of
-    A = np.matrix(A)
-    m , n = A.shape
-    u = np.min([m, n])
-    h = np.max([m, n])
-
-    # Initialize!
-    column_norms = np.zeros((n))
-    pivots = range(0, n)
-
-    # Compute the column norms
-    for j in range(0,n):
-        column_norms[j] = np.linalg.norm(A[0:m,j], 2)**2
-
-    # Now loop!
-    for k in range(0, u):
-
-        # Compute the highest norm
-        j_star = np.argmax(column_norms[k:n])
-        r_star = j_star + k 
-
-        # Retrieve the k-th column of A
-        a_k = A[0:m,k]
-        
-        # Swaping routine
-        if k != r_star:
-            A[0:m, [r_star, k]] = A[0:m, [k, r_star]]
-            temp = pivots[r_star]
-            pivots[r_star] = pivots[k]
-            pivots[k] = temp
-
-        # orthogonalization
-        if k != n:
-            for j in range(k+1, n):
-                a_j = A[0:m,j]
-                intermediate_vec = np.multiply(1.0/(1.0 * np.linalg.norm(a_k, 2) ) , a_k)
-                a_j = a_j -  np.multiply( (intermediate_vec.T * a_j) , intermediate_vec )
-                A[0:m,j] = a_j
-
-                # update remaining column norms
-                column_norms[j] = np.linalg.norm( A[0:m,j] , 2 )**2
-
-                # updating using pythogorean rule! --- do not use! ---
-                # temp =  (intermediate_vec.T * a_j) 
-                # column_norms[j] = column_norms[j]**2  - (temp / np.linalg.norm(a_j, 2) )**2
-                
-       # re-orthogonalization
-        if k != 0:
-            for i in range(0, k-1):
-                a_i = A[0:m, i]
-                intermediate_vec = np.multiply(1.0/(1.0 *  np.linalg.norm(a_i, 2) ), a_i)
-                a_k = a_k - np.multiply( (intermediate_vec.T * a_k) , intermediate_vec)
-                del intermediate_vec
-
-        # Final update.
-        A[0:m,k] = a_k
-        del a_k
-        
-    return pivots

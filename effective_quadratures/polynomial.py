@@ -5,12 +5,7 @@ from indexset import IndexSet
 import numpy as np
 from utils import error_function, evalfunction, find_repeated_elements, meshgrid
 import matplotlib.pyplot as plt
-#****************************************************************************
-# Functions to code:
-#    
-# 1. a getPDF function that samples the polynomial using independent samples from parameters
-# 2. a getSamples function that can generate random indepepndent samples based on parameters
-#****************************************************************************
+
 class Polynomial(object):
     """
     This class defines a polynomial and its associated functions. 
@@ -45,6 +40,8 @@ class Polynomial(object):
         else:
             self.index_sets = index_sets
     
+    # Regression option for training a least squares polynomial!
+
     def getIndexSet(self):
         """
         Returns the index set used for computing the multivariate polynomials

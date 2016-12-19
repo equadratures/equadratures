@@ -7,4 +7,4 @@ from computestats import Statistics
 import integrals as integrals
 import analyticaldistributions as analytical
 from utils import error_function, evalfunction, meshgrid
-from qr import mgs_pivoting, solveLSQ
+from qr import qr_MGS, solveLSQ

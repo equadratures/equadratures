@@ -46,9 +46,10 @@ class Parameter(object):
 
     # constructor
     def __init__(self, points, lower=None, upper=None, param_type=None, shape_parameter_A=None, shape_parameter_B=None, derivative_flag=None):
-     
-        self.order = points 
+
         # Check what lower and upper are...
+        self.order = points
+        
         if lower is None:
             self.lower = -1.0
         else:

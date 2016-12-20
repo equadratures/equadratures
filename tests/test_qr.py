@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from unittest import TestCase
 import unittest
 import effective_quadratures.qr as qr
@@ -15,21 +14,15 @@ class TestQR(TestCase):
         real_v = [1.0000, -0.80621082,  -0.4031054,  0.80621082, -1.61242164,-0.4031054]
         real_v = np.mat(real_v)
         real_v = real_v.T
-
-        if np.linalg.norm(real_v - v, 2) < 1e-07:
-            print 'Success!'
-        else:
-            raise(RuntimeError, 'QR testing failed')
+        np.testing.assert_almost_equal(real_v, v)
     
     def test_qr_factorization(self):
         A =  [ [0.8147,    0.0975,    0.1576,    0.1419], [0.9058,    0.2785,    0.9706,    0.4218], [0.1270,    0.5469 ,   0.9572 ,   0.9157], [0.9134  ,  0.9575 ,   0.4854   , 0.7922], [0.6324 ,   0.9649,    0.8003 ,   0.9595]]
         Q, R = qr.qr_Householder(A)
         Q1, R1 = qr.qr_MGS(A)
-        if np.linalg.norm(A - ( Q * R), 2) < 1e-12 and np.linalg.norm(A - ( Q1 * R1), 2) < 1e-12 :
-            print 'Success!'
-        else:
-            raise(RuntimeError, 'QR testing failed')
-    
+        np.testing.assert_almost_equal(Q*R, A)
+        np.testing.assert_almost_equal(Q1*R1, A)
+
     def test_qr_factorization_fat_matrix(self):
         A = [[ 0.549723608291140 ,  0.380445846975357 ,  0.779167230102011 ,  0.011902069501241 ,  0.528533135506213 ,  0.689214503140008 ,  0.913337361501670 ,  0.078175528753184   ,0.774910464711502], 
         [0.917193663829810  , 0.567821640725221  , 0.934010684229183  , 0.337122644398882  , 0.165648729499781  , 0.748151592823709  , 0.152378018969223  , 0.442678269775446  , 0.817303220653433],

@@ -3,6 +3,7 @@
 from parameter import Parameter
 from indexset import IndexSet
 import numpy as np
+from math import factorial
 from utils import error_function, evalfunction, find_repeated_elements, meshgrid
 import matplotlib.pyplot as plt
 from qr import solveLSQ
@@ -322,54 +323,37 @@ class Polynomial(object):
 class PolyFit(object):
     
     # Constructor
-    def __init__(training_x,training_y, option, test_x):
+    def __init__(self, training_x,training_y, option):
         self.training_x = training_x
         self.training_y = training_y
         self.option = option
-        self.test_x = test_x
-        self.A = np.empty()# try this!
 
-    # Train Polynomial using a total order basis. Inputs have to be numpy matrices!
-    def trainPolynomial(self):
-        m, n = self.training_x.shape
-        dimensions = n
-        ones = np.ones((dimensions, 1))
+        X = self.training_x
+        Y = self.training_y
 
+        m, n = X.shape
+        ones = np.ones((m, 1))
+        #total_terms = nchoosek(n) + order, order)        
 
-        # If statements to check option with dimension & number of variables in data!
-        if dimensions != len(orders):
-            raise(ValueError, 'trainPolynomial(input_data, output_data, orders): Number of elements in orders must match the number of columns in input_data')
-
-        if option is 'linear':
-            A = np.mat(np.hstack(ones, input_data), dtype='float64')
-            return solveLSQ(A, output_data)
-
-        if option is 'quadratic':
-            # Compute the squared terms
-            print '0'
-        
-
-
-            # Compute the interaction terms
-            # = np.mat()        
-
-
-            #A = [1, X, X**2, X**3, ]
-        return 0
+        if self.option is 'linear':
+            A = np.mat(np.hstack([ones, X]), dtype='float64')
+            self.coefficients =  solveLSQ(A, Y)
 
     # Test Polynomial
-    def testPolynomial(coefficients, input_test, orders):
-        return 0
-
+    def testPolynomial(self, test_x):
+        coefficients = self.coefficients
+        print coefficients
+        if self.option is 'linear':
+            m = len(coefficients) - 1
+            constant_term = coefficients[m]
+            linear_terms = coefficients[0:m-1]
+            test_y = linear_terms * test_x + constant_term
+            return test_y
 #--------------------------------------------------------------------------------------------------------------
 #
 #  PRIVATE FUNCTIONS!
 #
 #--------------------------------------------------------------------------------------------------------------
-def nCr(n,r):
-    f = math.factorial
-    return f(n) / f(r) / f(n-r)
-
 def getPseudospectralCoefficients(self, function, override_orders=None):
     
     stackOfParameters = self.uq_parameters
@@ -560,3 +544,9 @@ def efficient_kron_mult(Q, Uc):
         nright = int(nright * n[i,0])
 
     return Uc
+
+# Routine for computing n choose k
+def nchoosek(n, k):
+    numerator = factorial(n)
+    denominator = factorial(k) * factorial(n - k)
+    return (1.0 * numerator) / (1.0 * denominator)

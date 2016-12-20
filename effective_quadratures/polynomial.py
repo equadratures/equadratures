@@ -5,7 +5,7 @@ from indexset import IndexSet
 import numpy as np
 from utils import error_function, evalfunction, find_repeated_elements, meshgrid
 import matplotlib.pyplot as plt
-
+from qr import solveLSQ
 class Polynomial(object):
     """
     This class defines a polynomial and its associated functions. 
@@ -39,8 +39,6 @@ class Polynomial(object):
             self.index_sets = IndexSet('Tensor grid', highest_orders)
         else:
             self.index_sets = index_sets
-    
-    # Regression option for training a least squares polynomial!
 
     def getIndexSet(self):
         """
@@ -320,11 +318,58 @@ class Polynomial(object):
             plt.show()
 
         return polyapprox
+
+class PolyFit(object):
+    
+    # Constructor
+    def __init__(training_x,training_y, option, test_x):
+        self.training_x = training_x
+        self.training_y = training_y
+        self.option = option
+        self.test_x = test_x
+        self.A = np.empty()# try this!
+
+    # Train Polynomial using a total order basis. Inputs have to be numpy matrices!
+    def trainPolynomial(self):
+        m, n = self.training_x.shape
+        dimensions = n
+        ones = np.ones((dimensions, 1))
+
+
+        # If statements to check option with dimension & number of variables in data!
+        if dimensions != len(orders):
+            raise(ValueError, 'trainPolynomial(input_data, output_data, orders): Number of elements in orders must match the number of columns in input_data')
+
+        if option is 'linear':
+            A = np.mat(np.hstack(ones, input_data), dtype='float64')
+            return solveLSQ(A, output_data)
+
+        if option is 'quadratic':
+            # Compute the squared terms
+            print '0'
+        
+
+
+            # Compute the interaction terms
+            # = np.mat()        
+
+
+            #A = [1, X, X**2, X**3, ]
+        return 0
+
+    # Test Polynomial
+    def testPolynomial(coefficients, input_test, orders):
+        return 0
+
 #--------------------------------------------------------------------------------------------------------------
 #
 #  PRIVATE FUNCTIONS!
 #
 #--------------------------------------------------------------------------------------------------------------
+def nCr(n,r):
+    f = math.factorial
+    return f(n) / f(r) / f(n-r)
+
 def getPseudospectralCoefficients(self, function, override_orders=None):
     
     stackOfParameters = self.uq_parameters

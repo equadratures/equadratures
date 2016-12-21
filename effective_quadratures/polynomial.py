@@ -336,18 +336,17 @@ class PolyFit(object):
         #total_terms = nchoosek(n) + order, order)        
 
         if self.option is 'linear':
-            A = np.mat(np.hstack([ones, X]), dtype='float64')
-            self.coefficients =  solveLSQ(A, Y)
+            A = np.mat(np.hstack([X, ones]), dtype='float64')
+            self.coefficients =  np.mat(solveLSQ(A, Y), dtype='float64')
 
     # Test Polynomial
     def testPolynomial(self, test_x):
         coefficients = self.coefficients
-        print coefficients
         if self.option is 'linear':
             m = len(coefficients) - 1
             constant_term = coefficients[m]
-            linear_terms = coefficients[0:m-1]
-            test_y = linear_terms * test_x + constant_term
+            linear_terms = np.mat(coefficients[0:m], dtype='float64')
+            test_y = linear_terms * test_x.T + constant_term
             return test_y
 #--------------------------------------------------------------------------------------------------------------
 #

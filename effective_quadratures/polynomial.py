@@ -339,10 +339,31 @@ class PolyFit(object):
         if self.option is 'linear':
             A = np.mat(np.hstack([X, ones]), dtype='float64')
             self.coefficients =  np.mat(solveLSQ(A, Y), dtype='float64')
-        if self.option is 'quadratic':
-            Xsquare = np.square(X)
 
-            A = np.mat(np.hstack([X]))
+        elif self.option is 'quadratic':
+           dimensions = n
+           variables = range(0, dimensions)
+           combination = list(combinations(variables, 2))
+           constants = np.mat(np.ones((m, 1)), dtype='float64')
+
+            # Compute the interaction terms!
+           XC = np.mat( np.ones((m, len(combination))) , dtype='float64')
+           for i in range(0, len(combination) ):
+                for j in range(0, m):
+                    XC[j,i] = X[j,combination[i][0] ] * X[j, combination[i][1] ] ; 
+
+           # Compute the squared terms
+           X2 = np.mat(np.ones((m, dimensions ) ) , dtype = 'float64')
+           for i in range(0, dimensions ):
+                for j in range(0, m):
+                    X2[j,i] = X[j, i] * X[j,i ] ; 
+
+           # Set up the A matrix
+           A = np.mat(np.hstack([constants, X, X2, XC]) )
+           self.coefficients = np.mat(solveLSQ(A, Y), dtype='float64')
+
+        else:
+            raise(ValueError, 'PolyFit.__init__: invalid fitting option: Choose between linear or quadratic.')
 
     # Test Polynomial
     def testPolynomial(self, test_x):
@@ -353,8 +374,36 @@ class PolyFit(object):
             linear_terms = np.mat(coefficients[0:m], dtype='float64')
             test_y = linear_terms * test_x.T + constant_term
             return test_y
-        if self.option is 'quadratic':
-            print 'WIP'
+            
+        elif self.option is 'quadratic':
+            # We need to assemble the quadratic form: y(x) = Ax + c^T x + d, which requires us to fill elements in the
+            # A matrix!
+            m, dimensions = self.training_x.shape
+            variables = range(0, dimensions)
+            A = np.mat( np.zeros((dimensions, dimensions)), dtype='float64')
+            c = np.mat( np.zeros((dimensions, 1)), dtype='float64') 
+            combination = list(combinations(variables, 2))
+            
+            # For the interaction terms!
+            for i in range(0, dimensions):
+                for j in range(0, dimensions):
+                    if j < i :
+                        for k in range(0, len(combination)):
+                            if (combination[k][0] == i and combination[k][1] == j) or (combination[k][1] == i and combination[k][0] == j ) : 
+                                entry = k
+                        A[i, j] = self.coefficients[dimensions*2 + entry] * 0.5
+                        A[j, i] = A[i, j] # Because A is a symmetric matrix!
+                A[i,i] = self.coefficients[i+(dimensions*2)] # Diagonal elements of A -- which house the quadratic terms!
+
+            # For the linear terms!
+            for i in range(0, dimensions):
+                c[i] = self.coefficients[i+1]        
+            d = self.coefficients[0] # constant term!
+            p, q = test_x.shape
+            test_y = np.mat(np.zeros((p, dimensions)) , dtype='float64' )
+            for i in range(0, p):
+                test_y[i,:] = (test_x[i,:] * A * test_x[i,:].T) + (c.T * test_x[i,:].T) + d
+            return test_y.T
 #--------------------------------------------------------------------------------------------------------------
 #
 #  PRIVATE FUNCTIONS!
@@ -569,24 +618,7 @@ def main():
     #ind = indices.getIndexSet()
     #cols_of_A = indices.getCardinality()
     #rows_of_A = 100
-    variables = range(0, dimensions)
-    combination = list(combinations(variables, 2))
-    constants = np.mat(np.ones((m, 1)), dtype='float64')
-
-    # Compute the interaction terms!
-    XC = np.mat( np.ones((m, len(combination) ) ) , dtype = 'float64')
-    for i in range(0, len(combination) ):
-        for j in range(0, m):
-            XC[j,i] = X[j,combination[i][0] ] * X[j, combination[i][1] ] ; 
-
-    # Compute the squared terms
-    X2 = np.mat(np.ones((m, dimensions ) ) , dtype = 'float64')
-    for i in range(0, dimensions ):
-        for j in range(0, m):
-            X2[j,i] = X[j, i] * X[j,i ] ; 
-
-    # Set up the A matrix
-    A = np.mat(np.hstack([constants, X, XC, X2]) )
+    
     # Allocate space for A
     #A = np.mat(np.ones((rows_of_A, cols_of_A)), dtype='float64')
    # for i in range(0, rows_of_A):

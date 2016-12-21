@@ -4,6 +4,7 @@ from parameter import Parameter
 from indexset import IndexSet
 import numpy as np
 from math import factorial
+from itertools import combinations
 from utils import error_function, evalfunction, find_repeated_elements, meshgrid
 import matplotlib.pyplot as plt
 from qr import solveLSQ
@@ -338,6 +339,10 @@ class PolyFit(object):
         if self.option is 'linear':
             A = np.mat(np.hstack([X, ones]), dtype='float64')
             self.coefficients =  np.mat(solveLSQ(A, Y), dtype='float64')
+        if self.option is 'quadratic':
+            Xsquare = np.square(X)
+
+            A = np.mat(np.hstack([X]))
 
     # Test Polynomial
     def testPolynomial(self, test_x):
@@ -348,6 +353,8 @@ class PolyFit(object):
             linear_terms = np.mat(coefficients[0:m], dtype='float64')
             test_y = linear_terms * test_x.T + constant_term
             return test_y
+        if self.option is 'quadratic':
+            print 'WIP'
 #--------------------------------------------------------------------------------------------------------------
 #
 #  PRIVATE FUNCTIONS!
@@ -549,3 +556,48 @@ def nchoosek(n, k):
     numerator = factorial(n)
     denominator = factorial(k) * factorial(n - k)
     return (1.0 * numerator) / (1.0 * denominator)
+
+
+def main():
+    dimensions = 25
+    m = 50
+    X = np.mat(np.random.rand(m,25), dtype='float64')
+
+    # Set up a total order basis!
+    #orders = 2 * np.ones((dimensions), dtype='int16')
+    #indices = IndexSet('Total order', orders)
+    #ind = indices.getIndexSet()
+    #cols_of_A = indices.getCardinality()
+    #rows_of_A = 100
+    variables = range(0, dimensions)
+    combination = list(combinations(variables, 2))
+    constants = np.mat(np.ones((m, 1)), dtype='float64')
+
+    # Compute the interaction terms!
+    XC = np.mat( np.ones((m, len(combination) ) ) , dtype = 'float64')
+    for i in range(0, len(combination) ):
+        for j in range(0, m):
+            XC[j,i] = X[j,combination[i][0] ] * X[j, combination[i][1] ] ; 
+
+    # Compute the squared terms
+    X2 = np.mat(np.ones((m, dimensions ) ) , dtype = 'float64')
+    for i in range(0, dimensions ):
+        for j in range(0, m):
+            X2[j,i] = X[j, i] * X[j,i ] ; 
+
+    # Set up the A matrix
+    A = np.mat(np.hstack([constants, X, XC, X2]) )
+    # Allocate space for A
+    #A = np.mat(np.ones((rows_of_A, cols_of_A)), dtype='float64')
+   # for i in range(0, rows_of_A):
+    #    for j in range(0, cols_of_A):
+    #        if j != 0: # let the first column correspond to the constant term
+     #           temp = 1.0
+       #         for p in range(0, dimensions):
+      #              A[i,j] = temp * X[i,j]**ind[p]
+      #              temp = A[i,j]
+                
+    #print A
+
+
+main()

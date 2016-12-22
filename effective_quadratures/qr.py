@@ -2,8 +2,6 @@
 """Utilities with QR factorization"""
 import numpy as np
 from utils import error_function
-#np.set_printoptions(precision=15)
-#np.set_printoptions(suppress=True)
 #****************************************************************************
 # Functions to code:
 #    
@@ -18,46 +16,15 @@ from utils import error_function
 
 # Bidiagonalization, symmetric QR, CS decomposition, SVD, gSVD!
 #****************************************************************************
-def gsvd(A,B):
-    """
-    Computes a generalized singular value decomposition
-    """
-    m, n = A.shape
-
-
-    # Step 1. Compute a QR factorization of [A;B]
-    Q, R = qr_MGS(np.vstack([A, B]))
-
-    # Step 2. CS decomposition of 
-
-    return 0
-
-def svd(A, eps):
-    """
-    Computes the singular value decomposition of a matrix based on Golub-Kahan
-    """
-
-    # Step 1. Compute a bidiagionalization of the matrix A:
-    U, A, V = bidiag(A)
-
-    return 0
-
-
-def svd_step(B):
-    """
-    Computes a single step of the Golub-Kahan SVD iteration. 
-    """
-    # trailing eigenvalue
-    mu = T[n,n] - (T[n, n-1]**2)/(d + np.sign(d) * np.sqrt(d**2 + T[n,n-1]**2))
-    return 0
-
-    
 def cs(Q1, Q2):
     """
     Computes a cosine-sine decomposition
     """
     m, p = Q1.shape
     n, pb = Q2.shape
+    U = np.mat(np.zeros((m, m)), dtype='float64')
+    #V = np.mat(np.zeros((m,n))
+    # Allocate space for variables!
 
     if p != pb:
         raise(ValueError, 'cs(): Number of columns in Q1 must be equivalent to number of columns in Q2')
@@ -126,6 +93,29 @@ def cs(Q1, Q2):
 
        return 0 
 
+def gsvd(A,B):
+    """
+    Computes a generalized singular value decomposition
+    """
+
+    # Allocate memory
+    m, p = A.shape
+    n, p = B.shape
+    q = np.min([m+n, p])
+    U = np.mat(np.zeros((m, m)), dtype='float64')
+    V = np.mat(np.zeros((n, n)), dtype='float64')
+    X = np.mat(np.zeros((p, q)), dtype='float64')
+
+    # Step 1. Compute a QR factorization of [A;B]
+    Q, R = qr_MGS(np.vstack([A, B]))
+
+    # Step 2. CS decomposition of Q
+    U, V, Z, C, S = cs(Q[0:m, :], Q[m+1:m+n, :])
+
+    # Step 3. Compute X
+    X = R.T * Z
+
+    return U, V, X, C, S
 
 def implicitSymmetricQR(T):
     """
@@ -163,7 +153,6 @@ def givens(a, b):
     for scalars a and b.
 
     """
-    #G = np.mat(np.eye(2), dtype='float64')
     if b == 0:
         c = 1
         s = 1
@@ -176,14 +165,53 @@ def givens(a, b):
             tau = (-1.0 * b)/(a * 1.0)
             c = 1.0/np.sqrt(1 + tau**2)
             s = c * tau
-            
-    # Place values of c and s into G
-    #G[0,0] = c
-    #G[0,1] = s
-    #G[1,0] = -1.0 * s
-    #G[1,1] = c
 
     return c, s
+def qr_Givens(A):
+    """
+    Returns the Givens QR factorization of a matrix A 
+
+    :param numpy matrix A: Matrix input for QR factorization
+    :return: Q, the m x m orthogonal matrix
+    :rtype: numpy matrix
+    :return: R, the m x n upper triangular matrix
+    :rtype: numpy matrix
+
+    **Sample declaration**
+    :: 
+        >> Q, R = qr_Givens(A)
+    """
+
+    # Declarations!
+    A = np.mat(A)
+    m, n = A.shape
+    #Q_trans = np.mat(np.eye(m,m), dtype='float64')
+    G = np.mat( np.eye(2,2), dtype='float64')
+    G_store = np.mat( np.eye(m, m), dtype='float64')
+    
+    # Introduce zeros by rows
+    for i in range(1, m):
+        for j in range(0, i):
+            if j < n:
+                c, s = givens(A[j,j], A[i,j])
+                G[0,0] = c
+                G[0,1] = s
+                G[1,0] = -1.0 * s
+                G[1,1] = c
+                A[[j, i], j:n ] = G.T * A[[j, i], j:n ]
+
+                # Collect the individual Givens rotations!
+                G_local = np.mat( np.eye(m, m), dtype='float64')
+                G_local[i, i] = c
+                G_local[i, j] = s
+                G_local[j, i] = -1.0 * s
+                G_local[j, j] = c
+                G_store = G_local * G_store
+    
+    R = A
+    
+    return G_store.T, R
+
 
 def bidiag(A):
     """
@@ -248,7 +276,7 @@ def bidiag(A):
     A = A[0:n, 0:n]
     return U, A, V
 
-def solveCLSQ(A,b,C,d):
+def solveCLSQ(A,b,C,d, method):
     """
     Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d using 
     the method of direct elimination
@@ -260,6 +288,8 @@ def solveCLSQ(A,b,C,d):
     :return: x, the coefficients of the least squares problem.
     :rtype: ndarray
 
+
+    method options: 'equality', 'weighted', 'inequality',...
     """
     # Size of matrices!
     A = np.mat(A)
@@ -289,8 +319,6 @@ def solveCLSQ(A,b,C,d):
     x = Q * np.mat(np.vstack([u, v]) , dtype='float64')
     return x
 
-# Solve the least squares problem (done wiht QR factorization!)
-# Perhaps also add LU and SVD techniques to solve least squares!
 def solveLSQ(A, b):
     """
     Solves the direct least squares problem ||Ax-b||_2 using the method of QR factorization
@@ -310,7 +338,7 @@ def solveLSQ(A, b):
     x = np.array(x)
     return x
 
-# Householder reflection
+
 def house(vec):
     """
     Returns a scalar and a vector that may be used to form a Householder matrix
@@ -391,7 +419,7 @@ def qr_MGS(A, pivoting=None):
         # Normalization
         R[k,k] = np.linalg.norm(A[0:m, k], 2)
         const = R[k,k]
-        Q[0:m, k] = A[0:m, k] * 1.0/(const)
+        Q[:,k] = np.array(A[:,k] * 1.0/R[k,k])
 
         # Orthogonalization
         if k != n:
@@ -401,7 +429,7 @@ def qr_MGS(A, pivoting=None):
             
     return Q, R
 
-# Modified Gram Schmit QR column pivoting
+
 def qr_MGS_Pivoting(A):
 
     # Determine the size of
@@ -471,64 +499,6 @@ def qr_MGS_Pivoting(A):
 
     return Q, R, pivots
 
-    """
-    # Initialize!
-    column_norms = np.zeros((n))
-    pivots = range(0, n)
-
-    # Compute the column norms
-    for j in range(0,n):
-        column_norms[j] = np.linalg.norm(A[0:m,j], 2)**2
-
-    # Now loop!
-    for k in range(0, u):
-
-        # Compute the highest norm
-        j_star = np.argmax(column_norms[k:n])
-        r_star = j_star + k 
-
-        # Retrieve the k-th column of A
-        a_k = A[0:m,k]
-        
-        # Swaping routine
-        if k != r_star:
-            A[0:m, [r_star, k]] = A[0:m, [k, r_star]]
-            temp = pivots[r_star]
-            pivots[r_star] = pivots[k]
-            pivots[k] = temp
-        
-        # re-orthogonalization
-        if k != 0:
-            for i in range(0, k-1):
-                a_i = A[0:m, i]
-                intermediate_vec = np.multiply(1.0/(1.0 *  np.linalg.norm(a_i, 2) ), a_i)
-                a_k = a_k - np.multiply( (intermediate_vec.T * a_k) , intermediate_vec)
-                del intermediate_vec
-
-        # normalization!
-        A[0:m,k] = a_k
-
-        # orthogonalization
-        if k != n:
-            for j in range(k+1, n):
-                a_j = A[0:m,j]
-                intermediate_vec = np.multiply(1.0/(1.0 * np.linalg.norm(a_k, 2) ) , a_k)
-                a_j = a_j -  np.multiply( (intermediate_vec.T * a_j) , intermediate_vec )
-                A[0:m,j] = a_j
-
-                # update remaining column norms
-                column_norms[j] = np.linalg.norm( A[0:m,j] , 2 )**2
-
-                # updating using pythogorean rule! --- do not use! ---
-                # temp =  (intermediate_vec.T * a_j) 
-                # column_norms[j] = column_norms[j]**2  - (temp / np.linalg.norm(a_j, 2) )**2
-                
-       
-        del a_k
-        
-    return pivots
-    """
-# QR factorization via the method of Householder
 def qr_Householder(A):
     """
     Returns the Householder QR factorization of a matrix A 

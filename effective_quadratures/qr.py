@@ -276,7 +276,7 @@ def bidiag(A):
     A = A[0:n, 0:n]
     return U, A, V
 
-def solveCLSQ(A,b,C,d, method):
+def solveCLSQ(A,b,C,d):
     """
     Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d using 
     the method of direct elimination

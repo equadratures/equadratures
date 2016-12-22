@@ -2,8 +2,6 @@
 """Utilities with QR factorization"""
 import numpy as np
 from utils import error_function
-np.set_printoptions(precision=4)
-np.set_printoptions(suppress=True)
 #****************************************************************************
 # Functions to code:
 #    
@@ -278,7 +276,7 @@ def bidiag(A):
     A = A[0:n, 0:n]
     return U, A, V
 
-def solveCLSQ(A,b,C,d):
+def solveCLSQ(A,b,C,d, method):
     """
     Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d using 
     the method of direct elimination
@@ -290,6 +288,8 @@ def solveCLSQ(A,b,C,d):
     :return: x, the coefficients of the least squares problem.
     :rtype: ndarray
 
+
+    method options: 'equality', 'weighted', 'inequality',...
     """
     # Size of matrices!
     A = np.mat(A)

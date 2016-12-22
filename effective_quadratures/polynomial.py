@@ -6,6 +6,7 @@ import numpy as np
 from math import factorial
 from itertools import combinations
 from utils import error_function, evalfunction, find_repeated_elements, meshgrid
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from qr import solveLSQ
 class Polynomial(object):
@@ -322,9 +323,25 @@ class Polynomial(object):
         return polyapprox
 
 class PolyFit(object):
+    """
+    This class defines a polyfit object
+
+    :param training_x: A numpy 
+    :param IndexSet index_set: An instance of the IndexSet class, in case the user wants to overwrite the indices
+        that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter 
+        corresponds to a tensor grid index set and is the default option if no index_set parameter input is given.
     
+    **Sample declarations** 
+    ::
+        >> s = Parameter(lower=-2, upper=2, param_type='Uniform', points=4)
+        >> T = IndexSet('Total order', [3,3])
+        >> polyObject = Polynomial([s,s],T) # basis is defined by T
+
+        >> s = Parameter(lower=-2, upper=2, param_type='Uniform')
+        >> polyObject = Polynomial([s,s]) # Tensor basis is used
+    """
     # Constructor
-    def __init__(self, training_x,training_y, option):
+    def __init__(self, training_x, training_y, option):
         self.training_x = training_x
         self.training_y = training_y
         self.option = option
@@ -343,14 +360,14 @@ class PolyFit(object):
         elif self.option is 'quadratic':
            dimensions = n
            variables = range(0, dimensions)
-           combination = list(combinations(variables, 2))
+           combination = list(combinations(variables, 2)) 
            constants = np.mat(np.ones((m, 1)), dtype='float64')
 
             # Compute the interaction terms!
            XC = np.mat( np.ones((m, len(combination))) , dtype='float64')
            for i in range(0, len(combination) ):
                 for j in range(0, m):
-                    XC[j,i] = X[j,combination[i][0] ] * X[j, combination[i][1] ] ; 
+                    XC[j,i] = X[j, combination[i][0] ] * X[j, combination[i][1] ] ; 
 
            # Compute the squared terms
            X2 = np.mat(np.ones((m, dimensions ) ) , dtype = 'float64')
@@ -361,49 +378,56 @@ class PolyFit(object):
            # Set up the A matrix
            A = np.mat(np.hstack([constants, X, X2, XC]) )
            self.coefficients = np.mat(solveLSQ(A, Y), dtype='float64')
-
         else:
             raise(ValueError, 'PolyFit.__init__: invalid fitting option: Choose between linear or quadratic.')
 
     # Test Polynomial
     def testPolynomial(self, test_x):
         coefficients = self.coefficients
+        p, q = test_x.shape
+        m, dimensions = self.training_x.shape
         if self.option is 'linear':
             m = len(coefficients) - 1
             constant_term = coefficients[m]
             linear_terms = np.mat(coefficients[0:m], dtype='float64')
-            test_y = linear_terms * test_x.T + constant_term
-            return test_y
-            
-        elif self.option is 'quadratic':
-            # We need to assemble the quadratic form: y(x) = Ax + c^T x + d, which requires us to fill elements in the
-            # A matrix!
-            m, dimensions = self.training_x.shape
-            variables = range(0, dimensions)
-            A = np.mat( np.zeros((dimensions, dimensions)), dtype='float64')
-            c = np.mat( np.zeros((dimensions, 1)), dtype='float64') 
-            combination = list(combinations(variables, 2))
-            
-            # For the interaction terms!
-            for i in range(0, dimensions):
-                for j in range(0, dimensions):
-                    if j < i :
-                        for k in range(0, len(combination)):
-                            if (combination[k][0] == i and combination[k][1] == j) or (combination[k][1] == i and combination[k][0] == j ) : 
-                                entry = k
-                        A[i, j] = self.coefficients[dimensions*2 + entry] * 0.5
-                        A[j, i] = A[i, j] # Because A is a symmetric matrix!
-                A[i,i] = self.coefficients[i+(dimensions*2)] # Diagonal elements of A -- which house the quadratic terms!
+            test_y = np.mat(np.zeros((p, 1)) , dtype='float64' )
 
-            # For the linear terms!
-            for i in range(0, dimensions):
-                c[i] = self.coefficients[i+1]        
-            d = self.coefficients[0] # constant term!
-            p, q = test_x.shape
-            test_y = np.mat(np.zeros((p, dimensions)) , dtype='float64' )
+            # add a for loop here!
             for i in range(0, p):
-                test_y[i,:] = (test_x[i,:] * A * test_x[i,:].T) + (c.T * test_x[i,:].T) + d
-            return test_y.T
+                test_y[i,0] = (linear_terms.T * test_x[i,:].T) + constant_term
+            return test_y
+
+        elif self.option is 'quadratic':
+            if dimensions == 1:
+                test_y = np.mat(np.zeros((p, 1)) , dtype='float64' )
+                for i in range(0, p):
+                    test_y[i,0] = (self.coefficients[2] * test_x[i,0]**2) + (self.coefficients[1] * test_x[i,:].T) + self.coefficients[0]
+                return test_y.T
+            else:
+                variables = range(0, dimensions)
+                A = np.mat( np.zeros((dimensions, dimensions)), dtype='float64')
+                c = np.mat( np.zeros((dimensions, 1)), dtype='float64') 
+                combination = list(combinations(variables, 2))
+            
+                # For the interaction terms!
+                for i in range(0, dimensions):
+                    for j in range(0, dimensions):
+                        if j < i :
+                            for k in range(0, len(combination)):
+                                if (combination[k][0] == i and combination[k][1] == j) or (combination[k][1] == i and combination[k][0] == j ) : 
+                                    entry = k
+                            A[i, j] = self.coefficients[dimensions*2 + entry] * 0.5
+                            A[j, i] = A[i, j] # Because A is a symmetric matrix!
+                    A[i,i] = self.coefficients[i + (2*dimensions - 1)] # Diagonal elements of A -- which house the quadratic terms!
+                # For the linear terms!
+                for i in range(0, dimensions):
+                    c[i] = self.coefficients[i+1]        
+                d = self.coefficients[0] # constant term!
+
+                test_y = np.mat(np.zeros((p, 1)) , dtype='float64' )
+                for i in range(0, p):
+                    test_y[i,0] = (test_x[i,:] * A * test_x[i,:].T) + (c.T * test_x[i,:].T) + d
+                return test_y.T
 #--------------------------------------------------------------------------------------------------------------
 #
 #  PRIVATE FUNCTIONS!
@@ -607,29 +631,3 @@ def nchoosek(n, k):
     return (1.0 * numerator) / (1.0 * denominator)
 
 
-def main():
-    dimensions = 25
-    m = 50
-    X = np.mat(np.random.rand(m,25), dtype='float64')
-
-    # Set up a total order basis!
-    #orders = 2 * np.ones((dimensions), dtype='int16')
-    #indices = IndexSet('Total order', orders)
-    #ind = indices.getIndexSet()
-    #cols_of_A = indices.getCardinality()
-    #rows_of_A = 100
-    
-    # Allocate space for A
-    #A = np.mat(np.ones((rows_of_A, cols_of_A)), dtype='float64')
-   # for i in range(0, rows_of_A):
-    #    for j in range(0, cols_of_A):
-    #        if j != 0: # let the first column correspond to the constant term
-     #           temp = 1.0
-       #         for p in range(0, dimensions):
-      #              A[i,j] = temp * X[i,j]**ind[p]
-      #              temp = A[i,j]
-                
-    #print A
-
-
-main()

@@ -183,7 +183,7 @@ class Parameter(object):
 
         if graph is not None:   
             fig = plt.figure()
-            n, bins, patches = plt.hist(yy, 30, normed=1, facecolor='blue', alpha=0.75)
+            n, bins, patches = plt.hist(yy, 30, normed=1, facecolor='#4baa89', alpha=0.75)
             plt.xlabel('x')
             plt.ylabel('PDF')
             plt.xlim(1.2*np.min(yy), 1.2*np.max(yy))

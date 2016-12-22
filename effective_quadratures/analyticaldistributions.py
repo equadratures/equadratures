@@ -8,16 +8,16 @@ from scipy.special import erf, erfinv, gamma, beta
 #    To do: inverse Beta CDF
 #-----------------------------------------------------------------------
 def iCDF_Gaussian(xx, mu, sigma):
-    return mu + sigma * np.sqrt(2) * erfinv(2*xx - 1)
+    return mu + sigma * np.sqrt(2.0) * erfinv(2.0*xx - 1.0)
 
 def iCDF_CauchyDistribution(xx, x0, gammavalue):
     return x0 + gamma * np.tan(np.pi * (xx - 0.5))
 
 def iCDF_WeibullDistribution(xx, lambda_value, k):
-    return lambda_value * (-np.log(1 - xx))**(1/k) 
+    return lambda_value * (-np.log(1.0 - xx))**(1.0/k) 
 
 def iCDF_ExponentialDistribution(xx, lambda_value):
-    return (-np.log(1 - xx))/(lambda_value)
+    return (-np.log(1.0 - xx))/(lambda_value)
 
 def iCDF_BetaDistribution(xx, a, b, lower, upper):
     # Insert code for computing an inverse beta CDF here!

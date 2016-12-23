@@ -88,9 +88,9 @@ def cs(Q1, Q2):
         Q, R = qr(C[i,j])
         C[i,j] = np.triu(np.tril(R))
         U[:,i] = U[:, i] * Q
-        
+  
     if m < p:
-
+       #q = np.min()
        return 0 
 
 def gsvd(A,B):

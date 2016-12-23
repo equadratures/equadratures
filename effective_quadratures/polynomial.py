@@ -299,7 +299,7 @@ class Polynomial(object):
             coefficients,  indexset, evaled_pts = self.getPolynomialCoefficients(function)
         
         # For each UQ parameter in self, store the samples
-        number_of_samples = 10000 # default value!
+        number_of_samples = 50000 # default value!
         plotting_pts = np.zeros((number_of_samples, dimensions))
         for i in range(0, dimensions):
                 univariate_samples = self.uq_parameters[i].getSamples(number_of_samples)
@@ -317,7 +317,8 @@ class Polynomial(object):
             n, bins, patches = plt.hist(polyapprox, 30, normed=1, facecolor='red', alpha=0.75)
             plt.xlabel('f(x)')
             plt.ylabel('PDF')
-            plt.xlim(np.min(polyapprox)-1.0, np.max(polyapprox)+1.0)
+            plt.xlim(np.min(polyapprox)-0.25, np.max(polyapprox)+0.25)
+            #plt.savefig('file.png', format='png', dpi=800)
             plt.show()
 
         return polyapprox

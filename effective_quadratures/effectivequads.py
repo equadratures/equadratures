@@ -103,86 +103,6 @@ class EffectiveSubsampling(object):
             self.C_subsampled = C_subsampled
 
 
-
-    def getAmatrix(self):
-        """
-        Returns a matrix of multivariate orthogonal polynomials evaluated at a tensor grid of quadrature points.
-
-        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
-        :return: A, an m-by-k matrix where m is the cardinality of the index set used to define the EffectiveSubsampling object
-            and k are the number of tensor grid quadrature points formed by the order prescribed when defining each Parameter in 
-            the EffectiveSubsampling object
-        :rtype: numpy matrix
-
-        **Sample declaration**
-        :: 
-            >> eq.getAMatrix()
-        """
-        return getA(self)
-
-    def getAsubsampled(self, maximum_number_of_evals):
-        """
-        Returns a matrix of multivariate orthogonal polynomials evaluated at a subsample of the tensor grid of quadrature points.
-
-        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
-        :param integer maximum_number_of_evals: The maximum number of evaluations the user would like. This value has to be atleast equivalent to the
-            total number of basis terms of the index set.
-        :return: A, an m-by-k matrix where m is the cardinality of the index set used to define the EffectiveSubsampling object
-            and k are the number of subsamples given by the integer maximum_number_of_evals.
-        :rtype: numpy matrix
-        
-        **Sample declaration**
-        :: 
-            >> eq.getASubsampled()
-        """
-        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals)
-        return Asquare, esq_pts, W, points
-    
-    
-
-    # Method below will change shortly!    
-    def getCsubsampled(self, maximum_number_of_evals):
-        """
-        Returns a matrix of multivariate derivative orthogonal polynomials evaluated at a set of quadrature points.
-
-        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
-        :param ndarray quadrature_subsamples: The quadrature points are which the matrix of derivative orthogonal polynomials must be evaluated at.
-        :return: C, a cell with d matrices of size m-by-l matrix where m is the cardinality of the index set used to define the EffectiveSubsampling object
-            and l is the number of points in quadrature_subsamples. The integer d represents the dimensionality of the problem, equivalent to the number of
-            parameters defined when initializing the constructor.
-        :rtype: numpy matrix
-
-        **Sample declaration**
-        :: 
-            >> eq.getCSubsampled()
-        """
-        stackOfParameters = self.uq_parameters
-        polynomial_basis = self.index_set
-        dimensions = len(stackOfParameters)
-        polyObject_for_basis = Polynomial(stackOfParameters, polynomial_basis) 
-        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals)
-        not_used, C = polyObject_for_basis.getMultivariatePolynomial(esq_pts)
-        #Cfull = cell2matrix(C)
-        return C
-
-    def getEffectivelySubsampledPoints(self, maximum_number_of_evals, flag=None):
-        """
-        Returns the effectively subsampled quadrature points. See this `paper <https://arxiv.org/abs/1601.05470>`_, for further details. 
-
-        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
-        :param integer maximum_number_of_evals: The maximum number of evaluations the user would like. This value has to be atleast equivalent to the
-            total number of basis terms of the index set.        
-        :return: esq_pts, a maximum_number_of_evals-by-d matrix of quadrature points, where d represents the dimensionality of the problem.
-        :rtype: numpy matrix
-
-        **Sample declaration**
-        :: 
-            >> eq.getEffectivelySubsampledPoints(30)
-        """
-        Asquare, esq_pts, W, points = getSquareA(self, maximum_number_of_evals)
-        return esq_pts
-
-
     def computeCoefficients(self,  function_values, gradient_values=None, technique=None):
         """
         Returns the coefficients for the effectively subsampled quadratures least squares problem. 
@@ -231,7 +151,7 @@ class EffectiveSubsampling(object):
             C = self.C_subsampled
 
             if technique is None:
-                raise(ValueError, 'A technique must be defined for gradient problems. Choose from stacked, equality or inequality')
+                raise(ValueError, 'A technique must be defined for gradient problems. Choose from stacked, equality or inequality. For more information please consult the detailed user guide.')
             elif technique is 'stacked':
                 x = solveLSQ(np.mat(np.vstack([A, C])), np.mat(np.vstack([b, d_vec])))
             elif technique is 'equality':
@@ -241,64 +161,6 @@ class EffectiveSubsampling(object):
             
         return x
 
-
-
-    def solveLeastSquaresWithGradients(self, maximum_number_of_evals, function_values, gradient_values):
-        """
-        Returns the coefficients for the effectively subsampled quadratures least squares problem. 
-
-        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
-        :param integer maximum_number_of_evals: The maximum number of evaluations the user would like. This value has to be atleast equivalent to the
-            total number of basis terms of the index set.    
-        :param callable function_values: A function call to the simulation model, that takes in d inputs and returns one output. If users know the 
-            quadrature subsamples required, they may also input all the simulation outputs as a single ndarray.     
-        :param callable gradient_values: A function call to the simulation model, that takes in d inputs and returns the dx1 gradient vector at those inputs.
-            If the user knows the quadrature subsampled required, they may also input all the simulation gradients as an nd array. 
-        :return: x, the coefficients of the least squares problem.
-        :rtype: ndarray
-
-        **Sample declaration**
-        :: 
-            >> x = eq.solveLeastSquares(150, function_call)
-        """
-
-        A, esq_pts, W, points = getSquareA(self, maximum_number_of_evals)
-        A, normalizations = rowNormalize(A)     
-        C = self.getCsubsampled(esq_pts)
-        
-        # Check if user input is a function or a set of function values!
-        if callable(function_values):
-            fun_values = evalfunction(esq_pts, function_values)
-        else:
-            fun_values = function_values
-        
-        if callable(gradient_values):
-            grad_values = evalfunction(esq_pts, gradient_values)
-        else:
-            grad_values = gradient_values
-
-        # Weight and row normalize function values!
-        b = W * fun_values
-        b = np.dot(normalizations, b)
-
-        # Weight and row normalize gradient values!
-        # Assume that the gradient values are given as a matrix
-        # First check if the dimensions make sense...then weight them
-        # Then send them to the lsqr routine...
-
-        # Now the gradient values will usually be arranged as a N-by-d matrix,
-        # where N are the number of points and d is the number of dimensions.
-        # This needs to be changed into a single vector
-        p, q = grad_values.shape
-        d_vec = np.zeros((p*q,1))
-        counter = 0
-        for j in range(0,q):
-            for i in range(0,p):
-                d_vec[counter] = grad_values[i,j]
-                counter = counter + 1
-
-        # Now solve the constrained least squares problem
-        return solveCLSQ(A, b, C, d_vec)
 
 # Normalize the rows of A by its 2-norm  
 def rowNormalize(A):
@@ -384,8 +246,6 @@ def getSquareA(self):
     esq_wts = self.tensor_quadrature_weights[selected_quadrature_points]
     W = np.mat(np.diag(np.sqrt(esq_wts)))
     return Asquare, esq_pts, W, selected_quadrature_points
-
-# Get 
 
 # Function that returns a submatrix of specific rows
 def getRows(A, row_indices):

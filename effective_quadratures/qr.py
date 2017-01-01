@@ -16,107 +16,6 @@ from utils import error_function
 
 # Bidiagonalization, symmetric QR, CS decomposition, SVD, gSVD!
 #****************************************************************************
-def cs(Q1, Q2):
-    """
-    Computes a cosine-sine decomposition
-    """
-    m, p = Q1.shape
-    n, pb = Q2.shape
-    U = np.mat(np.zeros((m, m)), dtype='float64')
-    #V = np.mat(np.zeros((m,n))
-    # Allocate space for variables!
-
-    if p != pb:
-        raise(ValueError, 'cs(): Number of columns in Q1 must be equivalent to number of columns in Q2')
-    
-    if m < n:
-        V, U, Z, S, C = cs(Q2, Q1)
-        j = range(p, 0, -1)
-        C = C[:, j]
-        S = S[:, j]
-        Z = Z[:, j]
-        m = np.min([m,p])
-        n = np.min([n, p])
-        i = range(m,0, -1)
-        C[0:m, :] = C[i,:]
-        U[:, 0:m] = U[:, i]
-        i = range(n,0, -1)
-        S[0:n, :] = S[i, :]
-        V[:, 0:n] = V[:, i]
-        return U, V, Z, C, S
-    
-    # Compute the svd
-    U, C, Z = np.linalg.svd(Q1)
-    q = np.min([m,p])
-    i = range(0, q, 1)
-    j = range(q, 0, -1)
-    C[i,i] = C[j,j]
-    U[:,i] = U[:,j]
-    Z[:,i] = Z[:,j]
-    S = Q2 * Z
-
-    if q == 1:
-        k = 0
-    elif m < p:
-        k = n
-    else:
-        entries = np.diag(C)
-        k = np.max([np.nonzero(entries <= 2)])
-    
-    V, R = qr_Householder(S[:, 0:k])
-    S = V.T * S
-    r = np.min([k,m])
-    S[:, 0:r] = np.diag(S[:, 0:r])
-    if m == 1 and p > 1:
-        S[0,0] = 0
-
-    if k < np.min([n,p]):
-        r = np.min([n,p])
-        i = range(k+1, n, 1)
-        j = range(k+1, r, 1)
-
-        # Compute svd!
-        [UT, ST, VT] = np.linalg.svd(S[i, j])
-        
-        if k > 0:
-            S[1:k, j] = ST
-        
-        C[:, j] = C[:, j] * VT
-        V[:, i] = V[:, i] * UT
-        Z[:, j] = Z[:, j] * VT
-        i = range(k,q,1)
-        Q, R = qr(C[i,j])
-        C[i,j] = np.triu(np.tril(R))
-        U[:,i] = U[:, i] * Q
-  
-    if m < p:
-       #q = np.min()
-       return 0 
-
-def gsvd(A,B):
-    """
-    Computes a generalized singular value decomposition
-    """
-
-    # Allocate memory
-    m, p = A.shape
-    n, p = B.shape
-    q = np.min([m+n, p])
-    U = np.mat(np.zeros((m, m)), dtype='float64')
-    V = np.mat(np.zeros((n, n)), dtype='float64')
-    X = np.mat(np.zeros((p, q)), dtype='float64')
-
-    # Step 1. Compute a QR factorization of [A;B]
-    Q, R = qr_MGS(np.vstack([A, B]))
-
-    # Step 2. CS decomposition of Q
-    U, V, Z, C, S = cs(Q[0:m, :], Q[m+1:m+n, :])
-
-    # Step 3. Compute X
-    X = R.T * Z
-
-    return U, V, X, C, S
-
 def implicitSymmetricQR(T):
     """
     Computes an implicit step for a symmetric QR factorization
@@ -212,7 +111,6 @@ def qr_Givens(A):
     
     return G_store.T, R
 
-
 def bidiag(A):
     """
     Computes the bidiagonalization of the m-by-n matrix A := U B V', where
@@ -292,31 +190,41 @@ def solveCLSQ(A,b,C,d):
     method options: 'equality', 'weighted', 'inequality',...
     """
     # Size of matrices!
-    A = np.mat(A)
-    C = np.mat(C)
-    b = np.mat(b)
-    d = np.mat(d)
-    m, n = A.shape
-    p, q = b.shape
-    k, l = C.shape
-    s, t = d.shape
+    #A = np.mat(A)
+    #C = np.mat(C)
+    #b = np.mat(b)
+    #d = np.mat(d)
+    #m, n = A.shape
+    #p, q = b.shape
+    #k, l = C.shape
+    #s, t = d.shape
     
     # Check that the number of elements in b are equivalent to the number of rows in A
-    if m != p:
-        raise(ValueError, 'solveCLSQ(): mismatch in sizes of A and b')
-    elif k != s:
-        raise(ValueError, 'solveCLSQ(): mismatch in sizes of C and d') 
+    #if m != p:
+    #    raise(ValueError, 'solveCLSQ(): mismatch in sizes of A and b')
+    #elif k != s:
+    #    raise(ValueError, 'solveCLSQ(): mismatch in sizes of C and d') 
 
-    Q , R = qr_Householder(C.T)
-    R = R[0:k, 0:k]
-    u = np.linalg.inv(R.T) * d
-    A_hat = A * Q
-    z, w = A_hat.shape
-    Ahat_1 = A_hat[:, 0:len(u)]
-    Ahat_2 = A_hat[:, len(u) : w]
-    r = b - Ahat_1 * u
-    v = solveLSQ(Ahat_2, r)
-    x = Q * np.mat(np.vstack([u, v]) , dtype='float64')
+    # Uses the procedure prescribed by Bjorck
+    Q, R, pvec = qr_MGS(C, pivoting=True)
+    m1, n1 = R.shape
+    P = permvec2mat(pvec)
+    r = np.linalg.matrix_rank(C)
+
+    R_11 = R[0:r, 0:r]
+    R_12 = R[0:r, r:n1]
+    d_tilde = Q.T * d
+    d1_tilde = d_tilde[0 : r]
+    d2_tilde = d_tilde[r: m1]
+    A_tilde = A * P
+    A1_tilde = A_tilde[:, 0 : r]
+    A2_tilde = A_tilde[:, r : m1]
+    A2_hat = A2_tilde - A1_tilde * np.linalg.inv(R_11) * R_12
+    b_hat = b - A1_tilde * np.linalg.inv(R_11) * d1_tilde
+    x2_tilde = solveLSQ(A2_hat, b_hat)
+    x1_tilde = np.linalg.inv(R_11) * (d1_tilde - R_12 * x2_tilde)
+    x_tilde = np.mat( np.vstack([x1_tilde, x2_tilde]) , dtype='float64')
+    x = P * x_tilde
     return x
 
 def solveLSQ(A, b):
@@ -484,8 +392,10 @@ def qr_MGS_Pivoting(A):
         # Step 2: Normalization
         #----------------------------------------------
         R[k,k] = np.linalg.norm(np.array(A[:,k]), 2)
-        Q[:,k] = np.array(A[:,k] * 1.0/R[k,k])
-
+        if np.abs(R[k,k]) >= 1e-15:
+            Q[:,k] = np.array(A[:,k] * 1.0/R[k,k])
+        else:
+            Q[:,k] = np.array(A[:,k])
         #----------------------------------------------
         # Step 3: Orthogonalization
         #----------------------------------------------
@@ -496,6 +406,7 @@ def qr_MGS_Pivoting(A):
 
                 # Now re-compute column norms
                 column_norms[j] = np.linalg.norm(np.array(A[:,j]), 2)**2
+
 
     return Q, R, pivots
 
@@ -544,3 +455,53 @@ def qr_Householder(A):
 
     return Q, R
 
+def permvec2mat(vec):
+    n = len(vec)
+    P = np.mat(np.zeros((n,n)), dtype='float64')
+    counter = 0
+    for i in range(0, n):
+        for j in range(0, n):
+            if j == vec[counter]:
+                P[i,j] = 1
+                counter = counter + 1
+                break
+    return P.T
+
+def main():
+    A = np.mat(  [ [2.41681886, -3.60476229,  3.30915575, -1.94864415, -3.60476229,  5.37661775,  -4.93571118,  3.30915575, -4.93571118, -1.94864415],
+    [2.41681886,  3.60476229,  3.30915575,  1.94864415, -3.60476229, -5.37661775,  -4.93571118,  3.30915575,  4.93571118, -1.94864415],
+    [2.41681886, -3.60476229,  3.30915575, -1.94864415,  3.60476229, -5.37661775,  4.93571118,  3.30915575, -4.93571118,  1.94864415],
+    [2.41681886,  3.60476229,  3.30915575,  1.94864415,  3.60476229,  5.37661775,  4.93571118,  3.30915575,  4.93571118,  1.94864415],
+    [5.45328194,  3.21124382, -3.98276649, -5.94042304,  3.21124382,  1.8909873, -2.34530956, -3.98276649, -2.34530956, -5.94042304]], dtype='float64' )
+
+    C = np.mat( [ [ 0.0  ,        -0.0     ,      0.0 ,         -0.0      ,     1.73205081,  -2.58340893 ,  2.37155792,  -5.77667799 ,  8.61609918 , 10.74616371],
+    [0.0         ,  0.0 ,          0.0     ,      0.0 ,          1.73205081 , 2.58340893 ,  2.37155792 , -5.77667799 , -8.61609918  ,10.74616371],
+    [0.0        ,  -0.0 ,          0.0     ,     -0.0 ,          1.73205081 ,-2.58340893 ,  2.37155792 ,  5.77667799 , -8.61609918  ,10.74616371],
+    [0.0       ,    0.0 ,          0.0     ,      0.0 ,          1.73205081 , 2.58340893 ,  2.37155792 ,  5.77667799 ,  8.61609918  ,10.74616371],
+    [0.0      ,     0.0 ,         -0.0     ,     -0.0 ,          1.73205081 , 1.01994313 , -1.26499125 ,  2.28066217 ,  1.34300086  ,-1.67501636],
+    [0.0     ,      1.73205081,  -5.77667799,  10.74616371,  -0.0  ,        -2.58340893,  8.61609918 ,  0.0  ,         2.37155792  ,-0.0        ],
+    [0.0    ,       1.73205081,   5.77667799,  10.74616371,  -0.0  ,        -2.58340893, -8.61609918 ,  0.0  ,         2.37155792  ,-0.0        ],
+    [0.0   ,        1.73205081,  -5.77667799,  10.74616371,   0.0 ,          2.58340893,  -8.61609918,   0.0 ,          2.37155792 ,  0.0        ],
+    [0.0  ,         1.73205081,   5.77667799,  10.74616371,   0.0 ,          2.58340893,   8.61609918,   0.0 ,          2.37155792 ,  0.0        ],
+    [0.0 ,          1.73205081,   2.28066217,  -1.67501636,   0.0 ,          1.01994313,  1.34300086,  -0.00 ,        -1.26499125 , -0.0        ]], dtype='float64')
+
+    b = np.mat ([ [ -0.81440387],
+    [3.96388573],
+    [-0.81440387],
+    [3.96388573],
+    [8.56996634]], dtype='float64')
+
+    d = np.mat( [ [  0.75858345],
+    [0.75858345],
+    [-0.75858345],
+    [-0.75858345],
+    [-0.33346922],
+    [-0.30179538],
+    [-0.30179538],
+    [-0.30179538],
+    [-0.30179538],
+    [1.55519312]], dtype='float64')
+
+    x = solveCLSQ(A, b, C, d)
+
+main()

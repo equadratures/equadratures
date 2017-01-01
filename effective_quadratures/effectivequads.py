@@ -142,20 +142,29 @@ class EffectiveSubsampling(object):
             # where N are the number of points and d is the number of dimensions.
             # This needs to be changed into a single vector
             p, q = grad_values.shape
-            d_vec = np.zeros((p*q,1))
+            d = np.zeros((p*q,1))
             counter = 0
             for j in range(0,q):
                 for i in range(0,p):
-                    d_vec[counter] = grad_values[i,j]
+                    d[counter] = grad_values[i,j]
                     counter = counter + 1
             C = self.C_subsampled
 
             if technique is None:
                 raise(ValueError, 'A technique must be defined for gradient problems. Choose from stacked, equality or inequality. For more information please consult the detailed user guide.')
             elif technique is 'stacked':
-                x = solveLSQ(np.mat(np.vstack([A, C])), np.mat(np.vstack([b, d_vec])))
+                x = solveLSQ(np.mat(np.vstack([A, C])), np.mat(np.vstack([b, d])))
             elif technique is 'equality':
-                x = solveCLSQ(A, b, C, d_vec)
+                print ' Print matrices A and C'
+                print A
+                print '\n'
+                print C
+                print '\n'
+                print b
+                print '*****'
+                print '\n'
+                print d
+                x = solveCLSQ(A, b, C, d)
             else:
                 x = []
             

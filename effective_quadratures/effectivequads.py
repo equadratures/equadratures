@@ -102,6 +102,16 @@ class EffectiveSubsampling(object):
                     counter = counter + 1 
             self.C_subsampled = C_subsampled
 
+    def prune(self, number_of_columns_to_delete):
+        
+        A = self.A_subsampled
+        m, n = A.shape
+        C = self.C_subsampled
+        p, q = C.shape
+        A_pruned = A[0:m, 0 : (n - number_of_columns_to_delete)]
+        C_pruned = C[0:p, 0 : (q - number_of_columns_to_delete)]
+        self.A_subsampled = A_pruned
+        self.C_subsampled = C_pruned
 
     def computeCoefficients(self,  function_values, gradient_values=None, technique=None):
         """
@@ -150,23 +160,14 @@ class EffectiveSubsampling(object):
                     counter = counter + 1
             C = self.C_subsampled
 
+            # Now row normalize the Cs and the ds
+            C, normalizations = rowNormalize(C)
+            d = np.dot(normalizations, d)
+
             if technique is None:
                 raise(ValueError, 'A technique must be defined for gradient problems. Choose from stacked, equality or inequality. For more information please consult the detailed user guide.')
-            elif technique is 'stacked':
-                x = solveLSQ(np.mat(np.vstack([A, C])), np.mat(np.vstack([b, d])))
-            elif technique is 'equality':
-                print ' Print matrices A and C'
-                print A
-                print '\n'
-                print C
-                print '\n'
-                print b
-                print '*****'
-                print '\n'
-                print d
-                x = solveCLSQ(A, b, C, d)
             else:
-                x = []
+                x = solveCLSQ(A, b, C, d, technique)
             
         return x
 

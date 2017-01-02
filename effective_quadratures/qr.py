@@ -2,6 +2,7 @@
 """Utilities with QR factorization"""
 import numpy as np
 from utils import error_function
+from scipy.optimize import minimize
 #****************************************************************************
 # Functions to code:
 #    
@@ -174,7 +175,7 @@ def bidiag(A):
     A = A[0:n, 0:n]
     return U, A, V
 
-def solveCLSQ(A,b,C,d):
+def solveCLSQ(A,b,C,d, technique=None):
     """
     Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d using 
     the method of direct elimination
@@ -206,32 +207,31 @@ def solveCLSQ(A,b,C,d):
     #    raise(ValueError, 'solveCLSQ(): mismatch in sizes of C and d') 
 
     # Uses the procedure prescribed by Bjorck
-    if method is 'weighted':
-        
-    if method is 'equality':
-        Q, R, pvec = qr_MGS(C, pivoting=True)
-        m1, n1 = R.shape
-        P = permvec2mat(pvec)
-        r = np.linalg.matrix_rank(C)
-        R_11 = R[0:r, 0:r]
-        R_12 = R[0:r, r:n1]
-        d_tilde = Q.T * d
-        d1_tilde = d_tilde[0 : r]
-        d2_tilde = d_tilde[r: m1]
-        A_tilde = A * P
-        A1_tilde = A_tilde[:, 0 : r]
-        A2_tilde = A_tilde[:, r : m1]
-        A2_hat = A2_tilde - A1_tilde * np.linalg.inv(R_11) * R_12
-        b_hat = b - A1_tilde * np.linalg.inv(R_11) * d1_tilde
-        x2_tilde = solveLSQ(A2_hat, b_hat)
-        x1_tilde = np.linalg.inv(R_11) * (d1_tilde - R_12 * x2_tilde)
-        x_tilde = np.mat( np.vstack([x1_tilde, x2_tilde]) , dtype='float64')
-        x = P * x_tilde
+    if technique is 'weighted' or technique is None:
+        return solveLSQ(np.mat(np.vstack([A, C])), np.mat(np.vstack([b, d])))
+     
+    elif technique is 'equality':
+        return  directElimination(C, d, A, b)
 
-    if method is 'inequality':
-        # call CVXOPT!???
-        
-    return x
+def directElimination(A, b, C, d):
+    Q, R, pvec = qr_MGS(C, pivoting=True)
+    m1, n1 = R.shape
+    P = permvec2mat(pvec)
+    r = np.linalg.matrix_rank(C)
+    R_11 = R[0:r, 0:r]
+    R_12 = R[0:r, r:n1]
+    d_tilde = Q.T * d
+    d1_tilde = d_tilde[0 : r]
+    d2_tilde = d_tilde[r: m1]
+    A_tilde = A * P
+    A1_tilde = A_tilde[:, 0 : r]
+    A2_tilde = A_tilde[:, r : m1]
+    A2_hat = A2_tilde - A1_tilde * np.linalg.inv(R_11) * R_12
+    b_hat = b - A1_tilde * np.linalg.inv(R_11) * d1_tilde
+    x2_tilde = solveLSQ(A2_hat, b_hat)
+    x1_tilde = np.linalg.inv(R_11) * (d1_tilde - R_12 * x2_tilde)
+    x_tilde = np.mat( np.vstack([x1_tilde, x2_tilde]) , dtype='float64')
+    return P * x_tilde
 
 def solveLSQ(A, b):
     """

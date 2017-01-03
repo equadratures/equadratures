@@ -112,8 +112,25 @@ class EffectiveSubsampling(object):
         C_pruned = C[0:p, 0 : (q - number_of_columns_to_delete)]
         self.A_subsampled = A_pruned
         self.C_subsampled = C_pruned
+        self.no_of_basis_terms = self.no_of_basis_terms - number_of_columns_to_delete
+    
+    def least_no_of_subsamples_reqd(self):
+        k = 1
+        self.set_no_of_evals(2)
+        rank = np.linalg.matrix_rank(np.mat( np.vstack([self.A_subsampled, self.C_subsampled]), dtype='float64') )
+        print '\n'
+        print '----Running rank iteration----'
+        print self.no_of_basis_terms
+        while rank < self.no_of_basis_terms:
+            k = k + 1
+            self.set_no_of_evals(k)
+            rank = np.linalg.matrix_rank(np.mat( np.vstack([self.A_subsampled, self.C_subsampled]), dtype='float64') )
+            print rank, k
+        print '----Done with rank iteration----'
+        print '\n'
+        return k  
 
-    def computeCoefficients(self,  function_values, gradient_values=None, technique=None):
+    def computeCoefficients(self, function_values, gradient_values=None, technique=None):
         """
         Returns the coefficients for the effectively subsampled quadratures least squares problem. 
 
@@ -148,9 +165,6 @@ class EffectiveSubsampling(object):
             else:
                 grad_values = gradient_values
             
-            # Now the gradient values will usually be arranged as a N-by-d matrix,
-            # where N are the number of points and d is the number of dimensions.
-            # This needs to be changed into a single vector
             p, q = grad_values.shape
             d = np.zeros((p*q,1))
             counter = 0

@@ -212,6 +212,9 @@ def solveCLSQ(A,b,C,d, technique=None):
      
     elif technique is 'equality':
         return  directElimination(C, d, A, b)
+    
+    elif technique is 'equality2':
+        return  directElimination(A, b, C, d)
 
 def directElimination(A, b, C, d):
     Q, R, pvec = qr_MGS(C, pivoting=True)

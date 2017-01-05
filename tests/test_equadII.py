@@ -26,6 +26,9 @@ x2 = Parameter(param_type="Uniform", lower=-1, upper=1, points=value, derivative
 parameters = [x1, x2]
 hyperbolic_cross = IndexSet("Hyperbolic basis", orders=[value-1,value-1], q=1.0)
 
+print hyperbolic_cross.getIndexSet()
+
+
 ###################
 # Without gradients!
 ###################
@@ -72,8 +75,10 @@ print 'Errors:'
 print weighted_error, equality_error #, equality_error2
 print 'Condition numbers:'
 print np.linalg.cond(np.mat( np.vstack([esq.A_subsampled, esq.C_subsampled]), dtype='float64') )
+print np.linalg.cond(esq.A_subsampled)
+print np.linalg.cond(esq.C_subsampled)
 print '\n'
-
+print esq.C_subsampled
 """
 # 7. Prune down the columns
 print 'Prune down the number of columns in the matrix'

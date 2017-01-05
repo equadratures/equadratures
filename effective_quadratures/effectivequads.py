@@ -116,7 +116,7 @@ class EffectiveSubsampling(object):
     
     def least_no_of_subsamples_reqd(self):
         k = 1
-        self.set_no_of_evals(2)
+        self.set_no_of_evals(1)
         rank = np.linalg.matrix_rank(np.mat( np.vstack([self.A_subsampled, self.C_subsampled]), dtype='float64') )
         print '\n'
         print '----Running rank iteration----'

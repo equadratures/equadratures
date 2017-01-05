@@ -211,10 +211,11 @@ def solveCLSQ(A,b,C,d, technique=None):
         return solveLSQ(np.mat(np.vstack([A, C])), np.mat(np.vstack([b, d])))
      
     elif technique is 'equality':
-        return  directElimination(C, d, A, b)
-    
-    elif technique is 'equality2':
-        return  directElimination(A, b, C, d)
+        x, cond = directElimination(C, d, A, b)
+        print 'Condition number of CLSQ is :'+str(cond)
+        return x
+    #elif technique is 'equality2':
+#    return  directElimination(A, b, C, d)
 
 def directElimination(A, b, C, d):
     Q, R, pvec = qr_MGS(C, pivoting=True)
@@ -234,7 +235,8 @@ def directElimination(A, b, C, d):
     x2_tilde = solveLSQ(A2_hat, b_hat)
     x1_tilde = np.linalg.inv(R_11) * (d1_tilde - R_12 * x2_tilde)
     x_tilde = np.mat( np.vstack([x1_tilde, x2_tilde]) , dtype='float64')
-    return P * x_tilde
+    cond = np.linalg.cond(A2_hat)
+    return P * x_tilde, cond
 
 def solveLSQ(A, b):
     """

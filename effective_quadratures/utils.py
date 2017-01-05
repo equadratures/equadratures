@@ -102,6 +102,37 @@ def removeDuplicates(a):
             indices.append(i)
     return a[ui], indices
 
+# Loop through the indices of the small index set, and find the corresponding coefficient value in the large one!
+def compute_errors(coefficients_large, index_set_large, coefficients_small, index_set_small):
+    no_of_small_coefficients  = len(coefficients_small)
+    no_of_large_coefficients = len(coefficients_large)
+    dimensions = len(index_set_small[0])
+    error = np.ones((no_of_small_coefficients))
+    counter = 0 
+    for i in range(0, no_of_small_coefficients):    
+        current_index  = index_set_small[i,:]
+        for j in range(0, no_of_large_coefficients):
+            temp_index = index_set_large[j, :]
+            if compare_lists(current_index, temp_index):
+                error[counter] = coefficients_large[j] - coefficients_small[i] 
+                counter = counter + 1
+                break
+    return error
+    # i suppose its worth checking to see that counter = no_of_small_coefficients
+
+# Checks to make sure that two lists are identical (including ordering!)
+def compare_lists(list1, list2):
+    elements_in_list = len(list1)
+    counter = 0
+    for i in range(0, len(list1)):
+        if list1[i] == list2[i]: 
+            counter = counter + 1
+    if counter == elements_in_list:
+        return True
+    else:
+        return False
+
+
 def lineup(coefficients, index_set):
     orders_length = len(index_set[0])
     coefficient_array = np.zeros((len(coefficients), orders_length +1))

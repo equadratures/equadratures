@@ -67,6 +67,7 @@ def givens(a, b):
             s = c * tau
 
     return c, s
+    
 def qr_Givens(A):
     """
     Returns the Givens QR factorization of a matrix A 

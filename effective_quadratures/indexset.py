@@ -58,7 +58,36 @@ class IndexSet(object):
             self.q = []
         else:
             self.q = q
+
+        name = self.index_set_type
+        if name == "Total order":
+            index_set = total_order_index_set(self.orders)
+        elif name == "Sparse grid":
+            sparse_index, a, SG_set = sparse_grid_index_set(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
+            return sparse_index, a, SG_set
+        elif name == "Tensor grid":
+            index_set = tensor_grid_index_set(self.orders)
+        elif name == "Hyperbolic basis":
+            index_set = hyperbolic_index_set(self.orders, self.q)
+        else:
+            error_function('indexset __init__: invalid value for index_set_type!')
+            index_set = [0]
         
+        self.elements = index_set
+
+    def prune(self, number_of_elements_to_delete):
+        """
+        Prunes down the number of elements in an index set!
+        > shouldn't this be somehow done by the total order or sth??
+        """
+        index_entries = self.elements
+        total_elements = self.getCardinality()
+        new_elements = total_elements - number_of_elements_to_delete
+        if new_elements < 0 :
+            raise(ValueError, 'In IndexSet() --> prune(): Number of elements to be deleted must be greater than the total number of elements')
+        else:
+            self.elements =  index_entries[0:new_elements, :]
+    
     def getCardinality(self):
         """
         Returns the cardinality (total number of elements) of the index set

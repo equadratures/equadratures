@@ -157,8 +157,15 @@ class EffectiveSubsampling(object):
         b = self.subsampled_quadrature_weights * fun_values
         b = np.dot(normalizations, b)
         
+        ################################
+        # No gradient case!
+        ################################
         if gradient_values is None:
-            x = solveLSQ(A, b)
+            x, cond = solveLSQ(A, b)
+        
+        ################################
+        # Gradient case!
+        ################################
         else:
             if callable(gradient_values):
                 grad_values = evalgradients(self.subsampled_quadrature_points, gradient_values, 'matrix')
@@ -181,10 +188,9 @@ class EffectiveSubsampling(object):
             if technique is None:
                 raise(ValueError, 'A technique must be defined for gradient problems. Choose from stacked, equality or inequality. For more information please consult the detailed user guide.')
             else:
-                x = solveCLSQ(A, b, C, d, technique)
-            
-        return x
-
+                x, cond = solveCLSQ(A, b, C, d, technique)
+        
+        return x, cond
 
 # Normalize the rows of A by its 2-norm  
 def rowNormalize(A):

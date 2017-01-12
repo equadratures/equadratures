@@ -192,31 +192,25 @@ def solveCLSQ(A,b,C,d, technique=None):
     method options: 'equality', 'weighted', 'inequality',...
     """
     # Size of matrices!
-    #A = np.mat(A)
-    #C = np.mat(C)
-    #b = np.mat(b)
-    #d = np.mat(d)
-    #m, n = A.shape
-    #p, q = b.shape
-    #k, l = C.shape
-    #s, t = d.shape
+    m, n = A.shape
+    p, q = b.shape
+    k, l = C.shape
+    s, t = d.shape
     
     # Check that the number of elements in b are equivalent to the number of rows in A
-    #if m != p:
-    #    raise(ValueError, 'solveCLSQ(): mismatch in sizes of A and b')
-    #elif k != s:
-    #    raise(ValueError, 'solveCLSQ(): mismatch in sizes of C and d') 
-
-    # Uses the procedure prescribed by Bjorck
+    if m != p:
+        raise(ValueError, 'solveCLSQ(): mismatch in sizes of A and b')
+    elif k != s:
+        raise(ValueError, 'solveCLSQ(): mismatch in sizes of C and d') 
+        
+    # Stacked least squares 
     if technique is 'weighted' or technique is None:
-        return solveLSQ(np.mat(np.vstack([A, C])), np.mat(np.vstack([b, d])))
-     
+        x, cond = solveLSQ(np.mat(np.vstack([A, C])), np.mat(np.vstack([b, d])))
+    # Constrained least squares (direct elimination)
     elif technique is 'equality':
         x, cond = directElimination(C, d, A, b)
-        print 'Condition number of CLSQ is :'+str(cond)
-        return x
-    #elif technique is 'equality2':
-#    return  directElimination(A, b, C, d)
+    return x, cond
+
 
 def directElimination(A, b, C, d):
     Q, R, pvec = qr_MGS(C, pivoting=True)
@@ -233,7 +227,7 @@ def directElimination(A, b, C, d):
     A2_tilde = A_tilde[:, r : m1]
     A2_hat = A2_tilde - A1_tilde * np.linalg.inv(R_11) * R_12
     b_hat = b - A1_tilde * np.linalg.inv(R_11) * d1_tilde
-    x2_tilde = solveLSQ(A2_hat, b_hat)
+    x2_tilde , cond_not_used = solveLSQ(A2_hat, b_hat)    
     x1_tilde = np.linalg.inv(R_11) * (d1_tilde - R_12 * x2_tilde)
     x_tilde = np.mat( np.vstack([x1_tilde, x2_tilde]) , dtype='float64')
     cond = np.linalg.cond(A2_hat)
@@ -256,7 +250,7 @@ def solveLSQ(A, b):
     Q, R = qr_MGS(A)
     x = np.linalg.inv(R) * Q.T * b
     x = np.array(x)
-    return x
+    return x, np.linalg.cond(A)
 
 
 def house(vec):

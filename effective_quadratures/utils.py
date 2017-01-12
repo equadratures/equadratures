@@ -117,7 +117,7 @@ def compute_errors(coefficients_large, index_set_large, coefficients_small, inde
                 error[counter] = coefficients_large[j] - coefficients_small[i] 
                 counter = counter + 1
                 break
-    return error
+    return np.linalg.norm(error, 2)
     # i suppose its worth checking to see that counter = no_of_small_coefficients
 
 # Checks to make sure that two lists are identical (including ordering!)

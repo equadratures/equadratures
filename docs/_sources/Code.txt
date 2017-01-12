@@ -12,6 +12,8 @@ Code Documentation
    computestats
    effectivequads
    integrals
+   analyticaldistributions
+   utils
 
 .. automodule:: effective_quadratures
     :members:

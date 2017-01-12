@@ -44,7 +44,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u' '
-copyright = u'2016, Pranay Seshadri'
+copyright = u'2016-2017, Pranay Seshadri'
 author = u'Pranay Seshadri'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -115,7 +115,7 @@ html_theme_options = {
     #
     # Options are nothing (default) or the name of a valid theme
     # such as "amelia" or "cosmo".
-    'bootswatch_theme': "simplex",
+    'bootswatch_theme': "slate",
     'bootstrap_version': "3",
 }
 

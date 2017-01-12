@@ -206,13 +206,34 @@ def solveCLSQ(A,b,C,d, technique=None):
     # Stacked least squares 
     if technique is 'weighted' or technique is None:
         x, cond = solveLSQ(np.mat(np.vstack([A, C])), np.mat(np.vstack([b, d])))
-    # Constrained least squares (direct elimination)
-    elif technique is 'equality':
+    elif technique is 'constrainedDE':
         x, cond = directElimination(C, d, A, b)
+    elif technique is 'constrainedNS':
+        x, cond = nullSpaceMethod(C, d, A, b)
     return x, cond
 
 
+def nullSpaceMethod(A, b, C, d):
+
+    m, n = A.shape
+    p, n = C.shape
+
+    Q, R = qr_Householder(C.T)
+    Q1 = Q[0:n, 0:p]
+    Q2 = Q[0:n, p:n]
+
+    # Lower triangular matrix!
+    L = R.T
+    L = L[0:p, 0:p]
+    y1, not_required = solveLSQ(L, d)
+    c = b - (A * Q1) * y1
+    y2, not_required = solveLSQ(A*Q2, c)
+    x = (Q1 * y1) + (Q2 * y2)
+    cond = np.linalg.cond(A*Q2)
+    return x, cond
+    
 def directElimination(A, b, C, d):
+    
     Q, R, pvec = qr_MGS(C, pivoting=True)
     m1, n1 = R.shape
     P = permvec2mat(pvec)

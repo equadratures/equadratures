@@ -77,6 +77,21 @@ class EffectiveSubsampling(object):
         self.dimensions = len(uq_parameters)
     
     def set_no_of_evals(self, no_of_evals):
+        """
+        Returns the coefficients for the effectively subsampled quadratures least squares problem. 
+
+        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
+        :param integer maximum_number_of_evals: The maximum number of evaluations the user would like. This value has to be atleast equivalent to the
+            total number of basis terms of the index set.    
+        :param callable function_values: A function call to the simulation model, that takes in d inputs and returns one output. If users know the 
+            quadrature subsamples required, they may also input all the simulation outputs as a single ndarray.     
+        :return: x, the coefficients of the least squares problem.
+        :rtype: ndarray
+
+        **Sample declaration**
+        :: 
+            >> x = eq.solveLeastSquares(150, function_call)
+        """
 
         # Once the user provides the number of evaluations required, we can set a few items!
         self.no_of_evals = no_of_evals
@@ -103,6 +118,21 @@ class EffectiveSubsampling(object):
             self.C_subsampled = C_subsampled
 
     def prune(self, number_of_columns_to_delete):  
+        """
+        Returns the coefficients for the effectively subsampled quadratures least squares problem. 
+
+        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
+        :param integer maximum_number_of_evals: The maximum number of evaluations the user would like. This value has to be atleast equivalent to the
+            total number of basis terms of the index set.    
+        :param callable function_values: A function call to the simulation model, that takes in d inputs and returns one output. If users know the 
+            quadrature subsamples required, they may also input all the simulation outputs as a single ndarray.     
+        :return: x, the coefficients of the least squares problem.
+        :rtype: ndarray
+
+        **Sample declaration**
+        :: 
+            >> x = eq.solveLeastSquares(150, function_call)
+        """
         A = self.A_subsampled
         m, n = A.shape
         A_pruned = A[0:m, 0 : (n - number_of_columns_to_delete)]
@@ -120,19 +150,28 @@ class EffectiveSubsampling(object):
         self.index_set.prune(number_of_columns_to_delete)
     
     def least_no_of_subsamples_reqd(self):
+        """
+        Returns the coefficients for the effectively subsampled quadratures least squares problem. 
+
+        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
+        :param integer maximum_number_of_evals: The maximum number of evaluations the user would like. This value has to be atleast equivalent to the
+            total number of basis terms of the index set.    
+        :param callable function_values: A function call to the simulation model, that takes in d inputs and returns one output. If users know the 
+            quadrature subsamples required, they may also input all the simulation outputs as a single ndarray.     
+        :return: x, the coefficients of the least squares problem.
+        :rtype: ndarray
+
+        **Sample declaration**
+        :: 
+            >> x = eq.solveLeastSquares(150, function_call)
+        """
         k = 1
         self.set_no_of_evals(1)
         rank = np.linalg.matrix_rank(np.mat( np.vstack([self.A_subsampled, self.C_subsampled]), dtype='float64') )
-        print '\n'
-        print '----Running rank iteration----'
-        print self.no_of_basis_terms
         while rank < self.no_of_basis_terms:
             k = k + 1
             self.set_no_of_evals(k)
             rank = np.linalg.matrix_rank(np.mat( np.vstack([self.A_subsampled, self.C_subsampled]), dtype='float64') )
-            print rank, k
-        print '----Done with rank iteration----'
-        print '\n'
         return k  
 
     def computeCoefficients(self, function_values, gradient_values=None, technique=None):
@@ -248,7 +287,7 @@ def getA(self):
 
 # The subsampled A matrix based on either randomized selection of rows or a QR column pivoting approach
 def getSquareA(self):
-    
+
     flag = self.method
     if flag == "QR" or flag is None:
         option = 1 # default option!

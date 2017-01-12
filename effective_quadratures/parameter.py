@@ -128,6 +128,11 @@ class Parameter(object):
         :return: w, 1-by-N matrix that contains the values of the PDF of the parameter
         :rtype: ndarray
 
+        Raises:
+            AttributeError: The ``Raises`` section is a list of all exceptions
+                that are relevant to the interface.
+            ValueError: If `param2` is equal to `param1`.
+
         **Sample declaration**
         :: 
             >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')

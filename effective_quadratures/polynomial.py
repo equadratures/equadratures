@@ -438,7 +438,7 @@ def getPseudospectralCoefficients(self, function, override_orders=None):
     
     stackOfParameters = self.uq_parameters
     dimensions = len(stackOfParameters)
-    q0 = [1]
+    q0 = [1.0]
     Q = []
     orders = []
 

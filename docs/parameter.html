@@ -9,7 +9,7 @@
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootswatch-3.3.6/simplex/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootswatch-3.3.6/slate/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
@@ -75,6 +75,8 @@
 <li class="toctree-l2"><a class="reference internal" href="computestats.html">Statistics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="effectivequads.html">Effective-Subsampling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="integrals.html">Integrals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analyticaldistributions.html">Analytical Distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">Utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Contact.html">Contact</a></li>
@@ -382,6 +384,15 @@ no graph is produced</li>
 </tr>
 </tbody>
 </table>
+<dl class="docutils">
+<dt>Raises:</dt>
+<dd><dl class="first docutils">
+<dt>AttributeError: The <code class="docutils literal"><span class="pre">Raises</span></code> section is a list of all exceptions</dt>
+<dd>that are relevant to the interface.</dd>
+</dl>
+<p class="last">ValueError: If <cite>param2</cite> is equal to <cite>param1</cite>.</p>
+</dd>
+</dl>
 <p><strong>Sample declaration</strong></p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">var1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Exponential&#39;</span><span class="p">)</span>
 <span class="o">&gt;&gt;</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">var1</span><span class="o">.</span><span class="n">getPDF</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
@@ -456,7 +467,7 @@ This routine is called by the getSamples function. It makes a call to analytical
       
     </p>
     <p>
-        &copy; Copyright 2016, Pranay Seshadri.<br/>
+        &copy; Copyright 2016-2017, Pranay Seshadri.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.<br/>
     </p>
   </div>

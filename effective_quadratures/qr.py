@@ -227,9 +227,10 @@ def nullSpaceMethod(A, b, C, d):
     L = L[0:p, 0:p]
     y1, not_required = solveLSQ(L, d)
     c = b - (A * Q1) * y1
-    y2, not_required = solveLSQ(A*Q2, c)
+    AQ2 = A * Q2
+    y2, not_required = solveLSQ(AQ2 , c)
     x = (Q1 * y1) + (Q2 * y2)
-    cond = np.linalg.cond(A*Q2)
+    cond = np.linalg.cond(AQ2)
     return x, cond
     
 def directElimination(A, b, C, d):
@@ -494,6 +495,21 @@ def permvec2mat(vec):
                 break
     return P.T
 
+
+def rowNormalize(A):
+    rows, cols = A.shape
+    row_norms = np.mat(np.zeros((rows, 1)), dtype='float64')
+    Normalization = np.mat(np.eye(rows), dtype='float64')
+    for i in range(0, rows):
+        temp = 0.0
+        for j in range(0, cols):
+            row_norms[i] = temp + A[i,j]**2
+            temp = row_norms[i]
+        row_norms[i] = (row_norms[i] * 1.0/np.float64(cols))**(-1)
+        Normalization[i,i] = row_norms[i]
+    A_normalized = np.dot(Normalization, A)
+    return A_normalized, Normalization
+    
 def main():
     A = np.mat(  [ [2.41681886, -3.60476229,  3.30915575, -1.94864415, -3.60476229,  5.37661775,  -4.93571118,  3.30915575, -4.93571118, -1.94864415],
     [2.41681886,  3.60476229,  3.30915575,  1.94864415, -3.60476229, -5.37661775,  -4.93571118,  3.30915575,  4.93571118, -1.94864415],

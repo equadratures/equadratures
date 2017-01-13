@@ -226,13 +226,17 @@ class EffectiveSubsampling(object):
             C = self.C_subsampled
 
             # Now row normalize the Cs and the ds
-            C, normalizations = rowNormalize(C)
-            d = np.dot(normalizations, d)
+            
 
             if technique is None:
                 raise(ValueError, 'A technique must be defined for gradient problems. Choose from stacked, equality or inequality. For more information please consult the detailed user guide.')
             else:
-                x, cond = solveCLSQ(A, b, C, d, technique)
+                if technique is 'weighted':
+                    C, normalizations = rowNormalize(C)
+                    d = np.dot(normalizations, d)
+                    x, cond = solveCLSQ(A, b, C, d, technique)
+                else:
+                    x, cond = solveCLSQ(A, b, C, d, technique)
         
         return x, cond
 

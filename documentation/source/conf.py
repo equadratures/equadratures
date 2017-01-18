@@ -105,7 +105,7 @@ html_theme_options = {
 
     # Fix navigation bar to top of page?
     # Values: "true" (default) or "false"
-    'navbar_fixed_top': "true",
+    'navbar_fixed_top': "false",
 
     # Location of link to source.
     # Options are "nav" (default), "footer" or anything else to exclude.
@@ -115,7 +115,7 @@ html_theme_options = {
     #
     # Options are nothing (default) or the name of a valid theme
     # such as "amelia" or "cosmo".
-    'bootswatch_theme': "slate",
+    'bootswatch_theme': "cosmo",
     'bootstrap_version': "3",
 }
 

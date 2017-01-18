@@ -165,14 +165,17 @@ class EffectiveSubsampling(object):
         :: 
             >> x = eq.solveLeastSquares(150, function_call)
         """
-        k = 1
-        self.set_no_of_evals(1)
-        rank = np.linalg.matrix_rank(np.mat( np.vstack([self.A_subsampled, self.C_subsampled]), dtype='float64') )
-        while rank < self.no_of_basis_terms:
-            k = k + 1
-            self.set_no_of_evals(k)
+        if self.C is None:
+            return self.no_of_basis_terms
+        else:
+            k = 1
+            self.set_no_of_evals(1)
             rank = np.linalg.matrix_rank(np.mat( np.vstack([self.A_subsampled, self.C_subsampled]), dtype='float64') )
-        return k  
+            while rank < self.no_of_basis_terms:
+                k = k + 1
+                self.set_no_of_evals(k)
+                rank = np.linalg.matrix_rank(np.mat( np.vstack([self.A_subsampled, self.C_subsampled]), dtype='float64') )
+            return k  
 
     def computeCoefficients(self, function_values, gradient_values=None, technique=None):
         """

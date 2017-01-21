@@ -139,7 +139,28 @@ class IndexSet(object):
         
         return index_set
 
+# If this works correctly, this function should sort an index based on the total order of elements.
+def sortIndices(index_set_elements):
+    elements = len(index_set_elements)
+    dims = len(index_set_elements[0,:])
+    highest_orders_per_row = np.zeros((elements, 1))
+    for i in range(0, elements):
+        highest_orders_per_row[i,0] = np.max(elements[i,:])
+    
+    notused, sorted_indices = np.sort(highest_orders_per_row)
+    index_set_elements = index_set_elements[sorted_indices, :]
+    highest_order = np.max(highest_orders_per_row)
 
+    # If there are repeats, then sort them by the sum of all indices!
+    allorders = np.arange(0,highest_order)
+        
+        # Find all the repeat values for the highest order
+        for i in range(0, highest_order):
+            ii = np.where(elements == allorders[i])
+            if ii is not None:
+                for j in range(0, len(ii)):
+
+    
 def getIndexLocation(small_index, large_index):
     index_values = []
     i = 0

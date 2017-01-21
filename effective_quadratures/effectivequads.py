@@ -9,22 +9,31 @@ import numpy as np
 
 class EffectiveSubsampling(object):
     """
-    This class defines an EffectiveSubsampling object. Below are details of its constructor.
-
-    :param Parameter (an array of): A list of parameter objects.
+    :param array uq_parameters: A list of Parameter objects.
     :param IndexSet index_set: Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.
     :param string method: Subsampling strategy; options include: 'QR', which is the default option and 'Random'. See this `paper <https://arxiv.org/abs/1601.05470>`_, for further details. 
         We will be adding a 'Hybrid' strategy shortly that combines both QR and randomized techniques.
     
     Attributes:
-        * *self.A* (numpy matrix) : Matrix of the multivariate orthogonal polynomial (defined as per the index set basis) evaluated at all points of a tensor grid.
-        * *self.C* (cell) : A cell of d-dimensional numpy matrices of the derivative of the orthogonal polynomial evaluated at all points of a tensor grid.
-        
-    **Notes** 
-    
-    For the exact definitions of A, C, A_subsampled and C_subsampled please see: `paper <https://arxiv.org/abs/1601.05470>`_. The variables shown above are attributes of the constructor.
+        * **self.A**: (numpy matrix) Matrix of the multivariate orthogonal polynomial (defined as per the index set basis) evaluated at all points of a tensor grid.
+        * **self.C**: (cell) A cell of d-dimensional numpy matrices of the derivative of the orthogonal polynomial evaluated at all points of a tensor grid.
+        * **self.index_set**:(numpy array) An array of the indices used in the multivariate Polynomial. This changes when the user prunes down the number of columns.
+        * **self.tensor_quadrature_points**: (numpy matrix) Full tensor grid quadrature points
+        * **self.tensor_quadrature_weights**: (numpy matrix) Full tensor grid quadrature weights
+        * **self.A_subsampled**: (numpy matrix) Subsampled rows of A, obtained either via QR column pivoting or randomization
+        * **self.C_subsampled**: (numpy matrix) A stacked matrix comprising of subsampled rows of each matrix in the self.C
+        * **self.no_of_basis_terms**: (int) The number of columns in A_subsampled
+        * **self.dimension**: (int) The number of dimensions of the Polynomial
+        * **self.no_of_evals**: (int) The minimum number of model evaluations required to estimate the coefficients of the Polynomial
+        * **self.row_indices**: (int) The rows of A that are used in construction A_subsampled
+        * **self.subsampled_quadrature_points**: (numpy matrix) Subsampled quadrature points
+        * **self.subsampled_quadrature_weights**: (numpy matrix) Subsampled quadrature weights
 
-    **Sample declarations** 
+    **Notes:** 
+    
+    For the exact definitions of A, C, A_subsampled and C_subsampled please see: `paper <https://arxiv.org/abs/1601.05470>`_. 
+
+    **Sample usage:** 
     ::
         
         >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
@@ -33,6 +42,8 @@ class EffectiveSubsampling(object):
         >> print eq.A
         >> print eq.dimensions
         >> print eq.subsampled_quadrature_points
+        >> print eq.no_of_evals
+        >> print esq.C_subsampled
     """
 
     # Constructor
@@ -57,7 +68,7 @@ class EffectiveSubsampling(object):
                 if orders_to_use[u] <= index_set.orders[u] :
                     count = count + 1
             if count > 0:
-                error_function('IndexSet: Basis orders: Ensure that the basis order is always -1 the number of points!')
+                raise(ValueError, 'IndexSet: Basis orders: Ensure that the basis order is always -1 the number of points!')
             self.index_set = index_set
         if method is not None:
             self.method = method
@@ -83,7 +94,13 @@ class EffectiveSubsampling(object):
     
     def set_no_of_evals(self, no_of_evals):
         """
-        
+        Sets the number of model evaluations the user wishes to afford for generating the polynomial. 
+
+        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class.
+        :param integer no_of_evals: The number of subsampled the user requires
+
+        **Sample usage:** 
+        For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
 
         # Once the user provides the number of evaluations required, we can set a few items!
@@ -112,8 +129,31 @@ class EffectiveSubsampling(object):
 
     def prune(self, number_of_columns_to_delete):  
         """
-        
+        Prunes the number of columns based on the ones with the highest total orders.  
+
+        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class.
+        :param integer number_of_columns_to_delete: The number of columns that need to be deleted, which is obviously less than the total number of columns. 
+
         """
+        # Sort the index sets by the highest order
+        total_indices = len(self.index_set.elements)
+        elements = self.index_set.elements
+        maximum_values = np.zeros(total_indices , 1)
+        for i in range(0, total_indices ):
+            maximum_values[i,0] = np.max(index_set[i,:])
+        sorted_max_values, indices = np.ndarray.sort(maximum_values)
+        highest_order = np.max(maximum_values)
+        # Sort the elements based on what we have so far!
+        elements = elements[indices, :]
+
+        # Now cycle through sorted_max_values and find indices that are the same. If they are the same then swap them depending the sum of 
+        # the orders other than the maximum value.
+        allorders = np.arange(0,highest_order)
+        
+        ii = np.where(elements == allorders[i])
+            
+        
+
         A = self.A_subsampled
         m, n = A.shape
         A_pruned = A[0:m, 0 : (n - number_of_columns_to_delete)]
@@ -128,6 +168,8 @@ class EffectiveSubsampling(object):
             self.C_subsampled = C_pruned
 
         self.no_of_basis_terms = self.no_of_basis_terms - number_of_columns_to_delete
+
+        # Should give me the specific indices to delete, instead of just deleting the last ones!
         self.index_set.prune(number_of_columns_to_delete)
     
     def least_no_of_subsamples_reqd(self):
@@ -163,15 +205,15 @@ class EffectiveSubsampling(object):
         Returns the coefficients for the effectively subsampled quadratures least squares problem. 
 
         :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class.
-        :param callable or numpy matrix function_values: A callable function or a numpy matrix of model evaluations at the quadrature subsamples.
-        :param callable of numpy matrix gradient_values: A callable function of a numpy matrix of gradient evaluations at the quadrature subsamples.
+        :param callable function_values: A callable function or a numpy matrix of model evaluations at the quadrature subsamples.
+        :param callable gradient_values: A callable function of a numpy matrix of gradient evaluations at the quadrature subsamples.
         :param string technique: The least squares technique to be used; options include: 'weighted' (default), 'constrainedDE', 'constrainedNS'. These options only matter when using gradient evaluations. They correspond to a stacked / weighted least squares approach, a constrained approach using       direct elimination, and a constrained approach using the null space method. 
-        :return numpy matrix coefficients: Coefficients of the least squares solution.
-        :return double cond: Condition number of the matrix on which least squares was performed.
+        :return: 
+            * **coefficients (numpy matrix)**: Coefficients of the least squares solution.
+            * **cond (double)**: Condition number of the matrix on which least squares was performed.
 
-        **Sample declaration**
-        :: 
-            >> x = eq.solveLeastSquares(150, function_call)
+        **Sample usage:** 
+        For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
         A, normalizations = rowNormalize(self.A_subsampled)
         
@@ -223,7 +265,9 @@ class EffectiveSubsampling(object):
         
         return x, cond
 
-# Normalize the rows of A by its 2-norm  
+################################
+# Private functions!
+################################
 def rowNormalize(A):
     rows, cols = A.shape
     row_norms = np.mat(np.zeros((rows, 1)), dtype='float64')
@@ -341,13 +385,10 @@ def cell2matrix(G):
     return BigC
 
 def getC(self):
-        """
-        Returns the full C matrix
-        """
-        stackOfParameters = self.uq_parameters
-        polynomial_basis = self.index_set
-        dimensions = len(stackOfParameters)
-        polyObject_for_basis = Polynomial(stackOfParameters, polynomial_basis) 
-        points, weights = polyObject_for_basis.getPointsAndWeights()
-        not_used, C = polyObject_for_basis.getMultivariatePolynomial(points)
-        return C
+    stackOfParameters = self.uq_parameters
+    polynomial_basis = self.index_set
+    dimensions = len(stackOfParameters)
+    polyObject_for_basis = Polynomial(stackOfParameters, polynomial_basis) 
+    points, weights = polyObject_for_basis.getPointsAndWeights()
+    not_used, C = polyObject_for_basis.getMultivariatePolynomial(points)
+    return C

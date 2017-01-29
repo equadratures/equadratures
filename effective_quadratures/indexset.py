@@ -140,9 +140,34 @@ class IndexSet(object):
         return index_set
 
 # If this works correctly, this function should sort an index based on the total order of elements.
+% Function that does a decent job re-arrange a set of multi-indices
+% according to their total orders.
+
+clear all; close all; clc;
+dims = 3;
+M = [3 2 0; 9 3 1; 0 9 0; 9 4 1; 8 7 5; 2 3 1; 8 6 2 ; 9 1 1; 2 3 9; 0 0 9; 8 8 8; 5 4 4; 0 1 0; 0 5 1; 0 0 0];
+for i = 1 : length(M)
+    [a,b] = sort(M(i,:));
+    u = 0;
+    for j = 1 : dims
+       u = 10^(j-1) * a(j) + u;
+    end
+	u
+    g(i) = u;
+end
+[Mb, c] = sort(g);
+M(c, :)
+
+
 def sortIndices(index_set_elements):
     elements = len(index_set_elements)
     dims = len(index_set_elements[0,:])
+
+    for i in range(0, elements):
+        
+
+
+
     highest_orders_per_row = np.zeros((elements, 1))
     for i in range(0, elements):
         highest_orders_per_row[i,0] = np.max(elements[i,:])
@@ -158,7 +183,10 @@ def sortIndices(index_set_elements):
         for i in range(0, highest_order):
             ii = np.where(elements == allorders[i])
             if ii is not None:
-                for j in range(0, len(ii)):
+                summed_up = np.sum(index_set_elements[ii,:] 1)
+                notused, small_indices = np.sort(summed_up)
+            
+                    
 
     
 def getIndexLocation(small_index, large_index):

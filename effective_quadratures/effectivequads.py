@@ -136,13 +136,14 @@ class EffectiveSubsampling(object):
 
         """
         # Sort the index sets by the highest order
-        total_indices = len(self.index_set.elements)
-        elements = self.index_set.elements
-        maximum_values = np.zeros(total_indices , 1)
-        for i in range(0, total_indices ):
-            maximum_values[i,0] = np.max(index_set[i,:])
+        #total_indices = len(self.index_set.elements)
+        #elements = self.index_set.elements
+        #maximum_values = np.zeros(total_indices , 1)
+        #for i in range(0, total_indices ):
+        #    maximum_values[i,0] = np.max(index_set[i,:])
         sorted_max_values, indices = np.ndarray.sort(maximum_values)
         highest_order = np.max(maximum_values)
+
         # Sort the elements based on what we have so far!
         elements = elements[indices, :]
 
@@ -150,7 +151,12 @@ class EffectiveSubsampling(object):
         # the orders other than the maximum value.
         allorders = np.arange(0,highest_order)
         
-        ii = np.where(elements == allorders[i])
+        # Find all the repeat values for the highest order
+        for i in range(0, highest_order):
+            ii = np.where(elements == allorders[i])
+            if ii is not None:
+                for j in range(0, len(ii)):
+                    
             
         
 

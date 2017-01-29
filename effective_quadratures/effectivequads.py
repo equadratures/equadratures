@@ -83,7 +83,7 @@ class EffectiveSubsampling(object):
             self.C = getC(self)
         else:
             self.C = None
-        self.no_of_basis_terms = index_set.getCardinality() 
+        self.no_of_basis_terms = index_set.cardinality
         self.C_subsampled = None
         self.A_subsampled = None
         self.no_of_evals = None

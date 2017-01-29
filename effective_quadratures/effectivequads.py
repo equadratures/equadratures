@@ -247,6 +247,7 @@ class Statistics(EffectiveSubsampling):
         x, cond = computeCoefficients(self, function_values, gradient_values, technique)
         self.mean = x[0]
         self.variance = x[1]
+        
     
 ################################
 # Private functions!

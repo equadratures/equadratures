@@ -34,6 +34,3 @@ def pcolor_plot():
     plt.colorbar()
     plt.xlim(0,max_order)
     plt.ylim(0,max_order)
-
-
-# PRIVATE FUNCTIONS!

@@ -25,11 +25,13 @@ class TestIndexSet(TestCase):
         print '\n'
     
     def test_sorting(self):
-        is1 = IndexSet('Hyperbolic basis', [3,3,2], q=0.75)
-        print is1.elements
+        is1 = IndexSet('Total order', [6, 6])
         is1.sort()
-        print '******'
-        print is1.elements
+        is1.plot()
+
+    def test_euclidean(self):
+        is2 = IndexSet('Euclidean degree', [30,30])
+        is2.plot()
 
 if __name__ == '__main__':
     unittest.main()

@@ -3,6 +3,8 @@
 import numpy as np
 import math as mt
 from utils import error_function
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
 
 class IndexSet(object):
     """
@@ -69,15 +71,14 @@ class IndexSet(object):
             index_set = tensor_grid_index_set(self.orders)
         elif name == "Hyperbolic basis":
             index_set = hyperbolic_index_set(self.orders, self.q)
+        elif name == "Euclidean degree":
+            index_set = euclidean_degree_index_set(self.orders)
         else:
             error_function('indexset __init__: invalid value for index_set_type!')
             index_set = [0]
         
         self.elements = index_set
         self.cardinality = len(index_set)
-
-        
-
 
     def prune(self, number_of_elements_to_delete):
         """
@@ -135,11 +136,43 @@ class IndexSet(object):
             index_set = tensor_grid_index_set(self.orders)
         elif name == "Hyperbolic basis":
             index_set = hyperbolic_index_set(self.orders, self.q)
+        elif name == "Euclidean degree":
+            index_set = euclidean_degree_index_set(self.orders)
         else:
             error_function('indexset __init__: invalid value for index_set_type!')
             index_set = [0]
         
         return index_set
+    
+    def plot(self, filename=None):
+        """
+        Simple plotting utility!
+        """
+        elements = self.elements
+
+        if self.dimension == 2:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.scatter(column(elements,0), column(elements,1) , marker='o', s=80, color='red')
+            ax.set_xlabel(r'$i_1$')
+            ax.set_ylabel(r'$i_2$')
+            if filename is not None:
+                plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
+            else:
+                plt.show()
+
+        elif self.dimension == 3:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            ax.scatter(column(elements,0), column(elements,1), column(elements,2) , marker='o', s=80, color='red')
+            ax.set_xlabel(r'$i_1$')
+            ax.set_ylabel(r'$i_2$')
+            ax.set_zlabel(r'$i_3$')
+            if filename is not None:
+                plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
+            else:
+                plt.show()
+
 
 #---------------------------------------------------------------------------------------------------
 # PRIVATE FUNCTIONS
@@ -147,6 +180,25 @@ class IndexSet(object):
 def euclidean_degree_index_set(orders):
     dimensions = len(orders)
     n_bar = tensor_grid_index_set(orders)
+    n_new = []
+    l2norms = np.ones((1, len(n_bar)))
+    for i in range(0, len(n_bar)):
+        array_entry = n_bar[i]**2
+        l2norms[0,i] = np.sum(array_entry)  # dimension correction!
+
+    maxval = np.max(np.array(orders)**2)
+    for i in range(0, len(l2norms[0,:])):
+        if( l2norms[0,i] <= maxval):
+            n_new.append(n_bar[i,:])
+
+    # Now re-cast n_new as a regular array and not a list!
+    euclidean_set = np.ones((len(n_new), dimensions))
+    for i in range(0, len(n_new)):
+        for j in range(0, dimensions):
+            r = n_new[i]
+            euclidean_set[i,j] = r[j]
+    
+    return euclidean_set
 
 
 def getIndexLocation(small_index, large_index):
@@ -291,3 +343,6 @@ def tensor_grid_index_set(orders):
     index_set = I[:,1::]
 
     return index_set
+
+def column(matrix, i):
+    return [row[i] for row in matrix]

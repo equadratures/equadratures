@@ -36,5 +36,4 @@ def pcolor_plot():
     plt.ylim(0,max_order)
 
 
-def plot_indexset(indexset):
-    indices = indexset.getIndexSet()
+# PRIVATE FUNCTIONS!

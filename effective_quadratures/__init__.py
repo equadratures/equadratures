@@ -1,5 +1,5 @@
 'Initialization file'
-from effective_quadratures.base import *
+from base import *
 
 # Set default logging handler to avoid "No handler found" warnings.
 import logging

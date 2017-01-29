@@ -144,6 +144,10 @@ class IndexSet(object):
 #---------------------------------------------------------------------------------------------------
 # PRIVATE FUNCTIONS
 #---------------------------------------------------------------------------------------------------
+def euclidean_degree_index_set(orders):
+    dimensions = len(orders)
+    n_bar = tensor_grid_index_set(orders)
+
 
 def getIndexLocation(small_index, large_index):
     index_values = []

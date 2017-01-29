@@ -240,7 +240,14 @@ class EffectiveSubsampling(object):
                     x, cond = solveCLSQ(A, b, C, d, technique)
         
         return x, cond
+    
 
+class Statistics(EffectiveSubsampling):
+    def __init__(self, function_values, gradient_values=None, technique=None):
+        x, cond = computeCoefficients(self, function_values, gradient_values, technique)
+        self.mean = x[0]
+        self.variance = x[1]
+    
 ################################
 # Private functions!
 ################################

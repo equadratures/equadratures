@@ -2,22 +2,29 @@
 """Index sets for multivariate polynomials"""
 import numpy as np
 import math as mt
-from utils import error_function
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
 class IndexSet(object):
     """
-    This class defines an index set
+    :param string index_set_type: The type of index set to be used. Options include:
+        `Total order`, `Tensor grid`, `Sparse grid`, `Hyperbolic basis` and `Euclidean degree'. All basis are isotropic. If you require anisotropic basis do email us.
+    :param ndarray orders: List of integers corresponding to the highest polynomial order in each direction.
+    :param string growth_rule: The type of growth rule associated with sparse grids. Options include: `linear' and `exponential'. This input is only required when using a sparse grid.
+    :param integer dimensions: The number of dimensions of the problem. This input is only required when using a sparse grid.
+    :param double q: The `q' parameter is used to control the number of basis terms used in a hyperbolic basis. It varies between 0.0 to 1.0. A value of 1.0 yields a total order basis. 
+    
+    Attributes:
+        * **self.dimension**: (integer) Number of dimensions of the index set.
+        * **self.elements**: (numpy array) The multi-indices of the index set.
+        * **self.cardinality**:(integer) The cardinality of the index set.
 
-   :param string index_set_type: The type of index set to be used. Options include:
-        `Total order`, `Tensor grid`, `Sparse grid` and `Hyperbolic basis`. 
-   :param ndarray of integers orders: The highest polynomial order in each direction
-   :param integer level: For sparse grids the level of the sparse grid rule
-   :param string growth_rule: The type of growth rule associated with the sparse grid. Options include:
-        `linear` and `exponential`.
+    **Notes:** 
+    
+    For details on the Euclidean degree see: `Trefethen 2016 <https://arxiv.org/pdf/1608.02216v1.pdf>`_. 
+    Note that all index sets are sorted in the constructor automatically, by their total orders.
 
-    **Sample declarations** 
+    **Sample usage** 
     ::
         
         >> IndexSet('Tensor grid', [3,3,3])
@@ -74,19 +81,26 @@ class IndexSet(object):
         elif name == "Euclidean degree":
             index_set = euclidean_degree_index_set(self.orders)
         else:
-            error_function('indexset __init__: invalid value for index_set_type!')
+            raise(ValueError, 'indexset __init__: invalid value for index_set_type!')
             index_set = [0]
         
         self.elements = index_set
         self.cardinality = len(index_set)
+        self.sort()
+        
 
     def prune(self, number_of_elements_to_delete):
         """
-        Prunes down the number of elements in an index set!
-        > shouldn't this be somehow done by the total order or sth??
+        Prunes down the number of elements in an index set 
+
+        :param IndexSet object: An instance of the IndexSet class.
+        :param integer number_of_elements_to_delete: The number of multi-indices the user would like to delete
+
+        **Sample usage:** 
+        For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
         index_entries = self.elements
-        total_elements = self.getCardinality()
+        total_elements = self.cardinality
         new_elements = total_elements - number_of_elements_to_delete
         if new_elements < 0 :
             raise(ValueError, 'In IndexSet() --> prune(): Number of elements to be deleted must be greater than the total number of elements')
@@ -95,7 +109,12 @@ class IndexSet(object):
     
     def sort(self):
         """
-        Sorts the elements of an index set
+        Routine that sorts a multi-index in ascending order based on the total orders. The constructor by default calls this function.
+
+        :param IndexSet object: An instance of the IndexSet class.
+
+        **Sample usage:** 
+        For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
         number_of_elements = len(self.elements)
         combined_indices_for_sorting = np.ones((number_of_elements, 1))
@@ -118,13 +137,13 @@ class IndexSet(object):
 
     def getIndexSet(self):
         """
-        Returns all the elements of an index set
+        Prunes down the number of elements in an index set 
 
-        :param IndexSet self: An instance of the IndexSet class
+        :param IndexSet object: An instance of the IndexSet class.
+        :param integer number_of_elements_to_delete: The number of multi-indices the user would like to delete
 
-        :return: iset: An n-by-d array of index set elements. Here n represents the cardinality of the index set
-            while d represents the number of dimensions.
-        :rtype: ndarray
+        **Sample usage:** 
+        For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
         name = self.index_set_type
         if name == "Total order":
@@ -139,14 +158,20 @@ class IndexSet(object):
         elif name == "Euclidean degree":
             index_set = euclidean_degree_index_set(self.orders)
         else:
-            error_function('indexset __init__: invalid value for index_set_type!')
+            raise(ValueError, 'indexset __init__: invalid value for index_set_type!')
             index_set = [0]
         
         return index_set
     
     def plot(self, filename=None):
         """
-        Simple plotting utility!
+        Plots the index set
+
+        :param IndexSet object: An instance of the IndexSet class.
+        :param string filename: If a filename is provided, the figure will be saved.
+
+        **Sample usage:** 
+        For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
         elements = self.elements
 

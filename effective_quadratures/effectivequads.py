@@ -135,48 +135,18 @@ class EffectiveSubsampling(object):
         :param integer number_of_columns_to_delete: The number of columns that need to be deleted, which is obviously less than the total number of columns. 
 
         """
-        # Sort the index sets by the highest order
-        #total_indices = len(self.index_set.elements)
-        #elements = self.index_set.elements
-        #maximum_values = np.zeros(total_indices , 1)
-        #for i in range(0, total_indices ):
-        #    maximum_values[i,0] = np.max(index_set[i,:])
-        sorted_max_values, indices = np.ndarray.sort(maximum_values)
-        highest_order = np.max(maximum_values)
-
-        # Sort the elements based on what we have so far!
-        elements = elements[indices, :]
-
-        # Now cycle through sorted_max_values and find indices that are the same. If they are the same then swap them depending the sum of 
-        # the orders other than the maximum value.
-        allorders = np.arange(0,highest_order)
-        
-        # Find all the repeat values for the highest order
-        for i in range(0, highest_order):
-            ii = np.where(elements == allorders[i])
-            if ii is not None:
-                for j in range(0, len(ii)):
-                    
-            
-        
-
         A = self.A_subsampled
         m, n = A.shape
         A_pruned = A[0:m, 0 : (n - number_of_columns_to_delete)]
         self.A_subsampled = A_pruned
-        self.index_set
-
+        self.index_set.prune(number_of_columns_to_delete)
         # If clause for gradient case!
         if self.C is not None:
             C = self.C_subsampled
             p, q = C.shape
             C_pruned = C[0:p, 0 : (q - number_of_columns_to_delete)]
             self.C_subsampled = C_pruned
-
         self.no_of_basis_terms = self.no_of_basis_terms - number_of_columns_to_delete
-
-        # Should give me the specific indices to delete, instead of just deleting the last ones!
-        self.index_set.prune(number_of_columns_to_delete)
     
     def least_no_of_subsamples_reqd(self):
         """

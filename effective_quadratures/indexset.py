@@ -47,24 +47,24 @@ class IndexSet(object):
         else:
             self.growth_rule = growth_rule
 
-        # Check for problem dimensionality (only for sparse grids)
-        if dimension is None:
-            self.dimension = []
-        else:
-            self.dimension = dimension
-
         # For hyperbolic basis index set, there is a "q" parameter:
         if q is None:
             self.q = []
         else:
             self.q = q
 
+        # Check for problem dimensionality (only for sparse grids)
+        if dimension is None:
+            self.dimension = len(orders)
+        else:
+            self.dimension = dimension
+
         name = self.index_set_type
         if name == "Total order":
             index_set = total_order_index_set(self.orders)
         elif name == "Sparse grid":
             sparse_index, a, SG_set = sparse_grid_index_set(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
-            return sparse_index, a, SG_set
+            index_set = sparse_index
         elif name == "Tensor grid":
             index_set = tensor_grid_index_set(self.orders)
         elif name == "Hyperbolic basis":
@@ -74,6 +74,10 @@ class IndexSet(object):
             index_set = [0]
         
         self.elements = index_set
+        self.cardinality = len(index_set)
+
+        
+
 
     def prune(self, number_of_elements_to_delete):
         """
@@ -88,30 +92,28 @@ class IndexSet(object):
         else:
             self.elements =  index_entries[0:new_elements, :]
     
-    def getCardinality(self):
+    def sort(self):
         """
-        Returns the cardinality (total number of elements) of the index set
-
-        :param IndexSet self: An instance of the IndexSet class
-
-        :return: cardinality: Total number of elements in the index set
-        :rtype: integer
+        Sorts the elements of an index set
         """
-        name = self.index_set_type
-        if name == "Total order":
-            index_set = total_order_index_set(self.orders)
-        elif name == "Sparse grid":
-            index_set, a, SG_set = sparse_grid_index_set(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
-            return sparse_index, a, SG_set
-        elif name == "Tensor grid":
-            index_set = tensor_grid_index_set(self.orders)
-        elif name == "Hyperbolic basis":
-            index_set = hyperbolic_index_set(self.orders, self.q)
-        else:
-            error_function('indexset __init__: invalid value for index_set_type!')
-
-        # Now m or n is equivalent to the
-        return len(index_set)
+        number_of_elements = len(self.elements)
+        combined_indices_for_sorting = np.ones((number_of_elements, 1))
+        sorted_elements = np.ones((number_of_elements, self.dimension))
+        elements = self.elements
+        for i in range(0, number_of_elements):
+            a = np.sort(elements[i,:])
+            u = 0
+            for j in range(0, self.dimension):
+                u = 10**(j) * a[j] + u
+            combined_indices_for_sorting[i] = u
+        sorted_indices = np.argsort(combined_indices_for_sorting, axis=0)
+       
+       # Create a new index set with the sorted entries
+        for i in range(0, number_of_elements):
+            for j in range(0, self.dimension):
+                row_index = sorted_indices[i]
+                sorted_elements[i,j] = elements[row_index, j]
+        self.elements = sorted_elements
 
     def getIndexSet(self):
         """
@@ -139,56 +141,10 @@ class IndexSet(object):
         
         return index_set
 
-# If this works correctly, this function should sort an index based on the total order of elements.
-% Function that does a decent job re-arrange a set of multi-indices
-% according to their total orders.
+#---------------------------------------------------------------------------------------------------
+# PRIVATE FUNCTIONS
+#---------------------------------------------------------------------------------------------------
 
-clear all; close all; clc;
-dims = 3;
-M = [3 2 0; 9 3 1; 0 9 0; 9 4 1; 8 7 5; 2 3 1; 8 6 2 ; 9 1 1; 2 3 9; 0 0 9; 8 8 8; 5 4 4; 0 1 0; 0 5 1; 0 0 0];
-for i = 1 : length(M)
-    [a,b] = sort(M(i,:));
-    u = 0;
-    for j = 1 : dims
-       u = 10^(j-1) * a(j) + u;
-    end
-	u
-    g(i) = u;
-end
-[Mb, c] = sort(g);
-M(c, :)
-
-
-def sortIndices(index_set_elements):
-    elements = len(index_set_elements)
-    dims = len(index_set_elements[0,:])
-
-    for i in range(0, elements):
-        
-
-
-
-    highest_orders_per_row = np.zeros((elements, 1))
-    for i in range(0, elements):
-        highest_orders_per_row[i,0] = np.max(elements[i,:])
-    
-    notused, sorted_indices = np.sort(highest_orders_per_row)
-    index_set_elements = index_set_elements[sorted_indices, :]
-    highest_order = np.max(highest_orders_per_row)
-
-    # If there are repeats, then sort them by the sum of all indices!
-    allorders = np.arange(0,highest_order)
-        
-        # Find all the repeat values for the highest order
-        for i in range(0, highest_order):
-            ii = np.where(elements == allorders[i])
-            if ii is not None:
-                summed_up = np.sum(index_set_elements[ii,:] 1)
-                notused, small_indices = np.sort(summed_up)
-            
-                    
-
-    
 def getIndexLocation(small_index, large_index):
     index_values = []
     i = 0

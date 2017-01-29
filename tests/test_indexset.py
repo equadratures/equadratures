@@ -23,6 +23,13 @@ class TestIndexSet(TestCase):
         is4 = IndexSet('Hyperbolic basis', [5,5], q=0.75)
         print is4.getIndexSet()
         print '\n'
+    
+    def test_sorting(self):
+        is1 = IndexSet('Hyperbolic basis', [3,3,2], q=0.75)
+        print is1.elements
+        is1.sort()
+        print '******'
+        print is1.elements
 
 if __name__ == '__main__':
     unittest.main()

@@ -349,18 +349,14 @@ def getSquareA(self):
 
 # Function that returns a submatrix of specific rows
 def getRows(A, row_indices):
-    
     # Determine the shape of A
     m , n = A.shape
-
     # Allocate space for the submatrix
     A2 = np.zeros((len(row_indices), n))
-
     # Now loop!
     for i in range(0, len(A2)):
         for j in range(0, n):
             A2[i,j] = A[row_indices[i], j]
-
     return A2
 
 def cell2matrix(G):

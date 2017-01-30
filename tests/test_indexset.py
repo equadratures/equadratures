@@ -25,7 +25,7 @@ class TestIndexSet(TestCase):
         print is1.elements
 
     def test_euclidean(self):
-        is2 = IndexSet('Euclidean degree', [5,5,5])
+        is2 = IndexSet('Euclidean degree', [7,7,7])
         is2.plot()
 
 if __name__ == '__main__':

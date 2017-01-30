@@ -3,20 +3,7 @@
 import numpy as np
 from utils import error_function
 from scipy.optimize import minimize
-#****************************************************************************
-# Functions to code:
-#    
-# 1. Block & Block Recursive QR (see GVL and Demmel)
-# 2. Constrained & weighted least squares - direct elimination & null space
-# 3. Singular value decomposition & bidiagonalization
-# 4. Routines for total least squares problem
-# 5. Rank 1 updates for QR factorization
-# 6. The 'Practical QR' algorithm
-# 7. Randomized QR 
 
-
-# Bidiagonalization, symmetric QR, CS decomposition, SVD, gSVD!
-#****************************************************************************
 def implicitSymmetricQR(T):
     """
     Computes an implicit step for a symmetric QR factorization

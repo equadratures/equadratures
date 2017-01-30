@@ -2,6 +2,7 @@
 """Computing Statistics from Polynomial Expansions"""
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import rc
 class Statistics(object):
     """
     :param numpy-matrix coefficients: Coefficients from a polynomial expansion. Can be computed using any technique.
@@ -43,10 +44,34 @@ class Statistics(object):
         bar_width = 0.35
         opacity = 0.4
         error_config = {'ecolor': '0.3'}
+
+        plt.rc('text', usetex=True)
+        plt.rc('font', family='serif')
+
         fig, ax = plt.subplots()
+        plt.subplot('111', axisbg='gray')
+        ax.yaxis.grid(color='gray', linewidth=2, linestyle='-')
         plt.xlabel('Parameters')
         plt.ylabel('Sobol indices')
         plt.bar(xbins, self.fosi, bar_width, alpha=opacity, color='b',error_kw=error_config)
+        plt.grid(b=True, which='major', color='w', linestyle='-')
+        plt.grid(b=True, which='minor', color='w', linestyle='-')
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        ax.spines['bottom'].set_color('white')
+        ax.spines['top'].set_color('white')
+        ax.spines['left'].set_color('white')
+        ax.spines['right'].set_color('white')
+        ax.tick_params(axis='x', colors='gray')
+        ax.tick_params(axis='y', colors='gray')
+        ax.spines['left'].set_position(('axes', 0.6))
+        ax.spines['right'].set_color('none')
+        ax.spines['bottom'].set_position(('axes', 0.1))
+        ax.spines['top'].set_color('none')
+        ax.spines['left'].set_smart_bounds(True)
+        ax.spines['bottom'].set_smart_bounds(True)
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
         plt.tight_layout()
         if filename is not None:
             plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')

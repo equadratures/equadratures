@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 class IndexSet(object):
     """
     :param string index_set_type: The type of index set to be used. Options include:
-        `Total order`, `Tensor grid`, `Sparse grid`, `Hyperbolic basis` and `Euclidean degree'. All basis are isotropic. If you require anisotropic basis do email us.
+        `Total order`, `Tensor grid`, `Sparse grid`, `Hyperbolic basis` and `Euclidean degree`. All basis are isotropic. If you require anisotropic basis do email us.
     :param ndarray orders: List of integers corresponding to the highest polynomial order in each direction.
     :param string growth_rule: The type of growth rule associated with sparse grids. Options include: `linear' and `exponential'. This input is only required when using a sparse grid.
     :param integer dimensions: The number of dimensions of the problem. This input is only required when using a sparse grid.
@@ -22,7 +22,7 @@ class IndexSet(object):
     **Notes:** 
     
     For details on the Euclidean degree see: `Trefethen 2016 <https://arxiv.org/pdf/1608.02216v1.pdf>`_. 
-    Note that all index sets are sorted in the constructor automatically, by their total orders.
+    Note that all index sets are sorted in the constructor automatically, by their total orders. We will be adding non-isotropic index sets in a future release. Stay tuned!
 
     **Sample usage** 
     ::
@@ -86,7 +86,10 @@ class IndexSet(object):
         
         self.elements = index_set
         self.cardinality = len(index_set)
-        self.sort()
+
+        # Don't sort a sparse grid index set, because the order is tied to the coefficients!
+        if name is not "Sparse grid":
+            self.sort()
         
 
     def prune(self, number_of_elements_to_delete):
@@ -189,7 +192,7 @@ class IndexSet(object):
         elif self.dimension == 3:
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
-            ax.scatter(column(elements,0), column(elements,1), column(elements,2) , marker='o', s=80, color='red')
+            ax.scatter(column(elements,0), column(elements,1), column(elements,2) , marker='s', s=80, color='green', alpha=0.6)
             ax.set_xlabel(r'$i_1$')
             ax.set_ylabel(r'$i_2$')
             ax.set_zlabel(r'$i_3$')

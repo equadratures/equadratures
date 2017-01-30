@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
 
+
+
 def scatter_plot(X, Y, Xsurf=None, Ysurf=None):
     if dimensions == 1:
         if Xsurf is None:

@@ -168,7 +168,7 @@ class IndexSet(object):
         Plots the index set
 
         :param IndexSet object: An instance of the IndexSet class.
-        :param string filename: If a filename is provided, the figure will be saved.
+        :param string filename: A file name in case the user wishes to save the bar graph. The default output is an eps file.
 
         **Sample usage:** 
         For useage please see the ipython-notebooks at www.effective-quadratures.org

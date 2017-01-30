@@ -2,4 +2,4 @@ Parameter
 ===========
 
 .. automodule:: effective_quadratures.parameter
-    :members:
+    :members: 

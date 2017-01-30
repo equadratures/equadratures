@@ -13,7 +13,6 @@ Code Documentation
    effectivequads
    integrals
    analyticaldistributions
-   utils
 
 .. automodule:: effective_quadratures
     :members:

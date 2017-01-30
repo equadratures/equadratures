@@ -1,95 +1,97 @@
 #!/usr/bin/env python
 """Computing Statistics from Polynomial Expansions"""
 import numpy as np
-from utils import error_function
-
+import matplotlib.pyplot as plt
 class Statistics(object):
     """
-    This class defines a Statistics object
+    :param numpy-matrix coefficients: Coefficients from a polynomial expansion. Can be computed using any technique.
+    :param IndexSet index_set: Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.
 
-    :param numpy matrix coefficients: polynomial coefficients (can be from any of the methods)
-    :param IndexSet index_set: The index set corresponding to the polynomial basis that was used to compute the coefficients
+    Attributes:
+        * **self.mean**: (double) Mean of the polynomial expansion.
+        * **self.variance**: (double) Variance of the polynomial expansion.
+        * **self.fosi**:(numpy array) First order Sobol indices.
 
+    **Notes:** 
+    In a future release we will be incorporating second order Sobol indices, skewness and kurtosis based indices. Stay tuned!
     """
 
     # constructor
     def __init__(self, coefficients, index_set):
         self.coefficients = coefficients
         self.index_set = index_set
-
-    def getMean(self):
-        """
-        Computes the mean of a polynomial expansion using its coefficients.
-
-        :param Statistics self: An instance of the Statistics class
-        :return: mean
-        :rtype: double
-
-        **Notes**
-        The mean is simply the first coefficient of the expansion.
-        """        
-        coefficients = self.coefficients
-        mean = coefficients[0,0]
-        return mean
+        self.mean = getMean(self.coefficients)
+        self.variance = getVariance(self.coefficients)
+        self.fosi = getfosi(self.coefficients, self.index_set)
     
-    def getVariance(self):
+        
+    def plot(self, filename=None):
         """
-        Computes the variance of a polynomial expansion using its coefficients.
+        Produces a bar graph of the first order Sobol indices
 
-        :param Statistics self: An instance of the Statistics class
-        :return: variance
-        :rtype: double
+        :param Statistics object: An instance of the Statistics class.
+        :param string filename: A file name in case the user wishes to save the bar graph. The default output is an eps file.
 
-        **Notes**
-        The variance is the sum of the squares of all the coefficients except the first coefficient.
-        """  
-        coefficients = self.coefficients
-        m, n = coefficients.shape
-        if m > n:
-            coefficients = coefficients.T
-        variance = np.sum(coefficients[0][1:m]**2)
-        return variance
-
-    # Function that computes first order Sobol' indices
-    def getFirstOrderSobol(self):
+        **Sample usage:** 
+        For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
-        Computes the first order Sobol indices.
+        # A bar graph plot of the Sobol indices!
+        dimensions = self.index_set.dimension
+        xbins = range(0, dimensions)
 
-        :param Statistics self: An instance of the Statistics class
-        :return: first_order_sobol_indices
-        :rtype: numpy ndarray
-        """ 
-        coefficients = self.coefficients
-        m, n = coefficients.shape
-        if m > n:
-            coefficients = coefficients.T
-
-        index_set = self.index_set
-
-        # Allocate memory!
-        index_set = index_set.getIndexSet()
-        index_set = np.mat(index_set)
-        m, dimensions =  index_set.shape
-        variance = self.getVariance()
-
-        if dimensions == 1:
-            utils.error_function('ERROR: Sobol indices can only be computed for parameter studies with more than one parameter')
+        # Plot particulars!
+        bar_width = 0.35
+        opacity = 0.4
+        error_config = {'ecolor': '0.3'}
+        fig, ax = plt.subplots()
+        plt.xlabel('Parameters')
+        plt.ylabel('Sobol indices')
+        plt.bar(xbins, self.fosi, bar_width, alpha=opacity, color='b',error_kw=error_config)
+        plt.tight_layout()
+        if filename is not None:
+            plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
         else:
-            index_set_entries = m
-            local_variance = np.zeros((index_set_entries, dimensions))
-            first_order_sobol_indices = np.zeros((dimensions))
+            plt.show()
 
-            # Loop for computing marginal variances!
-            for j in range(0, dimensions):
-                for i in range(0, index_set_entries): # no. of rows
-                    # If the index_set[0,j] is not zero but the remaining are...
-                    remaining_indices = np.arange(0, dimensions)
-                    remaining_indices = np.delete(remaining_indices, j)
-                    if(index_set[i,j] != 0 and np.sum(index_set[i, remaining_indices] ) == 0):
-                        local_variance[i, j] = coefficients[0][i]
+def getMean(coefficients):
+    mean = coefficients[0,0]
+    return mean
+        
+def getVariance(coefficients):
+    m, n = coefficients.shape
+    if m > n:
+        coefficients = coefficients.T
+    variance = np.sum(coefficients[0][1:m]**2)
+    return variance
 
-            # Now take the sum of the squares of all the columns
-            for j in range(0, dimensions):
-                first_order_sobol_indices[j] = (np.sum(local_variance[:,j]**2))/(variance)
+# Function that computes first order Sobol' indices
+def getfosi(coefficients, index_set):
+    m, n = coefficients.shape
+    variance = getVariance(coefficients)
+    if m > n:
+        coefficients = coefficients.T
+    index_set = index_set.elements
+    index_set = np.mat(index_set)
+    m, dimensions =  index_set.shape
+
+    if dimensions == 1:
+        return 1.0
+    else:
+        index_set_entries = m
+        local_variance = np.zeros((index_set_entries, dimensions))
+        first_order_sobol_indices = np.zeros((dimensions))
+
+        # Loop for computing marginal variances!
+        for j in range(0, dimensions):
+            for i in range(0, index_set_entries): # no. of rows
+                # If the index_set[0,j] is not zero but the remaining are...
+                remaining_indices = np.arange(0, dimensions)
+                remaining_indices = np.delete(remaining_indices, j)
+                if(index_set[i,j] != 0 and np.sum(index_set[i, remaining_indices] ) == 0):
+                    local_variance[i, j] = coefficients[0][i]
+
+         # Now take the sum of the squares of all the columns
+        for j in range(0, dimensions):
+            first_order_sobol_indices[j] = (np.sum(local_variance[:,j]**2))/(variance)
 
         return first_order_sobol_indices

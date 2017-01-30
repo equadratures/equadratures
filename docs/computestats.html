@@ -76,7 +76,6 @@
 <li class="toctree-l2"><a class="reference internal" href="effectivequads.html">Effective-Subsampling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="integrals.html">Integrals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="analyticaldistributions.html">Analytical Distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html">Utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Contact.html">Contact</a></li>
@@ -148,75 +147,47 @@
 <dl class="class">
 <dt id="effective_quadratures.computestats.Statistics">
 <em class="property">class </em><code class="descclassname">effective_quadratures.computestats.</code><code class="descname">Statistics</code><span class="sig-paren">(</span><em>coefficients</em>, <em>index_set</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.computestats.Statistics" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class defines a Statistics object</p>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>matrix coefficients</strong> (<em>numpy</em>) &#8211; polynomial coefficients (can be from any of the methods)</li>
-<li><strong>index_set</strong> (<a class="reference internal" href="indexset.html#effective_quadratures.indexset.IndexSet" title="effective_quadratures.indexset.IndexSet"><em>IndexSet</em></a>) &#8211; The index set corresponding to the polynomial basis that was used to compute the coefficients</li>
+<li><strong>coefficients</strong> (<em>numpy-matrix</em>) &#8211; Coefficients from a polynomial expansion. Can be computed using any technique.</li>
+<li><strong>index_set</strong> (<a class="reference internal" href="indexset.html#effective_quadratures.indexset.IndexSet" title="effective_quadratures.indexset.IndexSet"><em>IndexSet</em></a>) &#8211; Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd><ul class="first last simple">
+<li><strong>self.mean</strong>: (double) Mean of the polynomial expansion.</li>
+<li><strong>self.variance</strong>: (double) Variance of the polynomial expansion.</li>
+<li><strong>self.fosi</strong>:(numpy array) First order Sobol indices.</li>
+</ul>
+</dd>
+</dl>
+<p><strong>Notes:</strong> 
+In a future release we will be incorporating second order Sobol indices, skewness and kurtosis based indices. Stay tuned!</p>
 <dl class="method">
-<dt id="effective_quadratures.computestats.Statistics.getFirstOrderSobol">
-<code class="descname">getFirstOrderSobol</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.computestats.Statistics.getFirstOrderSobol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the first order Sobol indices.</p>
+<dt id="effective_quadratures.computestats.Statistics.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>filename=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.computestats.Statistics.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a bar graph of the first order Sobol indices</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.computestats.Statistics" title="effective_quadratures.computestats.Statistics"><em>Statistics</em></a>) &#8211; An instance of the Statistics class</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">first_order_sobol_indices</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy ndarray</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="effective_quadratures.computestats.Statistics.getMean">
-<code class="descname">getMean</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.computestats.Statistics.getMean" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the mean of a polynomial expansion using its coefficients.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.computestats.Statistics" title="effective_quadratures.computestats.Statistics"><em>Statistics</em></a>) &#8211; An instance of the Statistics class</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">mean</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">double</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>object</strong> (<a class="reference internal" href="#effective_quadratures.computestats.Statistics" title="effective_quadratures.computestats.Statistics"><em>Statistics</em></a>) &#8211; An instance of the Statistics class.</li>
+<li><strong>filename</strong> (<em>string</em>) &#8211; A file name in case the user wishes to save the bar graph. The default output is an eps file.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Notes</strong>
-The mean is simply the first coefficient of the expansion.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="effective_quadratures.computestats.Statistics.getVariance">
-<code class="descname">getVariance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.computestats.Statistics.getVariance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the variance of a polynomial expansion using its coefficients.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.computestats.Statistics" title="effective_quadratures.computestats.Statistics"><em>Statistics</em></a>) &#8211; An instance of the Statistics class</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">variance</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">double</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Notes</strong>
-The variance is the sum of the squares of all the coefficients except the first coefficient.</p>
+<p><strong>Sample usage:</strong> 
+For useage please see the ipython-notebooks at www.effective-quadratures.org</p>
 </dd></dl>
 
 </dd></dl>

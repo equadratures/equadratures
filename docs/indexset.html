@@ -76,7 +76,6 @@
 <li class="toctree-l2"><a class="reference internal" href="effectivequads.html">Effective-Subsampling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="integrals.html">Integrals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="analyticaldistributions.html">Analytical Distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html">Utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Contact.html">Contact</a></li>
@@ -148,76 +147,115 @@
 <dl class="class">
 <dt id="effective_quadratures.indexset.IndexSet">
 <em class="property">class </em><code class="descclassname">effective_quadratures.indexset.</code><code class="descname">IndexSet</code><span class="sig-paren">(</span><em>index_set_type</em>, <em>orders=None</em>, <em>level=None</em>, <em>growth_rule=None</em>, <em>dimension=None</em>, <em>q=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.indexset.IndexSet" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>This class defines an index set</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>index_set_type</strong> (<em>string</em>) &#8211; The type of index set to be used. Options include:
-<cite>Total order</cite>, <cite>Tensor grid</cite>, <cite>Sparse grid</cite> and <cite>Hyperbolic basis</cite>.</li>
-<li><strong>of integers orders</strong> (<em>ndarray</em>) &#8211; The highest polynomial order in each direction</li>
-<li><strong>level</strong> (<em>integer</em>) &#8211; For sparse grids the level of the sparse grid rule</li>
-<li><strong>growth_rule</strong> (<em>string</em>) &#8211; <dl class="docutils">
-<dt>The type of growth rule associated with the sparse grid. Options include:</dt>
-<dd><cite>linear</cite> and <cite>exponential</cite>.</dd>
+<cite>Total order</cite>, <cite>Tensor grid</cite>, <cite>Sparse grid</cite>, <cite>Hyperbolic basis</cite> and <a href="#id1"><span class="problematic" id="id2">`</span></a>Euclidean degree&#8217;. All basis are isotropic. If you require anisotropic basis do email us.</li>
+<li><strong>orders</strong> (<em>ndarray</em>) &#8211; List of integers corresponding to the highest polynomial order in each direction.</li>
+<li><strong>growth_rule</strong> (<em>string</em>) &#8211; The type of growth rule associated with sparse grids. Options include: <a href="#id3"><span class="problematic" id="id4">`</span></a>linear&#8217; and <a href="#id5"><span class="problematic" id="id6">`</span></a>exponential&#8217;. This input is only required when using a sparse grid.</li>
+<li><strong>dimensions</strong> (<em>integer</em>) &#8211; The number of dimensions of the problem. This input is only required when using a sparse grid.</li>
+<li><strong>q</strong> (<em>double</em>) &#8211; The <a href="#id7"><span class="problematic" id="id8">`</span></a>q&#8217; parameter is used to control the number of basis terms used in a hyperbolic basis. It varies between 0.0 to 1.0. A value of 1.0 yields a total order basis.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd><ul class="first last simple">
+<li><strong>self.dimension</strong>: (integer) Number of dimensions of the index set.</li>
+<li><strong>self.elements</strong>: (numpy array) The multi-indices of the index set.</li>
+<li><strong>self.cardinality</strong>:(integer) The cardinality of the index set.</li>
+</ul>
+</dd>
 </dl>
-<p><strong>Sample declarations</strong></p>
+<p><strong>Notes:</strong></p>
+<p>For details on the Euclidean degree see: <a class="reference external" href="https://arxiv.org/pdf/1608.02216v1.pdf">Trefethen 2016</a>. 
+Note that all index sets are sorted in the constructor automatically, by their total orders.</p>
+<p><strong>Sample usage</strong></p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Tensor grid&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
 <span class="o">&gt;&gt;</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Sparse grid&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">growth_rule</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="o">&gt;&gt;</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Total order&#39;</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
 <span class="o">&gt;&gt;</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Hyperbolic basis&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="n">q</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)</span>
 </pre></div>
 </div>
-</li>
+<dl class="method">
+<dt id="effective_quadratures.indexset.IndexSet.getIndexSet">
+<code class="descname">getIndexSet</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.indexset.IndexSet.getIndexSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prunes down the number of elements in an index set</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>object</strong> (<a class="reference internal" href="#effective_quadratures.indexset.IndexSet" title="effective_quadratures.indexset.IndexSet"><em>IndexSet</em></a>) &#8211; An instance of the IndexSet class.</li>
+<li><strong>number_of_elements_to_delete</strong> (<em>integer</em>) &#8211; The number of multi-indices the user would like to delete</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<dl class="method">
-<dt id="effective_quadratures.indexset.IndexSet.getCardinality">
-<code class="descname">getCardinality</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.indexset.IndexSet.getCardinality" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the cardinality (total number of elements) of the index set</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.indexset.IndexSet" title="effective_quadratures.indexset.IndexSet"><em>IndexSet</em></a>) &#8211; An instance of the IndexSet class</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">cardinality: Total number of elements in the index set</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">integer</td>
-</tr>
-</tbody>
-</table>
+<p><strong>Sample usage:</strong> 
+For useage please see the ipython-notebooks at www.effective-quadratures.org</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="effective_quadratures.indexset.IndexSet.getIndexSet">
-<code class="descname">getIndexSet</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.indexset.IndexSet.getIndexSet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns all the elements of an index set</p>
+<dt id="effective_quadratures.indexset.IndexSet.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>filename=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.indexset.IndexSet.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the index set</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.indexset.IndexSet" title="effective_quadratures.indexset.IndexSet"><em>IndexSet</em></a>) &#8211; An instance of the IndexSet class</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">iset: An n-by-d array of index set elements. Here n represents the cardinality of the index set
-while d represents the number of dimensions.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>object</strong> (<a class="reference internal" href="#effective_quadratures.indexset.IndexSet" title="effective_quadratures.indexset.IndexSet"><em>IndexSet</em></a>) &#8211; An instance of the IndexSet class.</li>
+<li><strong>filename</strong> (<em>string</em>) &#8211; A file name in case the user wishes to save the bar graph. The default output is an eps file.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
+<p><strong>Sample usage:</strong> 
+For useage please see the ipython-notebooks at www.effective-quadratures.org</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="effective_quadratures.indexset.IndexSet.prune">
 <code class="descname">prune</code><span class="sig-paren">(</span><em>number_of_elements_to_delete</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.indexset.IndexSet.prune" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prunes down the number of elements in an index set!
-&gt; shouldn&#8217;t this be somehow done by the total order or sth??</p>
+<dd><p>Prunes down the number of elements in an index set</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>object</strong> (<a class="reference internal" href="#effective_quadratures.indexset.IndexSet" title="effective_quadratures.indexset.IndexSet"><em>IndexSet</em></a>) &#8211; An instance of the IndexSet class.</li>
+<li><strong>number_of_elements_to_delete</strong> (<em>integer</em>) &#8211; The number of multi-indices the user would like to delete</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample usage:</strong> 
+For useage please see the ipython-notebooks at www.effective-quadratures.org</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.indexset.IndexSet.sort">
+<code class="descname">sort</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.indexset.IndexSet.sort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Routine that sorts a multi-index in ascending order based on the total orders. The constructor by default calls this function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>object</strong> (<a class="reference internal" href="#effective_quadratures.indexset.IndexSet" title="effective_quadratures.indexset.IndexSet"><em>IndexSet</em></a>) &#8211; An instance of the IndexSet class.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample usage:</strong> 
+For useage please see the ipython-notebooks at www.effective-quadratures.org</p>
 </dd></dl>
 
 </dd></dl>

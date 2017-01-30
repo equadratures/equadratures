@@ -4,7 +4,8 @@ from parameter import Parameter
 from polynomial import Polynomial
 from qr import qr_MGS, solveLSQ, solveCLSQ
 from indexset import IndexSet
-from utils import error_function, evalfunction, evalgradients
+from utils import evalfunction, evalgradients
+from computestats import Statistics
 import numpy as np
 
 class EffectiveSubsampling(object):
@@ -241,14 +242,24 @@ class EffectiveSubsampling(object):
         
         return x, cond
     
+    def stats(self, function_values, gradient_values=None, technique=None):
+        """
+        Returns statistics based on the coefficients
 
-class Statistics(EffectiveSubsampling):
-    def __init__(self, function_values, gradient_values=None, technique=None):
-        x, cond = computeCoefficients(self, function_values, gradient_values, technique)
-        self.mean = x[0]
-        self.variance = x[1]
-        
-    
+        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class.
+        :param callable function_values: A callable function or a numpy matrix of model evaluations at the quadrature subsamples.
+        :param callable gradient_values: A callable function of a numpy matrix of gradient evaluations at the quadrature subsamples.
+        :param string technique: The least squares technique to be used; options include: 'weighted' (default), 'constrainedDE', 'constrainedNS'. These options only matter when using gradient evaluations. They correspond to a stacked / weighted least squares approach, a constrained approach using       direct elimination, and a constrained approach using the null space method. 
+        :return: 
+            * **stats_obj (Statistics)**: A Statistics object
+
+        **Sample usage:** 
+        For useage please see the ipython-notebooks at www.effective-quadratures.org
+        """
+        coefficients, cond = self.computeCoefficients(function_values, gradient_values, technique)
+        stats_obj = Statistics(coefficients, self.index_set)
+        return stats_obj
+
 ################################
 # Private functions!
 ################################
@@ -309,7 +320,7 @@ def getSquareA(self):
     elif flag == "Random":
         option = 2
     else:
-        error_function("ERROR in EffectiveQuadSubsampling --> getAsubsampled(): For the third input choose from either 'QR' or 'Random'")
+        raise(ValueError, "ERROR in EffectiveQuadSubsampling --> getAsubsampled(): For the third input choose from either 'QR' or 'Random'")
 
     A = self.A
     m , n = A.shape
@@ -318,7 +329,7 @@ def getSquareA(self):
         
         # Now if the derivative flag option is activated, we do not raise an error. Otherwise an error is raised!
         if self.uq_parameters[0].derivative_flag is None:
-            error_function("ERROR in EffectiveQuadSubsampling --> getAsubsampled(): The maximum number of evaluations must be greater or equal to the number of basis terms")
+            raise(ValueError, "ERROR in EffectiveQuadSubsampling --> getAsubsampled(): The maximum number of evaluations must be greater or equal to the number of basis terms")
 
     # Now compute the rank revealing QR decomposition of A!
     if option == 1:

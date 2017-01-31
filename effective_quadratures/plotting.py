@@ -11,7 +11,6 @@ def twoDgrid(coefficients, index_set):
 
     # First determine the maximum tensor grid order!
     max_order = int( np.max(index_set) ) + 1
-    coefficients = coefficients.T
 
     # Now create a tensor grid with this max. order
     y, x = np.mgrid[0:max_order, 0:max_order]
@@ -23,7 +22,7 @@ def twoDgrid(coefficients, index_set):
             y_entry = y[i,j]
             for k in range(0, len(index_set)):
                 if(x_entry == index_set[k,0] and y_entry == index_set[k,1]):
-                    z[i,j] = coefficients[0,k]
+                    z[i,j] = coefficients[k]
                     break
 
     return x,y,z, max_order
@@ -31,8 +30,8 @@ def twoDgrid(coefficients, index_set):
 def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None):
     elements = index_set.elements
     x, y, z, max_order = twoDgrid(coefficients, elements)
-    Zm = np.ma.masked_where(np.isnan(z),z)
-    G = np.log10(np.abs(Zm))
+    G = np.log10(np.abs(z))
+    Zm = np.ma.masked_where(np.isnan(G),G)
     opacity = 0.8
     plt.rc('text', usetex=True)
     plt.rc('font', family='serif')
@@ -41,9 +40,9 @@ def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None):
     ax = fig.add_subplot(1,1,1)
     plt.grid()
     ax.set_axis_bgcolor('whitesmoke')
-    plt.pcolor(y,x, G, cmap='jet', vmin=-16, vmax=1)
-    plt.xlim(0, max_order+1)
-    plt.ylim(0, max_order+1)
+    plt.pcolor(y,x, Zm, cmap='jet', vmin=-16, vmax=1)
+    plt.xlim(0, max_order)
+    plt.ylim(0, max_order)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
     plt.xlabel(x_label, fontsize=16)
@@ -52,8 +51,8 @@ def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None):
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
-    cbar = plt.colorbar(imax1, extend='neither', spacing='proportional',
-                orientation='vertical', shrink=0.7, format="%.0f")
+    cbar = plt.colorbar(extend='neither', spacing='proportional',
+                orientation='vertical', shrink=0.8, format="%.0f")
     cbar.ax.tick_params(labelsize=16) 
     plt.tight_layout()
     if filename is None:
@@ -105,7 +104,6 @@ def lineplot(x, y, x_label, y_label, filename=None):
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
-    plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
     else:
@@ -150,7 +148,6 @@ def scatterplot3D(x, y, z, x_label, y_label, z_label, filename=None):
     ax.w_yaxis._axinfo.update({'grid' : {'color': (1.0, 1.0, 1.0, 1)}})
     ax.w_zaxis._axinfo.update({'grid' : {'color': (1.0, 1.0, 1.0, 1)}})
     plt.scatter(x, y, marker='s', s=70, alpha=opacity, color='limegreen',linewidth=1.5)
-    plt.tight_layout()
     plt.show()
 
 def scatterplot(x, y, x_label, y_label, filename=None):

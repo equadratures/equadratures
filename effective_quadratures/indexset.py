@@ -87,8 +87,8 @@ class IndexSet(object):
         self.cardinality = len(index_set)
 
         # Don't sort a sparse grid index set, because the order is tied to the coefficients!
-        #if name is not "Sparse grid":
-        #    self.sort()
+        if name is not "Sparse grid":
+            self.sort()
         
 
     def prune(self, number_of_elements_to_delete):

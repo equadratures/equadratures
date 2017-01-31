@@ -2,8 +2,7 @@
 """Index sets for multivariate polynomials"""
 import numpy as np
 import math as mt
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
+from plotting import scatterplot
 
 class IndexSet(object):
     """
@@ -88,8 +87,8 @@ class IndexSet(object):
         self.cardinality = len(index_set)
 
         # Don't sort a sparse grid index set, because the order is tied to the coefficients!
-        if name is not "Sparse grid":
-            self.sort()
+        #if name is not "Sparse grid":
+        #    self.sort()
         
 
     def prune(self, number_of_elements_to_delete):
@@ -177,17 +176,10 @@ class IndexSet(object):
         For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
         elements = self.elements
+        elements = np.mat(elements)
 
         if self.dimension == 2:
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-            ax.scatter(column(elements,0), column(elements,1) , marker='o', s=80, color='red')
-            ax.set_xlabel(r'$i_1$')
-            ax.set_ylabel(r'$i_2$')
-            if filename is not None:
-                plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
-            else:
-                plt.show()
+            scatterplot(elements[:,0], elements[:,1], r'$i_1$', r'$i_2')
 
         elif self.dimension == 3:
             fig = plt.figure()

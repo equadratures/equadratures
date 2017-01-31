@@ -259,7 +259,7 @@ class EffectiveSubsampling(object):
         coefficients, cond = self.computeCoefficients(function_values, gradient_values, technique)
         stats_obj = Statistics(coefficients, self.index_set)
         return stats_obj
-
+    
 ################################
 # Private functions!
 ################################

@@ -21,28 +21,7 @@ def meshgrid(lower_lim, upper_lim, nx1, nx2):
 
     return stackOfPoints, x1, x2
 
-# A simple utility that helps to visualize plotting sparse and tensor grid coefficients
-def twoDgrid(coefficients, index_set):
 
-    # First determine the maximum tensor grid order!
-    max_order = int( np.max(index_set) ) + 1
-    coefficients = coefficients.T
-
-    # Now create a tensor grid with this max. order
-    y, x = np.mgrid[0:max_order, 0:max_order]
-    z = (x*0 + y*0) + float('NaN')
-
-    # Now for each grid point, cycle through spam_coefficients and see if
-    # that grid point is present, if so, add the coefficient value to z.
-    for i in range(0, max_order):
-        for j in range(0, max_order):
-            x_entry = x[i,j]
-            y_entry = y[i,j]
-            for k in range(0, len(index_set)):
-                if(x_entry == index_set[k,0] and y_entry == index_set[k,1]):
-                    z[i,j] = coefficients[0,k]
-
-    return x,y,z, max_order
 
 
 def compute_b_vector(quad_pts, function, quad_weights):

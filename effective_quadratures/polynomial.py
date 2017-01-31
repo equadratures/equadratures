@@ -164,7 +164,7 @@ class Polynomial(object):
             if isets.index_set_type == 'Sparse grid':
                 ic, not_used, index_set = isets.getIndexSet()
             else:
-                index_set = isets.getIndexSet()
+                index_set = isets.elements
         else:
             index_set = indexsets
 

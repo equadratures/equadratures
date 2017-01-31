@@ -228,8 +228,6 @@ class EffectiveSubsampling(object):
             C = self.C_subsampled
 
             # Now row normalize the Cs and the ds
-            
-
             if technique is None:
                 raise(ValueError, 'A technique must be defined for gradient problems. Choose from stacked, equality or inequality. For more information please consult the detailed user guide.')
             else:
@@ -281,9 +279,7 @@ def rowNormalize(A):
 def getA(self):
     stackOfParameters = self.uq_parameters
     polynomial_basis = self.index_set
-    dimensions = len(stackOfParameters)
-    indices = IndexSet.getIndexSet(polynomial_basis)
-    no_of_indices = len(indices)
+    dimensions = self.index_set.dimension
 
     # Crate a new PolynomialParam object to get tensor grid points & weights
     polyObject_for_pts =  Polynomial(stackOfParameters)

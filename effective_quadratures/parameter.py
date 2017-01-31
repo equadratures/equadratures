@@ -4,7 +4,7 @@ import numpy as np
 from scipy.special import gamma
 import analyticaldistributions as analytical
 from utils import error_function
-import matplotlib.pyplot as plt
+from plotting import histogram, lineplot
 class Parameter(object):
     
     """
@@ -160,11 +160,7 @@ class Parameter(object):
         if graph is None:
             return x, y
         elif graph == 1:
-            fig = plt.figure()
-            plt.plot(x, y, 'k-')
-            plt.xlabel('x')
-            plt.ylabel('PDF')
-            plt.show()
+            lineplot(x, y, 'Parameter', 'PDF')
         else:
             error_function('parameter getPDF(): invalid value for graph!')
 
@@ -187,12 +183,7 @@ class Parameter(object):
         yy = self.get_iCDF(uniform_samples)
 
         if graph is not None:   
-            fig = plt.figure()
-            n, bins, patches = plt.hist(yy, 30, normed=1, facecolor='#4baa89', alpha=0.75)
-            plt.xlabel('x')
-            plt.ylabel('PDF')
-            plt.xlim(1.2*np.min(yy), 1.2*np.max(yy))
-            plt.show()
+            histogram(yy, 'Parameter', 'PDF')
             
         return yy
     

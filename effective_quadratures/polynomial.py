@@ -6,8 +6,7 @@ import numpy as np
 from math import factorial
 from itertools import combinations
 from utils import error_function, evalfunction, find_repeated_elements, meshgrid
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
+from plotting import bestfit
 from qr import solveLSQ
 class Polynomial(object):
     """
@@ -356,7 +355,8 @@ class PolyFit(object):
 
         if self.option is 'linear':
             A = np.mat(np.hstack([X, ones]), dtype='float64')
-            self.coefficients =  np.mat(solveLSQ(A, Y), dtype='float64')
+            coeffs, not_used = solveLSQ(A, Y)
+            self.coefficients =  np.mat(coeffs, dtype='float64')
 
         elif self.option is 'quadratic':
            dimensions = n
@@ -378,7 +378,8 @@ class PolyFit(object):
 
            # Set up the A matrix
            A = np.mat(np.hstack([constants, X, X2, XC]) )
-           self.coefficients = np.mat(solveLSQ(A, Y), dtype='float64')
+           coeffs, not_used = solveLSQ(A, Y)
+           self.coefficients = np.mat(coeffs, dtype='float64')
         else:
             raise(ValueError, 'PolyFit.__init__: invalid fitting option: Choose between linear or quadratic.')
 
@@ -403,7 +404,7 @@ class PolyFit(object):
                 test_y = np.mat(np.zeros((p, 1)) , dtype='float64' )
                 for i in range(0, p):
                     test_y[i,0] = (self.coefficients[2] * test_x[i,0]**2) + (self.coefficients[1] * test_x[i,:].T) + self.coefficients[0]
-                return test_y.T
+                return test_y
             else:
                 variables = range(0, dimensions)
                 A = np.mat( np.zeros((dimensions, dimensions)), dtype='float64')
@@ -428,7 +429,12 @@ class PolyFit(object):
                 test_y = np.mat(np.zeros((p, 1)) , dtype='float64' )
                 for i in range(0, p):
                     test_y[i,0] = (test_x[i,:] * A * test_x[i,:].T) + (c.T * test_x[i,:].T) + d
-                return test_y.T
+                return test_y
+        
+    def plot(self, test_x, filename=None):
+        test_y = self.testPolynomial(test_x)
+        bestfit(self.training_x, self.training_y, test_x, test_y, 'X', 'Y', filename)
+            
 #--------------------------------------------------------------------------------------------------------------
 #
 #  PRIVATE FUNCTIONS!

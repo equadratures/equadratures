@@ -6,7 +6,7 @@ import numpy as np
 from math import factorial
 from itertools import combinations
 from utils import error_function, evalfunction, find_repeated_elements, meshgrid
-from plotting import bestfit
+from plotting import bestfit, bestfit3D
 from qr import solveLSQ
 class Polynomial(object):
     """
@@ -351,6 +351,7 @@ class PolyFit(object):
 
         m, n = X.shape
         ones = np.ones((m, 1))
+        self.dimensions = n
         #total_terms = nchoosek(n) + order, order)        
 
         if self.option is 'linear':
@@ -385,6 +386,16 @@ class PolyFit(object):
 
     # Test Polynomial
     def testPolynomial(self, test_x):
+        """
+        Returns the PDF of the model output. This routine effectively multiplies the coefficients of a polynomial
+        expansion with its corresponding basis polynomials. 
+    
+        :param PolyFit self: An instance of the PolyFit class
+        :param: numpy-matrix test_x: The function that needs to be approximated (or interpolated)
+        :return: polyapprox: The polynomial expansion of a function
+        :rtype: numpy matrix
+
+        """
         coefficients = self.coefficients
         p, q = test_x.shape
         m, dimensions = self.training_x.shape
@@ -421,6 +432,7 @@ class PolyFit(object):
                             A[i, j] = self.coefficients[dimensions*2 + entry] * 0.5
                             A[j, i] = A[i, j] # Because A is a symmetric matrix!
                     A[i,i] = self.coefficients[i + (2*dimensions - 1)] # Diagonal elements of A -- which house the quadratic terms!
+                
                 # For the linear terms!
                 for i in range(0, dimensions):
                     c[i] = self.coefficients[i+1]        
@@ -432,9 +444,33 @@ class PolyFit(object):
                 return test_y
         
     def plot(self, test_x, filename=None):
-        test_y = self.testPolynomial(test_x)
-        bestfit(self.training_x, self.training_y, test_x, test_y, 'X', 'Y', filename)
-            
+        """
+        Returns the PDF of the model output. This routine effectively multiplies the coefficients of a polynomial
+        expansion with its corresponding basis polynomials. 
+    
+        :param Polynomial self: An instance of the Polynomial class
+        :param: callable function: The function that needs to be approximated (or interpolated)
+        :return: polyapprox: The polynomial expansion of a function
+        :rtype: numpy matrix
+
+        """
+        dimensions = self.dimensions
+        if dimensions == 1:
+            xx = np.mat(test_x, dtype='float64')
+            test_x = xx.T
+            test_y = self.testPolynomial(test_x)
+            bestfit(self.training_x, self.training_y, test_x, test_y, 'X', 'Y', filename)
+        elif dimensions == 2:
+            X1 = test_x[0]
+            X2 = test_x[1]
+            xx1, xx2 = np.meshgrid(X1, X2)
+            u, v = xx1.shape
+            test_x = np.mat( np.hstack( [np.reshape(xx1, (u*v, 1)),  np.reshape(xx2, (u*v, 1)) ]) , dtype='float64')
+            test_y = self.testPolynomial(test_x)
+            yy1 = np.reshape(test_y, (u, v))
+            bestfit3D(self.training_x, self.training_y, [xx1, xx2], yy1, 'X', 'Y', 'Z', filename)
+
+       
 #--------------------------------------------------------------------------------------------------------------
 #
 #  PRIVATE FUNCTIONS!

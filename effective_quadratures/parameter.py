@@ -166,7 +166,7 @@ class Parameter(object):
 
         return x, y
 
-    def getSamples(self, m=None, graph=None):
+    def getSamples(self, m=None, graph=None, filename=None):
         """
         Returns samples of the Parameter
 
@@ -183,7 +183,11 @@ class Parameter(object):
         yy = self.get_iCDF(uniform_samples)
 
         if graph is not None:   
-            histogram(yy, 'Parameter', 'PDF')
+            if filename is not None:
+                histogram(yy, 'Parameter', 'PDF', filename)
+            else:
+                histogram(yy, 'Parameter', 'PDF')
+            
             
         return yy
     

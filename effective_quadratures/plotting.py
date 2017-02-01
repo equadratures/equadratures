@@ -37,7 +37,7 @@ def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None):
     if filename is None:
         plt.show()
     else:
-        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
+        plt.savefig(filename, format='png', dpi=300, bbox_inches='tight')
 
 
 def bestfit(x_train, y_train, x_test, y_test, x_label, y_label, filename=None):
@@ -101,10 +101,14 @@ def bestfit3D(x_train, y_train, x_test, y_test, x_label, y_label, z_label, filen
     ax.set_ylabel(y_label)
     ax.set_zlabel(z_label)
     for i in range(0, m):
-        ax.scatter(x_train[i,0], x_train[i,1], y_train[i],  marker='H', s=90, alpha=opacity, color='darkorange',linewidth=1.5)
-    ax.plot_surface(xx1,xx2, y_test,rstride=1, cstride=1, cmap=cm.terrain, linewidth=0.02, alpha=0.6)
+        ax.scatter(x_train[i,0], x_train[i,1], y_train[i],  marker='H', s=90, alpha=opacity, color='teal',linewidth=1.5)
+    ax.plot_surface(xx1,xx2, y_test,rstride=1, cstride=1, cmap=cm.jet, linewidth=0.02, alpha=0.6)
     plt.tight_layout()
-    plt.show()
+    if filename is not None:
+        plt.savefig(filename, format='png', dpi=300, bbox_inches='tight')
+    else:
+        plt.show()
+
 
 
 def lineplot(x, y, x_label, y_label, filename=None):
@@ -135,7 +139,7 @@ def scatterplot3D(x, f, x1_label=None, x2_label=None, f_label=None, filename=Non
     p, q = f.shape
     if n > m :
         raise(ValueError, 'scatterplot(x, y): Matrix x of size m-by-n, must satisfy m>=n')
-    if m is not p:
+    if m != p:
         raise(ValueError, 'scatterplot(x, y): The number of rows in x must be equivalent to the number of rows in y')
     
     opacity = 0.8
@@ -172,7 +176,7 @@ def scatterplot3D(x, f, x1_label=None, x2_label=None, f_label=None, filename=Non
         ax.set_zlabel(f_label)   
     plt.tight_layout()
     if not filename is None:
-        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
+        plt.savefig(filename, format='png', dpi=300, bbox_inches='tight')
     else:
         plt.show()
 
@@ -233,7 +237,7 @@ def histogram(samples, x_label, y_label, filename=None):
     plt.yticks(fontsize=16)
     plt.tight_layout()
     if filename is not None:
-        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
+        plt.savefig(filename, format='png', dpi=300, bbox_inches='tight')
     else:
         plt.show()
 

@@ -6,7 +6,7 @@ import numpy as np
 from math import factorial
 from itertools import combinations
 from utils import error_function, evalfunction, find_repeated_elements, meshgrid
-from plotting import bestfit, bestfit3D
+from plotting import bestfit, bestfit3D, histogram
 from qr import solveLSQ
 class Polynomial(object):
     """
@@ -280,7 +280,7 @@ class Polynomial(object):
         polyapprox = P.T * C
         return polyapprox
 
-    def getPDF(self, function, graph=1, coefficients=None, indexset=None):
+    def getPDF(self, function, graph=1, coefficients=None, indexset=None, filename=None):
         """
         Returns the PDF of the model output. This routine effectively multiplies the coefficients of a polynomial
         expansion with its corresponding basis polynomials. 
@@ -311,14 +311,9 @@ class Polynomial(object):
         C = np.mat(coefficients)
         polyapprox = P.T * C
 
+
         if graph is not None:   
-            fig = plt.figure()
-            n, bins, patches = plt.hist(polyapprox, 30, normed=1, facecolor='red', alpha=0.75)
-            plt.xlabel('f(x)')
-            plt.ylabel('PDF')
-            plt.xlim(np.min(polyapprox)-0.25, np.max(polyapprox)+0.25)
-            #plt.savefig('file.png', format='png', dpi=800)
-            plt.show()
+            histogram(polyapprox, 'f(x)', 'PDF', filename)
 
         return polyapprox
 
@@ -459,7 +454,7 @@ class PolyFit(object):
             xx = np.mat(test_x, dtype='float64')
             test_x = xx.T
             test_y = self.testPolynomial(test_x)
-            bestfit(self.training_x, self.training_y, test_x, test_y, 'X', 'Y', filename)
+            bestfit(self.training_x, self.training_y, test_x, test_y, r'$X$', r'$Y$', filename)
         elif dimensions == 2:
             X1 = test_x[0]
             X2 = test_x[1]
@@ -468,7 +463,7 @@ class PolyFit(object):
             test_x = np.mat( np.hstack( [np.reshape(xx1, (u*v, 1)),  np.reshape(xx2, (u*v, 1)) ]) , dtype='float64')
             test_y = self.testPolynomial(test_x)
             yy1 = np.reshape(test_y, (u, v))
-            bestfit3D(self.training_x, self.training_y, [xx1, xx2], yy1, 'X', 'Y', 'Z', filename)
+            bestfit3D(self.training_x, self.training_y, [xx1, xx2], yy1, r'$X_1$', r'$X_2$', r'$Y$', filename)
 
        
 #--------------------------------------------------------------------------------------------------------------

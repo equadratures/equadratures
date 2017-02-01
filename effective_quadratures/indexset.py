@@ -2,7 +2,7 @@
 """Index sets for multivariate polynomials"""
 import numpy as np
 import math as mt
-from plotting import scatterplot
+from plotting import scatterplot, scatterplot3D
 
 class IndexSet(object):
     """
@@ -72,7 +72,7 @@ class IndexSet(object):
             index_set = total_order_index_set(self.orders)
         elif name == "Sparse grid":
             sparse_index, a, SG_set = sparse_grid_index_set(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
-            index_set = sparse_index
+            index_set = SG_set
         elif name == "Tensor grid":
             index_set = tensor_grid_index_set(self.orders)
         elif name == "Hyperbolic basis":
@@ -179,19 +179,13 @@ class IndexSet(object):
         elements = np.mat(elements)
 
         if self.dimension == 2:
-            scatterplot(elements[:,0], elements[:,1], r'$i_1$', r'$i_2')
-
+            scatterplot(elements[:,0], elements[:,1], r'$i_1$', r'$i_2', filename)
+        
         elif self.dimension == 3:
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
-            ax.scatter(column(elements,0), column(elements,1), column(elements,2) , marker='s', s=80, color='green', alpha=0.6)
-            ax.set_xlabel(r'$i_1$')
-            ax.set_ylabel(r'$i_2$')
-            ax.set_zlabel(r'$i_3$')
-            if filename is not None:
-                plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
-            else:
-                plt.show()
+            scatterplot3D( elements[:,[0,1]]  , elements[:,2] , r'$i_1$', r'$i_2', r'$i_3', filename)
+
+        else:
+            raise(ValueError, 'IndexSet()->plot(): Can only generate plots when the dimension is 2 or 3!')
 
 
 #---------------------------------------------------------------------------------------------------

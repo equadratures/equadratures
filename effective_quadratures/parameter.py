@@ -4,12 +4,11 @@ import numpy as np
 from scipy.special import gamma
 import analyticaldistributions as analytical
 from utils import error_function
-from plotting import histogram, lineplot
+import matplotlib.pyplot as plt
 class Parameter(object):
     
     """
     This class defines a univariate parameter. Below are details of its constructor.
-
     :param double lower: Lower bound for the parameter. 
     :param double upper: Upper bound for the parameter
     :param integer points: Number of quadrature points to be used for subsequent
@@ -30,18 +29,14 @@ class Parameter(object):
     ::
         # Uniform distribution with 5 points on [-2,2]
         >> Parameter(points=5, lower=-2, upper=2, param_type='Uniform')
-
         # Gaussian distribution with 3 points with mean=4.0, variance=2.5
         >> Parameter(points=3, shape_parameter_A=4, shape_parameter_B=2.5, 
         param_type='Gaussian') 
-
         # Gamma distribution with 15 points with k=1.0 and theta=2.0
         >> Parameter(points=15, shape_parameter_A=1.0, shape_parameter_B=2.0, 
         param_type='Gamma')
-
         # Exponential distribution with 12 points with lambda=0.5
         >> Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
-
     """
 
     # constructor
@@ -92,11 +87,9 @@ class Parameter(object):
     def computeMean(self):
         """
         Returns the mean of the parameter 
-
         :param Parameter self: An instance of the Parameter class
         :return: mu, mean of the parameter
         :rtype: double
-
         **Sample declaration**
         :: 
             >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
@@ -115,62 +108,45 @@ class Parameter(object):
         return mu
 
 
-    def getPDF(self, N, graph=None):
+    def getPDF(self, N):
         """
-        Returns the PDF of the parameter 
-
+        Returns the probability density function of the parameter 
         :param Parameter self: An instance of the Parameter class
         :param integer N: Number of points along the x-axis 
-        :param boolean graph: Select 1 for python to plot the PDF on a graph. Default is 0, in which case
-            no graph is produced 
         :return: x, 1-by-N matrix that contains the values of the x-axis along the support of the parameter 
         :rtype: ndarray
         :return: w, 1-by-N matrix that contains the values of the PDF of the parameter
         :rtype: ndarray
-
-        Raises:
-            AttributeError: The ``Raises`` section is a list of all exceptions
-                that are relevant to the interface.
-            ValueError: If `param2` is equal to `param1`.
-
         **Sample declaration**
         :: 
             >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
             >> x, y = var1.getPDF(50)
         """
         if self.param_type is "Gaussian":
-            x, y = analytical.Gaussian(N, self.shape_parameter_A, self.shape_parameter_B)
+            x, y = analytical.PDF_GaussianDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Beta":
-            x, y = analytical.BetaDistribution(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper) 
+            x, y = analytical.PDF_BetaDistribution(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper) 
         elif self.param_type is "Gamma":
-            x, y = analytical.Gamma(N, self.shape_parameter_A, self.shape_parameter_B)
+            x, y = analytical.PDF_Gamma(N, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Weibull":
-            x, y = analytical.WeibullDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
+            x, y = analytical.PDF_WeibullDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Cauchy":
-            x, y = analytical.CauchyDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
+            x, y = analytical.PDF_CauchyDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Uniform":
-            x, y = analytical.UniformDistribution(N, self.lower, self.upper)
+            x, y = analytical.PDF_UniformDistribution(N, self.lower, self.upper)
         elif self.param_type is "TruncatedGaussian":
-            x, y = analytical.TruncatedGaussian(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
+            x, y = analytical.PDF_TruncatedGaussian(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Exponential":
-            x, y = analytical.ExponentialDistribution(N, self.shape_parameter_A)
+            x, y = analytical.PDF_ExponentialDistribution(N, self.shape_parameter_A)
         else:
-            raise(ValueError, 'parameter getPDF(): invalid parameter type!')   
-        else:
-            raise(ValueError, 'parameter getPDF(): invalid value for graph!')
-
+            raise(ValueError, 'parameter getPDF(): invalid parameter type!')
         return x, y
-    
-    def plot(self, filename=None):
-        x, y = self.getPDF(N=500)
-        lineplot(x, y, 'Parameter', 'PDF')
-    def getSamples(self, m=None, graph=None, filename=None):
+
+    def getSamples(self, m=None, graph=None):
         """
         Returns samples of the Parameter
-
         : param Parameter self: An instance of the Parameter class
         : param integer m: Number of random samples. If no value is provided, a default of 1e5 is assumed. 
-
         """
         if m is None:
             number_of_random_samples = 5e5
@@ -181,24 +157,56 @@ class Parameter(object):
         yy = self.get_iCDF(uniform_samples)
 
         if graph is not None:   
-            if filename is not None:
-                histogram(yy, 'Parameter', 'PDF', filename)
-            else:
-                histogram(yy, 'Parameter', 'PDF')
-            
+            fig = plt.figure()
+            n, bins, patches = plt.hist(yy, 30, normed=1, facecolor='#4baa89', alpha=0.75)
+            plt.xlabel('x')
+            plt.ylabel('PDF')
+            plt.xlim(1.2*np.min(yy), 1.2*np.max(yy))
+            plt.show()
             
         return yy
     
+    def get_CDF(self, N):
+        """
+        Returns the cumulative density function of the parameter 
+        :param Parameter self: An instance of the Parameter class
+        :param integer N: Number of points along the x-axis 
+        :return: x, 1-by-N matrix that contains the values of the x-axis along the support of the parameter 
+        :rtype: ndarray
+        :return: w, 1-by-N matrix that contains the values of the PDF of the parameter
+        :rtype: ndarray
+        **Sample declaration**
+        :: 
+            >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
+            >> x, y = var1.getCDF(50)
+        """
+        if self.param_type is "Gaussian":
+            x, y = analytical.CDF_GaussianDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
+        elif self.param_type is "Beta":
+            x, y = analytical.CDF_BetaDistribution(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper) 
+        elif self.param_type is "Gamma":
+            x, y = analytical.CDF_Gamma(N, self.shape_parameter_A, self.shape_parameter_B)
+        elif self.param_type is "Weibull":
+            x, y = analytical.CDF_WeibullDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
+        elif self.param_type is "Cauchy":
+            x, y = analytical.CDF_CauchyDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
+        elif self.param_type is "Uniform":
+            x, y = analytical.CDF_UniformDistribution(N, self.lower, self.upper)
+        elif self.param_type is "TruncatedGaussian":
+            x, y = analytical.CDF_TruncatedGaussian(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
+        elif self.param_type is "Exponential":
+            x, y = analytical.CDF_ExponentialDistribution(N, self.shape_parameter_A)
+        else:
+            raise(ValueError, 'parameter getCDF(): invalid parameter type!')
+        return x, y
 
     def get_iCDF(self, x):
         """
         Returns values of the inverse CDF
-
         : param Parameter self: An instance of the Parameter class
         : param numpy array x: 1-by-N array of doubles where each entry is between [0,1]
         : return: y, 1-by-N array where each entry is the inverse CDF of input x
         : rtype: ndarray
-
         **Notes**
         This routine is called by the getSamples function. It makes a call to analyticalDistributions
         """    
@@ -219,20 +227,18 @@ class Parameter(object):
         elif self.param_type is "Exponential":
             y = analytical.iCDF_ExponentialDistribution(x, self.shape_parameter_A)
         else:
-            error_function('parameter getiCDF(): invalid parameter type!')
+            raise(ValueError, 'parameter getiCDF(): invalid parameter type!')
         return y
     
     def getRecurrenceCoefficients(self, order=None):
         """
         Returns the recurrence coefficients of the parameter 
-
         :param Parameter self: An instance of the Parameter class
         :param int order: The number of recurrence coefficients required. By default this is
             the same as the number of points used when the parameter constructor is initiated.
         :return: ab, order-by-2 matrix that containts the recurrence coefficients
         :rtype: ndarray
         
-
         **Sample declaration**
         :: 
             >> var1 = Parameter(points=12, shape_parameter_A=0.5, 
@@ -245,13 +251,11 @@ class Parameter(object):
     def getJacobiMatrix(self, order=None):
         """
         Returns the tridiagonal Jacobi matrix
-
         :param Parameter self: An instance of the Parameter class
         :param int order: The number of rows and columns of the JacobiMatrix that is required. By default, this 
             value is set to be the same as the number of points used when the parameter constructor is initiated.
         :return: J, order-by-order sized Jacobi tridiagonal matrix
         :rtype: ndarray
-
         **Sample declaration**
         :: 
             # Code to compute the first 5 quadrature points & weights
@@ -265,14 +269,11 @@ class Parameter(object):
         """
         Returns the eigenvectors of the tridiagonal Jacobi matrix. These are used for computing
         quadrature rules for numerical integration.
-
         :param Parameter self: An instance of the Parameter class
         :param int order: Number of eigenvectors required. This function makes the call getJacobiMatrix(order) and then computes
             the corresponding eigenvectors.
-
         :return: V, order-by-order matrix that contains the eigenvectors of the Jacobi matrix
         :rtype: ndarray
-
         **Sample declaration**
         :: 
             # Code to Jacobi eigenvectors
@@ -284,7 +285,6 @@ class Parameter(object):
     def getOrthoPoly(self, points, order=None):
         """
         Returns orthogonal polynomials & its derivatives, evaluated at a set of points.
-
         :param Parameter self: An instance of the Parameter class
         :param ndarray points: Points at which the orthogonal polynomial (and its derivatives) should be evaluated at
         :param int order: This value of order overwrites the order defined for the constructor.
@@ -294,7 +294,6 @@ class Parameter(object):
         :return: derivative_orthopoly, order-by-k matrix where order defines the number of derivative of the orthogonal polynomials that will be evaluated
             and k defines the points at which these points should be evaluated at.
         :rtype: ndarray
-
         **Sample declaration**
         :: 
             >> x = np.linspace(-1,1,10)
@@ -306,16 +305,13 @@ class Parameter(object):
     def getLocalQuadrature(self, order=None):
         """
         Returns the 1D quadrature points and weights for the parameter
-
         :param Parameter self: An instance of the Parameter class
         :param int N: Number of quadrature points and weights required. If order is not specified, then
             by default the method will return the number of points defined in the parameter itself.
-
         :return: points, N-by-1 matrix that contains the quadrature points
         :rtype: ndarray
         :return: weights, 1-by-N matrix that contains the quadrature weights
         :rtype: ndarray
-
         **Sample declaration**
         :: 
             # Code to compute the first 5 quadrature points & weights
@@ -324,12 +320,6 @@ class Parameter(object):
         """
         return getlocalquadrature(self, order)
 
-    def plot(filename=None):
-        """ 
-        This function plots a PDF and a CDF of the parameter
-
-        """
-        
 #-----------------------------------------------------------------------------------
 #
 #                               PRIVATE FUNCTIONS BELOW
@@ -680,4 +670,3 @@ def orthoPolynomial_and_derivative(self, gridPoints, order=None):
     else:
         empty = np.mat([0])
         return orthopoly, empty
-

@@ -109,6 +109,46 @@ def bestfit3D(x_train, y_train, x_test, y_test, x_label, y_label, z_label, filen
     else:
         plt.show()
 
+def parameterplot(x_axis, y_pdf, y_cdf, filename=None, x_label=None, y_label1=None, y_label2=None):
+    opacity = 0.8
+    plt.rc('text', usetex=True)
+    plt.rc('font', family='serif')
+    mpl.rcParams['axes.linewidth'] = 2.0
+
+    fig = plt.figure()
+    fig.subplots_adjust(hspace=.25)
+    ax = fig.add_subplot(2, 1, 1)
+    plt.grid()
+    ax.set_axis_bgcolor('whitesmoke')
+    plt.plot(x_axis, y_pdf, linestyle='-', linewidth=3, color='deepskyblue')
+    ax.set_axisbelow(True)
+    adjust_spines(ax, ['left', 'bottom'])
+    #plt.xlabel(x_label, fontsize=16)
+    plt.ylabel(y_label1, fontsize=16)
+    plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
+    plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
+    #plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+    ax.set_xticklabels([])
+    # subplot 1
+    ax2 = plt.subplot(2, 1, 2)
+    plt.grid()
+    ax2.set_axis_bgcolor('whitesmoke')
+    plt.plot(x_axis, y_cdf, linestyle='-', linewidth=3, color='crimson')
+    ax2.set_axisbelow(True)
+    adjust_spines(ax2, ['left', 'bottom'])
+    plt.xlabel(x_label, fontsize=16)
+    plt.ylabel(y_label2, fontsize=16)
+    plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
+    plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+
+    if filename is not None:
+        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
+    else:
+        plt.show()
+
 
 
 def lineplot(x, y, x_label, y_label, filename=None):
@@ -291,8 +331,7 @@ def adjust_spines(ax, spines):
     else:
         # no xaxis ticks
         ax.xaxis.set_ticks([])
-
-# A simple utility that helps to visualize plotting sparse and tensor grid coefficients
+        
 def twoDgrid(coefficients, index_set):
 
     # First determine the maximum tensor grid order!

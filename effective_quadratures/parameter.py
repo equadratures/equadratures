@@ -3,8 +3,8 @@
 import numpy as np
 from scipy.special import gamma
 import analyticaldistributions as analytical
-from utils import error_function
 import matplotlib.pyplot as plt
+from plotting import parameterplot
 class Parameter(object):
     
     """
@@ -107,6 +107,11 @@ class Parameter(object):
             mu = self.shape_parameter_A * self.shape_parameter_B
         return mu
 
+    def plot(self, filename=None):
+        N = 500
+        x, y = self.getPDF(N)
+        x2, y2 = self.getCDF(N)
+        parameterplot(x, y, y2, filename, x_label='X', y_label1='PDF', y_label2='CDF')
 
     def getPDF(self, N):
         """
@@ -142,31 +147,31 @@ class Parameter(object):
             raise(ValueError, 'parameter getPDF(): invalid parameter type!')
         return x, y
 
-    def getSamples(self, m=None, graph=None):
-        """
-        Returns samples of the Parameter
-        : param Parameter self: An instance of the Parameter class
-        : param integer m: Number of random samples. If no value is provided, a default of 1e5 is assumed. 
-        """
-        if m is None:
-            number_of_random_samples = 5e5
-        else:
-            number_of_random_samples = m
-        
-        uniform_samples = np.random.random((number_of_random_samples, 1))
-        yy = self.get_iCDF(uniform_samples)
-
-        if graph is not None:   
-            fig = plt.figure()
-            n, bins, patches = plt.hist(yy, 30, normed=1, facecolor='#4baa89', alpha=0.75)
-            plt.xlabel('x')
-            plt.ylabel('PDF')
-            plt.xlim(1.2*np.min(yy), 1.2*np.max(yy))
-            plt.show()
-            
-        return yy
+ #   def getSamples(self, m=None, graph=None):
+ #       """
+ #       Returns samples of the Parameter
+ #       : param Parameter self: An instance of the Parameter class
+ #       : param integer m: Number of random samples. If no value is provided, a default of 1e5 is assumed. 
+ #       """
+ #       if m is None:
+ #           number_of_random_samples = 5e5
+ #       else:
+ #           number_of_random_samples = m
+ #       
+ #       uniform_samples = np.random.random((number_of_random_samples, 1))
+ #       yy = self.get_iCDF(uniform_samples)
+ #
+ #       if graph is not None:   
+ #           fig = plt.figure()
+ #           n, bins, patches = plt.hist(yy, 30, normed=1, facecolor='#4baa89', alpha=0.75)
+ #           plt.xlabel('x')
+ #           plt.ylabel('PDF')
+ #           plt.xlim(1.2*np.min(yy), 1.2*np.max(yy))
+ #           plt.show()
+ #           
+ #       return yy
     
-    def get_CDF(self, N):
+    def getCDF(self, N):
         """
         Returns the cumulative density function of the parameter 
         :param Parameter self: An instance of the Parameter class
@@ -200,7 +205,7 @@ class Parameter(object):
             raise(ValueError, 'parameter getCDF(): invalid parameter type!')
         return x, y
 
-    def get_iCDF(self, x):
+    def getiCDF(self, x):
         """
         Returns values of the inverse CDF
         : param Parameter self: An instance of the Parameter class

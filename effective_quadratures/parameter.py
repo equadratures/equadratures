@@ -155,17 +155,15 @@ class Parameter(object):
         elif self.param_type is "Exponential":
             x, y = analytical.ExponentialDistribution(N, self.shape_parameter_A)
         else:
-            error_function('parameter getPDF(): invalid parameter type!')
-        
-        if graph is None:
-            return x, y
-        elif graph == 1:
-            lineplot(x, y, 'Parameter', 'PDF')
+            raise(ValueError, 'parameter getPDF(): invalid parameter type!')   
         else:
-            error_function('parameter getPDF(): invalid value for graph!')
+            raise(ValueError, 'parameter getPDF(): invalid value for graph!')
 
         return x, y
-
+    
+    def plot(self, filename=None):
+        x, y = self.getPDF(N=500)
+        lineplot(x, y, 'Parameter', 'PDF')
     def getSamples(self, m=None, graph=None, filename=None):
         """
         Returns samples of the Parameter
@@ -326,6 +324,12 @@ class Parameter(object):
         """
         return getlocalquadrature(self, order)
 
+    def plot(filename=None):
+        """ 
+        This function plots a PDF and a CDF of the parameter
+
+        """
+        
 #-----------------------------------------------------------------------------------
 #
 #                               PRIVATE FUNCTIONS BELOW

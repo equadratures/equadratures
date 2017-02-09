@@ -77,11 +77,11 @@ class Parameter(object):
         
         if self.param_type == 'TruncatedGaussian' :
             if upper is None or lower is None:
-                error_function('parameter __init__: upper and lower bounds are required for a TruncatedGaussian distribution!')
+                raise(ValueError, 'parameter __init__: upper and lower bounds are required for a TruncatedGaussian distribution!')
 
          # Check that lower is indeed above upper
         if self.lower >= self.upper :
-            error_function('parameter __init__: upper bounds must be greater than lower bounds!')
+            raise(ValueError, 'parameter __init__: upper bounds must be greater than lower bounds!')
   
     # Routine for computing the mean of the distributions
     def computeMean(self):

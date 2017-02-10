@@ -5,7 +5,8 @@ import numpy as np
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
-
+from matplotlib.patches import Polygon
+from matplotlib.collections import PatchCollection
 def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None):
     elements = index_set.elements
     x, y, z, max_order = twoDgrid(coefficients, elements)
@@ -40,7 +41,8 @@ def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None):
         plt.savefig(filename, format='png', dpi=300, bbox_inches='tight')
 
 
-def bestfit(x_train, y_train, x_test, y_test, x_label, y_label, filename=None):
+def bestfit(x_train, y_train, x_test, y_test, CI, x_label, y_label, filename=None):
+
     opacity = 0.8
     plt.rc('text', usetex=True)
     plt.rc('font', family='serif')
@@ -49,6 +51,16 @@ def bestfit(x_train, y_train, x_test, y_test, x_label, y_label, filename=None):
     ax = fig.add_subplot(1,1,1)
     plt.grid()
     ax.set_axis_bgcolor('whitesmoke')
+
+    #plt.fill_between(xo, bottom, top, facecolor='crimson', alpha=0.5)
+    patches = []
+    for i in range(0, len(y_test)-1):
+        xy = np.array([ [x_test[i,0], y_test[i,0] - CI[i]], [x_test[i,0], y_test[i,0] + CI[i]], [x_test[i+1,0], y_test[i+1,0] + CI[i,0]], [x_test[i+1,0], y_test[i+1,0] - CI[i,0]]] )
+        #xy = np.random.rand(4,2)
+        polygon = Polygon(xy, closed=False)
+        patches.append(polygon)
+    p = PatchCollection(patches, alpha=0.2, edgecolor='none', facecolor='teal')
+    ax.add_collection(p)
     plt.scatter(x_train, y_train, marker='o', s=120, alpha=opacity, color='orangered',linewidth=1.5)
     plt.plot(x_test, y_test, linestyle='-', linewidth=2, color='steelblue')
     ax.set_axisbelow(True)

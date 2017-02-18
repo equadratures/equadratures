@@ -373,7 +373,7 @@ class PolyFit(object):
                     X2[j,i] = X[j, i] * X[j,i ] ; 
 
            # Set up the A matrix
-           A = np.mat(np.hstack([constants, X, X2, XC]) )
+           A = np.mat(np.hstack([constants, X, X2, XC]), dtype = 'float64' )
            self.Xmatrix = A
            coeffs, not_used = solveLSQ(A, Y)
            self.coefficients = np.mat(coeffs, dtype='float64')
@@ -469,7 +469,18 @@ class PolyFit(object):
                 bestfit(self.training_x, self.training_y, test_x, test_y, test_var.T, r'$X$', r'$Y$', filename)
 
             elif self.option is 'quadratic':
-                print 'yada'
+                X = self.Xmatrix
+                w = np.linalg.inv(X.T * X) * X.T * self.training_y
+                m, n = test_x.shape
+                ones = np.ones((m, 1))
+                squares_test_x = np.mat(np.zeros((m , n)), dtype='float64')
+                for i in range(0, m):
+                    squares_test_x[i] = test_x[i]**2
+                test_X = np.mat(np.hstack([ones, test_x, squares_test_x]), dtype='float64')
+                test_mean = test_X * w 
+                ss = 1.0/(1.0 * N) * ( self.training_y.T * self.training_y - self.training_y.T * X * w)
+                test_var = ss * np.diag(test_X * np.linalg.inv(X.T * X) * test_X.T)
+                bestfit(self.training_x, self.training_y, test_x, test_y, test_var.T, r'$X$', r'$Y$', filename)
 
         elif dimensions == 2:
             X1 = test_x[0]

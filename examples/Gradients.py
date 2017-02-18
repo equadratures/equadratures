@@ -1,15 +1,10 @@
 "How to use gradients in effective quadratures!"
-#!/usr/bin/env python
 from effective_quadratures.parameter import Parameter
 from effective_quadratures.polynomial import Polynomial
 from effective_quadratures.indexset import IndexSet
-from effective_quadratures.computestats import Statistics
 from effective_quadratures.effectivequads import EffectiveSubsampling
 from effective_quadratures.utils import compute_errors, evalfunction, evalgradients
 import numpy as np
-import matplotlib.pyplot as plt
-import math
-import os
 
 def fun(x):
     return 2*x[0]**2 - 5*x[0]*x[1] + 3*x[1]**3

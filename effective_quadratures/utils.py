@@ -50,7 +50,7 @@ def evalgradients(points, fungrad, format):
             for j in range(0, dimensions):
                 grad_values[counter, 0] = output_from_gradient_call[j]
                 counter = counter + 1
-        return grad_values
+        return np.mat(grad_values)
     else:
         error_function('evalgradients(): Format must be either matrix or vector!')
         return 0

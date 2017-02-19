@@ -12,8 +12,6 @@ def fun(x):
 def fungrad(x):
     return [ 4*x[0] - 5*x[1] , -5*x[0] + 9*x[1]**2 ] 
 
-os.system('clear')
-
 ###############################################################################################
 # Without gradients and with as many basis function as possible!
 ################################################################################################
@@ -52,7 +50,7 @@ grad_values = evalgradients(esq.subsampled_quadrature_points, fungrad, 'matrix')
 
 # 5. Compute coefficients using the two techniques!
 x1, not_used =  esq.computeCoefficients(fun_values, grad_values, 'weighted')
-x1b, not_used =  esq.computeCoefficients(fun_values, grad_values, 'constrainedNS')
+x1b, not_used =  esq.computeCoefficients(fun_values, fungrad, 'constrainedNS')
 
 print 'checking a few items!'
 print all_coefficients

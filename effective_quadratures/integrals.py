@@ -13,24 +13,37 @@ import numpy as np
 # 3. Spherical quadrature rules
 # 4. Padua quadrature rules -- add 2D!
 #****************************************************************************
-class IntegrationRules(object):
-    def __init__(self, order, method, coordinates=None):
-        self.order = order
-        self.method = method
-        if coordinates is None:
-            self.coordinates = 'Cartesian'
-        else:
-            self.coordinates = coordinates
-    
-    def getPointsAndWeights(self):
-        if self.coordinates is "Spherical":
-            p, w = getSphericalPointsAndWeights(self.order, self.method)
-        else:
-            p, w = getCartesianPointsAndWeights(self,order, self.method)
-        return p, w
+class EQ_Integration(object):
+    """
+    Quadrature rules for integrating a function over the interval [-1,1]^d.
+    For multivariate quadrature rules on non-tensorial domains, this routine will use effective subsampling
+    to compute appropriate points and weights.
 
-def getSphericalPointsAndWeights(order, method):
-    return 0
+    :param int order: Maximum order along each direction
+    :param basis: For multivariate domains, user may select 'Total order', 'Hyperbolic cross' or 'Euclidean'. 
+        The hyperbolic cross parameter is set by default to 0.5.
+    :param method: Determines the type of quadrature rule to be used. Available options are: 
+        Gauss-Legendre or Clenshaw-Curtis.
+    :param coords: The domain over which the integral is to be computed. Options are, 'Cartesian' (default) or 'Spherical'
+
+    **Sample declarations** 
+    ::
+        # Uniform distribution with 5 points on [-2,2]
+        >> Parameter(points=5, lower=-2, upper=2, param_type='Uniform')
+
+    """
+    def __init__(self, order, basis=None, method=None, coords=None):
+        
+        self.order = order
+        dimension = len(order)
+
+        if  
+        self.basis = basis
+
+        if basis is None
+        p, w = 
+        self.points = 
+
 
 
 def getCartesianPointsAndWeights(order, method):

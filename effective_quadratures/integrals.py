@@ -13,8 +13,9 @@ import numpy as np
 # 3. Spherical quadrature rules
 # 4. Padua quadrature rules -- add 2D!
 #****************************************************************************
+"""
 class EQ_Integration(object):
-    """
+   
     Quadrature rules for integrating a function over the interval [-1,1]^d.
     For multivariate quadrature rules on non-tensorial domains, this routine will use effective subsampling
     to compute appropriate points and weights.
@@ -31,7 +32,7 @@ class EQ_Integration(object):
         # Uniform distribution with 5 points on [-2,2]
         >> Parameter(points=5, lower=-2, upper=2, param_type='Uniform')
 
-    """
+    
     def __init__(self, order, basis=None, method=None, coords=None):
         
         self.order = order
@@ -45,7 +46,7 @@ class EQ_Integration(object):
         self.points = 
 
 
-
+"""
 def getCartesianPointsAndWeights(order, method):
     if method is 'Gauss':
         p, w = getGauss(order)

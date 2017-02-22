@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import matplotlib.pyplot as plt
 from matplotlib import rc
 import numpy as np
@@ -7,6 +6,41 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
+
+
+def errorplot2D(errors,  x_label, y_label, filename=None):
+    G = np.log10(np.abs(errors))
+    Zm = np.ma.masked_where(np.isnan(G),G)
+    opacity = 0.8
+    #plt.rc('text', usetex=True)
+    plt.rc('font', family='serif')
+    mpl.rcParams['axes.linewidth'] = 2.0
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    plt.grid()
+    ax.set_axis_bgcolor('whitesmoke')
+    plt.pcolor(Zm, cmap= cm.terrain, vmin=-16, vmax=1)
+    #plt.xlim(0, max_order)
+    #plt.ylim(0, max_order)
+    ax.set_axisbelow(True)
+    adjust_spines(ax, ['left', 'bottom'])
+    #plt.xlabel(x_label, fontsize=16)
+    #plt.ylabel(y_label, fontsize=16)
+    plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
+    plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+    cbar = plt.colorbar(extend='neither', spacing='proportional',
+                orientation='vertical', shrink=0.8, format="%.0f")
+    cbar.ax.tick_params(labelsize=16) 
+    plt.show()
+    #plt.tight_layout()
+    #if filename is None:
+    #    plt.show()
+    #else:
+    #    plt.savefig(filename, format='png', dpi=300, bbox_inches='tight')
+
+
 def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None):
     elements = index_set.elements
     x, y, z, max_order = twoDgrid(coefficients, elements)

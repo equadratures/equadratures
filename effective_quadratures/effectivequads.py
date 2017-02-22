@@ -141,12 +141,14 @@ class EffectiveSubsampling(object):
         A_pruned = A[0:m, 0 : (n - number_of_columns_to_delete)]
         self.A_subsampled = A_pruned
         self.index_set.prune(number_of_columns_to_delete)
+
         # If clause for gradient case!
         if self.C is not None:
             C = self.C_subsampled
             p, q = C.shape
             C_pruned = C[0:p, 0 : (q - number_of_columns_to_delete)]
             self.C_subsampled = C_pruned
+            
         self.no_of_basis_terms = self.no_of_basis_terms - number_of_columns_to_delete
     
     def least_no_of_subsamples_reqd(self):

@@ -42,7 +42,7 @@ def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None):
     G = np.log10(np.abs(z))
     Zm = np.ma.masked_where(np.isnan(G),G)
     opacity = 0.8
-    plt.rc('text', usetex=True)
+    #plt.rc('text', usetex=True)
     plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
@@ -73,7 +73,7 @@ def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None):
 def bestfit(x_train, y_train, x_test, y_test, CI, x_label, y_label, filename=None):
 
     opacity = 0.8
-    plt.rc('text', usetex=True)
+    #plt.rc('text', usetex=True)
     plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
@@ -116,7 +116,7 @@ def bestfit3D(x_train, y_train, x_test, y_test, x_label, y_label, z_label, filen
     xx1 = x_test[0]
     xx2 = x_test[1]
     opacity = 0.8
-    plt.rc('text', usetex=True)
+    #plt.rc('text', usetex=True)
     plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     mpl.rc('axes', edgecolor='white', labelcolor='black', grid=True)
@@ -152,7 +152,7 @@ def bestfit3D(x_train, y_train, x_test, y_test, x_label, y_label, z_label, filen
 
 def parameterplot(x_axis, y_pdf, y_cdf, filename=None, x_label=None, y_label1=None, y_label2=None):
     opacity = 0.8
-    plt.rc('text', usetex=True)
+    #plt.rc('text', usetex=True)
     plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
 
@@ -194,7 +194,7 @@ def parameterplot(x_axis, y_pdf, y_cdf, filename=None, x_label=None, y_label1=No
 
 def lineplot(x, y, x_label, y_label, filename=None):
     opacity = 0.8
-    plt.rc('text', usetex=True)
+    #plt.rc('text', usetex=True)
     plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
@@ -224,7 +224,7 @@ def scatterplot3D(x, f, x1_label=None, x2_label=None, f_label=None, filename=Non
         raise(ValueError, 'scatterplot(x, y): The number of rows in x must be equivalent to the number of rows in y')
     
     opacity = 0.8
-    plt.rc('text', usetex=True)
+    #plt.rc('text', usetex=True)
     plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     mpl.rc('axes', edgecolor='white', labelcolor='black', grid=True)
@@ -261,25 +261,30 @@ def scatterplot3D(x, f, x1_label=None, x2_label=None, f_label=None, filename=Non
     else:
         plt.show()
 
-def scatterplot(x, y, x_label, y_label, filename=None):
+def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_choice=None):
     x = np.mat(x)
     y = np.mat(y)
     m, n = x.shape
     p, q = y.shape
-    if n > m :
-        raise(ValueError, 'scatterplot(x, y): Matrix x of size m-by-n, must satisfy m>=n')
-    if m != p:
-        raise(ValueError, 'scatterplot(x, y): The number of rows in x must be equivalent to the number of rows in y')
+    if marker_type is None:
+        marker_type = 's'
+    if color_choice is None:
+        color_choice = 'limegreen'
+    #if n > m :
+    #    raise(ValueError, 'scatterplot(x, y): Matrix x of size m-by-n, must satisfy m>=n')
+    #if m != p:
+    #    raise(ValueError, 'scatterplot(x, y): The number of rows in x must be equivalent to the number of rows in y')
  
     opacity = 0.8
-    plt.rc('text', usetex=True)
+    #plt.rc('text', usetex=True)
     plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
     ax.set_axis_bgcolor('whitesmoke')
-    plt.scatter(x, y, marker='s', s=70, alpha=opacity, color='limegreen',linewidth=1.5)
+    for i in range(0, m):
+        plt.scatter(x[i,0], y[i,0], marker=marker_type, s=70, alpha=opacity, color=color_choice,linewidth=1.5)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
     plt.xlabel(x_label, fontsize=16)
@@ -294,12 +299,12 @@ def scatterplot(x, y, x_label, y_label, filename=None):
     if filename is None:
         plt.show()
     else:
-        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
+        plt.savefig(filename, format='png', dpi=300, bbox_inches='tight')
 
 def histogram(samples, x_label, y_label, filename=None):
     opacity = 1.0
     error_config = {'ecolor': '0.3'}
-    plt.rc('text', usetex=True)
+    #plt.rc('text', usetex=True)
     plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
@@ -326,7 +331,7 @@ def barplot(x, y, x_label, y_label, filename=None):
     bar_width = 0.35
     opacity = 1.0
     error_config = {'ecolor': '0.3'}
-    plt.rc('text', usetex=True)
+    #plt.rc('text', usetex=True)
     plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()

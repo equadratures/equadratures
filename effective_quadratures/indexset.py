@@ -179,10 +179,10 @@ class IndexSet(object):
         elements = np.mat(elements)
 
         if self.dimension == 2:
-            scatterplot(elements[:,0], elements[:,1], r'$i_1$', r'$i_2', filename)
+            scatterplot(elements[:,0], elements[:,1], r'$j_1$', r'$j_2$', filename)
         
         elif self.dimension == 3:
-            scatterplot3D( elements[:,[0,1]]  , elements[:,2] , r'$i_1$', r'$i_2', r'$i_3', filename)
+            scatterplot3D( elements[:,[0,1]]  , elements[:,2] , r'$j_1$', r'$j_2$', r'$j_3$', filename)
 
         else:
             raise(ValueError, 'IndexSet()->plot(): Can only generate plots when the dimension is 2 or 3!')

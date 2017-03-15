@@ -18,7 +18,7 @@ def errorplot2D(errors, x_label, y_label, filename=None):
     ax = fig.add_subplot(1,1,1)
     plt.grid()
     ax.set_axis_bgcolor('whitesmoke')
-    plt.pcolor(Zm, cmap= cm.terrain, vmin=-16, vmax=1)
+    plt.pcolor(Zm, cmap= cm.jet, vmin=-16, vmax=1)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
     plt.xlabel(x_label, fontsize=16)

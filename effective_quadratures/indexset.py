@@ -87,9 +87,12 @@ class IndexSet(object):
         self.cardinality = len(index_set)
 
         # Don't sort a sparse grid index set, because the order is tied to the coefficients!
-        if name is not "Sparse grid":
+        if name =="Hyperbolic basis":
             self.sort()
-        
+        elif name == "Euclidean degree":
+            self.sort()
+        elif name == "Total order":
+            self.sort()
 
     def prune(self, number_of_elements_to_delete):
         """

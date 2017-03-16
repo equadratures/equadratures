@@ -8,6 +8,7 @@ from itertools import combinations
 from utils import error_function, evalfunction, find_repeated_elements, meshgrid
 from plotting import bestfit, bestfit3D, histogram
 from qr import solveLSQ
+from computestats import Statistics
 class Polynomial(object):
     """
     This class defines a polynomial and its associated functions. 
@@ -316,6 +317,25 @@ class Polynomial(object):
             histogram(polyapprox, 'f(x)', 'PDF', filename)
 
         return polyapprox
+    
+    def stats(self, function):
+        """
+        Returns statistics based on the coefficients
+
+        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class.
+        :param callable function_values: A callable function or a numpy matrix of model evaluations at the quadrature subsamples.
+        :param callable gradient_values: A callable function of a numpy matrix of gradient evaluations at the quadrature subsamples.
+        :param string technique: The least squares technique to be used; options include: 'weighted' (default), 'constrainedDE', 'constrainedNS'. These options only matter when using gradient evaluations. They correspond to a stacked / weighted least squares approach, a constrained approach using       direct elimination, and a constrained approach using the null space method. 
+        :return: 
+            * **stats_obj (Statistics)**: A Statistics object
+
+        **Sample usage:** 
+        For useage please see the ipython-notebooks at www.effective-quadratures.org
+        """
+        #coefficients, cond = self.computeCoefficients(function_values, gradient_values, technique)
+        coefficients,  indexset, evaled_pts =  self.getPolynomialCoefficients(function)
+        stats_obj = Statistics(coefficients, self.index_sets)
+        return stats_obj
 
 class PolyFit(object):
     """

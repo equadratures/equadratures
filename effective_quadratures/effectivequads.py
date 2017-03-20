@@ -260,6 +260,32 @@ class EffectiveSubsampling(object):
         stats_obj = Statistics(coefficients, self.index_set)
         return stats_obj
     
+    def getPolynomialApproximation(self, plotting_pts, function_values, gradient_values=None, technique=None): 
+        """
+        Returns the polynomial approximation of a function. This routine effectively multiplies the coefficients of a polynomial
+        expansion with its corresponding basis polynomials. 
+    
+        :param Polynomial self: An instance of the Polynomial class
+        :param: callable function: The function that needs to be approximated (or interpolated)
+        :param: ndarray plotting_pts: The points at which the polynomial approximation should be evaluated at
+        :return: polyapprox: The polynomial expansion of a function
+        :rtype: numpy matrix
+
+        """
+        # Check to see if we need to call the coefficients
+        coefficients, cond = self.computeCoefficients(function_values, gradient_values, technique)
+
+        stackOfParameters = self.uq_parameters
+        polynomial_basis = self.index_set
+        polyObject_for_basis = Polynomial(stackOfParameters, polynomial_basis) 
+
+        P , Q = polyObject_for_basis.getMultivariatePolynomial(plotting_pts)
+        P = np.mat(P)
+        C = np.mat(coefficients)
+        polyapprox = P.T * C
+        return polyapprox
+
+
 ################################
 # Private functions!
 ################################

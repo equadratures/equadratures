@@ -299,7 +299,7 @@ def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_c
     if filename is None:
         plt.show()
     else:
-        plt.savefig(filename, format='png', dpi=300, bbox_inches='tight')
+        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
 
 def histogram(samples, x_label, y_label, filename=None):
     opacity = 1.0

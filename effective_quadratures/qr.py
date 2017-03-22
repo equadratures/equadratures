@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Utilities with QR factorization"""
+"""Utilities with QR factorization."""
 import numpy as np
 from utils import error_function
 from scipy.optimize import minimize
@@ -32,28 +32,6 @@ def implicitSymmetricQR(T):
     return T
         
 
-def givens(a, b):
-    """ 
-    Computes a Givens rotation; computes c = cos(theta), s = sin(theta) so that
-        [ c   s]' [ a ] = [ r ]
-        [-s   c]  [ b ]   [ 0 ]
-    for scalars a and b.
-
-    """
-    if b == 0:
-        c = 1
-        s = 1
-    else:
-        if np.abs(b) > np.abs(a):
-            tau = -(1.0 * a)/(b * 1.0)
-            s = 1.0/np.sqrt(1 + tau**2)
-            c = s * tau
-        else:
-            tau = (-1.0 * b)/(a * 1.0)
-            c = 1.0/np.sqrt(1 + tau**2)
-            s = c * tau
-
-    return c, s
     
 def qr_Givens(A):
     """
@@ -106,14 +84,13 @@ def bidiag(A):
     m >=n. Here U is an m-by-n orthogonal matrix, B is a n-by-n bi-diagonal matrix
     and V is a n-by-n orthogonal matrix.
 
-    >> clean up comments below!
-
     :param numpy matrix A: an m-by-n matrix
-    :param numpy matrix b: an m-by-1 matrix
-    :param numpy ndarray C: an k-by-n matrix
-    :param numpy ndarray d: an k-by-1 matrix
-    :return: x, the coefficients of the least squares problem.
-    :rtype: ndarray
+    :return: U, the left orthogonal matrix
+    :rtype: numpy matrix
+    :return: B, the bidiagonal matrix
+    :rtype: numpy matrix
+    :return: V, the right orthogonal matrix
+    :rtype: numpy matrix
 
     ** Notes **
     Uses the algorithm of Golub and Kahan (1965) and requires 4mn^2 - 4n^3/3 flops.
@@ -165,13 +142,13 @@ def bidiag(A):
 
 def solveCLSQ(A,b,C,d, technique=None):
     """
-    Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d using 
-    the method of direct elimination
+    Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d.
 
     :param numpy matrix A: an m-by-n matrix
     :param numpy matrix b: an m-by-1 matrix
     :param numpy ndarray C: an k-by-n matrix
     :param numpy ndarray d: an k-by-1 matrix
+    :param string technique: The technique for solving the least squares problem. Options include, weighted, constrainedDE, constrainedNS.
     :return: x, the coefficients of the least squares problem.
     :rtype: ndarray
 
@@ -201,7 +178,16 @@ def solveCLSQ(A,b,C,d, technique=None):
 
 
 def nullSpaceMethod(A, b, C, d):
-
+    """
+    Solves the constrained least squares problem min ||Ax-b||_2 subject to Cx=d via the null space method.
+    :param numpy ndarray A: an m-by-n A matrix
+    :param numpy ndarray b: an m-by-1 b matrix
+      
+    :return: x, the coefficients of the least squares problem.
+    :rtype: ndarray
+    :return: cond, the condition number of the final matrix on which least squares is performed
+    :rtype: float
+    """
     m, n = A.shape
     p, n = C.shape
 
@@ -221,7 +207,16 @@ def nullSpaceMethod(A, b, C, d):
     return x, cond
     
 def directElimination(A, b, C, d):
-    
+    """
+    Solves the constrained least squares problem min ||Ax-b||_2 subject to Cx=d via the direct elimination method. 
+    :param numpy ndarray A: an m-by-n A matrix
+    :param numpy ndarray b: an m-by-1 b matrix
+      
+    :return: x, the coefficients of the least squares problem.
+    :rtype: ndarray
+    :return: cond, the condition number of the final matrix on which least squares is performed
+    :rtype: float
+    """
     Q, R, pvec = qr_MGS(C, pivoting=True)
     m1, n1 = R.shape
     P = permvec2mat(pvec)
@@ -251,6 +246,8 @@ def solveLSQ(A, b):
       
     :return: x, the coefficients of the least squares problem.
     :rtype: ndarray
+    :return: cond, the condition number of the matrix A
+    :rtype: float 
 
     """ 
     # Direct methods!
@@ -324,7 +321,6 @@ def qr_MGS(A, pivoting=None):
     Q = np.mat(np.eye(m,n), dtype='float64')
     R = np.mat(np.zeros((n, n)), dtype='float64')
 
-    
     # Min and maximum values
     u = np.min([m,n]) 
     h = np.max([m,n])
@@ -353,6 +349,21 @@ def qr_MGS(A, pivoting=None):
     return Q, R
 
 def qr_MGS_Pivoting(A):
+    """
+    Returns the modified Gram Schmidt QR factorization with column pivoting for a matrix 
+
+    :param numpy matrix A: Matrix input for QR factorization
+    :return: Q, the m x n orthogonal matrix
+    :rtype: numpy matrix
+    :return: R, the n x n upper triangular matrix
+    :rtype: numpy matrix
+    :return: p, the 1 x n pivots
+    :rtype: numpy matrix
+
+    **Sample declaration**
+    :: 
+        >> Q, R, p = qr_MGS_Pivoting(A)
+    """
 
     # Determine the size of
     A = np.matrix(A)
@@ -429,7 +440,6 @@ def qr_Householder(A):
     Returns the Householder QR factorization of a matrix A 
 
     :param numpy matrix A: Matrix input for QR factorization
-    :param boolean thin: Set thin to 1 to compute a thin QR factorization. The default is a regular QR factorization.
     :return: Q, the m x m orthogonal matrix
     :rtype: numpy matrix
     :return: R, the m x n upper triangular matrix
@@ -469,7 +479,14 @@ def qr_Householder(A):
 
     return Q, R
 
-def permvec2mat(vec):
+    def permvec2mat(vec):
+    """
+        Converts a permutation vector into a permutation matrix
+
+        :param numpy matrix p: A 1 x k vector of permutation indices (all integers)
+        :return: P, the k x k permutation matrix
+        :rtype: numpy matrix
+    """
     n = len(vec)
     P = np.mat(np.zeros((n,n)), dtype='float64')
     counter = 0
@@ -481,6 +498,23 @@ def permvec2mat(vec):
                 break
     return P.T
 
+# Private functions below!
+def givens(a, b):
+    
+    if b == 0:
+        c = 1
+        s = 1
+    else:
+        if np.abs(b) > np.abs(a):
+            tau = -(1.0 * a)/(b * 1.0)
+            s = 1.0/np.sqrt(1 + tau**2)
+            c = s * tau
+        else:
+            tau = (-1.0 * b)/(a * 1.0)
+            c = 1.0/np.sqrt(1 + tau**2)
+            s = c * tau
+
+    return c, s
 
 def rowNormalize(A):
     rows, cols = A.shape

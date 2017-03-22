@@ -93,12 +93,49 @@ class EffectiveSubsampling(object):
         self.row_indices = None
         self.dimensions = len(uq_parameters)
     
+    def integrate(function):
+        """
+        Add integration utility here!
+
+        """
+        # Determine the index set to be used!
+        dimensions = len(stackOfParameters)
+        orders = []
+        flags = []
+        uniform = 1
+        not_uniform = 0
+        for i in range(0, dimensions):
+            orders.append(int(stackOfParameters[i].order - 1) )
+            if stackOfParameters[i].param_type is 'Uniform':
+                flags.append(uniform)
+            else:
+                flags.append(not_uniform)
+
+        # Define the hyperbolic cross
+        hyperbolic = IndexSet('Hyperbolic basis', orders=orders, q=q_parameter)
+        maximum_number_of_evals = hyperbolic.getCardinality()
+        effectiveQuads = EffectiveSubsampling(stackOfParameters, hyperbolic)
+
+        # Call the effective subsampling object
+        points = effectiveQuads.getEffectivelySubsampledPoints(maximum_number_of_evals)
+        xn = effectiveQuads.solveLeastSquares(maximum_number_of_evals, function)
+        integral_esq = xn[0]
+
+    # For normalizing!
+    for i in range(0, dimensions):
+        if flags[i] == 0:
+            integral_esq  = integral_esq
+        elif flags[i] == 1:
+            integral_esq = integral_esq * (stackOfParameters[i].upper - stackOfParameters[i].lower )
+    
+    return integral_esq[0], points
+    
     def set_no_of_evals(self, no_of_evals):
         """
         Sets the number of model evaluations the user wishes to afford for generating the polynomial. 
 
         :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class.
-        :param integer no_of_evals: The number of subsampled the user requires
+        :param integer no_of_evals: The number of subsamples the user requires
 
         **Sample usage:** 
         For useage please see the ipython-notebooks at www.effective-quadratures.org
@@ -153,15 +190,11 @@ class EffectiveSubsampling(object):
     
     def least_no_of_subsamples_reqd(self):
         """
-        Returns the coefficients for the effectively subsampled quadratures least squares problem. 
+        Computes the least number of subsamples required when using effectively subsampled quadratures. 
 
         :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
-        :param integer maximum_number_of_evals: The maximum number of evaluations the user would like. This value has to be atleast equivalent to the
-            total number of basis terms of the index set.    
-        :param callable function_values: A function call to the simulation model, that takes in d inputs and returns one output. If users know the 
-            quadrature subsamples required, they may also input all the simulation outputs as a single ndarray.     
-        :return: x, the coefficients of the least squares problem.
-        :rtype: ndarray
+        :return: points, The least number of subsamples required. In the absence of gradients, this function simply returns the number of basis terms. In the presence of gradients this function uses an iterative rank-determination algorithm to compute the number of subsamples required.
+        :rtype: int
 
         **Sample declaration**
         :: 
@@ -186,7 +219,7 @@ class EffectiveSubsampling(object):
         :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class.
         :param callable function_values: A callable function or a numpy matrix of model evaluations at the quadrature subsamples.
         :param callable gradient_values: A callable function of a numpy matrix of gradient evaluations at the quadrature subsamples.
-        :param string technique: The least squares technique to be used; options include: 'weighted' (default), 'constrainedDE', 'constrainedNS'. These options only matter when using gradient evaluations. They correspond to a stacked / weighted least squares approach, a constrained approach using       direct elimination, and a constrained approach using the null space method. 
+        :param string technique: The least squares technique to be used; options include: 'weighted' (default), 'constrainedDE', 'constrainedNS'. These options only matter when using gradient evaluations. They correspond to a stacked / weighted least squares approach, a constrained approach using       direct elimination, and a constrained approach using the null space method. This function is still a work in progress! ArXiv preprint underway.
         :return: 
             * **coefficients (numpy matrix)**: Coefficients of the least squares solution.
             * **cond (double)**: Condition number of the matrix on which least squares was performed.
@@ -244,7 +277,7 @@ class EffectiveSubsampling(object):
     
     def stats(self, function_values, gradient_values=None, technique=None):
         """
-        Returns statistics based on the coefficients
+        Returns statistics based on the coefficients computed. 
 
         :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class.
         :param callable function_values: A callable function or a numpy matrix of model evaluations at the quadrature subsamples.
@@ -254,7 +287,7 @@ class EffectiveSubsampling(object):
             * **stats_obj (Statistics)**: A Statistics object
 
         **Sample usage:** 
-        For useage please see the ipython-notebooks at www.effective-quadratures.org
+        For please see the Statistics page.
         """
         coefficients, cond = self.computeCoefficients(function_values, gradient_values, technique)
         stats_obj = Statistics(coefficients, self.index_set)
@@ -262,13 +295,15 @@ class EffectiveSubsampling(object):
     
     def getPolynomialApproximation(self, plotting_pts, function_values, gradient_values=None, technique=None): 
         """
-        Returns the polynomial approximation of a function. This routine effectively multiplies the coefficients of a polynomial
+        Returns the polynomial approximation of a function. This routine multiplies the coefficients of a polynomial
         expansion with its corresponding basis polynomials. 
     
         :param Polynomial self: An instance of the Polynomial class
-        :param: callable function: The function that needs to be approximated (or interpolated)
-        :param: ndarray plotting_pts: The points at which the polynomial approximation should be evaluated at
-        :return: polyapprox: The polynomial expansion of a function
+        :param: numpy array plotting_pts: The points at which the polynomial approximation should be evaluated at. When using numpy's meshgrid function to generate points, also use numpy's reshape command to ensure that the points are a n-by-d numpy matrix, where n are the number of points and d corresponds to the dimensionality of the problem.
+        :param: callable function: The function that needs to be approximated (or interpolated). Call be either a callable or a numpy matrix of function values at the quadrature subsamples.
+        :param: callable gradient_values: Either a callable to the gradient of the function or a numpy matrix of gradient evaluations at the quadrature subsamples.
+        :param: technique: The technique used for computing gradient evaluations
+        :return: polyapprox: The approximate polynomial expansion of a function
         :rtype: numpy matrix
 
         """

@@ -40,6 +40,8 @@ class Statistics(object):
         xbins = range(0, dimensions)
         barplot(xbins, self.fosi, 'Parameters', 'Sobol indices')
 
+
+# Private functions!
 def getMean(coefficients):
     mean = coefficients[0,0]
     return mean

@@ -153,11 +153,11 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>index_set_type</strong> (<em>string</em>) &#8211; The type of index set to be used. Options include:
-<cite>Total order</cite>, <cite>Tensor grid</cite>, <cite>Sparse grid</cite>, <cite>Hyperbolic basis</cite> and <a href="#id1"><span class="problematic" id="id2">`</span></a>Euclidean degree&#8217;. All basis are isotropic. If you require anisotropic basis do email us.</li>
+<cite>Total order</cite>, <cite>Tensor grid</cite>, <cite>Sparse grid</cite>, <cite>Hyperbolic basis</cite> and <cite>Euclidean degree</cite>. All basis are isotropic. If you require anisotropic basis do email us.</li>
 <li><strong>orders</strong> (<em>ndarray</em>) &#8211; List of integers corresponding to the highest polynomial order in each direction.</li>
-<li><strong>growth_rule</strong> (<em>string</em>) &#8211; The type of growth rule associated with sparse grids. Options include: <a href="#id3"><span class="problematic" id="id4">`</span></a>linear&#8217; and <a href="#id5"><span class="problematic" id="id6">`</span></a>exponential&#8217;. This input is only required when using a sparse grid.</li>
+<li><strong>growth_rule</strong> (<em>string</em>) &#8211; The type of growth rule associated with sparse grids. Options include: <a href="#id1"><span class="problematic" id="id2">`</span></a>linear&#8217; and <a href="#id3"><span class="problematic" id="id4">`</span></a>exponential&#8217;. This input is only required when using a sparse grid.</li>
 <li><strong>dimensions</strong> (<em>integer</em>) &#8211; The number of dimensions of the problem. This input is only required when using a sparse grid.</li>
-<li><strong>q</strong> (<em>double</em>) &#8211; The <a href="#id7"><span class="problematic" id="id8">`</span></a>q&#8217; parameter is used to control the number of basis terms used in a hyperbolic basis. It varies between 0.0 to 1.0. A value of 1.0 yields a total order basis.</li>
+<li><strong>q</strong> (<em>double</em>) &#8211; The <a href="#id5"><span class="problematic" id="id6">`</span></a>q&#8217; parameter is used to control the number of basis terms used in a hyperbolic basis. It varies between 0.0 to 1.0. A value of 1.0 yields a total order basis.</li>
 </ul>
 </td>
 </tr>
@@ -174,7 +174,7 @@
 </dl>
 <p><strong>Notes:</strong></p>
 <p>For details on the Euclidean degree see: <a class="reference external" href="https://arxiv.org/pdf/1608.02216v1.pdf">Trefethen 2016</a>. 
-Note that all index sets are sorted in the constructor automatically, by their total orders.</p>
+Note that all index sets are sorted in the constructor automatically, by their total orders. We will be adding non-isotropic index sets in a future release. Stay tuned!</p>
 <p><strong>Sample usage</strong></p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Tensor grid&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
 <span class="o">&gt;&gt;</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Sparse grid&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">growth_rule</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>

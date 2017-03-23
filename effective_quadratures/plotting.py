@@ -266,6 +266,11 @@ def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_c
     y = np.mat(y)
     m, n = x.shape
     p, q = y.shape
+    if n > m:
+        x = x.T
+        y = y.T
+        m = n
+
     if marker_type is None:
         marker_type = 's'
     if color_choice is None:

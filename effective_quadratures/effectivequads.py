@@ -93,23 +93,35 @@ class EffectiveSubsampling(object):
         self.row_indices = None
         self.dimensions = len(uq_parameters)
     
-    def integrate(function_values, gradient_values=None, technique=None):
+    def integrate(self, function_values, gradient_values=None, technique=None):
         """
-        Add integration utility here!
+        An integration utility using effective quadrature subsampling
+
+        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
+        :return: points, The least number of subsamples required. In the absence of gradients, this function simply returns the number of basis terms. In the presence of gradients this function uses an iterative rank-determination algorithm to compute the number of subsamples required.
+        :rtype: int
         """
 
-        coefficients, cond = computeCoefficients(self, function_values, gradient_values=None, technique=None)
+        coefficients, cond = self.computeCoefficients(function_values, gradient_values=None, technique=None)
         integral = coefficients[0]
-        return integral
 
-    # For normalizing!
-    for i in range(0, dimensions):
-        if flags[i] == 0:
-            integral_esq  = integral_esq
-        elif flags[i] == 1:
-            integral_esq = integral_esq * (stackOfParameters[i].upper - stackOfParameters[i].lower )
-    
-    return integral_esq[0], points
+        # For normalizing!
+        flags = []
+        uniform = 1
+        not_uniform = 0
+        for i in range(0, len(self.uq_parameters)):
+            if self.uq_parameters[i].param_type is 'Uniform':
+                flags.append(uniform)
+            else:
+                flags.append(not_uniform)
+
+        for i in range(0, len(self.uq_parameters)):
+            if flags[i] == 0:
+                integral  = integral
+            elif flags[i] == 1:
+                integral = integral * (self.uq_parameters[i].upper - self.uq_parameters[i].lower )
+
+        return integral[0]
     
     def set_no_of_evals(self, no_of_evals):
         """
@@ -176,10 +188,6 @@ class EffectiveSubsampling(object):
         :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
         :return: points, The least number of subsamples required. In the absence of gradients, this function simply returns the number of basis terms. In the presence of gradients this function uses an iterative rank-determination algorithm to compute the number of subsamples required.
         :rtype: int
-
-        **Sample declaration**
-        :: 
-            >> x = eq.solveLeastSquares(150, function_call)
         """
         if self.C is None:
             return self.no_of_basis_terms

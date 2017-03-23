@@ -479,13 +479,14 @@ def qr_Householder(A):
 
     return Q, R
 
-    def permvec2mat(vec):
+def permvec2mat(vec):
     """
-        Converts a permutation vector into a permutation matrix
+    Converts a permutation vector into a permutation matrix
 
-        :param numpy matrix p: A 1 x k vector of permutation indices (all integers)
-        :return: P, the k x k permutation matrix
-        :rtype: numpy matrix
+    :param numpy matrix p: A 1 x k vector of permutation indices (all integers)
+    :return: P, the k x k permutation matrix
+    :rtype: numpy matrix
+
     """
     n = len(vec)
     P = np.mat(np.zeros((n,n)), dtype='float64')

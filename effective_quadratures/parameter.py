@@ -147,29 +147,21 @@ class Parameter(object):
             raise(ValueError, 'parameter getPDF(): invalid parameter type!')
         return x, y
 
- #   def getSamples(self, m=None, graph=None):
- #       """
- #       Returns samples of the Parameter
- #       : param Parameter self: An instance of the Parameter class
- #       : param integer m: Number of random samples. If no value is provided, a default of 1e5 is assumed. 
- #       """
- #       if m is None:
- #           number_of_random_samples = 5e5
- #       else:
- #           number_of_random_samples = m
- #       
- #       uniform_samples = np.random.random((number_of_random_samples, 1))
- #       yy = self.get_iCDF(uniform_samples)
- #
- #       if graph is not None:   
- #           fig = plt.figure()
- #           n, bins, patches = plt.hist(yy, 30, normed=1, facecolor='#4baa89', alpha=0.75)
- #           plt.xlabel('x')
- #           plt.ylabel('PDF')
- #           plt.xlim(1.2*np.min(yy), 1.2*np.max(yy))
- #           plt.show()
- #           
- #       return yy
+    def getSamples(self, m=None, graph=None):
+        """
+        Returns samples of the Parameter
+        : param Parameter self: An instance of the Parameter class
+        : param integer m: Number of random samples. If no value is provided, a default of 5e5 is assumed. 
+        """
+        if m is None:
+            number_of_random_samples = 5e5
+        else:
+            number_of_random_samples = m
+        
+        uniform_samples = np.random.random((number_of_random_samples, 1))
+        yy = self.getiCDF(uniform_samples)
+
+        return yy
     
     def getCDF(self, N):
         """
@@ -198,7 +190,7 @@ class Parameter(object):
         elif self.param_type is "Uniform":
             x, y = analytical.CDF_UniformDistribution(N, self.lower, self.upper)
         elif self.param_type is "TruncatedGaussian":
-            x, y = analytical.CDF_TruncatedGaussian(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
+            x, y = analytical.CDF_TruncatedGaussianDistribution(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Exponential":
             x, y = analytical.CDF_ExponentialDistribution(N, self.shape_parameter_A)
         else:
@@ -404,7 +396,7 @@ def recurrence_coefficients(self, order=None):
         sigma = np.sqrt(self.shape_parameter_B)
         a = self.lower
         b = self.upper
-        x, w  = analytical.TruncatedGaussian(N, mu, sigma, a, b)
+        x, w  = analytical.PDF_TruncatedGaussian(N, mu, sigma, a, b)
         ab = custom_recurrence_coefficients(order, x, w)
 
     #elif self.param_type == "Gaussian" or self.param_type == "Normal":

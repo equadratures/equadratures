@@ -11,8 +11,7 @@ Code Documentation
    qr
    computestats
    effectivequads
-   integrals
-   analyticaldistributions
+
 
 .. automodule:: effective_quadratures
     :members:

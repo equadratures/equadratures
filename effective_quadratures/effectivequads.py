@@ -98,28 +98,32 @@ class EffectiveSubsampling(object):
         An integration utility using effective quadrature subsampling
 
         :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class
-        :return: points, The least number of subsamples required. In the absence of gradients, this function simply returns the number of basis terms. In the presence of gradients this function uses an iterative rank-determination algorithm to compute the number of subsamples required.
-        :rtype: int
+        :param callable function_values: A callable function or a numpy matrix of model evaluations at the quadrature subsamples.
+        :param callable gradient_values: A callable function of a numpy matrix of gradient evaluations at the quadrature subsamples.
+        :param string technique: The least squares technique to be used; options include: 'weighted' (default), 'constrainedDE', 'constrainedNS'. These options only matter when using gradient evaluations. They correspond to a stacked / weighted least squares approach, a constrained approach using       direct elimination, and a constrained approach using the null space method. This function is still a work in progress! ArXiv preprint underway.
+        :return: 
+            * **coefficients (numpy matrix)**: Coefficients of the least squares solution.
+            * **cond (double)**: Condition number of the matrix on which least squares was performed.
         """
 
         coefficients, cond = self.computeCoefficients(function_values, gradient_values=None, technique=None)
         integral = coefficients[0]
 
         # For normalizing!
-        flags = []
-        uniform = 1
-        not_uniform = 0
-        for i in range(0, len(self.uq_parameters)):
-            if self.uq_parameters[i].param_type is 'Uniform':
-                flags.append(uniform)
-            else:
-                flags.append(not_uniform)
+        #flags = []
+        #uniform = 1
+        #not_uniform = 0
+        #for i in range(0, len(self.uq_parameters)):
+        #    if self.uq_parameters[i].param_type is 'Uniform':
+        #        flags.append(uniform)
+        #    else:
+        #        flags.append(not_uniform)
 
-        for i in range(0, len(self.uq_parameters)):
-            if flags[i] == 0:
-                integral  = integral
-            elif flags[i] == 1:
-                integral = integral * (self.uq_parameters[i].upper - self.uq_parameters[i].lower )
+        #for i in range(0, len(self.uq_parameters)):
+        #    if flags[i] == 0:
+        #        integral  = integral
+        #    elif flags[i] == 1:
+        #        integral = integral * (self.uq_parameters[i].upper - self.uq_parameters[i].lower )
 
         return integral[0]
     

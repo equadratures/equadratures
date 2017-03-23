@@ -215,6 +215,46 @@ def lineplot(x, y, x_label, y_label, filename=None):
     else:
         plt.show()
 
+def contour_plot(psmall, p, x, y , z, filename):
+    
+    m, n = p.shape
+    r, s = psmall.shape
+
+    print m, n
+    print r, s
+
+    opacity = 0.8
+    #plt.rc('text', usetex=True)
+    plt.rc('font', family='serif')
+    mpl.rcParams['axes.linewidth'] = 2.0
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    plt.grid()
+    ax.set_axis_bgcolor('whitesmoke')
+    K = plt.contourf(x, y, z, 100, rasterized=False)   
+    for i in range(0, m):
+        plt.scatter(p[i,0], p[i,1], marker='o', s=80, color='crimson', linewidth=1.5, edgecolor='black')
+
+    for j in range(0, r):
+        plt.scatter(psmall[j,0], psmall[j,1],  marker='x', s=50, alpha=opacity, color='limegreen', linewidth=3.5)
+
+    ax.set_axisbelow(True)
+    adjust_spines(ax, ['left', 'bottom'])
+    plt.xlabel(r'$\zeta_1$', fontsize=16)
+    plt.ylabel(r'$\zeta_2$', fontsize=16)
+    plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
+    plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+    cbar = plt.colorbar(K)
+    cbar.ax.tick_params(labelsize=16) 
+    #plt.xlim(np.min(x)-0.15, np.max(x)+0.15)
+    #plt.ylim(np.min(y)-0.15, np.max(y)+0.15)
+    plt.tight_layout()
+    plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
+    #plt.show()
+
+
 def scatterplot3D(x, f, x1_label=None, x2_label=None, f_label=None, filename=None):
     m, n = x.shape
     p, q = f.shape
@@ -257,7 +297,7 @@ def scatterplot3D(x, f, x1_label=None, x2_label=None, f_label=None, filename=Non
         ax.set_zlabel(f_label)   
     plt.tight_layout()
     if not filename is None:
-        plt.savefig(filename, format='png', dpi=300, bbox_inches='tight')
+        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
     else:
         plt.show()
 
@@ -316,7 +356,7 @@ def histogram(samples, x_label, y_label, filename=None):
     ax = fig.add_subplot(1,1,1)
     plt.grid()
     ax.set_axis_bgcolor('whitesmoke')
-    plt.hist(samples, 30, normed=1, facecolor='crimson', alpha=opacity)
+    plt.hist(samples, 30, normed=1, facecolor='saddlebrown', alpha=opacity)
     plt.xlim(0.08*np.min(samples), 1.2*np.max(samples))
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
@@ -328,7 +368,7 @@ def histogram(samples, x_label, y_label, filename=None):
     plt.yticks(fontsize=16)
     plt.tight_layout()
     if filename is not None:
-        plt.savefig(filename, format='png', dpi=300, bbox_inches='tight')
+        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
     else:
         plt.show()
 

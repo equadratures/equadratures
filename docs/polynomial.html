@@ -71,11 +71,9 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Polynomial</a></li>
 <li class="toctree-l2"><a class="reference internal" href="indexset.html">IndexSet</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="qr.html">QR Factorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qr.html">QR Factorization &amp; Least Squares Routines</a></li>
 <li class="toctree-l2"><a class="reference internal" href="computestats.html">Statistics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="effectivequads.html">Effective-Subsampling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="integrals.html">Integrals</a></li>
-<li class="toctree-l2"><a class="reference internal" href="analyticaldistributions.html">Analytical Distributions</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Contact.html">Contact</a></li>
@@ -143,7 +141,7 @@
       
   <div class="section" id="module-effective_quadratures.polynomial">
 <span id="polynomial"></span><h1>Polynomial<a class="headerlink" href="#module-effective_quadratures.polynomial" title="Permalink to this headline">¶</a></h1>
-<p>Operations involving multivariate polynomials</p>
+<p>Operations involving multivariate polynomials (without gradients)</p>
 <dl class="class">
 <dt id="effective_quadratures.polynomial.PolyFit">
 <em class="property">class </em><code class="descclassname">effective_quadratures.polynomial.</code><code class="descname">PolyFit</code><span class="sig-paren">(</span><em>training_x</em>, <em>training_y</em>, <em>option</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.PolyFit" title="Permalink to this definition">¶</a></dt>
@@ -416,8 +414,22 @@ of pseudospectral coefficients or a sparse grid using the SPAM technique by Cons
 
 <dl class="method">
 <dt id="effective_quadratures.polynomial.Polynomial.integrals">
-<code class="descname">integrals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.Polynomial.integrals" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add an integration utility here!</p>
+<code class="descname">integrals</code><span class="sig-paren">(</span><em>function_values</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.Polynomial.integrals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the integaral</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#effective_quadratures.polynomial.Polynomial" title="effective_quadratures.polynomial.Polynomial"><em>Polynomial</em></a>) &#8211; An instance of the Polynomial class</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Param:</th><td class="field-body">callable function: The function that needs to be approximated (or interpolated)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">integral: The approximation of the integral</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -448,6 +460,88 @@ of pseudospectral coefficients or a sparse grid using the SPAM technique by Cons
 For useage please see the ipython-notebooks at www.effective-quadratures.org</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="function">
+<dt id="effective_quadratures.polynomial.sparsegrid">
+<code class="descclassname">effective_quadratures.polynomial.</code><code class="descname">sparsegrid</code><span class="sig-paren">(</span><em>stackOfParameters</em>, <em>level</em>, <em>growth_rule</em>, <em>function=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.sparsegrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a sparse grid of quadrature points based on the distributions for each Parameter in stackOfParameters</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>array stackOfParameters</strong> (<a class="reference internal" href="parameter.html#effective_quadratures.parameter.Parameter" title="effective_quadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; A list of Parameter objects</li>
+<li><strong>level</strong> (<em>integer</em>) &#8211; Level parameter of the sparse grid integration rule</li>
+<li><strong>growth_rule</strong> (<em>string</em>) &#8211; Growth rule for the sparse grid. Choose from &#8216;linear&#8217; or &#8216;exponential&#8217;.</li>
+<li><strong>function</strong> (<em>callable</em>) &#8211; The function whose integral needs to be computed. Can also be input as an array of function values at the
+quadrature points. If the function is given as a callable, then this routine outputs the integral of the function and an array of
+the points at which the function was evaluated at to estimate the integral. These are the quadrature points. In case the function is
+not given as a callable (or an array, for that matter), then this function outputs the quadrature points and weights.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">sparse_int: The sparse grid approximation of the integral</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">double</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">points:  The quadrature points</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">numpy ndarray</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">weights: The quadrature weights</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="effective_quadratures.polynomial.tensorgrid">
+<code class="descclassname">effective_quadratures.polynomial.</code><code class="descname">tensorgrid</code><span class="sig-paren">(</span><em>stackOfParameters</em>, <em>function=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.polynomial.tensorgrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a tensor grid of quadrature points based on the distributions for each Parameter in stackOfParameters</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>array stackOfParameters</strong> (<a class="reference internal" href="parameter.html#effective_quadratures.parameter.Parameter" title="effective_quadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; A list of Parameter objects</li>
+<li><strong>function</strong> (<em>callable</em>) &#8211; The function whose integral needs to be computed. Can also be input as an array of function values at the
+quadrature points. If the function is given as a callable, then this routine outputs the integral of the function and an array of
+the points at which the function was evaluated at to estimate the integral. These are the quadrature points. In case the function is
+not given as a callable (or an array, for that matter), then this function outputs the quadrature points and weights.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">tensor_int: The tensor grid approximation of the integral</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">double</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">points:  The quadrature points</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">numpy ndarray</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">weights: The quadrature weights</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notes</strong>
+For further details on this routine, see Polynomial.getPointsAndWeights()</p>
 </dd></dl>
 
 </div>

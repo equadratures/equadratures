@@ -5,10 +5,6 @@ from utils import error_function
 from scipy.optimize import minimize
 
 def implicitSymmetricQR(T):
-    """
-    Computes an implicit step for a symmetric QR factorization
-    see Golub and Van Loan (4th Ed., page 462)
-    """
     # Preliminary parameters
     m, n = T.shape # but because its symmetric m = n!
     d = ( T[n-1, n-1] - T[n, n] )/(2.0)
@@ -303,7 +299,7 @@ def qr_MGS(A, pivoting=None):
     Returns the thin QR factorization via the Modified Gram Schmidt Method
 
     :param numpy matrix A: Matrix input for QR factorization
-    :param string thin: Set thin to 'yes' to compute a thin QR factorization. The default is a regular QR factorization, i.e., the string is set to 'no'.
+    :param sting pivoting: Set pivoting to yes to compute a QR with column pivoting factorization.
     :return: Q, the m x n orthogonal matrix
     :rtype: numpy matrix
     :return: R, the n x n upper triangular matrix
@@ -311,7 +307,8 @@ def qr_MGS(A, pivoting=None):
 
     **Sample declaration**
     :: 
-        >> Q, R = qr(A)
+        >> Q, R = qr_MGS(A)
+        >> Q, R, p = qr_MGS(A, pivoting='yes')
     """
     if pivoting is not None:
         return qr_MGS_Pivoting(A)
@@ -349,21 +346,6 @@ def qr_MGS(A, pivoting=None):
     return Q, R
 
 def qr_MGS_Pivoting(A):
-    """
-    Returns the modified Gram Schmidt QR factorization with column pivoting for a matrix 
-
-    :param numpy matrix A: Matrix input for QR factorization
-    :return: Q, the m x n orthogonal matrix
-    :rtype: numpy matrix
-    :return: R, the n x n upper triangular matrix
-    :rtype: numpy matrix
-    :return: p, the 1 x n pivots
-    :rtype: numpy matrix
-
-    **Sample declaration**
-    :: 
-        >> Q, R, p = qr_MGS_Pivoting(A)
-    """
 
     # Determine the size of
     A = np.matrix(A)

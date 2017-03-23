@@ -1,5 +1,5 @@
-QR Factorization
-=================
+QR Factorization & Least Squares Routines
+===========================================
 
 .. automodule:: effective_quadratures.qr
     :members:

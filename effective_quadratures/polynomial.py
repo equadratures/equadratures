@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Operations involving multivariate polynomials"""
+"""Operations involving multivariate polynomials (without gradients)"""
 from parameter import Parameter
 from indexset import IndexSet
 import numpy as np
@@ -43,10 +43,19 @@ class Polynomial(object):
         else:
             self.index_sets = index_sets
     
-    def integrals(self):
+    def integrals(self, function_values):
         """
-        Add an integration utility here!
+        Computes the integaral
+    
+        :param Polynomial self: An instance of the Polynomial class
+        :param: callable function: The function that needs to be approximated (or interpolated)
+        :return: integral: The approximation of the integral
+        :rtype: float
         """
+        coefficients = self.getPolynomialCoefficients(function_values)
+        integral = coefficients[0]
+        return integral[0]
+        
     def getIndexSet(self):
         """
         Returns the index set used for computing the multivariate polynomials
@@ -336,7 +345,6 @@ class Polynomial(object):
         **Sample usage:** 
         For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
-        #coefficients, cond = self.computeCoefficients(function_values, gradient_values, technique)
         coefficients,  indexset, evaled_pts =  self.getPolynomialCoefficients(function)
         stats_obj = Statistics(coefficients, self.index_sets)
         return stats_obj
@@ -522,6 +530,146 @@ class PolyFit(object):
 #  PRIVATE FUNCTIONS!
 #
 #--------------------------------------------------------------------------------------------------------------
+def tensorgrid(stackOfParameters, function=None):
+    """
+    Computes a tensor grid of quadrature points based on the distributions for each Parameter in stackOfParameters 
+
+    :param Parameter array stackOfParameters: A list of Parameter objects
+    :param callable function: The function whose integral needs to be computed. Can also be input as an array of function values at the
+        quadrature points. If the function is given as a callable, then this routine outputs the integral of the function and an array of
+        the points at which the function was evaluated at to estimate the integral. These are the quadrature points. In case the function is
+        not given as a callable (or an array, for that matter), then this function outputs the quadrature points and weights. 
+      
+    :return: tensor_int: The tensor grid approximation of the integral
+    :rtype: double
+    :return: points:  The quadrature points
+    :rtype: numpy ndarray
+    :return: weights: The quadrature weights
+    :rtype: numpy ndarray
+
+    **Notes**
+    For further details on this routine, see Polynomial.getPointsAndWeights()
+
+    """
+    # Determine the index set to be used!
+    dimensions = len(stackOfParameters)
+    orders = []
+    flags = []
+    uniform = 1
+    not_uniform = 0
+    for i in range(0, dimensions):
+        orders.append(stackOfParameters[i].order)
+        if stackOfParameters[i].param_type is 'Uniform':
+            flags.append(uniform)
+        else:
+            flags.append(not_uniform)
+
+    tensor = IndexSet('Tensor grid', orders)
+    polyObject = Polynomial(stackOfParameters, tensor)
+
+    # Now compute the points and weights
+    points, weights = polyObject.getPointsAndWeights()
+    
+    # For normalizing!
+    for i in range(0, dimensions):
+        if flags[i] == 0:
+            weights  = weights
+        elif flags[i] == 1:
+            weights = weights * (stackOfParameters[i].upper - stackOfParameters[i].lower )
+            weights = weights/(2.0)
+
+    # Now if the function is a callable, then we can compute the integral:
+    if function is not None and callable(function):
+        tensor_int = np.mat(weights) * evalfunction(points, function)
+        return tensor_int, points
+    else:
+        return points, weights
+
+def sparsegrid(stackOfParameters, level, growth_rule, function=None):
+    """
+    Computes a sparse grid of quadrature points based on the distributions for each Parameter in stackOfParameters 
+
+    :param Parameter array stackOfParameters: A list of Parameter objects
+    :param integer level: Level parameter of the sparse grid integration rule
+    :param string growth_rule: Growth rule for the sparse grid. Choose from 'linear' or 'exponential'.
+    :param callable function: The function whose integral needs to be computed. Can also be input as an array of function values at the
+        quadrature points. If the function is given as a callable, then this routine outputs the integral of the function and an array of
+        the points at which the function was evaluated at to estimate the integral. These are the quadrature points. In case the function is
+        not given as a callable (or an array, for that matter), then this function outputs the quadrature points and weights. 
+      
+    :return: sparse_int: The sparse grid approximation of the integral
+    :rtype: double
+    :return: points:  The quadrature points
+    :rtype: numpy ndarray
+    :return: weights: The quadrature weights
+    :rtype: numpy ndarray
+
+    """
+    # Determine the index set to be used!
+    dimensions = len(stackOfParameters)
+    orders = []
+    flags = []
+    uniform = 1
+    not_uniform = 0
+    for i in range(0, dimensions):
+        orders.append(stackOfParameters[i].order)
+        if stackOfParameters[i].param_type is 'Uniform':
+            flags.append(uniform)
+        else:
+            flags.append(not_uniform)
+        
+    # Call the sparse grid index set
+    sparse = IndexSet('Sparse grid', level=level, growth_rule=growth_rule, dimension=dimensions)
+    sparse_index, sparse_coeffs, sparse_all_elements =  sparse.getIndexSet()
+
+    # Get this into an array
+    rows = len(sparse_index)
+    orders = np.zeros((rows, dimensions))
+    points_store = []
+    weights_store = []
+    factor = 1
+    
+
+    # Now get the tensor grid for each sparse_index
+    for i in range(0, rows):
+
+        # loop through the dimensions
+        for j in range(0, dimensions):
+            orders[i,j] = np.array(sparse_index[i][j])
+
+        # points and weights for each order~
+        tensor = IndexSet('Tensor grid', orders)
+        polyObject = Polynomial(stackOfParameters, tensor)
+        points, weights = polyObject.getPointsAndWeights(orders[i,:] )
+
+        # Multiply weights by constant 'a':
+        weights = weights * sparse_coeffs[i]
+
+        # Now store point sets ---> scratch this, use append instead!!!!
+        for k in range(0, len(points)):
+            points_store = np.append(points_store, points[k,:], axis=0)
+            weights_store = np.append(weights_store, weights[k])
+
+    dims1 = int( len(points_store) / dimensions )
+    points_store = np.reshape(points_store, ( dims1, dimensions ) )
+    
+    # For normalizing!
+    for i in range(0, dimensions):
+        if flags[i] == 0:
+            weights_store  = weights_store
+        elif flags[i] == 1:
+            weights_store = weights_store * (stackOfParameters[i].upper - stackOfParameters[i].lower )
+            weights_store = weights_store/(2.0)
+
+    # Now if the function is a callable, then we can compute the integral:
+    if function is not None and callable(function):
+        sparse_int = np.mat(weights_store) * evalfunction(points_store, function)
+        point_store = removeDuplicates(points_store)
+        return sparse_int, points_store
+    else:
+        point_store = removeDuplicates(points_store)
+        return points_store, weights_store
+
 def getPseudospectralCoefficients(self, function, override_orders=None):
     
     stackOfParameters = self.uq_parameters

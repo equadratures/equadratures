@@ -36,20 +36,25 @@ def errorplot2D(errors, x_label, y_label, filename=None):
         plt.savefig(filename, format='png', dpi=300, bbox_inches='tight')
 
 
-def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None):
-    elements = index_set.elements
-    x, y, z, max_order = twoDgrid(coefficients, elements)
+def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None, vmin_log=None, vmax_log=None):
+    
+    if vmin_log is None:
+        vmin_log = -16
+    if vmax_log is None:
+        vmax_log = 0
+
+    #elements_used = index_set.elements
+    x, y, z, max_order = twoDgrid(coefficients, index_set)
     G = np.log10(np.abs(z))
     Zm = np.ma.masked_where(np.isnan(G),G)
     opacity = 0.8
-    #plt.rc('text', usetex=True)
     plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
     ax.set_axis_bgcolor('whitesmoke')
-    plt.pcolor(y,x, Zm, cmap= cm.terrain, vmin=-16, vmax=1)
+    plt.pcolor(y,x, Zm, cmap= cm.jet, vmin=vmin_log, vmax=vmax_log)
     plt.xlim(0, max_order)
     plt.ylim(0, max_order)
     ax.set_axisbelow(True)
@@ -67,7 +72,7 @@ def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None):
     if filename is None:
         plt.show()
     else:
-        plt.savefig(filename, format='png', dpi=300, bbox_inches='tight')
+        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
 
 
 def bestfit(x_train, y_train, x_test, y_test, CI, x_label, y_label, filename=None):
@@ -422,23 +427,24 @@ def adjust_spines(ax, spines):
     else:
         # no xaxis ticks
         ax.xaxis.set_ticks([])
-        
+
+
 def twoDgrid(coefficients, index_set):
 
     # First determine the maximum tensor grid order!
     max_order = int( np.max(index_set) ) + 1
 
     # Now create a tensor grid with this max. order
-    y, x = np.mgrid[0:max_order, 0:max_order]
+    x, y = np.mgrid[0:max_order, 0:max_order]
     z = (x*0 + y*0) + float('NaN')
+    counter = 0
 
-    for i in range(0, max_order):
-        for j in range(0, max_order):
-            x_entry = x[i,j]
-            y_entry = y[i,j]
-            for k in range(0, len(index_set)):
-                if(x_entry == index_set[k,0] and y_entry == index_set[k,1]):
-                    z[i,j] = coefficients[k]
+    for counter in range(0, len(coefficients)):
+        for i in range(0, max_order):
+            for j in range(0, max_order):
+                if (i == index_set[counter, 0]) and (j == index_set[counter, 1]) : 
+                    z[i,j] = coefficients[counter]
                     break
 
+                    
     return x,y,z, max_order

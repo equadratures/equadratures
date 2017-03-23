@@ -93,33 +93,14 @@ class EffectiveSubsampling(object):
         self.row_indices = None
         self.dimensions = len(uq_parameters)
     
-    def integrate(function):
+    def integrate(function_values, gradient_values=None, technique=None):
         """
         Add integration utility here!
-
         """
-        # Determine the index set to be used!
-        dimensions = len(stackOfParameters)
-        orders = []
-        flags = []
-        uniform = 1
-        not_uniform = 0
-        for i in range(0, dimensions):
-            orders.append(int(stackOfParameters[i].order - 1) )
-            if stackOfParameters[i].param_type is 'Uniform':
-                flags.append(uniform)
-            else:
-                flags.append(not_uniform)
 
-        # Define the hyperbolic cross
-        hyperbolic = IndexSet('Hyperbolic basis', orders=orders, q=q_parameter)
-        maximum_number_of_evals = hyperbolic.getCardinality()
-        effectiveQuads = EffectiveSubsampling(stackOfParameters, hyperbolic)
-
-        # Call the effective subsampling object
-        points = effectiveQuads.getEffectivelySubsampledPoints(maximum_number_of_evals)
-        xn = effectiveQuads.solveLeastSquares(maximum_number_of_evals, function)
-        integral_esq = xn[0]
+        coefficients, cond = computeCoefficients(self, function_values, gradient_values=None, technique=None)
+        integral = coefficients[0]
+        return integral
 
     # For normalizing!
     for i in range(0, dimensions):

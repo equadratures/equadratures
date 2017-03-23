@@ -42,7 +42,11 @@ class Polynomial(object):
             self.index_sets = IndexSet('Tensor grid', highest_orders)
         else:
             self.index_sets = index_sets
-
+    
+    def integrals(self):
+        """
+        Add an integration utility here!
+        """
     def getIndexSet(self):
         """
         Returns the index set used for computing the multivariate polynomials

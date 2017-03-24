@@ -144,7 +144,7 @@ class Parameter(object):
         elif self.param_type is "Uniform":
             x, y = analytical.PDF_UniformDistribution(N, self.lower, self.upper)
         elif self.param_type is "TruncatedGaussian":
-            x, y = analytical.PDF_TruncatedGaussian(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
+            x, y = analytical.PDF_TruncatedGaussianDistribution(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Exponential":
             x, y = analytical.PDF_ExponentialDistribution(N, self.shape_parameter_A)
         else:
@@ -226,7 +226,7 @@ class Parameter(object):
         elif self.param_type is "Uniform":
             y = x * 1.0
         elif self.param_type is "TruncatedGaussian":
-            y = analytical.iCDF_TruncatedGaussian(x, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
+            y = analytical.iCDF_TruncatedGaussianDistribution(x, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Exponential":
             y = analytical.iCDF_ExponentialDistribution(x, self.shape_parameter_A)
         else:

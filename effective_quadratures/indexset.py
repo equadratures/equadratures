@@ -348,7 +348,7 @@ def tensor_grid_index_set(orders):
     for u in range(0,dimensions):
 
         # Tensor product of the points
-        vector_of_ones_a = np.ones((orders[u]+1, 1))
+        vector_of_ones_a = np.ones((int(orders[u]+1), 1))
         vector_of_ones_b = np.ones((len(I), 1))
         counting = np.arange(0,orders[u]+1)
         counting = np.reshape(counting, (len(counting), 1) )

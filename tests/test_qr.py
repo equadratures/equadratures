@@ -4,7 +4,7 @@ import effective_quadratures.qr as qr
 import numpy as np
 
 class TestQR(TestCase):
-    
+
     def test_householder_vector(self):
         x = [4., 2., 1., -2., 4., 1.]
         x = np.mat(x)
@@ -15,7 +15,7 @@ class TestQR(TestCase):
         real_v = np.mat(real_v)
         real_v = real_v.T
         np.testing.assert_almost_equal(real_v, v)
-    
+
     def test_qr_factorization(self):
         A =  [ [0.8147,    0.0975,    0.1576,    0.1419], [0.9058,    0.2785,    0.9706,    0.4218], [0.1270,    0.5469 ,   0.9572 ,   0.9157], [0.9134  ,  0.9575 ,   0.4854   , 0.7922], [0.6324 ,   0.9649,    0.8003 ,   0.9595]]
         Q, R = qr.qr_Householder(A)
@@ -24,7 +24,7 @@ class TestQR(TestCase):
         np.testing.assert_almost_equal(Q1*R1, A)
 
     def test_qr_factorization_fat_matrix(self):
-        A = [[ 0.549723608291140 ,  0.380445846975357 ,  0.779167230102011 ,  0.011902069501241 ,  0.528533135506213 ,  0.689214503140008 ,  0.913337361501670 ,  0.078175528753184   ,0.774910464711502], 
+        A = [[ 0.549723608291140 ,  0.380445846975357 ,  0.779167230102011 ,  0.011902069501241 ,  0.528533135506213 ,  0.689214503140008 ,  0.913337361501670 ,  0.078175528753184   ,0.774910464711502],
         [0.917193663829810  , 0.567821640725221  , 0.934010684229183  , 0.337122644398882  , 0.165648729499781  , 0.748151592823709  , 0.152378018969223  , 0.442678269775446  , 0.817303220653433],
         [ 0.285839018820374 ,  0.075854289563064 ,  0.129906208473730 ,  0.162182308193243 ,  0.601981941401637 ,  0.450541598502498 ,  0.825816977489547 ,  0.106652770180584 ,  0.868694705363510],
         [0.757200229110721  , 0.053950118666607  , 0.568823660872193  , 0.794284540683907  , 0.262971284540144  , 0.083821377996933  , 0.538342435260057  , 0.961898080855054  , 0.084435845510910],
@@ -32,11 +32,9 @@ class TestQR(TestCase):
 
         Q, R = qr.qr_Householder(A)
         Q1, R1 = qr.qr_MGS(A)
-        if np.linalg.norm(A - ( Q * R), 2) < 2e-15 and np.linalg.norm(A - ( Q1 * R1), 2) < 2e-15 :
-            print 'Success!'
-        else:
+        if np.linalg.norm(A - ( Q * R), 2) > 2e-15 and np.linalg.norm(A - ( Q1 * R1), 2) > 2e-15 :
             raise(RuntimeError, 'QR testing failed')
-    
+
     def test_least_squares(self):
         A = [[   0.129783563321146 ,  0.693035803160460 ,  0.542987352374312],
         [0.971602452337381  , 0.702475484644310 ,  0.540162073918995],
@@ -51,9 +49,7 @@ class TestQR(TestCase):
         x_MATLAB = np.mat(x_MATLAB)
         x_MATLAB = x_MATLAB.T
         residual = x - x_MATLAB
-        if np.linalg.norm(residual, 2) < 4e-15 :
-            print 'Success!'
-        else:
+        if np.linalg.norm(residual, 2) > 4e-13 :
             raise(RuntimeError, 'QR testing failed')
 
     def test_constrained_least_squares(self):
@@ -76,9 +72,7 @@ class TestQR(TestCase):
         x_MATLAB = np.mat(x_MATLAB)
         x_MATLAB = x_MATLAB.T
         residual = x - x_MATLAB
-        if np.linalg.norm(residual, 2) < 2e-3 :
-            print 'Success!'
-        else:
+        if np.linalg.norm(residual, 2) > 2e-3 :
             raise(RuntimeError, 'QR testing failed')
 
     def test_pivoting(self):
@@ -88,8 +82,6 @@ class TestQR(TestCase):
         [1.5462,    1.2879,   2.0374,   -2.4262,    2.8330,   -0.9149,    1.0648 ,  -0.4296,    0.5830,    1.8532],
         [2.3351,    1.7621,    1.9917,    0.7204,   -1.4832,    0.7501 ,   0.6469 ,   0.4104,    1.4751,    1.0351]], dtype='float64')
         Q, R, P = qr.qr_MGS(A, pivoting=True)
-        print Q.T * Q
-        print P
 
 if __name__ == '__main__':
     unittest.main()

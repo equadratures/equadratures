@@ -4,7 +4,7 @@ from effective_quadratures.indexset import IndexSet
 import numpy as np
 
 class TestIndexSet(TestCase):
-    
+
     def test_indexsets(self):
         is1 = IndexSet('Tensor grid', [3,3,3])
 
@@ -17,7 +17,7 @@ class TestIndexSet(TestCase):
         is4 = IndexSet('Hyperbolic basis', [5,5], q=0.75)
         is4.getIndexSet()
 
-    
+
     def test_sorting(self):
         is1 = IndexSet('Total order', [3,2])
         print is1.elements
@@ -26,7 +26,7 @@ class TestIndexSet(TestCase):
 
     def test_euclidean(self):
         is2 = IndexSet('Euclidean degree', [7,7,7])
-        is2.plot()
+
 
 if __name__ == '__main__':
     unittest.main()

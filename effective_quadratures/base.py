@@ -1,11 +1,11 @@
 import numpy as np
-from parameter import Parameter
-from polynomial import Polynomial
-from indexset import IndexSet
-from effectivequads import EffectiveSubsampling
-from computestats import Statistics
-import integrals as integrals
-import plotting as plotting
-import analyticaldistributions as analytical
-from utils import error_function, evalfunction, meshgrid
-from qr import qr_MGS, solveLSQ
+from effective_quadratures.parameter import Parameter
+from effective_quadratures.polynomial import Polynomial
+from effective_quadratures.indexset import IndexSet
+from effective_quadratures.effectivequads import EffectiveSubsampling
+from effective_quadratures.computestats import Statistics
+import effective_quadratures.integrals as integrals
+import effective_quadratures.plotting as plotting
+import effective_quadratures.analyticaldistributions as analytical
+from effective_quadratures.utils import error_function, evalfunction, meshgrid
+from effective_quadratures.qr import qr_MGS, solveLSQ

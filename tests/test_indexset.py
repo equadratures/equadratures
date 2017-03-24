@@ -20,9 +20,7 @@ class TestIndexSet(TestCase):
 
     def test_sorting(self):
         is1 = IndexSet('Total order', [3,2])
-        print is1.elements
         is1.prune(5)
-        print is1.elements
 
     def test_euclidean(self):
         is2 = IndexSet('Euclidean degree', [7,7,7])

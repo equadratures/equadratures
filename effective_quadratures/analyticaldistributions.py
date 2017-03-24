@@ -133,7 +133,8 @@ def PDF_ExponentialDistribution(N, lambda_value):
     w = lambda_value * np.exp(-lambda_value * x)
     return x, w
 
-def  PDF_TruncatedGaussian(N, mu, sigma, a, b):
+
+def  PDF_TruncatedGaussianDistribution(N, mu, sigma, a, b):
     x = np.linspace(a, b, N)
     w = 1.0/( np.sqrt(2 * sigma**2 * np.pi)) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma**2) )
     w = 1.0/sigma * w
@@ -145,3 +146,4 @@ def  PDF_TruncatedGaussian(N, mu, sigma, a, b):
 def GaussianCDF(constant, mu, sigma):
     w = 1.0/2 * (1 + erf((constant - mu)/(sigma * np.sqrt(2))) )
     return w
+

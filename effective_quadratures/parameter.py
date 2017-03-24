@@ -2,9 +2,9 @@
 """Core class for setting the properties of a univariate parameter."""
 import numpy as np
 from scipy.special import gamma
-import effective_quadratures.analyticaldistributions as analytical
+import analyticaldistributions as analytical
 import matplotlib.pyplot as plt
-from effective_quadratures.plotting import parameterplot
+from plotting import parameterplot
 class Parameter(object):
     
     """

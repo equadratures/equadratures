@@ -2,7 +2,7 @@
 """Index sets for multivariate polynomials"""
 import numpy as np
 import math as mt
-from effective_quadratures.plotting import scatterplot, scatterplot3D
+from plotting import scatterplot, scatterplot3D
 
 class IndexSet(object):
     """

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Computing Statistics from Polynomial Expansions"""
 import numpy as np
-from plotting import barplot
+from effective_quadratures.plotting import barplot
 class Statistics(object):
     """
     :param numpy-matrix coefficients: Coefficients from a polynomial expansion. Can be computed using any technique.

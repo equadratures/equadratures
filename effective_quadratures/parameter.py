@@ -343,7 +343,7 @@ def recurrence_coefficients(self, order=None):
         beta = self.shape_parameter_B
         lower = self.lower
         upper = self.upper
-        x, w = analytical.BetaDistribution(N, alpha, beta, lower, upper)
+        x, w = analytical.PDF_BetaDistribution(N, alpha, beta, lower, upper)
         ab = custom_recurrence_coefficients(order, x, w)
 
     # 2. Uniform distribution
@@ -360,34 +360,34 @@ def recurrence_coefficients(self, order=None):
     elif self.param_type is "Gaussian":
         mu = self.shape_parameter_A
         sigma = np.sqrt(self.shape_parameter_B)
-        x, w  = analytical.Gaussian(N, mu, sigma)
+        x, w  = analytical.PDF_GaussianDistribution(N, mu, sigma)
         ab = custom_recurrence_coefficients(order, x, w)
 
     # 4. Analytical Exponential defined on [0, inf]
     elif self.param_type is "Exponential":
         lambda_value = self.shape_parameter_A
-        x, w  = analytical.ExponentialDistribution(N, lambda_value)
+        x, w  = analytical.PDF_ExponentialDistribution(N, lambda_value)
         ab = custom_recurrence_coefficients(order, x, w)
 
     # 5. Analytical Cauchy defined on [-inf, inf]
     elif self.param_type is "Cauchy":
         x0 = self.shape_parameter_A
         gammavalue = self.shape_parameter_B
-        x, w  = analytical.CauchyDistribution(N, x0, gammavalue)
+        x, w  = analytical.PDF_CauchyDistribution(N, x0, gammavalue)
         ab = custom_recurrence_coefficients(order, x, w)
 
     # 5. Analytical Gamma defined on [0, inf]
     elif self.param_type is "Gamma":
         k = self.shape_parameter_A
         theta = self.shape_parameter_B
-        x, w  = analytical.GammaDistribution(N, k, theta)
+        x, w  = analytical.PDF_GammaDistribution(N, k, theta)
         ab = custom_recurrence_coefficients(order, x, w)
 
     # 6. Analytical Weibull defined on [0, inf]
     elif self.param_type is "Weibull":
         lambda_value= self.shape_parameter_A
         k = self.shape_parameter_B
-        x, w  = analytical.WeibullDistribution(N, lambda_value, k)
+        x, w  = analytical.PDF_WeibullDistribution(N, lambda_value, k)
         ab = custom_recurrence_coefficients(order, x, w)
 
     # 3. Analytical Truncated Gaussian defined on [a,b]
@@ -399,12 +399,6 @@ def recurrence_coefficients(self, order=None):
         x, w  = analytical.PDF_TruncatedGaussian(N, mu, sigma, a, b)
         ab = custom_recurrence_coefficients(order, x, w)
 
-    #elif self.param_type == "Gaussian" or self.param_type == "Normal":
-    #    param_B = self.shape_parameter_B - 0.5
-    #   if(param_B <= -0.5):
-    #        utils.error_function('ERROR: parameter_B (variance) must be greater than 0')
-    #    else:
-    #        ab =  hermite_recurrence_coefficients(self.shape_parameter_A, param_B, order)
     else:
         error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential, TruncatedGaussian or Beta')
 

@@ -343,8 +343,8 @@ def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_c
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
-    plt.xlim(np.min(x)-0.5, np.max(x)+0.5)
-    plt.ylim(np.min(y)-0.5, np.max(y)+0.5)
+    #plt.xlim(np.min(x)-0.5, np.max(x)+0.5)
+    #plt.ylim(np.min(y)-0.5, np.max(y)+0.5)
     #plt.tight_layout()
     if filename is None:
         plt.show()

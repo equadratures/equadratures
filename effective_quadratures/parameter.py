@@ -116,6 +116,10 @@ class Parameter(object):
     def getPDF(self, N):
         """
         Returns the probability density function of the parameter 
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
         :param Parameter self: An instance of the Parameter class
         :param integer N: Number of points along the x-axis 
         :return: x, 1-by-N matrix that contains the values of the x-axis along the support of the parameter 
@@ -166,12 +170,14 @@ class Parameter(object):
     def getCDF(self, N):
         """
         Returns the cumulative density function of the parameter 
+
         :param Parameter self: An instance of the Parameter class
         :param integer N: Number of points along the x-axis 
         :return: x, 1-by-N matrix that contains the values of the x-axis along the support of the parameter 
         :rtype: ndarray
         :return: w, 1-by-N matrix that contains the values of the PDF of the parameter
         :rtype: ndarray
+
         **Sample declaration**
         :: 
             >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')

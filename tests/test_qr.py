@@ -32,8 +32,8 @@ class TestQR(TestCase):
 
         Q, R = qr.qr_Householder(A)
         Q1, R1 = qr.qr_MGS(A)
-        if np.linalg.norm(A - ( Q * R), 2) > 2e-15 and np.linalg.norm(A - ( Q1 * R1), 2) > 2e-15 :
-            raise(RuntimeError, 'QR testing failed')
+        np.testing.assert_almost_equal(Q*R, A)
+        np.testing.assert_almost_equal(Q1*R1, A)
 
     def test_least_squares(self):
         A = [[   0.129783563321146 ,  0.693035803160460 ,  0.542987352374312],
@@ -44,36 +44,12 @@ class TestQR(TestCase):
         b = [ 0.631218455441575 ,  0.878837482885143 ,  0.122686301726737  , 0.813548224731922  , 0.977604352516636]
         b = np.mat(b)
         b = b.T
-        x = qr.solveLSQ(A, b)
+        x, cond = qr.solveLSQ(A, b)
         x_MATLAB = [ 0.356346872539370 ,  0.515012358852366 ,  0.221551548589301]
         x_MATLAB = np.mat(x_MATLAB)
         x_MATLAB = x_MATLAB.T
-        residual = x - x_MATLAB
-        if np.linalg.norm(residual, 2) > 4e-13 :
-            raise(RuntimeError, 'QR testing failed')
+        np.testing.assert_almost_equal(x, x_MATLAB)
 
-    def test_constrained_least_squares(self):
-        A = [ [0.8147 ,   0.0975 ,   0.1576],
-        [0.9058  ,  0.2785  ,  0.9706],
-        [0.1270  ,  0.5469  ,  0.9572],
-        [0.9134  ,  0.9575  ,  0.4854],
-        [0.6324  ,  0.9649  ,  0.8003]]
-        b = [0.1419 ,   0.4218  ,  0.9157 ,   0.7922  ,  0.9595]
-        b = np.mat(b)
-        b = b.T
-        C = [ [0.7060 ,   0.0462 ,   0.6948],
-        [0.0318,    0.0971,    0.3171],
-        [0.2769,   0.8235,    0.9502] ]
-        d = [0.0344,    0.4387,    0.3816]
-        d = np.mat(d)
-        d = d.T
-        x = qr.solveCLSQ(A, b, C, d)
-        x_MATLAB = [-1.7588,   -1.1531,    1.9134]
-        x_MATLAB = np.mat(x_MATLAB)
-        x_MATLAB = x_MATLAB.T
-        residual = x - x_MATLAB
-        if np.linalg.norm(residual, 2) > 2e-3 :
-            raise(RuntimeError, 'QR testing failed')
 
     def test_pivoting(self):
         A = np.mat([[-0.2227,    0.9256,   -1.9705,    0.8619,   -0.3944 ,   1.9813 ,   0.5843  ,  2.4117,   -0.2991 ,   0.6078],

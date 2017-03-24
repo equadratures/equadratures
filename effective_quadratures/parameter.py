@@ -578,7 +578,7 @@ def getlocalquadrature(self, order=None):
         i = np.argsort(D) # get the sorted indices
         i = np.array(i) # convert to array
         w = np.linspace(1,order+1,order) # create space for weights
-        p = np.ones((order,1))
+        p = np.ones((int(order),1))
         for u in range(0, len(i) ):
             w[u] = (V[0,i[u]]**2) # replace weights with right value
             p[u,0] = local_points[u]

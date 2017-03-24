@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 """Operations involving multivariate polynomials (without gradients)"""
-from effective_quadratures.parameter import Parameter
-from effective_quadratures.indexset import IndexSet
+from parameter import Parameter
+from indexset import IndexSet
 import numpy as np
 from math import factorial
 from itertools import combinations
-from effective_quadratures.utils import error_function, evalfunction, find_repeated_elements, meshgrid
-from effective_quadratures.plotting import bestfit, bestfit3D, histogram
-from effective_quadratures.qr import solveLSQ
-from effective_quadratures.computestats import Statistics
+from utils import error_function, evalfunction, find_repeated_elements, meshgrid
+from plotting import bestfit, bestfit3D, histogram
+from qr import solveLSQ
+from computestats import Statistics
 class Polynomial(object):
     """
     This class defines a polynomial and its associated functions. 

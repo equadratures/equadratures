@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """Utilities for computing integrals of functions"""
-from effective_quadratures.parameter import Parameter
-from effective_quadratures.polynomial import Polynomial
-from effective_quadratures.indexset import IndexSet
-from effective_quadratures.effectivequads import EffectiveSubsampling
+from parameter import Parameter
+from polynomial import Polynomial
+from indexset import IndexSet
+from effectivequads import EffectiveSubsampling
 import numpy as np
 #****************************************************************************
 # Functions to code:

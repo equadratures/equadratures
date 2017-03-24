@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 """Effectively subsampled quadratures for least squares polynomial approximations"""
-from effective_quadratures.parameter import Parameter
-from effective_quadratures.polynomial import Polynomial
-from effective_quadratures.qr import qr_MGS, solveLSQ, solveCLSQ
-from effective_quadratures.indexset import IndexSet
-from effective_quadratures.utils import evalfunction, evalgradients
-from effective_quadratures.computestats import Statistics
+from parameter import Parameter
+from polynomial import Polynomial
+from qr import qr_MGS, solveLSQ, solveCLSQ
+from indexset import IndexSet
+from utils import evalfunction, evalgradients
+from computestats import Statistics
 import numpy as np
 
 class EffectiveSubsampling(object):

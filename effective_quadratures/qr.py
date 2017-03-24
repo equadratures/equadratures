@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Utilities with QR factorization."""
 import numpy as np
-from effective_quadratures.utils import error_function
+from utils import error_function
 from scipy.optimize import minimize
 
 def implicitSymmetricQR(T):

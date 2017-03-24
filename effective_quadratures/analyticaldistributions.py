@@ -33,7 +33,7 @@ def iCDF_BetaDistribution(xx, a, b, lower, upper):
            break
      return xx
 
-def iCDF_TruncatedGaussian(xx, mu, sigma, a, b):
+def iCDF_TruncatedGaussianDistribution(xx, mu, sigma, a, b):
     yy = iCDF_Gaussian(xx, mu, sigma)
     for i in range(0, len(xx)):
         if(yy[i,0] < a or yy[i,0] > b):

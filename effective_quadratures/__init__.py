@@ -1,5 +1,5 @@
 'Initialization file'
-import parameter, polynomial, indexset, effectivequads, computestats, integrals, plotting, analyticaldistributions, utils, qr
+import effective_quadratures.parameter, effective_quadratures.polynomial, effective_quadratures.indexset, effective_quadratures.effectivequads, effective_quadratures.computestats, effective_quadratures.integrals, effective_quadratures.plotting, effective_quadratures.analyticaldistributions, effective_quadratures.utils, effective_quadratures.qr
 #from effective_quadratures.base import *
 
 # Set default logging handler to avoid "No handler found" warnings.

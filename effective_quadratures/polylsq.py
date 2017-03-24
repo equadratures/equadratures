@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-"""Effectively subsampled quadratures for least squares polynomial approximations"""
+"""Constructing polynomials via subsampling"""
 from parameter import Parameter
 from polynomial import Polynomial
 from qr import qr_MGS, solveLSQ, solveCLSQ
@@ -8,7 +7,7 @@ from utils import evalfunction, evalgradients
 from computestats import Statistics
 import numpy as np
 
-class EffectiveSubsampling(object):
+class Polylsq(object):
     """
     :param array uq_parameters: A list of Parameter objects.
     :param IndexSet index_set: Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.
@@ -39,7 +38,7 @@ class EffectiveSubsampling(object):
         
         >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
         >> I = IndexSet('Total order' [3, 3, 3])
-        >> eq = EffectiveSubsampling([var1, var1], I)
+        >> eq = Polysubs([var1, var1], I)
         >> print eq.A
         >> print eq.dimensions
         >> print eq.subsampled_quadrature_points

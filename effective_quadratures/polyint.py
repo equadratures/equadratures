@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Operations involving multivariate polynomials (without gradients)"""
 from parameter import Parameter
 from indexset import IndexSet
@@ -9,7 +8,8 @@ from utils import error_function, evalfunction, find_repeated_elements, meshgrid
 from plotting import bestfit, bestfit3D, histogram
 from qr import solveLSQ
 from computestats import Statistics
-class Polynomial(object):
+
+class Polyint(object):
     """
     This class defines a polynomial and its associated functions. 
 

@@ -1,4 +1,4 @@
-"""Constructing polynomials via subsampling"""
+"""Operations involving multivariate polynomials (with gradients) via least squares"""
 from parameter import Parameter
 from polyint import Polyint
 from qr import qr_MGS, solveLSQ, solveCLSQ

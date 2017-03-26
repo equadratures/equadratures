@@ -1,0 +1,5 @@
+Polynomials via Integration
+============================
+
+.. automodule:: equadratures.polyint
+    :members:

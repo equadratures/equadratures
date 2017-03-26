@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Computing Statistics from Polynomial Expansions"""
 import numpy as np
 from plotting import barplot

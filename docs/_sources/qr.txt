@@ -1,5 +1,5 @@
 QR Factorization & Least Squares Routines
 ===========================================
 
-.. automodule:: effective_quadratures.qr
+.. automodule:: equadratures.qr
     :members:

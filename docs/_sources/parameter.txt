@@ -1,5 +1,5 @@
 Parameter
 ===========
 
-.. automodule:: effective_quadratures.parameter
-    :members: 
+.. automodule:: equadratures.parameter
+    :members:

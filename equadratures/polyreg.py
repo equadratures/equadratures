@@ -1,4 +1,4 @@
-"""Polynomial regression"""
+"""Operations involving polynomial regression on a data set"""
 from parameter import Parameter
 from indexset import IndexSet
 import numpy as np
@@ -14,18 +14,8 @@ class Polyreg(object):
     This class defines a Polyreg (polynomial via regression) object
 
     :param training_x: A numpy 
-    :param IndexSet index_set: An instance of the IndexSet class, in case the user wants to overwrite the indices
-        that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter 
-        corresponds to a tensor grid index set and is the default option if no index_set parameter input is given.
+    :param IndexSet index_set: An instance of the IndexSet class, in case the user wants to overwrite the indices that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter corresponds to a tensor grid index set and is the default option if no index_set parameter input is given.
     
-    **Sample declarations** 
-    ::
-        >> s = Parameter(lower=-2, upper=2, param_type='Uniform', points=4)
-        >> T = IndexSet('Total order', [3,3])
-        >> polyObject = Polynomial([s,s],T) # basis is defined by T
-
-        >> s = Parameter(lower=-2, upper=2, param_type='Uniform')
-        >> polyObject = Polynomial([s,s]) # Tensor basis is used
     """
     # Constructor
     def __init__(self, training_x, training_y, option):

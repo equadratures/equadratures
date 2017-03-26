@@ -33,7 +33,7 @@ For installation on Windows, you will need [Anaconda](https://www.continuum.io/d
 This should build the code. Just make sure you include the location of effective_quadratures folder to your python file and you should be good to go. To run this code you will require python 2.7, numpy, scipy and matplotlib. 
 
 # Simple example of use
-Below we provide two simple examples that showcase some of the functionality in Effective Quadratures. In the first example we demonstrate how to construct a bi-variate quadrature rule (using a tensor grid) from two different distriutions. 
+Below we a simple example that shows some of the functionality in Effective Quadratures. Here we demonstrate how to construct a bi-variate quadrature rule (using a tensor grid) from two different distriutions. 
 ```python
 from equadratures import *
 
@@ -68,13 +68,12 @@ print points
  [ 7.70120995  1.44042885]
  [ 7.70120995  2.21498268]]
 ```
-In the second example, we demonstrate how to approximate a complex model using a polynomial approximant. Consider a 
-
+For more examples, do checkout the notebooks here: www.effective-quadratures.org.
 # Documentation
-We use Sphinx for code documentation. See [Read the Docs](http://www-edc.eng.cam.ac.uk/~ps583/docs/) for more information. Additionally do check out the python notebooks and links in www.effective-quadratures.org
+We use Sphinx for code documentation. See [Read the Docs](http://www-edc.eng.cam.ac.uk/~ps583/docs/) for more information. 
 
-# Contact
-For details and queries please contact:<br>
+# Community guidelines
+If you have contributions, questions, or feedback use either the Github repository, or contact:<br>
 <br>
 Pranay Seshadri <br>
 *University of Cambridge* <br>

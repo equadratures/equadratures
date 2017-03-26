@@ -14,9 +14,7 @@ class Polyint(object):
     This class defines a Polyint (polynomial via integration) object
 
     :param array of Parameters uq_parameters: A list of Parameters
-    :param IndexSet index_set: An instance of the IndexSet class, in case the user wants to overwrite the indices
-        that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter 
-        corresponds to a tensor grid index set and is the default option if no index_set parameter input is given.
+    :param IndexSet index_set: An instance of the IndexSet class, in case the user wants to overwrite the indices that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter corresponds to a tensor grid index set and is the default option if no index_set parameter input is given.
     
     **Sample declarations** 
     ::
@@ -75,13 +73,10 @@ class Polyint(object):
     # Do we really need additional_orders?
     def getPointsAndWeights(self, override_orders=None):
         """
-        Returns the nD Gaussian quadrature points and weights based on the recurrence coefficients of each Parameter. This function
-        computes anisotropic and isotropic tensor product rules using a series of Kronecker product operations on univariate Gauss 
-        quadrature points and weights. For details on the univariate rules, see Parameter.getLocalQuadrature()
+        Returns the nD Gaussian quadrature points and weights based on the recurrence coefficients of each Parameter. This function computes anisotropic and isotropic tensor product rules using a series of Kronecker product operations on univariate Gauss quadrature points and weights. For details on the univariate rules, see Parameter.getLocalQuadrature()
 
         :param Polynomial self: An instance of the Polynomial class
-        :param array override_orders: Optional input of orders that overrides the orders defined for each Parameter.
-            This functionality is used by the integrals function.
+        :param array override_orders: Optional input of orders that overrides the orders defined for each Parameter. This functionality is used by the integrals function.
         :return: points, N-by-d matrix that contains the tensor grid Gauss quadrature points
         :rtype: ndarray
         :return: weights, 1-by-N matrix that contains the tensor grid Gauss quadrature weights
@@ -150,14 +145,10 @@ class Polyint(object):
         Returns multivariate orthonormal polynomials and their derivatives
 
         :param Polynomial self: An instance of the Polynomial class
-        :param: ndarray stackOfPoints: An m-by-d matrix that contains points along which the polynomials (and their derivatives) must be evaluated
-            at; here m represents the total number of points across d dimensions. Note that the derivatives are only computed if the Parameters 
-            have the derivative_flag set to 1.
-        :return: polynomial, m-by-N matrix where m are the number of points at which the multivariate orthonormal polynomial must be evaluated at, and
-            N is the cardinality of the index set used when declaring a Polynomial object.
+        :param: ndarray stackOfPoints: An m-by-d matrix that contains points along which the polynomials (and their derivatives) must be evaluated at; here m represents the total number of points across d dimensions. Note that the derivatives are only computed if the Parameters have the derivative_flag set to 1.
+        :return: polynomial, m-by-N matrix where m are the number of points at which the multivariate orthonormal polynomial must be evaluated at, and N is the cardinality of the index set used when declaring a Polynomial object.
         :rtype: ndarray
-        :return: derivatives, m-by-N matrix for each cell (total cells are d) where m are the number of points at which the multivariate orthonormal polynomial must be evaluated at, and
-            N is the cardinality of the index set used when declaring a Polynomial object.
+        :return: derivatives, m-by-N matrix for each cell (total cells are d) where m are the number of points at which the multivariate orthonormal polynomial must be evaluated at, and N is the cardinality of the index set used when declaring a Polynomial object.
         :rtype: cell object
 
 

@@ -4,7 +4,7 @@ from polynomial import Polynomial
 from qr import qr_MGS, solveLSQ, solveCLSQ
 from indexset import IndexSet
 from utils import evalfunction, evalgradients
-from computestats import Statistics
+from stats import Statistics
 import numpy as np
 
 class Polylsq(object):

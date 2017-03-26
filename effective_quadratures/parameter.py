@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Core class for setting the properties of a univariate parameter."""
 import numpy as np
 from scipy.special import gamma

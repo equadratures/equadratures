@@ -7,7 +7,7 @@ from itertools import combinations
 from utils import error_function, evalfunction, find_repeated_elements, meshgrid
 from plotting import bestfit, bestfit3D, histogram
 from qr import solveLSQ
-from computestats import Statistics
+from stats import Statistics
 
 class Polyreg(object):
     """

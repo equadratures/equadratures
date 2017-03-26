@@ -4,14 +4,14 @@ from indexset import IndexSet
 import numpy as np
 from math import factorial
 from itertools import combinations
-from utils import error_function, evalfunction, find_repeated_elements, meshgrid
+from utils import evalfunction, find_repeated_elements, meshgrid
 from plotting import bestfit, bestfit3D, histogram
 from qr import solveLSQ
 from stats import Statistics
 
 class Polyint(object):
     """
-    This class defines a polynomial and its associated functions. 
+    This class defines a Polyint (polynomial via integration) object
 
     :param array of Parameters uq_parameters: A list of Parameters
     :param IndexSet index_set: An instance of the IndexSet class, in case the user wants to overwrite the indices
@@ -272,6 +272,7 @@ class Polyint(object):
             coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self, function)
         return coefficients,  indexset, evaled_pts
 
+
     def getPolynomialApproximation(self, function, plotting_pts, coefficients=None, indexset=None): 
         """
         Returns the polynomial approximation of a function. This routine effectively multiplies the coefficients of a polynomial
@@ -294,6 +295,8 @@ class Polyint(object):
         polyapprox = P.T * C
         return polyapprox
 
+    #def plotPolyonmialApproximation(self, function, plotting_pts, )
+    
     def getPDF(self, function, graph=1, coefficients=None, indexset=None, filename=None):
         """
         Returns the PDF of the model output. This routine effectively multiplies the coefficients of a polynomial

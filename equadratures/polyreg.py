@@ -4,14 +4,14 @@ from indexset import IndexSet
 import numpy as np
 from math import factorial
 from itertools import combinations
-from utils import error_function, evalfunction, find_repeated_elements, meshgrid
+from utils import evalfunction, find_repeated_elements, meshgrid
 from plotting import bestfit, bestfit3D, histogram
 from qr import solveLSQ
 from stats import Statistics
 
 class Polyreg(object):
     """
-    This class defines a polyfit object
+    This class defines a Polyreg (polynomial via regression) object
 
     :param training_x: A numpy 
     :param IndexSet index_set: An instance of the IndexSet class, in case the user wants to overwrite the indices

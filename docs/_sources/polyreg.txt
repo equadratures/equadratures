@@ -1,0 +1,5 @@
+Polynomials via Regression
+===============================
+
+.. automodule:: equadratures.polyreg
+    :members:

@@ -1,5 +1,5 @@
-IndexSet
+Index Sets
 ===========
 
-.. automodule:: effective_quadratures.indexset
+.. automodule:: equadratures.indexset
     :members:

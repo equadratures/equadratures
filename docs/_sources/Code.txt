@@ -5,12 +5,13 @@ Code Documentation
 .. toctree::
    :maxdepth: 2
 
-   polynomial
-   indexset
    parameter
+   polyint
+   polylsq
+   polyreg
+   indexset
    qr
-   computestats
-   effectivequads
+   stats
 
 
 .. automodule:: effective_quadratures

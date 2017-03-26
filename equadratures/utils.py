@@ -21,8 +21,6 @@ def meshgrid(lower_lim, upper_lim, nx1, nx2):
 
     return stackOfPoints, x1, x2
 
-
-
 def compute_b_vector(quad_pts, function, quad_weights):
     f = np.mat( evalfunction(quad_pts, function) )
     W = np.diag( quad_weights )

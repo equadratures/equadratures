@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 from unittest import TestCase
 import unittest
-from effective_quadratures.parameter import Parameter
-from effective_quadratures.indexset import IndexSet
-from effective_quadratures.polynomial import Polynomial
-from effective_quadratures.utils import meshgrid, evalfunction
+from equadratures import *
 import numpy as np
 
 class TestParameter(TestCase):
@@ -12,7 +9,7 @@ class TestParameter(TestCase):
     def test_polynomial_and_derivative_constructions(self):
         s = Parameter(lower=-1, upper=1, param_type='Uniform', points=2, derivative_flag=1)
         uq_parameters = [s,s]
-        uq = Polynomial(uq_parameters)
+        uq = Polyint(uq_parameters)
         num_elements = 2
         pts, x1, x2 = meshgrid(-1.0, 1.0, num_elements,num_elements)
 

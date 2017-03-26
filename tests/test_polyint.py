@@ -4,7 +4,7 @@ import unittest
 from equadratures import *
 import numpy as np
 
-class TestParameter(TestCase):
+class TestPolyint(TestCase):
 
     def test_polynomial_and_derivative_constructions(self):
         s = Parameter(lower=-1, upper=1, param_type='Uniform', points=2, derivative_flag=1)
@@ -17,7 +17,7 @@ class TestParameter(TestCase):
 
         s = Parameter(lower=-1, upper=2, param_type='Uniform', points=4, derivative_flag=0)
         T = IndexSet('Tensor grid', [5])
-        uq = Polynomial([s])
+        uq = Polyint([s])
         pts = np.linspace(-1, 1, 20)
         P , D = uq.getMultivariatePolynomial(pts)
 
@@ -27,7 +27,7 @@ class TestParameter(TestCase):
 
         s = Parameter(lower=-1, upper=1, points=5)
         T = IndexSet('Sparse grid', level=3, growth_rule='linear', dimension=2)
-        uq = Polynomial([s,s], T)
+        uq = Polyint([s,s], T)
         coefficients, index_set, evaled_pts = uq.getPolynomialCoefficients(expfun)
 
     def test_pseudospectral_approximation_tensor(self):
@@ -38,7 +38,7 @@ class TestParameter(TestCase):
         # Compare actual function with polynomial approximation
         s = Parameter(lower=-1, upper=1, points=6)
         T = IndexSet('Tensor grid', [5,5])
-        uq = Polynomial([s,s], T)
+        uq = Polyint([s,s], T)
         num_elements = 10
         coefficients, index_set, evaled_pts = uq.getPolynomialCoefficients(expfun)
         pts, x1, x2 = meshgrid(-1.0, 1.0, num_elements,num_elements)
@@ -54,7 +54,7 @@ class TestParameter(TestCase):
         # Compare actual function with polynomial approximation
         s = Parameter(lower=-1, upper=1, points=6)
         T = IndexSet('Sparse grid', level=3, growth_rule='linear', dimension=2)
-        uq = Polynomial([s,s], T)
+        uq = Polyint([s,s], T)
         num_elements = 10
         coefficients, index_set, evaled_pts = uq.getPolynomialCoefficients(expfun)
         pts, x1, x2 = meshgrid(-1.0, 1.0, num_elements,num_elements)

@@ -7,14 +7,14 @@
 Effective Quadratures is a suite of tools for generating polynomials for approximation, uncertainty quantification (UQ), optimization and integration.  
 
 **Why do we need it?**
-⋅⋅* To replicate and compare state-of-the-art techniques and results in UQ;
-⋅⋅* To facilitate easy programming of new techniques at a research level;
-⋅⋅* To have a unified, easy-to-use platform with interactive demos---tailored for industrial use.
+ * To replicate and compare state-of-the-art techniques and results in UQ;
+ * To facilitate easy programming of new techniques at a research level;
+ * To have a unified, easy-to-use platform with interactive demos---tailored for industrial use.
 
 **So, what's new in Effective Quadratures?**
-⋅⋅* New sampling & integration routines for more efficienct use of your model evaluations;
-⋅⋅* Techniques that leverage adjoint (gradient) information;
-⋅⋅* Plotting subroutines for quick, one-command plots.
+ * New sampling & integration routines for more efficienct use of your model evaluations;
+ * Techniques that leverage adjoint (gradient) information;
+ * Plotting subroutines for quick, one-command plots.
 
 For further details, notebooks and papers see:
 <br>

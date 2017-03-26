@@ -10,9 +10,6 @@ Suite of tools for generating polynomials for approximation, uncertainty quantif
 www.effective-quadratures.org
 <br>
 
-# Downloads
-Visit the [Downloads](https://github.com/Effective-Quadratures/Effective-Quadratures/releases/tag/v4.0) section and get the latest release version. Development is very active right now, stay tuned for a new release in the second week of February 2017.
-
 # Installation
 For installation on Mac and Linux systems, simply type the following into the terminal. 
 ```bash
@@ -24,16 +21,8 @@ For installation on Windows, you will need [Anaconda] (https://www.continuum.io/
 ```
 This should build the code. Just make sure you include the location of effective_quadratures folder to your python file and you should be good to go.
 
-# Testing
-Effective-Quadratures uses [Travis](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures) for testing. Our objective is to ensure that regardless of the platform used, the modules will provide the same numerical answer. For testing the suite of tools type
-```bash
-> python test.py
-```
 # Documentation
 We use Sphinx for code documentation. See [Read the Docs] (http://www-edc.eng.cam.ac.uk/~ps583/docs/) for more information.
-
-# Contributing
-For contributing to this project, do shoot us an email! We always have a set of routines that need coding and are interested in adding more functionalities. We also have a few projects ideal for Masters and PhD students. 
 
 # Contact
 For details and queries please contact:<br>

@@ -1,6 +1,6 @@
 from unittest import TestCase
 import unittest
-import effective_quadratures.qr as qr
+from equadratures import *
 import numpy as np
 
 class TestQR(TestCase):

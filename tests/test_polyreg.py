@@ -1,14 +1,10 @@
 #!/usr/bin/env python
 from unittest import TestCase
 import unittest
-from effective_quadratures.polynomial import PolyFit
-from effective_quadratures.utils import meshgrid
+from equadratures import *
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
-from matplotlib import cm
 
-class TestPolyFit(TestCase):
+class TestPolyreg(TestCase):
 
     def test_linear(self):
 
@@ -28,7 +24,7 @@ class TestPolyFit(TestCase):
         [0.9286, 19.5951],
         [1.0000, 18.022]], dtype='float64')
         y_train = np.mat([6.8053,-1.5184,1.6416,2.0121,6.3543,14.3442,25.3121,16.4426,18.1953,28.9913,27.2246,40.3759,45.12322, 55.3726,72.0], dtype='float64')
-        poly1 = PolyFit(x_train, y_train.T, 'quadratic')
+        poly1 = Polyreg(x_train, y_train.T, 'quadratic')
 
 if __name__ == '__main__':
     unittest.main()

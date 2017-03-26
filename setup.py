@@ -4,8 +4,8 @@ def readme():
     with open('README.md') as f:
         return f.read()
 
-setup(name='effective_quadratures',
-      version='4.0',
+setup(name='equadratures',
+      version='5.1',
       description='Set of codes for polynomial approximation',
       long_description=readme(),
       classifiers=[
@@ -18,7 +18,7 @@ setup(name='effective_quadratures',
       author='Pranay Seshadri',
       author_email='ps583@cam.ac.uk',
       license='MIT',
-      packages=['effective_quadratures'],
+      packages=['equadratures'],
       install_requires=[
           'numpy',
           'scipy >= 0.15.0',

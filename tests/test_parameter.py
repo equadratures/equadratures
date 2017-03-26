@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from unittest import TestCase
 import unittest
-from effective_quadratures.parameter import Parameter
+from equadratures import *
 import numpy as np
 
 class TestParameter(TestCase):

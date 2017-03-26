@@ -21,9 +21,6 @@ def meshgrid(lower_lim, upper_lim, nx1, nx2):
 
     return stackOfPoints, x1, x2
 
-
-
-
 def compute_b_vector(quad_pts, function, quad_weights):
     f = np.mat( evalfunction(quad_pts, function) )
     W = np.diag( quad_weights )
@@ -133,8 +130,3 @@ def find_repeated_elements(index_value, matrix):
             if( all(matrix[j,1::] == selected_cell_indices)  ): # If all the indices match---i.e., the specific index is repeated
                 local_store = np.append(local_store, [j])
     return local_store
-
-# An error function
-def error_function(string_value):
-    print string_value
-    sys.exit()

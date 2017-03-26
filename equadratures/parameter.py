@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Core class for setting the properties of a univariate parameter."""
 import numpy as np
 from scipy.special import gamma
@@ -97,6 +96,8 @@ class Parameter(object):
         """
         if self.param_type == "Gaussian":
             mu = self.shape_parameter_A
+        elif self.param_type == "TruncatedGaussian":
+            mu = self.shape_parameter_A
         elif self.param_type == "Exponential":
             mu = 1.0/self.shape_parameter_A
         elif self.param_type == "Cauchy":
@@ -116,10 +117,7 @@ class Parameter(object):
     def getPDF(self, N):
         """
         Returns the probability density function of the parameter 
-<<<<<<< HEAD
-=======
 
->>>>>>> master
         :param Parameter self: An instance of the Parameter class
         :param integer N: Number of points along the x-axis 
         :return: x, 1-by-N matrix that contains the values of the x-axis along the support of the parameter 
@@ -402,7 +400,7 @@ def recurrence_coefficients(self, order=None):
         sigma = np.sqrt(self.shape_parameter_B)
         a = self.lower
         b = self.upper
-        x, w  = analytical.PDF_TruncatedGaussian(N, mu, sigma, a, b)
+        x, w  = analytical.PDF_TruncatedGaussianDistribution(N, mu, sigma, a, b)
         ab = custom_recurrence_coefficients(order, x, w)
 
     else:

@@ -1,6 +1,6 @@
 from unittest import TestCase
 import unittest
-from effective_quadratures.indexset import IndexSet
+from equadratures import *
 import numpy as np
 
 class TestIndexSet(TestCase):

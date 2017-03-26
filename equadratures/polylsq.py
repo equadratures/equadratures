@@ -1,15 +1,16 @@
-#!/usr/bin/env python
-"""Effectively subsampled quadratures for least squares polynomial approximations"""
+"""Constructing polynomials via subsampling"""
 from parameter import Parameter
-from polynomial import Polynomial
+from polyint import Polyint
 from qr import qr_MGS, solveLSQ, solveCLSQ
 from indexset import IndexSet
 from utils import evalfunction, evalgradients
-from computestats import Statistics
+from stats import Statistics
 import numpy as np
 
-class EffectiveSubsampling(object):
+class Polylsq(object):
     """
+    This class defines a Polylsq (polynomial via least squares) object
+
     :param array uq_parameters: A list of Parameter objects.
     :param IndexSet index_set: Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.
     :param string method: Subsampling strategy; options include: 'QR', which is the default option and 'Random'. See this `paper <https://arxiv.org/abs/1601.05470>`_, for further details. 
@@ -39,7 +40,7 @@ class EffectiveSubsampling(object):
         
         >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
         >> I = IndexSet('Total order' [3, 3, 3])
-        >> eq = EffectiveSubsampling([var1, var1], I)
+        >> eq = Polysubs([var1, var1], I)
         >> print eq.A
         >> print eq.dimensions
         >> print eq.subsampled_quadrature_points
@@ -305,7 +306,7 @@ class EffectiveSubsampling(object):
 
         stackOfParameters = self.uq_parameters
         polynomial_basis = self.index_set
-        polyObject_for_basis = Polynomial(stackOfParameters, polynomial_basis) 
+        polyObject_for_basis = Polyint(stackOfParameters, polynomial_basis) 
 
         P , Q = polyObject_for_basis.getMultivariatePolynomial(plotting_pts)
         P = np.mat(P)
@@ -338,10 +339,10 @@ def getA(self):
     dimensions = self.index_set.dimension
 
     # Crate a new PolynomialParam object to get tensor grid points & weights
-    polyObject_for_pts =  Polynomial(stackOfParameters)
+    polyObject_for_pts =  Polyint(stackOfParameters)
     quadrature_pts, quadrature_wts = polyObject_for_pts.getPointsAndWeights()
 
-    polyObject_for_basis = Polynomial(stackOfParameters, polynomial_basis) 
+    polyObject_for_basis = Polyint(stackOfParameters, polynomial_basis) 
 
     # Allocate memory for "unscaled points!"
     unscaled_quadrature_pts = np.zeros((len(quadrature_pts), dimensions))
@@ -431,7 +432,7 @@ def getC(self):
     stackOfParameters = self.uq_parameters
     polynomial_basis = self.index_set
     dimensions = len(stackOfParameters)
-    polyObject_for_basis = Polynomial(stackOfParameters, polynomial_basis) 
+    polyObject_for_basis = Polyint(stackOfParameters, polynomial_basis) 
     points, weights = polyObject_for_basis.getPointsAndWeights()
     not_used, C = polyObject_for_basis.getMultivariatePolynomial(points)
     return C

@@ -3,11 +3,15 @@
 # Effective Quadratures
 [![Gitter](https://badges.gitter.im/gitterHQ/gitter.svg)](https://gitter.im/Effective-Quadratures)  [![Build Status](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures.svg?branch=dev)](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Effective-Quadratures/Effective-Quadratures/main/LICENSE.rst)
+[![Coverage Status](https://coveralls.io/repos/github/Effective-Quadratures/Effective-Quadratures/badge.svg?branch=dev-new)](https://coveralls.io/github/Effective-Quadratures/Effective-Quadratures?branch=dev-new)
 
 Suite of tools for generating polynomials for approximation, uncertainty quantification, optimization and integration. For further details, quick-start guides and papers see:
 <br>
 www.effective-quadratures.org
 <br>
+
+# Downloads
+Visit the [Downloads](https://github.com/Effective-Quadratures/Effective-Quadratures/releases/tag/v4.0) section and get the latest release version. Development is very active right now, stay tuned for a new release in the second week of February 2017.
 
 # Installation
 For installation on Mac and Linux systems, simply type the following into the terminal. 
@@ -27,6 +31,9 @@ Effective-Quadratures uses [Travis](https://travis-ci.org/Effective-Quadratures/
 ```
 # Documentation
 We use Sphinx for code documentation. See [Read the Docs] (http://www-edc.eng.cam.ac.uk/~ps583/docs/) for more information.
+
+# Contributing
+For contributing to this project, do shoot us an email! We always have a set of routines that need coding and are interested in adding more functionalities. We also have a few projects ideal for Masters and PhD students. 
 
 # Contact
 For details and queries please contact:<br>

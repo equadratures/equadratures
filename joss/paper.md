@@ -9,10 +9,13 @@ tags:
 authors:
  - name: Pranay Seshadri
    orcid: 0000-0002-7351-012X
-   affiliation: University of Cambridge
+   affiliation: 1
  - name: Geoffrey Parks
    orcid: 0000-0001-8188-5047
-   affiliation: University of Cambridge
+   affiliation: 1
+affiliations:
+ - name: University of Cambridge
+   index: 1
 date: 23 November 2016
 bibliography: paper.bib
 ---

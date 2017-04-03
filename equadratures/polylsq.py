@@ -372,6 +372,8 @@ def getSquareA(self):
         option = 1 # default option!
     elif flag == "Random":
         option = 2
+    elif flag == "Weights":
+        option = 3
     else:
         raise(ValueError, "ERROR in EffectiveQuadSubsampling --> getAsubsampled(): For the third input choose from either 'QR' or 'Random'")
 
@@ -387,11 +389,15 @@ def getSquareA(self):
     # Now compute the rank revealing QR decomposition of A!
     if option == 1:
        Q_notused, R_notused, P = qr_MGS(A.T, pivoting=True)
-    else:
-        P = np.random.randint(0, len(self.tensor_quadrature_points) - 1, len(self.tensor_quadrature_points) - 1 )
+       selected_quadrature_points = P[0:self.no_of_evals]
+    elif option == 2:
+        selected_quadrature_points = np.random.randint(0, m , self.no_of_evals)
+    elif option == 3:
+        # Sort the quadrature points by the weights
+        P = np.argsort(-1.0 * self.tensor_quadrature_weights)
 
     # Now truncate number of rows based on the maximum_number_of_evals
-    selected_quadrature_points = P[0:self.no_of_evals]
+    
         
     # Form the "square" A matrix.
     Asquare = A[selected_quadrature_points, :]

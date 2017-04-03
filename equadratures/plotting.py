@@ -220,28 +220,27 @@ def lineplot(x, y, x_label, y_label, filename=None):
     else:
         plt.show()
 
-def contour_plot(psmall, p, x, y , z, filename):
+def contour_plot(x, y , z, filename=None, pts=None, other_pts=None):
     
-    m, n = p.shape
-    r, s = psmall.shape
-
-    print m, n
-    print r, s
 
     opacity = 0.8
-    #plt.rc('text', usetex=True)
     plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
     ax.set_axis_bgcolor('whitesmoke')
-    K = plt.contourf(x, y, z, 100, rasterized=False)   
-    for i in range(0, m):
-        plt.scatter(p[i,0], p[i,1], marker='o', s=80, color='crimson', linewidth=1.5, edgecolor='black')
+    K = plt.contourf(x, y, z, 100, rasterized=False) 
 
-    for j in range(0, r):
-        plt.scatter(psmall[j,0], psmall[j,1],  marker='x', s=50, alpha=opacity, color='limegreen', linewidth=3.5)
+    if pts is not None:
+        m, n = pts.shape  
+        for i in range(0, m):
+            plt.scatter(pts[i,0], pts[i,1], marker='o', s=80, color='crimson', linewidth=1.5, edgecolor='black')
+    
+    if other_pts is not None:
+        r, s = other_pts.shape
+        for j in range(0, r):
+            plt.scatter(other_pts[j,0], other_pts[j,1],  marker='x', s=50, alpha=opacity, color='limegreen', linewidth=3.5)
 
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
@@ -253,11 +252,11 @@ def contour_plot(psmall, p, x, y , z, filename):
     plt.yticks(fontsize=16)
     cbar = plt.colorbar(K)
     cbar.ax.tick_params(labelsize=16) 
-    #plt.xlim(np.min(x)-0.15, np.max(x)+0.15)
-    #plt.ylim(np.min(y)-0.15, np.max(y)+0.15)
     plt.tight_layout()
-    plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
-    #plt.show()
+    if not filename is None:
+        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
+    else:
+        plt.show()
 
 
 def scatterplot3D(x, f, x1_label=None, x2_label=None, f_label=None, filename=None):

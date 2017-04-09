@@ -59,8 +59,7 @@ def getfosi(coefficients, index_set):
     if m > n:
         coefficients = coefficients.T
     index_set = index_set.elements
-    index_set = np.mat(index_set)
-    m, dimensions =  index_set.shape
+    not_used, dimensions = index_set.shape
 
     if dimensions == 1:
         return 1.0

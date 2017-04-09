@@ -4,7 +4,7 @@ from indexset import IndexSet
 import numpy as np
 from math import factorial
 from itertools import combinations
-from utils import evalfunction, find_repeated_elements, meshgrid
+from utils import evalfunction, find_repeated_elements, meshgrid, removeDuplicates
 from plotting import bestfit, bestfit3D, histogram
 from qr import solveLSQ
 from stats import Statistics
@@ -35,8 +35,7 @@ class Polyint(object):
             # Determine the highest orders for a tensor grid
             highest_orders = []
             for i in range(0, len(uq_parameters)):
-                highest_orders.append(uq_parameters[i].order)
-            
+                highest_orders.append(int( uq_parameters[i].order - 1) ) 
             self.index_sets = IndexSet('Tensor grid', highest_orders)
         else:
             self.index_sets = index_sets
@@ -92,7 +91,11 @@ class Polyint(object):
         # Initialize some temporary variables
         stackOfParameters = self.uq_parameters
         dimensions = int(len(stackOfParameters))
-        
+
+        if self.index_sets.index_set_type == 'Sparse grid':
+            points, weights = sparsegrid(self.uq_parameters, self.index_sets.level, self.index_sets.growth_rule)
+            return points, weights
+
         orders = []
         if override_orders is None:
             for i in range(0, dimensions):
@@ -453,12 +456,13 @@ def sparsegrid(stackOfParameters, level, growth_rule, function=None):
 
         # loop through the dimensions
         for j in range(0, dimensions):
-            orders[i,j] = np.array(sparse_index[i][j])
+            orders[i,j] = np.array(sparse_index[i][j]) 
 
         # points and weights for each order~
-        tensor = IndexSet('Tensor grid', orders)
-        polyObject = Polynomial(stackOfParameters, tensor)
-        points, weights = polyObject.getPointsAndWeights(orders[i,:] )
+        tensor = IndexSet('Tensor grid', orders[i,:])
+        p2obj = Polyint(stackOfParameters, tensor)
+        points, weights = p2obj.getPointsAndWeights(orders[i,:])
+        del p2obj
 
         # Multiply weights by constant 'a':
         weights = weights * sparse_coeffs[i]

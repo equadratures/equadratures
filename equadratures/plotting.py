@@ -333,7 +333,7 @@ def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_c
     plt.grid()
     ax.set_axis_bgcolor('whitesmoke')
     for i in range(0, m):
-        plt.scatter(x[i,0], y[i,0], marker=marker_type, s=70, alpha=opacity, color=color_choice,linewidth=1.5)
+        plt.scatter(x[i,0], y[i,0], marker=marker_type, s=140, alpha=opacity, color=color_choice,linewidth=1.5)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
     plt.xlabel(x_label, fontsize=16)

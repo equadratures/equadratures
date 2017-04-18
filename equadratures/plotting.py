@@ -8,7 +8,7 @@ from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
 
 
-def errorplot2D(errors, x_label, y_label, filename=None):
+def errorplot2D(errors, x_label, y_label, xlim, ylim, filename=None):
     G = np.log10(np.abs(errors))
     Zm = np.ma.masked_where(np.isnan(G),G)
     opacity = 0.8
@@ -18,7 +18,7 @@ def errorplot2D(errors, x_label, y_label, filename=None):
     ax = fig.add_subplot(1,1,1)
     plt.grid()
     ax.set_axis_bgcolor('whitesmoke')
-    plt.pcolor(Zm, cmap= cm.jet, vmin=-16, vmax=1)
+    plt.pcolor(Zm, cmap= cm.jet, vmin=-14, vmax=1)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
     plt.xlabel(x_label, fontsize=16)
@@ -27,6 +27,8 @@ def errorplot2D(errors, x_label, y_label, filename=None):
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
+    plt.xlim(xlim[0], xlim[1])
+    plt.ylim(ylim[0], ylim[1])
     cbar = plt.colorbar(extend='neither', spacing='proportional',
                 orientation='vertical', shrink=0.8, format="%.0f")
     cbar.ax.tick_params(labelsize=16) 

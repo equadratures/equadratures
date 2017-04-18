@@ -6,6 +6,7 @@ from indexset import IndexSet
 from utils import evalfunction, evalgradients
 from stats import Statistics
 import numpy as np
+#from scipy.linalg import qr
 
 class Polylsq(object):
     """
@@ -89,6 +90,8 @@ class Polylsq(object):
         self.C_subsampled = None
         self.A_subsampled = None
         self.no_of_evals = None
+        self.b_subsampled = None
+        self.d_subsampled = None
         self.subsampled_quadrature_points = None
         self.subsampled_quadrature_weights = None # stored as a diagonal matrix??
         self.row_indices = None
@@ -229,7 +232,9 @@ class Polylsq(object):
         else:
             fun_values = function_values
         
+        
         b = self.subsampled_quadrature_weights * fun_values
+        self.b_subsampled = b
         b = np.dot(normalizations, b)
         
         ################################
@@ -255,7 +260,7 @@ class Polylsq(object):
                     d[counter] = grad_values[i,j]
                     counter = counter + 1
             C = self.C_subsampled
-
+            self.d_subsampled = d
             # Now row normalize the Cs and the ds
             if technique is None:
                 raise(ValueError, 'A technique must be defined for gradient problems. Choose from stacked, equality or inequality. For more information please consult the detailed user guide.')
@@ -392,10 +397,11 @@ def getSquareA(self):
         
     # Now compute the rank revealing QR decomposition of A!
     if option == 1:
-       Q_notused, R_notused, P = qr_MGS(A.T, pivoting=True)
-       selected_quadrature_points = P[0:self.no_of_evals]
+        Q_notused, R_notused, P = qr_MGS(A.T, pivoting=True)
+        #not_used, not_used, P = qr(A.T, pivoting=True)
+        selected_quadrature_points = P[0:self.no_of_evals]
     elif option == 2:
-        selected_quadrature_points = np.random.randint(0, m , self.no_of_evals)
+        selected_quadrature_points = np.random.choice(m, self.no_of_evals, replace=False)
     elif option == 3:
         # Sort the quadrature points by the weights
         factor = 0.5

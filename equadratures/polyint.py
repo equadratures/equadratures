@@ -91,10 +91,7 @@ class Polyint(object):
         # Initialize some temporary variables
         stackOfParameters = self.uq_parameters
         dimensions = int(len(stackOfParameters))
-
-        if self.index_sets.index_set_type == 'Sparse grid':
-            points, weights = sparsegrid(self.uq_parameters, self.index_sets.level, self.index_sets.growth_rule)
-            return points, weights
+        flag = 0
 
         orders = []
         if override_orders is None:
@@ -102,6 +99,13 @@ class Polyint(object):
                 orders.append(stackOfParameters[i].order)
         else:
             orders = override_orders
+            flag = 1
+
+        if self.index_sets.index_set_type == 'Sparse grid' and flag == 0:
+            points, weights = sparsegrid(self.uq_parameters, self.index_sets.level, self.index_sets.growth_rule)
+            return points, weights
+
+        
         
         # Initialize points and weights
         pp = [1.0]
@@ -577,9 +581,10 @@ def getSparsePseudospectralCoefficients(self, function):
     points_store = {}
     indices = np.zeros((rows))
 
+
     for i in range(0,rows):
         orders = sparse_indices[i,:]
-        K, I, points = getPseudospectralCoefficients(self, function, orders + 1)
+        K, I, points = getPseudospectralCoefficients(self, function, orders)
         individual_tensor_indices[i] = I
         individual_tensor_coefficients[i] =  K
         points_store[i] = points

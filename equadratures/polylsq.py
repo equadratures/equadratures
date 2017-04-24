@@ -6,7 +6,6 @@ from indexset import IndexSet
 from utils import evalfunction, evalgradients
 from stats import Statistics
 import numpy as np
-#from scipy.linalg import qr
 
 class Polylsq(object):
     """
@@ -377,7 +376,7 @@ def getSquareA(self):
         option = 1 # default option!
     elif flag == "Random":
         option = 2
-    elif flag == "Random-QR":
+    elif flag == "Convex":
         option = 3
     else:
         raise(ValueError, "ERROR in EffectiveQuadSubsampling --> getAsubsampled(): For the third input choose from either 'QR' or 'Random'")
@@ -390,26 +389,16 @@ def getSquareA(self):
         # Now if the derivative flag option is activated, we do not raise an error. Otherwise an error is raised!
         if self.uq_parameters[0].derivative_flag is None:
             raise(ValueError, "ERROR in EffectiveQuadSubsampling --> getAsubsampled(): The maximum number of evaluations must be greater or equal to the number of basis terms")
-    
-    # A full tensor grid least squares computation!
-    # if self.no_of_evals == n:
-    #    return A, self.tensor_quadrature_points, np.mat(np.diag(self.tensor_quadrature_weights)), []
-        
+
     # Now compute the rank revealing QR decomposition of A!
     if option == 1:
         Q_notused, R_notused, P = qr_MGS(A.T, pivoting=True)
-        #not_used, not_used, P = qr(A.T, pivoting=True)
         selected_quadrature_points = P[0:self.no_of_evals]
     elif option == 2:
         selected_quadrature_points = np.random.choice(m, self.no_of_evals, replace=False)
     elif option == 3:
-        # Sort the quadrature points by the weights
-        factor = 0.5
-        random_set_size = int(np.round( factor * (m - self.no_of_evals) + self.no_of_evals) )
-        random_set = np.random.randint(0, m , random_set_size)
-        Atall = np.mat(A[random_set, :])
-        Q_notused, R_notused, P = qr_MGS(Atall.T, pivoting=True)
-        selected_quadrature_points = P[0:self.no_of_evals]
+        P = maxdet(A.T, self.no_of_evals)
+        selected_quadrature_points = P
    
     # Form the "square" A matrix.
     Asquare = A[selected_quadrature_points, :]

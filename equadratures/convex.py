@@ -24,8 +24,9 @@ def maxdet(A, k):
 
     # Objective function
     Z = np.diag(z)
-    fz = -log10(np.det(A.T * Z * A)) - kappa * np.sum(np.log10(z) + np.log10(1 - z))
+    fz = -np.log10(np.linalg.det(A.T * Z * A)) - kappa * np.sum(np.log10(z) + np.log10(1 - z))
 
+    print 'Iteration \t Step size \t Newton decrement \t Objective \t log_det'
     # Optimization loop!
     for i in range(0, maxiter):
         W = np.inv(A.T * Z * A)
@@ -47,5 +48,35 @@ def maxdet(A, k):
         Hinv1 = lstsq(R, v)
         dz = -Hinv1 + (( ones_m_transpose * Hinvg )) / ((ones_m_transpose * Hinv1))
 
+        deczi = indices(dz, lambda x: x < 0)
+        inczi = indices(dz, lambda x: x > 0)
+        s = np.min(np.vstack(1, 0.99*[-z[deczi, 0] / dz[deczi, 0] , (1 - z[inczi, 0] )/dz[inczi, 0]  ]))
+        flag = 1
 
+        while flag == 1:
+            zp = z + s*dz
+            fzp = -np.log10(np.linalg.det(A.T * np.diag(zp) * A) ) - kappa * np.sum(np.log10(zp) + log(1 - zp)  )
 
+            if fzp <= fz + alpha * s * g.T * dz:
+                flag == 2
+            
+            s = beta * s
+        z = zp
+        fz = fzp
+        if( -g.T * dz * 0.5 <= n_tol):
+            break
+        zsort = np.sort(z)
+        thres = zsort[m - k]
+        zhat = indices(z, lambda x: z > thres)
+    
+    zsort = np.sort(z)
+    thres = zsort[m - k]
+    zhat = indices(z, lambda x: z > thres)
+    L = np.log10(np.linalg.det(A.T * np.diag(zhat) * A)) 
+    ztilde  = z
+    Utilde = np.log10(np.linalg.det(A.T * np.diag(z) * A))  + 2 * m * kappa
+
+    return zhat, L, ztilde, Utilde
+
+def indices(a, func):
+    return [i for (i, val) in enumerate(a) if func(val)]

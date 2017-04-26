@@ -20,75 +20,112 @@ def maxdet(A, k):
     g = np.zeros((m, 1))
     ones_m = np.ones((m, 1))
     ones_m_transpose = np.ones((1, m))
-    kappa = np.log10(gap) * n/m
+    kappa = np.log(gap) * n/m
 
     # Objective function
-    Z = np.eye(m) * z
-    K = np.linalg.det(A.T * Z * A)
-    fz = -np.log10(np.linalg.det(A.T * Z * A)) - kappa * np.sum(np.log10(z) + np.log10(1 - z))
+    Z = diag(z)
+    fz = -np.log(np.linalg.det(A.T * Z * A)) - kappa * np.sum(np.log(z) + np.log(1.0 - z))
 
     print 'Iteration \t Step size \t Newton decrement \t Objective \t log_det'
+    print str(0)+'\t'+'--'+'\t'+'--'+'\t'+str(-fz)+'\t'+str(np.log(np.linalg.det(A.T * Z * A)) )
+        
     # Optimization loop!
-    for i in range(0, maxiter):
+    for i in range(0, maxiter) :
+        Z = diag(z)
         W = np.linalg.inv(A.T * Z * A)
         V = A * W * A.T
+        vo = np.matrix(np.diag(V))
+        vo = vo.T
 
         # define some z operations
         one_by_z = ones_m / z
         one_by_one_minus_z = ones_m / (ones_m - z)
         one_by_z2 = ones_m / z**2
         one_by_one_minus_z2 = ones_m / (ones_m - z)**2
-        g = -np.diag(V) - kappa * (one_by_z - one_by_one_minus_z)
-        g = np.matrix(np.diag(g) )
-        g = g.T
-        H = np.multiply(V, V) + kappa * np.diag( one_by_z2 + one_by_one_minus_z2)
+        g = -vo- kappa * (one_by_z - one_by_one_minus_z)
+        H = np.multiply(V, V) + kappa * diag( one_by_z2 + one_by_one_minus_z2)
 
         # Textbook Newton's method -- compute inverse of Hessian
         R = np.matrix(cholesky(H) )
-
         u = lstsq(R.T, g)
-        print 'From Chol!'
-        print R
-        print 'g'
-        print g
-
-        Hinvg = lstsq(R, u)
+        Hinvg = lstsq(R, u[0])
+        Hinvg = Hinvg[0]
         v = lstsq(R.T, ones_m)
-        Hinv1 = lstsq(R, v)
-        dz = -Hinv1 + (( ones_m_transpose * Hinvg )) / ((ones_m_transpose * Hinv1))
+        Hinv1 = lstsq(R, v[0])
+        Hinv1 = Hinv1[0]
+        dz = -Hinvg + (np.dot( ones_m_transpose , Hinvg ) / np.dot(ones_m_transpose , Hinv1)) * Hinv1
+
 
         deczi = indices(dz, lambda x: x < 0)
         inczi = indices(dz, lambda x: x > 0)
-        s = np.min(np.vstack(1, 0.99*[-z[deczi, 0] / dz[deczi, 0] , (1 - z[inczi, 0] )/dz[inczi, 0]  ]))
+        a1 = 0.99* -z[deczi, 0] / dz[deczi, 0]
+        a2 = (1 - z[inczi, 0] )/dz[inczi, 0]  
+        s = np.min(np.vstack([1.0, np.vstack(a1), np.vstack(a2) ] )  )
         flag = 1
 
         while flag == 1:
             zp = z + s*dz
-            fzp = -np.log10(np.linalg.det(A.T * np.diag(zp) * A) ) - kappa * np.sum(np.log10(zp) + log(1 - zp)  )
-
-            if fzp <= fz + alpha * s * g.T * dz:
-                flag == 2
-            
-            s = beta * s
+            Zp = diag(zp)
+            fzp = -np.log(np.linalg.det(A.T * Zp * A) ) - kappa * np.sum(np.log(zp) + np.log(1 - zp)  )
+            const = fz + alpha * s * g.T * dz
+            if fzp <= const[0,0]:
+                flag = 2
+            if flag != 2:
+                s = beta * s
         z = zp
         fz = fzp
-        if( -g.T * dz * 0.5 <= n_tol):
+        sig = -g.T * dz * 0.5
+        print str(i+1)+'\t'+str(s)+'\t'+str(sig[0,0])+'\t'+str(-fz)+'\t'+str(np.log(np.linalg.det(A.T * diag(z) * A)) )
+        if( sig[0,0] <= n_tol):
             break
-        zsort = np.sort(z)
-        thres = zsort[m - k]
-        zhat = indices(z, lambda x: z > thres)
+        zsort = np.sort(z, axis=0)
+        thres = zsort[m - k - 1]
+        zhat, not_used = find(z, thres)
     
-    zsort = np.sort(z)
-    thres = zsort[m - k]
-    zhat = indices(z, lambda x: z > thres)
-    L = np.log10(np.linalg.det(A.T * np.diag(zhat) * A)) 
+    zsort = np.sort(z, axis=0)
+    thres = zsort[m - k - 1]
+    zhat, not_used = find(z, thres)
+    p, q = zhat.shape
+    Zhat = diag(zhat)
+    L = np.log(np.linalg.det(A.T * Zhat  * A)) 
     ztilde  = z
-    Utilde = np.log10(np.linalg.det(A.T * np.diag(z) * A))  + 2 * m * kappa
+    Utilde = np.log(np.linalg.det(A.T * diag(z) * A))  + 2 * m * kappa
 
     return zhat, L, ztilde, Utilde
 
-def indices(a, func):
+def binary2indices(zhat):
+    """
+    Simple utility that converts a binary array into one with indices!
+    """
+    pvec = []
+    m, n = zhat.shape
+    for i in range(0, m):
+        if(zhat[i,0] == 1):
+            pvec.append(i)
+    return pvec
+            
+def indices(a, func): 
     return [i for (i, val) in enumerate(a) if func(val)]
+
+def diag(vec):
+    m = len(vec)
+    D = np.zeros((m, m))
+    for i in range(0, m):
+        D[i,i] = vec[i,0]
+    return D
+
+def find(vec, thres):
+    t = []
+    vec_new = []
+    for i in range(0, len(vec)):
+        if vec[i] > thres:
+            t.append(i)
+            vec_new.append(1.0)
+        else:
+            vec_new.append(0.0)
+    vec_new = np.matrix(vec_new)
+    vec_new = vec_new.T
+    return vec_new, t
 
 def test():
     A = np.matrix( [[0.124002503999148,	-0.212199686576617,	0.267349762299687,	-0.304796662905713,	0.328534348120078,	-0.340258635378351, 0.340966415149194,	-0.331449472272965,	0.312487506335153,	-0.284931170115695,	0.249736112466517,	-0.207971637681745,	0.160814561189271,	-0.109533656449671 ,0.0554678183266073],
@@ -108,8 +145,9 @@ def test():
 [0.124002503999148,	0.212199686576617,	0.267349762299688,	0.304796662905714,	0.328534348120079,	0.340258635378352,	0.340966415149196,	0.331449472272967,	0.312487506335156,	0.284931170115699,	0.249736112466522,	0.207971637681750,	0.160814561189277,	0.109533656449677,	0.0554678183266146] ] )
 
     A = A[:, 0:8]
-    maxdet(A, 8)
-
-
+    zhat, L, ztilde, Utilde = maxdet(A, 8)
+    print zhat
+    pvec = binary2indices(zhat)
+    print pvec
 
 test()

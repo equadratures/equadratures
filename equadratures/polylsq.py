@@ -5,6 +5,7 @@ from qr import qr_MGS, solveLSQ, solveCLSQ
 from indexset import IndexSet
 from utils import evalfunction, evalgradients
 from stats import Statistics
+from convex import maxdet, binary2indices
 import numpy as np
 
 class Polylsq(object):
@@ -370,8 +371,8 @@ def getA(self):
 
 # The subsampled A matrix based on either randomized selection of rows or a QR column pivoting approach
 def getSquareA(self):
-
     flag = self.method
+    print flag
     if flag == "QR" or flag is None:
         option = 1 # default option!
     elif flag == "Random":
@@ -397,8 +398,9 @@ def getSquareA(self):
     elif option == 2:
         selected_quadrature_points = np.random.choice(m, self.no_of_evals, replace=False)
     elif option == 3:
-        P = maxdet(A.T, self.no_of_evals)
-        selected_quadrature_points = P
+        zhat, L, ztilde, Utilde = maxdet(A, self.no_of_evals)
+        pvec = binary2indices(zhat)
+        selected_quadrature_points = pvec
    
     # Form the "square" A matrix.
     Asquare = A[selected_quadrature_points, :]

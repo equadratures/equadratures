@@ -7,6 +7,7 @@ from utils import evalfunction, evalgradients
 from stats import Statistics
 from convex import maxdet, binary2indices
 import numpy as np
+from scipy import linalg 
 
 class Polylsq(object):
     """
@@ -372,13 +373,14 @@ def getA(self):
 # The subsampled A matrix based on either randomized selection of rows or a QR column pivoting approach
 def getSquareA(self):
     flag = self.method
-    print flag
     if flag == "QR" or flag is None:
         option = 1 # default option!
     elif flag == "Random":
         option = 2
     elif flag == "Convex":
         option = 3
+    elif flag == "SVD-LU":
+        option = 4
     else:
         raise(ValueError, "ERROR in EffectiveQuadSubsampling --> getAsubsampled(): For the third input choose from either 'QR' or 'Random'")
 
@@ -401,6 +403,18 @@ def getSquareA(self):
         zhat, L, ztilde, Utilde = maxdet(A, self.no_of_evals)
         pvec = binary2indices(zhat)
         selected_quadrature_points = pvec
+    elif option == 4:
+        U, singular_vals, V = np.linalg.svd(A.T, full_matrices=True)
+        V = np.mat(V)
+        Pmat, L, U = linalg.lu( V[:, 0:self.no_of_evals])
+        a, b = np.mat(Pmat).shape
+        vec = np.mat( np.arange(0, a) )
+        P = Pmat * vec.T
+        selected_quadrature_points = []
+        for i in range(0, self.no_of_evals):
+            selected_quadrature_points.append(int(P[i,0]) )
+        #print selected_quadrature_points
+
    
     # Form the "square" A matrix.
     Asquare = A[selected_quadrature_points, :]

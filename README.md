@@ -1,42 +1,79 @@
 ![EFFECTIVE-QUADRATURES](https://static.wixstatic.com/media/dad873_3938470ea83849db8b53716c94dd20e8~mv2.png/v1/fill/w_269,h_66,al_c,usm_0.66_1.00_0.01/dad873_3938470ea83849db8b53716c94dd20e8~mv2.png)
 
 # Effective Quadratures
-[![Gitter](https://badges.gitter.im/gitterHQ/gitter.svg)](https://gitter.im/Effective-Quadratures)  [![Build Status](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures.svg?branch=dev)](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Effective-Quadratures/Effective-Quadratures/main/LICENSE.rst)
-[![Coverage Status](https://coveralls.io/repos/github/Effective-Quadratures/Effective-Quadratures/badge.svg?branch=dev-new)](https://coveralls.io/github/Effective-Quadratures/Effective-Quadratures?branch=dev-new)
 
-Suite of tools for generating polynomials for approximation, uncertainty quantification, optimization and integration. For further details, quick-start guides and papers see:
+**What is Effective Quadratures?**
+Effective Quadratures is a suite of tools for generating polynomials for approximation, uncertainty quantification (UQ), optimization and integration.  
+
+**Why do we need it?**
+* To replicate and compare state-of-the-art techniques and results in UQ;
+* To facilitate easy programming of new techniques at a research level;
+* To have a unified, easy-to-use platform with interactive demos---tailored for industrial use.
+
+**So, what's new in Effective Quadratures?**
+* New sampling & integration routines for more efficienct use of your model evaluations;
+* Techniques that leverage adjoint (gradient) information;
+* Plotting subroutines for quick, one-command plots.
+
+For further details, notebooks and papers see:
 <br>
 www.effective-quadratures.org
 <br>
-
-# Downloads
-Visit the [Downloads](https://github.com/Effective-Quadratures/Effective-Quadratures/releases/tag/v4.0) section and get the latest release version. Development is very active right now, stay tuned for a new release in the second week of February 2017.
 
 # Installation
 For installation on Mac and Linux systems, simply type the following into the terminal. 
 ```bash
 > sudo python setup.py install
 ```
-For installation on Windows, you will need [Anaconda] (https://www.continuum.io/downloads#windows); select the Python 2.7 option. Upon successful installation, open the Sypder IDE and go into the Effective-Quadratures-master directory and type the following in the command window
+For installation on Windows, you will need [Anaconda](https://www.continuum.io/downloads#windows); select the Python 2.7 option. Upon successful installation, open the Sypder IDE and go into the Effective-Quadratures-master directory and type the following in the command window
 ```bash
 > python setup.py install
 ```
-This should build the code. Just make sure you include the location of effective_quadratures folder to your python file and you should be good to go.
+This should build the code. Just make sure you include the location of effective_quadratures folder to your python file and you should be good to go. To run this code you will require python 2.7, numpy, scipy and matplotlib. 
 
-# Testing
-Effective-Quadratures uses [Travis](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures) for testing. Our objective is to ensure that regardless of the platform used, the modules will provide the same numerical answer. For testing the suite of tools type
-```bash
-> python test.py
+# Simple example of use
+Below we a simple example that shows some of the functionality in Effective Quadratures. Here we demonstrate how to construct a bi-variate quadrature rule (using a tensor grid) from two different distriutions. 
+```python
+from equadratures import *
+
+x = Parameter(param_type='Gaussian', shape_parameter_A=3.0, shape_parameter_B=2.0, points=6)
+y = Parameter(param_type='Weibull', shape_parameter_A=1.0, shape_parameter_B=2.2, points=4)
+
+p = Polyint([x,y])
+points, weights = p.getPointsAndWeights()
+print points
+[[-1.70120995  0.28565256]
+[-1.70120995  0.79778656]
+[-1.70120995  1.44042885]
+[-1.70120995  2.21498268]
+[ 0.32830185  0.28565256]
+[ 0.32830185  0.79778656]
+[ 0.32830185  1.44042885]
+[ 0.32830185  2.21498268]
+[ 2.12784518  0.28565256]
+[ 2.12784518  0.79778656]
+[ 2.12784518  1.44042885]
+[ 2.12784518  2.21498268]
+[ 3.87215482  0.28565256]
+[ 3.87215482  0.79778656]
+[ 3.87215482  1.44042885]
+[ 3.87215482  2.21498268]
+[ 5.67169815  0.28565256]
+[ 5.67169815  0.79778656]
+[ 5.67169815  1.44042885]
+[ 5.67169815  2.21498268]
+[ 7.70120995  0.28565256]
+[ 7.70120995  0.79778656]
+[ 7.70120995  1.44042885]
+[ 7.70120995  2.21498268]]
 ```
+For more examples, do checkout the notebooks here: www.effective-quadratures.org.
 # Documentation
-We use Sphinx for code documentation. See [Read the Docs] (http://www-edc.eng.cam.ac.uk/~ps583/docs/) for more information.
+We use Sphinx for code documentation. See [Read the Docs](http://www-edc.eng.cam.ac.uk/~ps583/docs/) for more information. 
 
-# Contributing
-For contributing to this project, do shoot us an email! We always have a set of routines that need coding and are interested in adding more functionalities. We also have a few projects ideal for Masters and PhD students. 
-
-# Contact
-For details and queries please contact:<br>
+# Community guidelines
+If you have contributions, questions, or feedback use either the Github repository, or contact:<br>
 <br>
 Pranay Seshadri <br>
 *University of Cambridge* <br>

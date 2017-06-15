@@ -486,6 +486,9 @@ def custom_recurrence_coefficients(order, x, w):
     w = w / np.sum(w)
     ab = np.zeros((order,2))
 
+    print '---w---'
+    print np.sum(w)
+
     # Negate "zero" components
     nonzero_indices = []
     for i in range(0, len(x)):
@@ -495,11 +498,17 @@ def custom_recurrence_coefficients(order, x, w):
     ncap = len(nonzero_indices)
     x = x[nonzero_indices] # only keep entries at the non-zero indices!
     w = w[nonzero_indices]
+    print w
 
+    print '**************'
     s = np.sum(w)
+    print '---s---'
+    print s
+
     temp = w/s
     ab[0,0] = np.dot(x, temp.T)
     ab[0,1] = s
+
 
     if order == 1:
         return ab

@@ -1,13 +1,13 @@
 """Operations involving multivariate polynomials (without gradients) via numerical quadrature"""
-from parameter import Parameter
-from indexset import IndexSet
+from .parameter import Parameter
+from .indexset import IndexSet
 import numpy as np
 from math import factorial
 from itertools import combinations
-from utils import evalfunction, find_repeated_elements, meshgrid
-from plotting import bestfit, bestfit3D, histogram
-from qr import solveLSQ
-from stats import Statistics
+from .utils import evalfunction, find_repeated_elements, meshgrid, removeDuplicates
+from .plotting import bestfit, bestfit3D, histogram
+from .qr import solveLSQ
+from .stats import Statistics
 
 class Polyint(object):
     """
@@ -35,8 +35,7 @@ class Polyint(object):
             # Determine the highest orders for a tensor grid
             highest_orders = []
             for i in range(0, len(uq_parameters)):
-                highest_orders.append(uq_parameters[i].order)
-            
+                highest_orders.append(int( uq_parameters[i].order - 1) ) 
             self.index_sets = IndexSet('Tensor grid', highest_orders)
         else:
             self.index_sets = index_sets
@@ -92,13 +91,21 @@ class Polyint(object):
         # Initialize some temporary variables
         stackOfParameters = self.uq_parameters
         dimensions = int(len(stackOfParameters))
-        
+        flag = 0
+
         orders = []
         if override_orders is None:
             for i in range(0, dimensions):
                 orders.append(stackOfParameters[i].order)
         else:
             orders = override_orders
+            flag = 1
+
+        if self.index_sets.index_set_type == 'Sparse grid' and flag == 0:
+            points, weights = sparsegrid(self.uq_parameters, self.index_sets.level, self.index_sets.growth_rule)
+            return points, weights
+
+        
         
         # Initialize points and weights
         pp = [1.0]
@@ -453,12 +460,13 @@ def sparsegrid(stackOfParameters, level, growth_rule, function=None):
 
         # loop through the dimensions
         for j in range(0, dimensions):
-            orders[i,j] = np.array(sparse_index[i][j])
+            orders[i,j] = np.array(sparse_index[i][j]) 
 
         # points and weights for each order~
-        tensor = IndexSet('Tensor grid', orders)
-        polyObject = Polynomial(stackOfParameters, tensor)
-        points, weights = polyObject.getPointsAndWeights(orders[i,:] )
+        tensor = IndexSet('Tensor grid', orders[i,:])
+        p2obj = Polyint(stackOfParameters, tensor)
+        points, weights = p2obj.getPointsAndWeights(orders[i,:])
+        del p2obj
 
         # Multiply weights by constant 'a':
         weights = weights * sparse_coeffs[i]
@@ -573,9 +581,10 @@ def getSparsePseudospectralCoefficients(self, function):
     points_store = {}
     indices = np.zeros((rows))
 
+
     for i in range(0,rows):
         orders = sparse_indices[i,:]
-        K, I, points = getPseudospectralCoefficients(self, function, orders + 1)
+        K, I, points = getPseudospectralCoefficients(self, function, orders)
         individual_tensor_indices[i] = I
         individual_tensor_coefficients[i] =  K
         points_store[i] = points

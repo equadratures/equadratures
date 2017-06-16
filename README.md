@@ -7,14 +7,14 @@
 Effective Quadratures is a suite of tools for generating polynomials for approximation, uncertainty quantification (UQ), optimization and integration.  
 
 **Why do we need it?**
- * To replicate and compare state-of-the-art techniques and results in UQ;
- * To facilitate easy programming of new techniques at a research level;
- * To have a unified, easy-to-use platform with interactive demos---tailored for industrial use.
+* To replicate and compare state-of-the-art techniques and results in UQ;
+* To facilitate easy programming of new techniques at a research level;
+* To have a unified, easy-to-use platform with interactive demos---tailored for industrial use.
 
 **So, what's new in Effective Quadratures?**
- * New sampling & integration routines for more efficienct use of your model evaluations;
- * Techniques that leverage adjoint (gradient) information;
- * Plotting subroutines for quick, one-command plots.
+* New sampling & integration routines for more efficienct use of your model evaluations;
+* Techniques that leverage adjoint (gradient) information;
+* Plotting subroutines for quick, one-command plots.
 
 For further details, notebooks and papers see:
 <br>
@@ -44,29 +44,29 @@ p = Polyint([x,y])
 points, weights = p.getPointsAndWeights()
 print points
 [[-1.70120995  0.28565256]
- [-1.70120995  0.79778656]
- [-1.70120995  1.44042885]
- [-1.70120995  2.21498268]
- [ 0.32830185  0.28565256]
- [ 0.32830185  0.79778656]
- [ 0.32830185  1.44042885]
- [ 0.32830185  2.21498268]
- [ 2.12784518  0.28565256]
- [ 2.12784518  0.79778656]
- [ 2.12784518  1.44042885]
- [ 2.12784518  2.21498268]
- [ 3.87215482  0.28565256]
- [ 3.87215482  0.79778656]
- [ 3.87215482  1.44042885]
- [ 3.87215482  2.21498268]
- [ 5.67169815  0.28565256]
- [ 5.67169815  0.79778656]
- [ 5.67169815  1.44042885]
- [ 5.67169815  2.21498268]
- [ 7.70120995  0.28565256]
- [ 7.70120995  0.79778656]
- [ 7.70120995  1.44042885]
- [ 7.70120995  2.21498268]]
+[-1.70120995  0.79778656]
+[-1.70120995  1.44042885]
+[-1.70120995  2.21498268]
+[ 0.32830185  0.28565256]
+[ 0.32830185  0.79778656]
+[ 0.32830185  1.44042885]
+[ 0.32830185  2.21498268]
+[ 2.12784518  0.28565256]
+[ 2.12784518  0.79778656]
+[ 2.12784518  1.44042885]
+[ 2.12784518  2.21498268]
+[ 3.87215482  0.28565256]
+[ 3.87215482  0.79778656]
+[ 3.87215482  1.44042885]
+[ 3.87215482  2.21498268]
+[ 5.67169815  0.28565256]
+[ 5.67169815  0.79778656]
+[ 5.67169815  1.44042885]
+[ 5.67169815  2.21498268]
+[ 7.70120995  0.28565256]
+[ 7.70120995  0.79778656]
+[ 7.70120995  1.44042885]
+[ 7.70120995  2.21498268]]
 ```
 For more examples, do checkout the notebooks here: www.effective-quadratures.org.
 # Documentation

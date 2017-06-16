@@ -2,7 +2,7 @@
 """Index sets for multivariate polynomials"""
 import numpy as np
 import math as mt
-from plotting import scatterplot, scatterplot3D
+from .plotting import scatterplot, scatterplot3D
 
 class IndexSet(object):
     """
@@ -299,6 +299,8 @@ def sparse_grid_index_set(level, growth_rule, dimensions):
             value = n_bar[i,:]
             n_new.append(value)
 
+    #print 'n_new'
+    #print n_new
     # Sparse grid coefficients
     summation2 = np.sum(n_new, axis=1)
     a = [] # sparse grid coefficients
@@ -316,12 +318,13 @@ def sparse_grid_index_set(level, growth_rule, dimensions):
             if(r[j] - 1 == 0):
                 sparse_index[i,j] = int(1)
             elif(growth_rule is 'exponential' and  r[j] - 1 != 0 ):
-                sparse_index[i,j] = int(2**(r[j] - 1) + 1 )
+                sparse_index[i,j] = int(2**(r[j] - 1)  )
             elif(growth_rule is 'linear'):
                 sparse_index[i,j] = int(r[j])
             else:
                 raise KeyboardInterrupt
-
+    
+    #print sparse_index
     # Ok, but sparse_index just has the tensor order sets to be used. Now we need
     # to get all the index sets!
     SG_indices = {}

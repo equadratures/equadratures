@@ -1,13 +1,13 @@
 """Operations involving polynomial regression on a data set"""
-from parameter import Parameter
-from indexset import IndexSet
+from .parameter import Parameter
+from .indexset import IndexSet
 import numpy as np
 from math import factorial
 from itertools import combinations
-from utils import evalfunction, find_repeated_elements, meshgrid
-from plotting import bestfit, bestfit3D, histogram
-from qr import solveLSQ
-from stats import Statistics
+from .utils import evalfunction, find_repeated_elements, meshgrid
+from .plotting import bestfit, bestfit3D, histogram
+from .qr import solveLSQ
+from .stats import Statistics
 
 class Polyreg(object):
     """

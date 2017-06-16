@@ -1,11 +1,13 @@
 """Operations involving multivariate polynomials (with gradients) via least squares"""
-from parameter import Parameter
-from polyint import Polyint
-from qr import qr_MGS, solveLSQ, solveCLSQ
-from indexset import IndexSet
-from utils import evalfunction, evalgradients
-from stats import Statistics
+from .parameter import Parameter
+from .polyint import Polyint
+from .qr import qr_MGS, solveLSQ, solveCLSQ
+from .indexset import IndexSet
+from .utils import evalfunction, evalgradients
+from .stats import Statistics
+from .convex import maxdet, binary2indices
 import numpy as np
+from scipy import linalg 
 
 class Polylsq(object):
     """
@@ -89,6 +91,8 @@ class Polylsq(object):
         self.C_subsampled = None
         self.A_subsampled = None
         self.no_of_evals = None
+        self.b_subsampled = None
+        self.d_subsampled = None
         self.subsampled_quadrature_points = None
         self.subsampled_quadrature_weights = None # stored as a diagonal matrix??
         self.row_indices = None
@@ -229,7 +233,9 @@ class Polylsq(object):
         else:
             fun_values = function_values
         
+        
         b = self.subsampled_quadrature_weights * fun_values
+        self.b_subsampled = b
         b = np.dot(normalizations, b)
         
         ################################
@@ -255,7 +261,7 @@ class Polylsq(object):
                     d[counter] = grad_values[i,j]
                     counter = counter + 1
             C = self.C_subsampled
-
+            self.d_subsampled = d
             # Now row normalize the Cs and the ds
             if technique is None:
                 raise(ValueError, 'A technique must be defined for gradient problems. Choose from stacked, equality or inequality. For more information please consult the detailed user guide.')
@@ -366,12 +372,15 @@ def getA(self):
 
 # The subsampled A matrix based on either randomized selection of rows or a QR column pivoting approach
 def getSquareA(self):
-
     flag = self.method
     if flag == "QR" or flag is None:
         option = 1 # default option!
     elif flag == "Random":
         option = 2
+    elif flag == "Convex":
+        option = 3
+    elif flag == "SVD-LU":
+        option = 4
     else:
         raise(ValueError, "ERROR in EffectiveQuadSubsampling --> getAsubsampled(): For the third input choose from either 'QR' or 'Random'")
 
@@ -386,13 +395,27 @@ def getSquareA(self):
 
     # Now compute the rank revealing QR decomposition of A!
     if option == 1:
-       Q_notused, R_notused, P = qr_MGS(A.T, pivoting=True)
-    else:
-        P = np.random.randint(0, len(self.tensor_quadrature_points) - 1, len(self.tensor_quadrature_points) - 1 )
+        Q_notused, R_notused, P = qr_MGS(A.T, pivoting=True)
+        selected_quadrature_points = P[0:self.no_of_evals]
+    elif option == 2:
+        selected_quadrature_points = np.random.choice(m, self.no_of_evals, replace=False)
+    elif option == 3:
+        zhat, L, ztilde, Utilde = maxdet(A, self.no_of_evals)
+        pvec = binary2indices(zhat)
+        selected_quadrature_points = pvec
+    elif option == 4:
+        U, singular_vals, V = np.linalg.svd(A.T, full_matrices=True)
+        V = np.mat(V)
+        Pmat, L, U = linalg.lu( V[:, 0:self.no_of_evals])
+        a, b = np.mat(Pmat).shape
+        vec = np.mat( np.arange(0, a) )
+        P = Pmat * vec.T
+        selected_quadrature_points = []
+        for i in range(0, self.no_of_evals):
+            selected_quadrature_points.append(int(P[i,0]) )
+        #print selected_quadrature_points
 
-    # Now truncate number of rows based on the maximum_number_of_evals
-    selected_quadrature_points = P[0:self.no_of_evals]
-        
+   
     # Form the "square" A matrix.
     Asquare = A[selected_quadrature_points, :]
     esq_pts = getRows(np.mat(self.tensor_quadrature_points), selected_quadrature_points)

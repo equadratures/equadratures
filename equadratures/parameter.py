@@ -1,9 +1,9 @@
 """Core class for setting the properties of a univariate parameter."""
 import numpy as np
 from scipy.special import gamma
-import analyticaldistributions as analytical
+import equadratures.analyticaldistributions as analytical
 import matplotlib.pyplot as plt
-from plotting import parameterplot
+from .plotting import parameterplot
 class Parameter(object):
     
     """
@@ -495,11 +495,12 @@ def custom_recurrence_coefficients(order, x, w):
     ncap = len(nonzero_indices)
     x = x[nonzero_indices] # only keep entries at the non-zero indices!
     w = w[nonzero_indices]
-
     s = np.sum(w)
+
     temp = w/s
     ab[0,0] = np.dot(x, temp.T)
     ab[0,1] = s
+
 
     if order == 1:
         return ab

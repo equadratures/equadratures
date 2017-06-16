@@ -28,8 +28,8 @@ def maxdet(A, k):
     Z = diag(z)
     fz = -np.log(np.linalg.det(A.T * Z * A)) - kappa * np.sum(np.log(z) + np.log(1.0 - z))
 
-    print 'Iteration \t Step size \t Newton decrement \t Objective \t log_det'
-    print str(0)+'\t'+'--'+'\t'+'--'+'\t'+str(-fz)+'\t'+str(np.log(np.linalg.det(A.T * Z * A)) )
+    #print 'Iteration \t Step size \t Newton decrement \t Objective \t log_det'
+    #print str(0)+'\t'+'--'+'\t'+'--'+'\t'+str(-fz)+'\t'+str(np.log(np.linalg.det(A.T * Z * A)) )
         
     # Optimization loop!
     for i in range(0, maxiter) :
@@ -77,7 +77,7 @@ def maxdet(A, k):
         z = zp
         fz = fzp
         sig = -g.T * dz * 0.5
-        print str(i+1)+'\t'+str(s)+'\t'+str(sig[0,0])+'\t'+str(-fz)+'\t'+str(np.log(np.linalg.det(A.T * diag(z) * A)) )
+        #print str(i+1)+'\t'+str(s)+'\t'+str(sig[0,0])+'\t'+str(-fz)+'\t'+str(np.log(np.linalg.det(A.T * diag(z) * A)) )
         if( sig[0,0] <= n_tol):
             break
         zsort = np.sort(z, axis=0)

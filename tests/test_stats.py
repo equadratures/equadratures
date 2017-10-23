@@ -14,11 +14,12 @@ class TestStats(TestCase):
     def fun3(x):
         return np.exp(x[0]+x[1])
         
-    self.degree = 5
-    points_used = degree + 1
-    self.x1 = Parameter(param_type="Uniform", lower=0.0, upper=1.0, points=points_used)
-    self.x2 = Parameter(param_type="Uniform", lower=0.0, upper=1.0, points=points_used)
-    self.x3 = Parameter(param_type="Uniform", lower=-1, upper=1, points=points_used)
+    def __init__(self):
+        self.degree = 5
+        points_used = degree + 1
+        self.x1 = Parameter(param_type="Uniform", lower=0.0, upper=1.0, points=points_used)
+        self.x2 = Parameter(param_type="Uniform", lower=0.0, upper=1.0, points=points_used)
+        self.x3 = Parameter(param_type="Uniform", lower=-1, upper=1, points=points_used)
         
     def test_1(self):
         x1 = self.x1

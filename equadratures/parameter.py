@@ -630,7 +630,7 @@ def orthoPolynomial_and_derivative(self, points, order=None):
     # Now ensure the points are scaled with respect to the measure. That is if the asks for a uniform distribution
     # over [-3, 2], appropriately scale the points so that they lie within the bounds [-1, 1]!   
     gridPoints = np.asarray(points).copy()
-    
+    ab = recurrence_coefficients(self, order)
     true_mid = np.mean(self.bounds)
     # bound = [0, inf]
     if np.isinf(true_mid) and np.min(gridPoints) < 0:
@@ -652,7 +652,7 @@ def orthoPolynomial_and_derivative(self, points, order=None):
     orthopoly = np.zeros((order, len(gridPoints))) # create a matrix full of zeros
     derivative_orthopoly = np.zeros((order, len(gridPoints)))
 
-    ab = recurrence_coefficients(self, order)
+    
     # Convert the grid points to a numpy array -- simplfy life!
     gridPointsII = np.zeros((len(gridPoints), 1))
     for u in range(0, len(gridPoints)):

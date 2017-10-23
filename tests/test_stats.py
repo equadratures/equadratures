@@ -14,7 +14,7 @@ class TestStats(TestCase):
     def fun3(x):
         return np.exp(x[0]+x[1])
         
-    def __init__(self):
+    def setUp(self):
         self.degree = 5
         points_used = degree + 1
         self.x1 = Parameter(param_type="Uniform", lower=0.0, upper=1.0, points=points_used)

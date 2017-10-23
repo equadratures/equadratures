@@ -1,9 +1,9 @@
 """Core class for setting the properties of a univariate parameter."""
 import numpy as np
 from scipy.special import gamma
-import equadratures.analyticaldistributions as analytical
+import analyticaldistributions as analytical
 import matplotlib.pyplot as plt
-from .plotting import parameterplot
+from plotting import parameterplot, histogram
 class Parameter(object):
     
     """
@@ -82,6 +82,7 @@ class Parameter(object):
         if self.lower >= self.upper :
             raise(ValueError, 'parameter __init__: upper bounds must be greater than lower bounds!')
   
+        self.bounds = None
     # Routine for computing the mean of the distributions
     def computeMean(self):
         """
@@ -163,6 +164,9 @@ class Parameter(object):
         uniform_samples = np.random.random((number_of_random_samples, 1))
         yy = self.getiCDF(uniform_samples)
 
+        if graph is not None:
+            histogram(yy, 'Parameter', 'PDF', filename=None)
+            
         return yy
     
     def getCDF(self, N):
@@ -222,7 +226,7 @@ class Parameter(object):
         elif self.param_type is "Cauchy":
             y = analytical.iCDF_CauchyDistribution(x, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Uniform":
-            y = x * 1.0
+            y = (x - .5) * (self.upper - self.lower)
         elif self.param_type is "TruncatedGaussian":
             y = analytical.iCDF_TruncatedGaussianDistribution(x, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Exponential":
@@ -336,28 +340,30 @@ def recurrence_coefficients(self, order=None):
 
     # 1. Beta distribution
     if self.param_type is "Beta":
-        #param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
-        #param_B = self.shape_parameter_A - 1
-        #if(param_B <= 0):
-        #    error_function('ERROR: parameter_A (beta shape parameter A) must be greater than 1!')
-        #if(param_A <= 0):
-        #    error_function('ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
-        #ab =  jacobi_recurrence_coefficients_01(param_A, param_B , order)
-        alpha = self.shape_parameter_A
-        beta = self.shape_parameter_B
-        lower = self.lower
-        upper = self.upper
-        x, w = analytical.PDF_BetaDistribution(N, alpha, beta, lower, upper)
-        ab = custom_recurrence_coefficients(order, x, w)
+        param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
+        param_B = self.shape_parameter_A - 1
+        if(param_B <= 0):
+            error_function('ERROR: parameter_A (beta shape parameter A) must be greater than 1!')
+        if(param_A <= 0):
+            error_function('ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
+        ab =  jacobi_recurrence_coefficients_01(param_A, param_B , order)
+        #alpha = self.shape_parameter_A
+        #beta = self.shape_parameter_B
+        #lower = self.lower
+        #upper = self.upper
+        #x, w = analytical.PDF_BetaDistribution(N, alpha, beta, lower, upper)
+        #ab = custom_recurrence_coefficients(order, x, w)
+        self.bounds = [0,1]
 
     # 2. Uniform distribution
     elif self.param_type is "Uniform":
         self.shape_parameter_A = 0.0
         self.shape_parameter_B = 0.0
         ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, order)
+        self.bounds = [-1, 1]
         #lower = self.lower
         #upper = self.upper
-        #x, w = analytical.UniformDistribution(N, lower, upper)
+        #x, w = analytical.PDF_UniformDistribution(N, lower, upper)
         #ab = custom_recurrence_coefficients(order, x, w)
 
     # 3. Analytical Gaussian defined on [-inf, inf]
@@ -366,12 +372,14 @@ def recurrence_coefficients(self, order=None):
         sigma = np.sqrt(self.shape_parameter_B)
         x, w  = analytical.PDF_GaussianDistribution(N, mu, sigma)
         ab = custom_recurrence_coefficients(order, x, w)
+        self.bounds = [-np.inf, np.inf]
 
     # 4. Analytical Exponential defined on [0, inf]
     elif self.param_type is "Exponential":
         lambda_value = self.shape_parameter_A
         x, w  = analytical.PDF_ExponentialDistribution(N, lambda_value)
         ab = custom_recurrence_coefficients(order, x, w)
+        self.bounds = [0, np.inf]
 
     # 5. Analytical Cauchy defined on [-inf, inf]
     elif self.param_type is "Cauchy":
@@ -379,6 +387,7 @@ def recurrence_coefficients(self, order=None):
         gammavalue = self.shape_parameter_B
         x, w  = analytical.PDF_CauchyDistribution(N, x0, gammavalue)
         ab = custom_recurrence_coefficients(order, x, w)
+        self.bounds = [-np.inf, np.inf]
 
     # 5. Analytical Gamma defined on [0, inf]
     elif self.param_type is "Gamma":
@@ -386,6 +395,7 @@ def recurrence_coefficients(self, order=None):
         theta = self.shape_parameter_B
         x, w  = analytical.PDF_GammaDistribution(N, k, theta)
         ab = custom_recurrence_coefficients(order, x, w)
+        self.bounds = [0, np.inf]
 
     # 6. Analytical Weibull defined on [0, inf]
     elif self.param_type is "Weibull":
@@ -393,8 +403,9 @@ def recurrence_coefficients(self, order=None):
         k = self.shape_parameter_B
         x, w  = analytical.PDF_WeibullDistribution(N, lambda_value, k)
         ab = custom_recurrence_coefficients(order, x, w)
+        self.bounds = [0, np.inf]
 
-    # 3. Analytical Truncated Gaussian defined on [a,b]
+    # 7. Analytical Truncated Gaussian defined on [a,b]
     elif self.param_type is "TruncatedGaussian":
         mu = self.shape_parameter_A
         sigma = np.sqrt(self.shape_parameter_B)
@@ -402,7 +413,7 @@ def recurrence_coefficients(self, order=None):
         b = self.upper
         x, w  = analytical.PDF_TruncatedGaussianDistribution(N, mu, sigma, a, b)
         ab = custom_recurrence_coefficients(order, x, w)
-
+        self.bounds = [self.lower, self.upper]
     else:
         error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential, TruncatedGaussian or Beta')
 
@@ -587,13 +598,8 @@ def getlocalquadrature(self, order=None):
         for u in range(0, len(i) ):
             w[u] = (V[0,i[u]]**2) # replace weights with right value
             p[u,0] = local_points[u]
-
-        local_weights = recurrence_coeffs[0,1] * w  # normalizing step
-        #local_weights =  w
-        #if self.param_type == 'Uniform':
-        #    local_weights = w * (self.upper - self.lower)
-        local_points = p # re-label
-
+        local_weights = w
+        local_points = p 
     # Return 1D gauss points and weights
     return local_points, local_weights
 
@@ -616,11 +622,33 @@ def jacobiEigenvectors(self, order=None):
 
 
 # Univariate orthogonal polynomial correspoding to the weight of the parameter
-def orthoPolynomial_and_derivative(self, gridPoints, order=None):
+def orthoPolynomial_and_derivative(self, points, order=None):
 
     if order is None:
         order = self.order
-
+    
+    # Now ensure the points are scaled with respect to the measure. That is if the asks for a uniform distribution
+    # over [-3, 2], appropriately scale the points so that they lie within the bounds [-1, 1]!   
+    gridPoints = np.asarray(points).copy()
+    
+    true_mid = np.mean(self.bounds)
+    # bound = [0, inf]
+    if np.isinf(true_mid) and np.min(gridPoints) < 0:
+        gridPoints = np.add(gridPoints, -np.min(gridPoints))
+    # bound = [finite, finite]
+    elif not(np.isnan(true_mid)):
+        mid = 0.5*(self.upper + self.lower)
+        gridPoints = np.add(gridPoints, true_mid-mid)
+    else:
+        assert(self.bounds == [-np.inf, np.inf])
+    
+    
+    true_interval = self.bounds[1] - self.bounds[0]
+    if not(np.isinf(true_interval)):
+        scale = true_interval/(self.upper - self.lower)
+        gridPoints = np.multiply(scale, gridPoints)
+#    print "gridPoints"
+#    print gridPoints
     orthopoly = np.zeros((order, len(gridPoints))) # create a matrix full of zeros
     derivative_orthopoly = np.zeros((order, len(gridPoints)))
 

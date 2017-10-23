@@ -5,15 +5,7 @@ import numpy as np
 from scipy import stats as s
 
 class TestStats(TestCase):
-    def fun1(x):
-        return x[0]    
     
-    def fun2(x):
-        return x[0]+x[1]+x[2]
-    
-    def fun3(x):
-        return np.exp(x[0]+x[1])
-        
     def setUp(self):
         self.degree = 5
         points_used = self.degree + 1
@@ -22,6 +14,8 @@ class TestStats(TestCase):
         self.x3 = Parameter(param_type="Uniform", lower=-1, upper=1, points=points_used)
         
     def test_1(self):
+        def fun1(x):
+            return x[0]        
         x1 = self.x1
         degree = self.degree
         parameters = [x1]
@@ -48,6 +42,8 @@ class TestStats(TestCase):
 
 
     def test_2(self):
+        def fun2(x):
+            return x[0]+x[1]+x[2]        
         x1 = self.x1
         x2 = self.x2
         x3 = self.x3
@@ -78,6 +74,8 @@ class TestStats(TestCase):
         assert(abs((stats.kurtosis - MC_kurt)/(MC_kurt+ epsilon)) < 0.1)
 
     def test_3(self):
+        def fun3(x):
+            return np.exp(x[0]+x[1])
         x1 = self.x1
         x2 = self.x2
         degree = self.degree

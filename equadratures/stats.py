@@ -124,7 +124,7 @@ def getAllSobol(coefficients, index_set):
     
     if not(isinstance(index_set, np.ndarray)):
         index_set = index_set.elements
-    m, dimensions = index_set.shape 
+    m, dimensions = index_set.shape
     if dimensions == 1:
         return {0:1.0}
     else:

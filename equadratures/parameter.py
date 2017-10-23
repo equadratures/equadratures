@@ -226,7 +226,7 @@ class Parameter(object):
         elif self.param_type is "Cauchy":
             y = analytical.iCDF_CauchyDistribution(x, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Uniform":
-            y = (x - .5) * (self.upper - self.lower)
+            y = (x - .5) * (self.upper - self.lower) + (self.upper + self.lower)/2.0
         elif self.param_type is "TruncatedGaussian":
             y = analytical.iCDF_TruncatedGaussianDistribution(x, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Exponential":

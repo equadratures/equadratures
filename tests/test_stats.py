@@ -20,7 +20,7 @@ class TestStats(TestCase):
         degree = self.degree
         parameters = [x1]
         basis = IndexSet('Tensor grid',[degree,degree])
-        uqProblem = Polyint(parameters)
+        uqProblem = Polyint(parameters,basis)
         coefficients, indices, pts = uqProblem.getPolynomialCoefficients(fun1)
         stats = Statistics(coefficients, basis, parameters)
         
@@ -50,7 +50,7 @@ class TestStats(TestCase):
         degree = self.degree
         parameters = [x1,x2,x3]
         basis = IndexSet('Tensor grid',[degree,degree])
-        uqProblem = Polyint(parameters)
+        uqProblem = Polyint(parameters,basis)
         coefficients, indices, pts = uqProblem.getPolynomialCoefficients(fun2)
         stats = Statistics(coefficients, basis, parameters)
         fosi = stats.getSobol(1)
@@ -61,7 +61,7 @@ class TestStats(TestCase):
         f = np.zeros((1000000,1))
         
         for i in range(1000000):
-            f[i,0] = fun1([x1_samples[i,0], x2_samples[i,0], x3_samples[i,0]])
+            f[i,0] = fun2([x1_samples[i,0], x2_samples[i,0], x3_samples[i,0]])
         
         MC_mean = np.mean(f)
         MC_var = np.var(f)
@@ -81,7 +81,7 @@ class TestStats(TestCase):
         degree = self.degree
         parameters = [x1,x2]
         basis = IndexSet('Tensor grid',[degree,degree])
-        uqProblem = Polyint(parameters)
+        uqProblem = Polyint(parameters,basis)
         coefficients, indices, pts = uqProblem.getPolynomialCoefficients(fun3)
         stats = Statistics(coefficients, basis, parameters)
         fosi = stats.getSobol(1)
@@ -91,7 +91,7 @@ class TestStats(TestCase):
         f = np.zeros((1000000,1))
         
         for i in range(1000000):
-            f[i,0] = fun1([x1_samples[i,0], x2_samples[i,0]])
+            f[i,0] = fun3([x1_samples[i,0], x2_samples[i,0]])
         
         MC_mean = np.mean(f)
         MC_var = np.var(f)

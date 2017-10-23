@@ -16,7 +16,7 @@ class TestStats(TestCase):
         
     def setUp(self):
         self.degree = 5
-        points_used = degree + 1
+        points_used = self.degree + 1
         self.x1 = Parameter(param_type="Uniform", lower=0.0, upper=1.0, points=points_used)
         self.x2 = Parameter(param_type="Uniform", lower=0.0, upper=1.0, points=points_used)
         self.x3 = Parameter(param_type="Uniform", lower=-1, upper=1, points=points_used)

@@ -50,10 +50,9 @@ class Statistics(object):
         **Sample usage:** 
         For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
-        # A bar graph plot of thae Sobol indices!
-        dimensions = self.index_set.dimension
-        xbins = range(0, dimensions)
-        barplot(xbins, self.fosi, 'Parameters', 'Sobol indices')
+        # A bar graph plot of the first order Sobol indices!
+        x = range(len(self.getSobol(1).keys()))
+        barplot(x, self.getSobol(1).values(), 'Parameters', 'Sobol indices', self.getSobol(1).keys())
     
     def getSobol(self, order = 1):
         """
@@ -84,7 +83,7 @@ class Statistics(object):
         first_order_skewness = stats.getCondSkewness(1)        
         
         """
-        return CondSkewness(order, self.quad_wts, self.weighted_evals, self.index_set, self.variance)
+        return CondSkewness(order, self.quad_wts, self.weighted_evals, self.index_set, self.variance, self.skewness)
     def getCondKurtosis(self, order = 1):
         """
         Get conditional kurtosis indices at specified order. 
@@ -98,7 +97,7 @@ class Statistics(object):
         first_order_kurtosis = stats.getCondKurtosis(1)        
         
         """
-        return CondKurtosis(order, self.quad_wts, self.weighted_evals, self.index_set, self.variance)
+        return CondKurtosis(order, self.quad_wts, self.weighted_evals, self.index_set, self.variance, self.kurtosis)
             
         
 # Private functions!
@@ -169,7 +168,7 @@ def getKurtosis(quad_wts, weighted_evals, index_set, variance):
 
 # Return conditional skewness of specified order, in dictionary format similar to Sobol' indices
 #Unfortunately, to compute conditional indices, this slow method must be used! 
-def CondSkewness(order, quad_wts, weighted_evals, index_set, variance):
+def CondSkewness(order, quad_wts, weighted_evals, index_set, variance, skewness):
     #Get all polynomials evaluated at the quad. pts and corresponding wts
     
     dimensions = index_set.elements.shape[1]
@@ -189,8 +188,13 @@ def CondSkewness(order, quad_wts, weighted_evals, index_set, variance):
     integral1 = np.dot(cubed_evals, quad_wts)
     for i in range(1, integral1.shape[0]):
         if sum(norm_ind[i]) == order:
-            combo_index[norm_ind[i]] = combo_index[norm_ind[i]] + integral1[i] /(variance**1.5)
+            combo_index[norm_ind[i]] = combo_index[norm_ind[i]] + integral1[i] /(variance**1.5 * skewness)
     
+    
+    valid_indices = []
+    for i in range(1, index_set.cardinality):
+        if sum(norm_ind[i]) <= order:
+            valid_indices.append(i)
     #2nd term (Can we avoid for loops in the future?)
     for p in range(1,index_set.cardinality):
         for q in range(1,index_set.cardinality):           
@@ -207,14 +211,19 @@ def CondSkewness(order, quad_wts, weighted_evals, index_set, variance):
                 continue
 
             evals2 = (weighted_evals[p,:]**2)*weighted_evals[q,:]
-            integral2 = np.sum(evals2* quad_wts)            
-            combo_index[summed_norm_index] = combo_index[summed_norm_index] + 3 * integral2 /(variance**1.5)
+            integral2 = np.dot(evals2, quad_wts)            
+            combo_index[summed_norm_index] = combo_index[summed_norm_index] + 3 * integral2 /(variance**1.5* skewness)
     
     temp_ind = index_set.elements.copy()
+    print len(valid_indices)
     #3rd term (Can we avoid for loops in the future?)
-    for p in range(1,index_set.cardinality):
-        for q in range(p+1, index_set.cardinality):
-            for r in range(q+1, index_set.cardinality):
+    for a in range(len(valid_indices)):
+        for b in range(a+1, len(valid_indices)):
+            for c in range(b+1, len(valid_indices)):
+                p = valid_indices[a]
+                q = valid_indices[b]
+                r = valid_indices[c]
+
                 summed_norm_index =tuple(np.logical_or(np.logical_or(norm_ind[p], norm_ind[q]), norm_ind[r]).astype(int))
                 if sum(summed_norm_index) != order:
                     continue
@@ -230,12 +239,13 @@ def CondSkewness(order, quad_wts, weighted_evals, index_set, variance):
                 
                 integral3 = np.dot(evals3, quad_wts)
                 
-                combo_index[summed_norm_index] = combo_index[summed_norm_index] + 6 * integral3 /(variance**1.5)
-
+                combo_index[summed_norm_index] = combo_index[summed_norm_index] + 6 * integral3 /(variance**1.5* skewness)
+                
+    combo_index = {tuple(np.nonzero(key)[0]): value for key, value in combo_index.iteritems()}
     return combo_index
 
 # Return conditional kurtosis of specified order, in dictionary format similar to Sobol' indices
-def CondKurtosis(order, quad_wts, weighted_evals, index_set, variance):
+def CondKurtosis(order, quad_wts, weighted_evals, index_set, variance, kurtosis):
     #Get all polynomials evaluated at the quad. pts and corresponding wts
     dimensions = index_set.elements.shape[1]
     norm_ind = index_set.elements.copy()
@@ -253,11 +263,15 @@ def CondKurtosis(order, quad_wts, weighted_evals, index_set, variance):
     integral1 = np.dot(fourth_evals, quad_wts)
     for i in range(1, integral1.shape[0]):
         if sum(norm_ind[i]) == order:
-            combo_index[norm_ind[i]] = combo_index[norm_ind[i]] + integral1[i] /(variance**2)
+            combo_index[norm_ind[i]] = combo_index[norm_ind[i]] + integral1[i] /(variance**2 * kurtosis)
     
+    valid_indices = []
+    for i in range(1, index_set.cardinality):
+        if sum(norm_ind[i]) <= order:
+            valid_indices.append(i)
     #2nd term (Can we avoid for loops in the future?)
-    for p in range(1,index_set.cardinality):
-        for q in range(1,index_set.cardinality):
+    for p in valid_indices:
+        for q in valid_indices:
             summed_norm_index =tuple(np.logical_or(norm_ind[p], norm_ind[q]).astype(int))
             if sum(summed_norm_index) != order:
                 continue
@@ -271,23 +285,28 @@ def CondKurtosis(order, quad_wts, weighted_evals, index_set, variance):
                 continue
             evals2 = (weighted_evals[p,:]**3)*weighted_evals[q,:]    
             integral2 = np.dot(evals2, quad_wts)            
-            combo_index[summed_norm_index] = combo_index[summed_norm_index] + 4 * integral2 /(variance**2)
+            combo_index[summed_norm_index] = combo_index[summed_norm_index] + 4 * integral2 /(variance**2 * kurtosis)
 
     #3rd term (Can we avoid for loops in the future?)
-    for p in range(1,index_set.cardinality):
-        for q in range(p+1,index_set.cardinality):
+    for a in range(len(valid_indices)):
+        for b in range(a+1,len(valid_indices)):
+            p = valid_indices[a]
+            q = valid_indices[b]
             summed_norm_index = tuple(np.logical_or(norm_ind[p], norm_ind[q]).astype(int))
             if sum(summed_norm_index) != order:
                 continue
             evals3 = (weighted_evals[p,:]**2)*(weighted_evals[q,:]**2)
             integral3 = np.dot(evals3, quad_wts)  
-            combo_index[summed_norm_index] = combo_index[summed_norm_index] + 6 * integral3 /(variance**2)
+            combo_index[summed_norm_index] = combo_index[summed_norm_index] + 6 * integral3 /(variance**2 * kurtosis)
     
     
     #4th term (Can we avoid for loops in the future?)
-    for p in range(1,index_set.cardinality):
-        for q in range(1, index_set.cardinality):
-            for r in range(q+1, index_set.cardinality):
+    for a in range(len(valid_indices)):
+        for b in range(len(valid_indices)):
+            for c in range(b+1, len(valid_indices)):
+                p = valid_indices[a]
+                q = valid_indices[b]
+                r = valid_indices[c]
                 summed_norm_index = tuple(np.logical_or(np.logical_or(norm_ind[p], norm_ind[q]), norm_ind[r]).astype(int))                
                 if sum(summed_norm_index) != order:
                     continue                
@@ -305,17 +324,18 @@ def CondKurtosis(order, quad_wts, weighted_evals, index_set, variance):
 
                 integral4 = np.dot(evals4, quad_wts)
                 
-                combo_index[summed_norm_index] = combo_index[summed_norm_index] + 12 * integral4 /(variance**2)
-    
-    
-    
+                combo_index[summed_norm_index] = combo_index[summed_norm_index] + 12 * integral4 /(variance**2 * kurtosis)
 
     #5th term (Can we avoid for loops in the future?) (especially this. Scales poorly!)
     temp_ind = index_set.elements.copy()
-    for p in range(1,index_set.cardinality):
-        for q in range(p+1, index_set.cardinality):
-            for r in range(q+1, index_set.cardinality):
-                for t in range(r+1, index_set.cardinality):
+    for a in range(len(valid_indices)):
+        for b in range(a+1, len(valid_indices)):
+            for c in range(b+1, len(valid_indices)):
+                for d in range(c+1, len(valid_indices)):
+                    p = valid_indices[a]
+                    q = valid_indices[b]
+                    r = valid_indices[c]
+                    t = valid_indices[d]
                     summed_norm_index = tuple(np.logical_or(np.logical_or(np.logical_or(norm_ind[p], norm_ind[q]), norm_ind[r]), norm_ind[t]).astype(int))
                     if sum(summed_norm_index) != order:
                         continue               
@@ -331,8 +351,8 @@ def CondKurtosis(order, quad_wts, weighted_evals, index_set, variance):
                     evals5 = weighted_evals[p,:]*weighted_evals[q,:]*weighted_evals[r,:]*weighted_evals[t,:]
                     integral5 = np.dot(evals5, quad_wts)
                     summed_norm_index = tuple(np.logical_or(np.logical_or(np.logical_or(norm_ind[p], norm_ind[q]), norm_ind[r]), norm_ind[t]).astype(int))
-                    combo_index[summed_norm_index] = combo_index[summed_norm_index] + 24 * integral5 /(variance**2)
-   
+                    combo_index[summed_norm_index] = combo_index[summed_norm_index] + 24 * integral5 /(variance**2 * kurtosis)
+    combo_index = {tuple(np.nonzero(key)[0]): value for key, value in combo_index.iteritems()}
     return combo_index
     
  

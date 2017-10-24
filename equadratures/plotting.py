@@ -387,7 +387,7 @@ def histogram(samples, x_label, y_label, filename=None):
     else:
         plt.show()
 
-def barplot(x, y, x_label, y_label, filename=None):
+def barplot(x, y, x_label, y_label, x_ticks, filename=None):
     bar_width = 0.35
     opacity = 1.0
     error_config = {'ecolor': '0.3'}
@@ -405,7 +405,7 @@ def barplot(x, y, x_label, y_label, filename=None):
     plt.ylabel(y_label, fontsize=16)
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
-    plt.xticks(fontsize=16)
+    plt.xticks(x, x_ticks, fontsize=16)
     plt.yticks(fontsize=16)
     plt.tight_layout()
     if filename is not None:
@@ -458,3 +458,34 @@ def twoDgrid(coefficients, index_set):
 
                     
     return x,y,z, max_order
+
+#plot 3 series together
+#assume that the x's are shared.
+def triplebarplot(x, y1, y2, y3, x_label, y_label, x_ticks, filename=None):
+    bar_width = 0.2
+    opacity = 1.0
+    error_config = {'ecolor': '0.3'}
+    #plt.rc('text', usetex=True)
+    plt.rc('font', family='serif')
+    mpl.rcParams['axes.linewidth'] = 2.0
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    plt.grid()
+    ax.set_axis_bgcolor('whitesmoke')
+    bar1 = plt.bar(x, y1, bar_width, alpha=opacity, color='steelblue',error_kw=error_config, linewidth=1.5)
+    bar2 = plt.bar(x + bar_width*np.ones((len(x))), y2, bar_width, alpha=opacity, color='red',error_kw=error_config, linewidth=1.5)
+    bar3 = plt.bar(x+ 2*bar_width*np.ones((len(x))), y3, bar_width, alpha=opacity, color='yellow',error_kw=error_config, linewidth=1.5)
+    ax.set_axisbelow(True)
+    adjust_spines(ax, ['left', 'bottom'])
+    plt.xlabel(x_label, fontsize=16)
+    plt.ylabel(y_label, fontsize=16)
+    plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
+    plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
+    plt.xticks(x + np.ones((len(x))) * 1.5 * bar_width, x_ticks, fontsize=16)
+    plt.yticks(fontsize=16)
+    plt.tight_layout()
+    plt.legend((bar1[0], bar2[0], bar3[0]), ("Variance", "Skewness", "Kurtosis"))
+    if filename is not None:
+        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
+    else:
+        plt.show()

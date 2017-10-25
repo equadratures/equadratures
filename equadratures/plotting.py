@@ -481,7 +481,7 @@ def triplebarplot(x, y1, y2, y3, x_label, y_label, x_ticks, filename=None):
     plt.ylabel(y_label, fontsize=16)
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
-    plt.xticks(x + np.ones((len(x))) * 1.5 * bar_width, x_ticks, fontsize=16)
+    plt.xticks(x + np.ones((len(x))) * 1.5 * bar_width, x_ticks, fontsize=12)
     plt.yticks(fontsize=16)
     plt.tight_layout()
     plt.legend((bar1[0], bar2[0], bar3[0]), ("Variance", "Skewness", "Kurtosis"))

@@ -1,6 +1,6 @@
 """Computing Statistics from Polynomial Expansions"""
 import numpy as np
-from .plotting import barplot
+from .plotting import barplot, triplebarplot
 #from .parameter import Parameter
 from .polyint import Polyint
 from .indexset import IndexSet
@@ -98,6 +98,36 @@ class Statistics(object):
         
         """
         return CondKurtosis(order, self.quad_wts, self.weighted_evals, self.index_set, self.variance, self.kurtosis)
+    
+    #Calculates the total sensitivity based on list of input dicts
+    #Assumes they are ordered so that the first element is the first order indices!
+    @staticmethod
+    def calc_TSI(list_of_indices_dicts):
+        dim = len(list_of_indices_dicts[0].keys())
+        TSI = np.zeros((dim))
+        for i in range(len(list_of_indices_dicts)):
+            for j in range(dim):
+                for k in list_of_indices_dicts[i].keys():
+                    if j in k:
+                        TSI[j] = TSI[j] + list_of_indices_dicts[i][k]
+                        
+        return TSI
+    
+    #plots variance, skewness and kurtosis. Users can "update" the input dictionaries first to 
+    #plot multiple orders at once
+    @staticmethod
+    def plot_all_indices(list_of_indices_dicts):       
+        assert(len(list_of_indices_dicts) == 3) #v + s + k 
+        v = list_of_indices_dicts[0]
+        s = list_of_indices_dicts[1]
+        k = list_of_indices_dicts[2]
+        a = range(len(v))
+        b = [x for _,x in sorted(zip(v.keys(),a),key = lambda pair:len(pair[0]))]
+        vvals = [x for _,x in sorted(zip(v.keys(),v.values()), key = lambda pair:(len(pair[0]), pair[0][0]))]
+        svals = [x for _,x in sorted(zip(v.keys(), s.values()), key = lambda pair:(len(pair[0]), pair[0][0]))]
+        kvals = [x for _,x in sorted(zip(v.keys(), k.values()), key = lambda pair:(len(pair[0]), pair[0][0]))]
+        triplebarplot(a, vvals, svals, kvals, "Dimensions", "Index Value", sorted(v.keys(), key = len))
+            
             
         
 # Private functions!
@@ -215,7 +245,6 @@ def CondSkewness(order, quad_wts, weighted_evals, index_set, variance, skewness)
             combo_index[summed_norm_index] = combo_index[summed_norm_index] + 3 * integral2 /(variance**1.5* skewness)
     
     temp_ind = index_set.elements.copy()
-    print len(valid_indices)
     #3rd term (Can we avoid for loops in the future?)
     for a in range(len(valid_indices)):
         for b in range(a+1, len(valid_indices)):
@@ -412,4 +441,4 @@ def delta_pqr(rows):
                 return False
             else:
                 return True
-                
+

@@ -2,6 +2,7 @@
 
 # Effective Quadratures
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Effective-Quadratures/Effective-Quadratures/main/LICENSE.rst)
+NOTE: For downloading the code, please use the last stable release (v5.2). Active development for v6.0 is underway, so some of the routines may not work. 
 
 **What is Effective Quadratures?**
 Effective Quadratures is a suite of tools for generating polynomials for approximation, uncertainty quantification (UQ), optimization and integration.  

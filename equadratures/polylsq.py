@@ -8,6 +8,7 @@ from .stats import Statistics
 from .convex import maxdet, binary2indices
 import numpy as np
 from scipy import linalg 
+from .plotting import *
 
 class Polylsq(object):
     """

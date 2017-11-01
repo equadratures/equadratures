@@ -255,6 +255,30 @@ def hyperbolic_index_set(orders, q):
     return hyperbolic_set
 
 # Double checked April 7th, 2016 --> Works!
+def getTotalOrderIndexSetRecursion(highest_order, dimensions):    
+   if dimensions == 1:
+       I = np.zeros((1,1))
+       I[0,0] = highest_order
+   else:
+       for j in range(0, highest_order + 1):
+           U = getTotalOrderIndexSetRecursion(highest_order - j, dimensions - 1)
+           rows, cols = U.shape
+           T = np.zeros((rows, cols + 1) ) # allocate space!
+           T[:,0] = j * np.ones((1, rows))
+           T[:, 1: cols+1] = U
+           if j == 0:
+               I = T
+           elif j >= 0:
+               rows_I, cols_I = I.shape
+               rows_T, cols_T = T.shape
+               Itemp = np.zeros((rows_I + rows_T, cols_I))
+               Itemp[0:rows_I,:] = I
+               Itemp[rows_I : rows_I + rows_T, :] = T
+               I = Itemp
+           del T
+   return I
+
+
 def total_order_index_set(orders):
 
     # Initialize a few parameters for the setup

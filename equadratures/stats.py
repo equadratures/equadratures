@@ -1,7 +1,6 @@
 """Computing Statistics from Polynomial Expansions"""
 import numpy as np
 from .plotting import barplot, triplebarplot
-#from .parameter import Parameter
 from .polyint import Polyint
 from .indexset import IndexSet
 from itertools import *

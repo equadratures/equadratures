@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 from matplotlib import rc
+from matplotlib.path import Path
+import matplotlib.patches as patches
 import numpy as np
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
@@ -231,8 +233,7 @@ def lineplot(x, y, x_label, y_label, filename=None):
     else:
         plt.show()
 
-def contour_plot(x, y , z, filename=None, pts=None, other_pts=None):
-    
+def contour_plot(x, y , z, filename=None, pts=None, other_pts=None, path_points = None):
 
     opacity = 0.8
     plt.rc('font', family='serif')
@@ -264,6 +265,19 @@ def contour_plot(x, y , z, filename=None, pts=None, other_pts=None):
     cbar = plt.colorbar(K)
     cbar.ax.tick_params(labelsize=16) 
     plt.tight_layout()
+    
+    # Superimpose a path object (if exists)
+    if not(path_points is None):
+        vertices = path_points.copy()
+        codes = [Path.MOVETO]
+        for i in range(1, vertices.shape[0]):
+            codes.append(Path.LINETO)
+        assert len(codes) == vertices.shape[0]
+        path = Path(vertices, codes)
+        patch = patches.PathPatch(path, facecolor='none', lw=2)
+        ax.add_patch(patch)
+        
+    
     if not filename is None:
         plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
     else:

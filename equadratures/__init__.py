@@ -4,6 +4,7 @@ from .parameter import Parameter
 from .polylsq import Polylsq
 from .polyreg import Polyreg
 from .stats import Statistics
+from .polyopt import Polyopt
 import equadratures.qr as qr 
 from .plotting import *
 from .indexset import IndexSet

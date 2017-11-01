@@ -22,7 +22,7 @@ class Polyopt(object):
         self.polyint = Polyint(parameters, index_set)
         self.parameters = parameters
 
-    def SD(self, max_evals, convergence = None, init_guess = None):
+    def SD(self, max_evals, convergence = None, init_guess = None, maximize = False):
         p = self.polyint
         coeffs = self.coeffs
         # Check that initial guess is present. If none provided, initialize at origin
@@ -42,8 +42,8 @@ class Polyopt(object):
             convergence = 0.005
 
         x = np.asarray(init_guess, dtype = np.float32)
-        self.path = x
-        e, d = eval_func(p, coeffs, x)
+        self.path = x.copy()
+        e, d = eval_func(p, coeffs, x, maximize)
         if (np.linalg.norm(d) < convergence):
             return e, x, 1
         else:
@@ -52,12 +52,12 @@ class Polyopt(object):
                 search_dir = -1.0 * d / np.linalg.norm(d)
                 #TODO: adaptive step size with hessian (actually, how to evaluate that...?)
                 
-                step_size = line_search(p, search_dir, x, coeffs)
+                step_size = line_search(p, search_dir, x, coeffs, maximize)
                 
                 x += step_size * search_dir
                 
-                self.path = np.vstack((self.path, x))
-                e, d = eval_func(p, coeffs, x)
+                self.path = np.vstack((self.path, x.copy()))
+                e, d = eval_func(p, coeffs, x, maximize)
                 if (np.linalg.norm(d) < convergence):
                     return e, x, num_of_evals
                 num_of_evals += 1
@@ -109,21 +109,18 @@ class Polyopt(object):
         
         self.path = np.asarray(init_guess)
         def track_path(Xk):
-            self.path = np.vstack((self.path, Xk))
+            self.path = np.vstack((self.path, Xk.copy()))
         r = sp.optimize.minimize(func, init_guess, method = "SLSQP", jac = deriv_func,
                                  options={'disp': True, 'maxiter': max_evals}, constraints = cons, callback = track_path)
         return r.fun, r.x, r.nit
     
-    
-    def test_eval(self, p):
-        return eval_func(self.polyint, self.coeffs, p)
-    def test_plot(self):
-        plot_contour(self.polyint, self.coeffs, self.path)
+    def cont_plot(self, min_x, max_x, min_y, max_y):
+        plot_contour(min_x, max_x, min_y, max_y, self.polyint, self.coeffs, self.path)
             
 # 1-D line search with golden sections        
-def line_search(polyint, search_dir, current_x, coeffs):
+def line_search(polyint, search_dir, current_x, coeffs, maximize):
     # Let step size lies btn 0 and 10
-    max_leap = 10.0
+    max_leap = 1.0
     A = 0.0
     D = max_leap
     B = A + 0.382 * (D - A)
@@ -137,18 +134,18 @@ def line_search(polyint, search_dir, current_x, coeffs):
             C = B            
             B = A + 0.382 * (D - A)
             f_C = f_B
-            f_B,_ = eval_func(polyint, coeffs, current_x + B*search_dir)
+            f_B,_ = eval_func(polyint, coeffs, current_x + B*search_dir, maximize)
         elif BD:
             A = B
             B = C
             C = D - 0.382 * (D - A)
             f_B = f_C
-            f_C,_ = eval_func(polyint, coeffs, current_x + C*search_dir)
+            f_C,_ = eval_func(polyint, coeffs, current_x + C*search_dir, maximize)
         else:
             B = A + 0.382 * (D - A)
             C = D - 0.382 * (D - A)
-            f_B, _ = eval_func(polyint, coeffs, current_x + B*search_dir)
-            f_C, _ = eval_func(polyint, coeffs, current_x + C*search_dir)
+            f_B, _ = eval_func(polyint, coeffs, current_x + B*search_dir, maximize)
+            f_C, _ = eval_func(polyint, coeffs, current_x + C*search_dir, maximize)
 
         if f_B <= f_C:
             AC = True
@@ -161,19 +158,21 @@ def line_search(polyint, search_dir, current_x, coeffs):
         
 # Evaluates polynomial expansion at point
 # point is a list, or a 1-d array
-def eval_func(polyint, coeffs, point):
+def eval_func(polyint, coeffs, point, negative = False):
     evals, derivs = polyint.getMultivariatePolynomial(point)
     e = np.sum(evals* coeffs, 0)
     d = np.asarray([np.sum(derivs[i]* coeffs, 0) for i in derivs.keys()])
     d = d.T.flatten()
+    if negative:
+        e = -e
+        d = -d
     return e, d
 
 # Plot contour for 2-D function..
 # Used for example visualization
-def plot_contour(polyint, coeffs, path):
+def plot_contour(min_x, max_x, min_y, max_y, polyint, coeffs, path):
     assert len(polyint.uq_parameters) == 2, "contour plots only plot 2-D functions!"
-    X, Y = np.mgrid[-0:0.5:50j, 1:2:50j]
+    X, Y = np.mgrid[min_x:max_x:50j, min_y:max_y:50j]
     points = np.vstack([X.ravel(), Y.ravel()]).T
     Z = np.reshape(eval_func(polyint, coeffs, points)[0], (50,50))
-    
-    contour_plot(X,Y,Z, path_points = path[::3, :])
+    contour_plot(X,Y,Z, path_points = path[::1, :])

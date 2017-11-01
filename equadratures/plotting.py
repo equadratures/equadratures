@@ -274,7 +274,7 @@ def contour_plot(x, y , z, filename=None, pts=None, other_pts=None, path_points 
             codes.append(Path.LINETO)
         assert len(codes) == vertices.shape[0]
         path = Path(vertices, codes)
-        patch = patches.PathPatch(path, facecolor='none', lw=2)
+        patch = patches.PathPatch(path, facecolor='none', edgecolor = 'red', lw=2)
         ax.add_patch(patch)
         
     

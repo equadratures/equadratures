@@ -196,6 +196,9 @@ class Polyint(object):
             return poly, C_all
         else:
             for i in range(0, dimensions):
+                if len(stackOfPoints.shape) == 1:
+                    stackOfPoints = np.array([stackOfPoints])
+                assert len(stackOfPoints.shape) == 2
                 p[i] , d[i] = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
 
         # Now we multiply components according to the index set

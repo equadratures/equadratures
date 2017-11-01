@@ -43,9 +43,17 @@ class Parameter(object):
 
         # Check what lower and upper are...
         self.order = points
-        
+
+        if param_type is None:
+            self.param_type = 'Uniform'
+        else:
+            self.param_type = param_type
+            
         if lower is None:
-            self.lower = -1.0
+            if self.param_type is "Exponential":
+                self.lower = 0.0
+            else:
+                self.lower = -1.0
         else:
             self.lower = lower
         
@@ -53,12 +61,7 @@ class Parameter(object):
             self.upper = 1.0
         else:
             self.upper = upper
-
-        if param_type is None:
-            self.param_type = 'Uniform'
-        else:
-            self.param_type = param_type
-
+            
         if shape_parameter_A is None:
             self.shape_parameter_A = 0
         else:
@@ -631,33 +634,33 @@ def orthoPolynomial_and_derivative(self, points, order=None):
     # over [-3, 2], appropriately scale the points so that they lie within the bounds [-1, 1]!   
     gridPoints = np.asarray(points).copy()
     ab = recurrence_coefficients(self, order)
+#    print ab
     true_mid = np.mean(self.bounds)
     # bound = [0, inf]
-    if np.isinf(true_mid) and np.min(gridPoints) < 0:
-        gridPoints = np.add(gridPoints, -np.min(gridPoints))
+    if np.isinf(true_mid) and not(np.isinf(self.bounds[0])) :
+        #Turns out that no scaling/translation required...
+#        gridPoints = np.add(gridPoints, self.lower)
+        pass
     # bound = [finite, finite]
     elif not(np.isnan(true_mid)):
         mid = 0.5*(self.upper + self.lower)
         gridPoints = np.add(gridPoints, true_mid-mid)
     else:
         assert(self.bounds == [-np.inf, np.inf])
-    
-    
+   
     true_interval = self.bounds[1] - self.bounds[0]
     if not(np.isinf(true_interval)):
         scale = true_interval/(self.upper - self.lower)
         gridPoints = np.multiply(scale, gridPoints)
-#    print "gridPoints"
-#    print gridPoints
     orthopoly = np.zeros((order, len(gridPoints))) # create a matrix full of zeros
     derivative_orthopoly = np.zeros((order, len(gridPoints)))
-
     
     # Convert the grid points to a numpy array -- simplfy life!
     gridPointsII = np.zeros((len(gridPoints), 1))
     for u in range(0, len(gridPoints)):
         gridPointsII[u,0] = gridPoints[u]
 
+#    print gridPointsII
     # First orthonormal polynomial is always 1
     orthopoly[0,:] = 1.0
 

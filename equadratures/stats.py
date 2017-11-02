@@ -224,7 +224,6 @@ def CondSkewness(order, quad_wts, weighted_evals, index_set, variance, skewness)
     for i in range(1, index_set.cardinality):
         if sum(norm_ind[i]) <= order:
             valid_indices.append(i)
-    valid_indices = range(1, index_set.cardinality)
     #2nd term (Can we avoid for loops in the future?)
     for p in valid_indices:
         for q in valid_indices:           

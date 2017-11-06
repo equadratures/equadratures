@@ -2,7 +2,7 @@
 """Index sets for multivariate polynomials"""
 import numpy as np
 import math as mt
-from .plotting import scatterplot, scatterplot3D
+#from .plotting import scatterplot, scatterplot3D
 
 class IndexSet(object):
     """
@@ -278,6 +278,25 @@ def getTotalOrderIndexSetRecursion(highest_order, dimensions):
            del T
    return I
 
+def newtotalorder(highest_order, dimensions):
+    Rstart = np.zeros((1, dimensions))
+    for i in range(1, highest_order+1):
+        R = getTotalOrderIndexSetRecursion(i, dimensions) 
+        Rstart = np.vstack((Rstart, R))
+    return Rstart
+    # Assemble all the 
+    #fullset = np.zeros((count + 1, dimensions))
+    #count = 1
+    #for i in range(0, highest_order):
+    #    for j in range(0, len(IndexSetsList[i])):
+    #        fullset[count, :] = IndexSetsList[i][j]
+    #        count =+1
+
+    #
+
+
+
+
 
 def total_order_index_set(orders):
 
@@ -390,3 +409,15 @@ def tensor_grid_index_set(orders):
 
 def column(matrix, i):
     return [row[i] for row in matrix]
+
+
+def main():
+    #print getTotalOrderIndexSetRecursion(1, 3)
+    #print getTotalOrderIndexSetRecursion(2, 3)
+    #print getTotalOrderIndexSetRecursion(3, 3)
+    #print getTotalOrderIndexSetRecursion(4, 3)
+
+    ##g = IndexSet('Total order', [4,4,4])
+    #print g.getIndexSet()
+    print newtotalorder(3, 3)
+main()

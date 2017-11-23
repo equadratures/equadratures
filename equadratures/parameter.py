@@ -3,15 +3,13 @@ import numpy as np
 from scipy.special import gamma
 import analyticaldistributions as analytical
 import matplotlib.pyplot as plt
-from plotting import parameterplot, histogram
 class Parameter(object):
     
     """
     This class defines a univariate parameter. Below are details of its constructor.
     :param double lower: Lower bound for the parameter. 
     :param double upper: Upper bound for the parameter
-    :param integer points: Number of quadrature points to be used for subsequent
-         computations. 
+    :param integer order: Order of the parameter (also # of points - 1). 
     :param string param_type: The type of distribution that characteristizes the parameter. Options include:
             `Gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_, `TruncatedGaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_, 
             `Beta <https://en.wikipedia.org/wiki/Beta_distribution>`_, `Cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_,
@@ -39,16 +37,12 @@ class Parameter(object):
     """
 
     # constructor
-    def __init__(self, points, lower=None, upper=None, param_type=None, shape_parameter_A=None, shape_parameter_B=None, derivative_flag=None):
-
-        # Check what lower and upper are...
-        self.order = points
-
+    def __init__(self, order, lower=None, upper=None, param_type=None, shape_parameter_A=None, shape_parameter_B=None):
+        self.order = order
         if param_type is None:
             self.param_type = 'Uniform'
         else:
             self.param_type = param_type
-            
         if lower is None:
             if self.param_type is "Exponential":
                 self.lower = 0.0
@@ -56,32 +50,21 @@ class Parameter(object):
                 self.lower = -1.0
         else:
             self.lower = lower
-        
         if upper is None:
             self.upper = 1.0
         else:
             self.upper = upper
-            
         if shape_parameter_A is None:
             self.shape_parameter_A = 0
         else:
             self.shape_parameter_A = shape_parameter_A 
-
         if shape_parameter_B is None:
             self.shape_parameter_B = 0
         else:
             self.shape_parameter_B = shape_parameter_B 
-
-        if derivative_flag is None:
-            self.derivative_flag = 0 
-        else:
-            self.derivative_flag = derivative_flag  
-        
         if self.param_type == 'TruncatedGaussian' :
             if upper is None or lower is None:
                 raise(ValueError, 'parameter __init__: upper and lower bounds are required for a TruncatedGaussian distribution!')
-
-         # Check that lower is indeed above upper
         if self.lower >= self.upper :
             raise(ValueError, 'parameter __init__: upper bounds must be greater than lower bounds!')
   
@@ -112,11 +95,6 @@ class Parameter(object):
             mu = self.shape_parameter_A * self.shape_parameter_B
         return mu
 
-    def plot(self, filename=None):
-        N = 500
-        x, y = self.getPDF(N)
-        x2, y2 = self.getCDF(N)
-        parameterplot(x, y, y2, filename, x_label='X', y_label1='PDF', y_label2='CDF')
 
     def getPDF(self, N):
         """
@@ -427,14 +405,14 @@ def recurrence_coefficients(self, order=None):
 def jacobi_recurrence_coefficients(param_A, param_B, order):
 
     a0 = (param_B - param_A)/(param_A + param_B + 2.0)
-    ab = np.zeros((int(order),2))
+    ab = np.zeros((int(order) + 1,2))
     b2a2 = param_B**2 - param_A**2
 
     if order > 0 :
         ab[0,0] = a0
         ab[0,1] = ( 2**(param_A + param_B + 1) * gamma(param_A + 1) * gamma(param_B + 1) )/( gamma(param_A + param_B + 2))
 
-    for k in range(1,int(order)):
+    for k in range(1,int(order) + 1):
         temp = k + 1
         ab[k,0] = b2a2/((2.0 * (temp - 1) + param_A + param_B) * (2.0 * temp + param_A + param_B))
         if(k == 1):
@@ -447,9 +425,9 @@ def jacobi_recurrence_coefficients(param_A, param_B, order):
 # Jacobi coefficients defined over [0,1]
 def jacobi_recurrence_coefficients_01(param_A, param_B, order):
 
-    ab = np.zeros((order,2))
+    ab = np.zeros((order+1,2))
     cd = jacobi_recurrence_coefficients(param_A, param_B, order)
-    N = order
+    N = order + 1
 
     for i in range(0,int(N)):
         ab[i,0] = (1 + cd[i,0])/2.0
@@ -496,9 +474,9 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
 def custom_recurrence_coefficients(order, x, w):
 
     # Allocate memory for recurrence coefficients
-    order = int(order)
+    order = int(order)+1
     w = w / np.sum(w)
-    ab = np.zeros((order,2))
+    ab = np.zeros((order+1,2))
 
     # Negate "zero" components
     nonzero_indices = []
@@ -522,7 +500,7 @@ def custom_recurrence_coefficients(order, x, w):
     p1 = np.zeros((1, ncap))
     p2 = np.ones((1, ncap))
 
-    for j in range(0, order - 1):
+    for j in range(0, order):
         p0 = p1
         p1 = p2
         p2 = ( x - ab[j,0] ) * p1 - ab[j,1] * p0
@@ -542,11 +520,11 @@ def jacobiMatrix(self, order=None):
 
     if order is None:
         ab = recurrence_coefficients(self)
-        order = self.order
+        order = self.order + 1
     else:
         ab = recurrence_coefficients(self, order)
 
-    order = int(order)
+    order = int(order) 
 
     # The case of order 1~
     if int(order) == 1:
@@ -574,7 +552,7 @@ def getlocalquadrature(self, order=None):
 
     # Check for extra input argument!
     if order is None:
-        order = self.order
+        order = self.order + 1
    
     # Get the recurrence coefficients & the jacobi matrix
     recurrence_coeffs = recurrence_coefficients(self, order)
@@ -609,7 +587,7 @@ def getlocalquadrature(self, order=None):
 def jacobiEigenvectors(self, order=None):
 
     if order is None:
-        order = self.order
+        order = self.order + 1
 
     JacobiMat = jacobiMatrix(self, order)
     if order == 1:
@@ -626,22 +604,13 @@ def jacobiEigenvectors(self, order=None):
 
 # Univariate orthogonal polynomial correspoding to the weight of the parameter
 def orthoPolynomial_and_derivative(self, points, order=None):
-
     if order is None:
         order = self.order
-    
-    # Now ensure the points are scaled with respect to the measure. That is if the asks for a uniform distribution
-    # over [-3, 2], appropriately scale the points so that they lie within the bounds [-1, 1]!   
     gridPoints = np.asarray(points).copy()
     ab = recurrence_coefficients(self, order)
-#    print ab
     true_mid = np.mean(self.bounds)
-    # bound = [0, inf]
     if np.isinf(true_mid) and not(np.isinf(self.bounds[0])) :
-        #Turns out that no scaling/translation required...
-#        gridPoints = np.add(gridPoints, self.lower)
         pass
-    # bound = [finite, finite]
     elif not(np.isnan(true_mid)):
         mid = 0.5*(self.upper + self.lower)
         gridPoints = np.add(gridPoints, true_mid-mid)
@@ -659,41 +628,21 @@ def orthoPolynomial_and_derivative(self, points, order=None):
     gridPointsII = np.zeros((len(gridPoints), 1))
     for u in range(0, len(gridPoints)):
         gridPointsII[u,0] = gridPoints[u]
-
-#    print gridPointsII
-    # First orthonormal polynomial is always 1
     orthopoly[0,:] = 1.0
 
     # Cases
     if order == 1:
-        return orthopoly
-
+        return orthopoly, derivative_orthopoly
     orthopoly[1,:] = ((gridPointsII[:,0] - ab[0,0]) * orthopoly[0,:] ) * (1.0)/(1.0 * np.sqrt(ab[1,1]) )
-
+    derivative_orthopoly[1,:] = orthopoly[0,:] / (np.sqrt(ab[1,1]))
     if order == 2:
-        return orthopoly
+        return orthopoly, derivative_orthopoly
 
     if order >= 3:
         for u in range(2,order):
             # Three-term recurrence rule in action!
             orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0])*orthopoly[u-1,:]) - np.sqrt(ab[u-1,1])*orthopoly[u-2,:] )/(1.0 * np.sqrt(ab[u,1]))
-
-    # Only if the derivative flag is on do we compute the derivative polynomial
-    if self.derivative_flag == 1:
-        if order == 1:
-            return derivative_orthopoly
-
-        derivative_orthopoly[1,:] = orthopoly[0,:] / (np.sqrt(ab[1,1]))
-
-        if order == 2:
-            return derivative_orthopoly
-
-        if order >= 3:
-            for u in range(2, order):
-                # Four-term recurrence formula for derivatives of orthogonal polynomials!
-                derivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
+        for u in range(2, order):
+            # Four-term recurrence formula for derivatives of orthogonal polynomials!
+            derivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
         return orthopoly, derivative_orthopoly
-
-    else:
-        empty = np.mat([0])
-        return orthopoly, empty

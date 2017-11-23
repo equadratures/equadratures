@@ -178,7 +178,7 @@ class Polyint(object):
             else:
                 index_set = isets.elements
         else:
-            index_set = indexsets
+            index_set = indexsets.elements
 
         dimensions = len(stackOfParameters)
         p = {}

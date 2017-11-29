@@ -10,3 +10,4 @@ from .plotting import *
 from .indexset import IndexSet
 from .utils import evalfunction, evalgradients, meshgrid
 from .basis import Basis
+from .convex import *

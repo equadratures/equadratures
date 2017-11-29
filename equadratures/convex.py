@@ -95,6 +95,43 @@ def maxdet(A, k):
 
     return zhat, L, ztilde, Utilde
 
+def CG_solve(A, b, max_iters, tol):
+    """
+    Solves Ax = b iteratively using conjugate gradient.
+    A must be a SPD matrix
+    """
+    if not(np.all(np.linalg.eigvals(A) > 0)):
+        raise ValueError('A is not symmetric positive definite.')
+    n = A.shape[0]
+    b = b.astype(np.float64)
+    b = b.reshape((len(b),1))
+    
+    
+    #Initialization
+    x = np.zeros((n,1))
+    r = b.copy()
+    p = r.copy()
+    iterations = 0
+    delta = sum(r**2)
+    delta_0 = sum(b**2)
+    residual = np.abs(delta / delta_0)
+    
+    while (iterations < max_iters) and (delta > np.abs(tol) * delta_0):
+        alpha = delta / sum(r * np.dot(A,r))
+        x += alpha * p
+        r -= alpha * np.dot(A,p)
+        new_delta = sum(r**2)
+        beta = new_delta / delta
+        p = r + beta * p
+        residual = np.abs(delta / delta_0)
+        delta = new_delta
+        iterations += 1
+    
+    
+    return x, residual, iterations
+    
+
+
 def binary2indices(zhat):
     """
     Simple utility that converts a binary array into one with indices!
@@ -128,3 +165,4 @@ def find(vec, thres):
     vec_new = np.matrix(vec_new)
     vec_new = vec_new.T
     return vec_new, t
+

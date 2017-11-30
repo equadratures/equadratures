@@ -114,23 +114,100 @@ def CG_solve(A, b, max_iters, tol):
     iterations = 0
     delta = sum(r**2)
     delta_0 = sum(b**2)
-    residual = np.abs(delta / delta_0)
+    residual = np.sqrt(delta / delta_0)
     
-    while (iterations < max_iters) and (delta > np.abs(tol) * delta_0):
+    while (iterations < max_iters) and (delta > (tol**2) * delta_0):
         alpha = delta / sum(r * np.dot(A,r))
         x += alpha * p
         r -= alpha * np.dot(A,p)
         new_delta = sum(r**2)
         beta = new_delta / delta
         p = r + beta * p
-        residual = np.abs(delta / delta_0)
+        residual = np.sqrt(delta / delta_0)
         delta = new_delta
         iterations += 1
     
     
     return x, residual, iterations
     
-
+def nn_min_l1(A, b, x0 = None, cgtol = None, pdtol = None, pdmaxiter = None):
+    """
+    l1 minimization with equality constraint Ax = b.
+    (Noiseless basis pursuit)
+    Adapted from l1-magic (Candes and Romberg)
+    """
+    
+    # Free parameters
+    alpha = .01
+    beta = .5
+    mu = 10
+    
+    if cgtol is None:
+        cgtol = 1e-8
+    if pdtol is None:
+        pdtol = 1e-3
+    if pdmaxiter is None:
+        pdmaxiter = 50
+    
+    # Find initial solution, if none provided or provided but infeasible
+    if not(x0 is None):
+        if np.linalg.norm(np.dot(A,x0) - b)/np.linalg.norm(b) > cgtol:
+            # Infeasible, use A^t (AA^t)^-1 b (min l2 norm) instead
+            q, cgres, _ = CG_solve(np.dot(A,A.T), b)
+            if cgres > 0.5:
+                raise ValueError('AA^T is too ill conditioned. Cannot find starting point.')
+            x0 = np.dot(A.T, q)
+    else:
+        q, cgres, _ = CG_solve(np.dot(A,A.T), b)
+        if cgres > 0.5:
+            raise ValueError('AA^T is too ill conditioned. Cannot find starting point.')
+        x0 = np.dot(A.T, q)
+    
+    gradf0 = np.vstack(np.zeros((N,1),dtype = np.float64) np.ones((N,1),dtype = np.float64))
+    N = len(x0)
+    x = x0.copy()
+    x = x.reshape((len(x),1))
+    u = 0.95*np.abs(x0) + 0.10*np.max(np.abs(x0));
+    u = u.reshape((len(u),1))
+    
+    # First iteration
+    fu1 = x - u
+    fu2 = -x - u
+    #initialize lambda to be 1/f
+    lam_u1 = 1.0 / fu1
+    lam_u2 = 1.0 / fu2
+    #initialize nu (v) to be -A*(lam_u1 - lam_u2)
+    v = np.dot(-A, (lam_u1-lam_u2))
+    
+    sdg = -(sum(fu1*lamu1) + sum(fu2*lamu2))
+    tau = mu * 2 * N / sdg
+    
+    #Calculate the residuals
+    Atv = np.dot(A.T, v)
+    r_pri = np.dot(A, x) - b
+    r_cent = np.vstack(-lam_u1 * fu1, -lam_u2 * fu2) - 1.0/tau
+    r_dual = gradf0 + np.vstack(lam_u1 - lam_u2, -lam_u1 - lam_u2) + np.vstack(Atv, np.zeros((N,1)))
+    resnorm = np.linalg.norm(np.vstack((r_pri, r_cent, r_dual)))
+    
+    pditer = 0
+    done = (sdg < pdtol) or (pditer >= pdmaxiter)
+    
+    while not(done):
+        pditer += 1
+        
+        # Solve for delta_nu
+        
+        # Then get delta_x
+        
+        # Then get delta_u
+        
+        # Then get delta_lambda for both u1 and u2
+        
+        # Then get step size:
+        # 1. Must be in interior
+        # 2. Must decrease resnorm sufficiently
+        
+        # Prepare for next iteration
 
 def binary2indices(zhat):
     """

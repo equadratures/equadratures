@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from equadratures import *
-from numpy import *
+import numpy as np
 from scipy.stats import *
 
 order = 2
@@ -15,16 +15,16 @@ basis = IndexSet('Total order',  [order,  order,  order,  order,  order] )
 maximum_number_of_evals = basis.cardinality
 
 def fun(x):
-    #A=np.random.rand(5, 5)
-    A=diag([0.9, 0.7, 0.5, 0.3, 0.1])
-    a=dot(A, x)
-    b=dot(a, x)
+    A=np.random.rand(5, 5)
+    #A=diag([0.9, 0.7, 0.5, 0.3, 0.1])
+    a=np.dot(A, x)
+    b=np.dot(a, x)
     return 0.5*b
     
 poly = Polylsq(parameters, basis)
 poly.set_no_of_evals(maximum_number_of_evals)
 coefficients_computed = poly.computeCoefficients(fun)
-pts = mat(random.rand(3, 5)) + 1
+pts = np.mat(np.random.rand(3, 5)) + 1
 vv = poly.getPolynomialApproximation(pts, fun)
 print vv
 
@@ -33,14 +33,14 @@ print vv
 
 def polydr(indexset, pts, grad=None):
     dimension=indexset.shape[1]
-    minmax=zeros((2, dimension))
+    minmax=np.zeros((2, dimension))
     
     for i in range(0, dimension):
         #minmax[0][i]=pts[:, i].min()-0.01
         #minmax[1][i]=pts[:, i].max()+0.01
         minmax[0, i]=-1
         minmax[1, i]=1
-    gradinterv=zeros(dimension)
+    gradinterv=np.zeros(dimension)
     
     for i in range(0, dimension):
         gradinterv[i]=(minmax[1][i]-minmax[0][i])/10000.0
@@ -49,10 +49,10 @@ def polydr(indexset, pts, grad=None):
     samplecoords, prob=uniformsampling(minmax, numofsample)
     #samplecoords, prob=gaussiansampling(minmax, numofsample)
     
-    C=zeros((dimension, dimension))
+    C=np.zeros((dimension, dimension))
     for i in range(0, numofsample):
         grad=getgrad(gradinterv, samplecoords[i])
-        C=C+outer(grad, grad)*prob[i]
+        C=C+np.outer(grad, grad)*prob[i]
     
     
     #Now start eigendecomposition for dimension reduction
@@ -65,8 +65,8 @@ def polydr(indexset, pts, grad=None):
     #plt.show()
 
     
-    A=diag([0.9, 0.7, 0.5, 0.3, 0.1])
-    B=dot(A, A)/3
+    A=np.diag([0.9, 0.7, 0.5, 0.3, 0.1])
+    B=np.dot(A, A)/3
     
     #Now start eigendecomposition for dimension reduction
     u, s, v=np.linalg.svd(B)
@@ -87,10 +87,10 @@ def getgrad(gradinterv, coords):
     #coords is supposed to be a N*1 vector
     #df=f(x+h)-f(x-h)/2h
     N=coords.shape[0]
-    grad=zeros(N)
+    grad=np.zeros(N)
     for i in range(0, N):
-        newcoord1=zeros(N)
-        newcoord2=zeros(N)
+        newcoord1=np.zeros(N)
+        newcoord2=np.zeros(N)
         for j in range(0, N):
             newcoord1[j]=coords[j]
             newcoord2[j]=coords[j]
@@ -103,32 +103,32 @@ def getgrad(gradinterv, coords):
     return grad
 
 def est(coords):
-    coords=mat(coords)
+    coords=np.mat(coords)
     #this function returns the estimated value of the polynomial
     g = poly.getPolynomialApproximation(coords,  fun)
     return g
     
 def uniformsampling(minmax, num):
     N=minmax.shape[1]
-    samplecoords=zeros((num, N))
-    prob=ones(num)/num
+    samplecoords=np.zeros((num, N))
+    prob=np.ones(num)/num
     for i in range(0, N):
-        samplecoords[:, i]=random.uniform(minmax[0][i], minmax[1][i], num)
+        samplecoords[:, i]=np.random.uniform(minmax[0][i], minmax[1][i], num)
     return samplecoords, prob
 
 def gaussiansampling(minmax, num):
     #take the minmax as 3sigma for gaussian sampling in a multivariate gaussian normal
     N=minmax.shape[1]
-    samplecoords=zeros((num, N))
-    prob=zeros(num)
+    samplecoords=np.zeros((num, N))
+    prob=np.zeros(num)
     for i in range(0, N):
-        samplecoords[:, i]=random.uniform((minmax[0][i]+minmax[1][i])/2.0, (minmax[1][i]-minmax[0][i])/6.0, num)
+        samplecoords[:, i]=np.random.uniform((minmax[0][i]+minmax[1][i])/2.0, (minmax[1][i]-minmax[0][i])/6.0, num)
     #now construct the mean and cov matrix for prob calculation
     mean=(minmax[0]+minmax[1])/2.0
-    cov=zeros((N, N))
+    cov=np.zeros((N, N))
     for i in range(0, N):
         cov[i, i]=((minmax[1, i]-minmax[0, i])/6.0)**2
-    prob=multivariate_normal.pdf(samplecoords,  mean, cov)
+    prob=np.multivariate_normal.pdf(samplecoords,  mean, cov)
     prob=prob*1.0/sum(prob)
     return samplecoords, prob
     

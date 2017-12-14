@@ -55,7 +55,7 @@ def polydr(indexset, parameters, finiteflag=1):
     N=len(parameters)
     if finiteflag==1:
         #specify number of samples
-        num=100
+        num=200
         #store the min-max values for samples in each dimension
         minmax=np.zeros((2,N))
         #store the sample coordinates
@@ -77,14 +77,15 @@ def polydr(indexset, parameters, finiteflag=1):
                 #from the samples calculate the min-max
                 minmax[0,i]=samples[:,i].min()
                 minmax[1,i]=samples[:,i].max()
-                for j in range(0,N):
+                for j in range(0,num):
                     prob[j]=prob[j]*comp[j]
                 prob=prob/sum(prob)
         #now that all samples with probabilities are drawn, calculate the 
         #gradients
+        print sum(prob)
         gradinterval=np.zeros(N)
         for i in range(0, N):
-            gradinterval[i]=(minmax[1,i]-minmax[0,i])/10000.0
+            gradinterval[i]=(minmax[1,i]-minmax[0,i])/50000.0
         C=np.zeros((N,N))
         for i in range(0,num):
             grad=getgrad(gradinterval, samples[i])
@@ -100,11 +101,11 @@ def polydr(indexset, parameters, finiteflag=1):
     
 def uniformsampling(min,max,num):
     out=np.random.uniform(min,max,num)
-    prob_comp=np.ones((num,1))/num
+    prob_comp=np.ones(num)/num
     return out,prob_comp
 
 def gaussiansampling(mean,deviation,num):
-    out=np.random.normal(mean,deviation,num).T
+    out=np.random.normal(mean,deviation,num)
     prob_comp=stats.norm.pdf(out,mean,deviation)
     prob_comp=prob_comp/sum(prob_comp)
     return out, prob_comp

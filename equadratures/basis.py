@@ -8,21 +8,21 @@ class Basis(object):
     :param ndarray orders: List of integers corresponding to the highest polynomial order in each direction.
     :param string growth_rule: The type of growth rule associated with sparse grids. Options include: `linear' and `exponential'. This input is only required when using a sparse grid.
     :param integer dimensions: The number of dimensions of the problem. This input is only required when using a sparse grid.
-    :param double q: The `q' parameter is used to control the number of basis terms used in a hyperbolic basis. It varies between 0.0 to 1.0. A value of 1.0 yields a total order basis. 
-    
+    :param double q: The `q' parameter is used to control the number of basis terms used in a hyperbolic basis. It varies between 0.0 to 1.0. A value of 1.0 yields a total order basis.
+
     Attributes:
         * **self.dimension**: (integer) Number of dimensions of the index set.
         * **self.elements**: (numpy array) The multi-indices of the index set.
         * **self.cardinality**:(integer) The cardinality of the index set.
 
-    **Notes:** 
-    
-    For details on the Euclidean degree see: `Trefethen 2016 <https://arxiv.org/pdf/1608.02216v1.pdf>`_. 
+    **Notes:**
+
+    For details on the Euclidean degree see: `Trefethen 2016 <https://arxiv.org/pdf/1608.02216v1.pdf>`_.
     Note that all index sets are sorted in the constructor automatically, by their total orders. We will be adding non-isotropic index sets in a future release. Stay tuned!
 
-    **Sample usage** 
+    **Sample usage**
     ::
-        
+
         >> Basis('Tensor grid', [3,3,3])
         >> Basis('Sparse grid', level=3, growth_rule=5, dimension=3)
         >> Basis('Total order' [3, 3, 3])
@@ -30,16 +30,16 @@ class Basis(object):
 
     """
     def __init__(self, basis_type, orders=None, level=None, growth_rule=None, dimension=None, q=None):
-        
+
         # Required
         self.basis_type = basis_type # string
-        
+
         # Orders
         if orders is None:
             self.orders = []
         else:
             self.orders = orders
-        
+
         # Check for the levels (only for sparse grids)
         if level is None:
             self.level = []
@@ -79,7 +79,7 @@ class Basis(object):
         else:
             raise(ValueError, 'Basis __init__: invalid value for basis_type!')
             basis = [0]
-        
+
         self.elements = basis
         self.cardinality = len(basis)
 
@@ -93,12 +93,12 @@ class Basis(object):
 
     def prune(self, number_of_elements_to_delete):
         """
-        Prunes down the number of elements in an index set 
+        Prunes down the number of elements in an index set
 
         :param Basis object: An instance of the Basis class.
         :param integer number_of_elements_to_delete: The number of multi-indices the user would like to delete
 
-        **Sample usage:** 
+        **Sample usage:**
         For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
         index_entries = self.elements
@@ -108,14 +108,14 @@ class Basis(object):
             raise(ValueError, 'In Basis() --> prune(): Number of elements to be deleted must be greater than the total number of elements')
         else:
             self.elements =  index_entries[0:new_elements, :]
-    
+
     def sort(self):
         """
         Routine that sorts a multi-index in ascending order based on the total orders. The constructor by default calls this function.
 
         :param Basis object: An instance of the Basis class.
 
-        **Sample usage:** 
+        **Sample usage:**
         For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
         number_of_elements = len(self.elements)
@@ -129,7 +129,7 @@ class Basis(object):
                 u = 10**(j) * a[j] + u
             combined_indices_for_sorting[i] = u
         sorted_indices = np.argsort(combined_indices_for_sorting, axis=0)
-       
+
        # Create a new index set with the sorted entries
         for i in range(0, number_of_elements):
             for j in range(0, self.dimension):
@@ -139,12 +139,12 @@ class Basis(object):
 
     def getBasis(self):
         """
-        Prunes down the number of elements in an index set 
+        Prunes down the number of elements in an index set
 
         :param Basis object: An instance of the Basis class.
         :param integer number_of_elements_to_delete: The number of multi-indices the user would like to delete
 
-        **Sample usage:** 
+        **Sample usage:**
         For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
         name = self.basis_type
@@ -162,10 +162,10 @@ class Basis(object):
         else:
             raise(ValueError, 'Basis __init__: invalid value for basis_type!')
             basis = [0]
-        
+
         return basis
-    
-    
+
+
 
 #---------------------------------------------------------------------------------------------------
 # PRIVATE FUNCTIONS
@@ -190,7 +190,7 @@ def euclidean_degree_basis(orders):
         for j in range(0, dimensions):
             r = n_new[i]
             euclidean_set[i,j] = r[j]
-    
+
     return euclidean_set
 
 
@@ -231,7 +231,7 @@ def hyperbolic_basis(orders, q):
     return hyperbolic_set
 
 # Double checked April 7th, 2016 --> Works!
-def getTotalOrderBasisRecursion(highest_order, dimensions):    
+def getTotalOrderBasisRecursion(highest_order, dimensions):
    if dimensions == 1:
        I = np.zeros((1,1))
        I[0,0] = highest_order
@@ -259,7 +259,7 @@ def total_order_basis(orders):
     highest_order = np.max(orders)
     total_order = np.zeros((1, dimensions))
     for i in range(1, highest_order+1):
-        R = getTotalOrderBasisRecursion(i, dimensions) 
+        R = getTotalOrderBasisRecursion(i, dimensions)
         total_order = np.vstack((total_order, R))
     return total_order
 
@@ -332,7 +332,7 @@ def sparse_grid_basis(level, growth_rule, dimensions):
                 sparse_index[i,j] = int(r[j])
             else:
                 raise KeyboardInterrupt
-    
+
     #print sparse_index
     # Ok, but sparse_index just has the tensor order sets to be used. Now we need
     # to get all the index sets!

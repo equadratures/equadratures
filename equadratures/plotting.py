@@ -503,3 +503,11 @@ def triplebarplot(x, y1, y2, y3, x_label, y_label, x_ticks, filename=None):
         plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
     else:
         plt.show()
+        
+def piechart(labels, sizes, title):
+    fig1, ax1 = plt.subplots()
+    patches, texts = ax1.pie(sizes, shadow=True, startangle=90)
+    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    plt.legend(patches, labels, loc='best')
+    plt.title(title)
+    plt.show()

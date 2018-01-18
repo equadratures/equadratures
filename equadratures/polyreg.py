@@ -58,7 +58,10 @@ class Polyreg(object):
         for i in range(0, self.dimensions):
             for j in range(0, rows):
                 if (self.parameters[i].param_type == "Uniform"):
-                    points[j,i] = 2.0 * ( points[j,i] - self.parameters[i].lower) / (self.parameters[i].upper - self.parameters[i].lower) - 1.0
+                    #print points[j,i]
+                    points[j,i] = 2.0 * ( ( points[j,i] - self.parameters[i].lower) / (self.parameters[i].upper - self.parameters[i].lower) ) - 1.0
+                    #print points[j,i]
+                    #print '--------'
                 elif (self.parameters[i].param_type == "Beta" ):
                     points[j,i] =  ( points[j,i] - self.parameters[i].lower) / (self.parameters[i].upper - self.parameters[i].lower) 
         
@@ -77,7 +80,9 @@ class Polyreg(object):
 
     def getStatistics(self, quadratureRule=None):
         p, w = self.getQuadratureRule(quadratureRule)
-        evals = getPolynomial(self.parameters, p, self.basis)
+        evals = getPolynomial(self.parameters, self.scalingX(p), self.basis)
+        print evals[3,:]
+#        print evals.shape
         return Statistics(self.coefficients, self.basis, self.parameters, p, w, evals)
 
     def getPolynomialApproximant(self):
@@ -99,27 +104,38 @@ class Polyreg(object):
     
     def getPolyFit(self):
         return lambda (x): getPolynomial(self.parameters, self.scalingX(x) , self.basis).T *  np.mat(self.coefficients)
-
+    
+    def getPolynomial_t(self, x):
+        return getPolynomial(self.parameters, self.scalingX(x) , self.basis).T *  np.mat(self.coefficients)
+    
     def getPolyGradFit(self):
         return lambda (x) : self.getPolynomialGradientApproximant(xvalue=x)
 
     def getQuadratureRule(self, options=None):
         if options is None:
-            if self.dimensions > 5:
+            if self.dimensions > 8:
                 options = 'qmc'
-            elif self.dimensions < 5 :
+            elif self.dimensions < 8 :
                 options = 'tensor grid'
-
+        
+        options = 'tensor grid'
         if options.lower() == 'qmc':
-            default_number_of_points = 10000
+            default_number_of_points = 20000
             p = np.zeros((default_number_of_points, self.dimensions)) 
             w = 1.0/float(default_number_of_points) * np.ones((default_number_of_points))
             for i in range(0, self.dimensions):
                 p[:,i] = self.parameters[i].getSamples(m=default_number_of_points).reshape((default_number_of_points,))
+            print p
+            print w
+            
             return p, w
+            
         
         if options.lower() == 'tensor grid':
-            return getTensorQuadratureRule(self.parameters, self.dimensions, self.basis.orders)
+            
+#            p,w = getTensorQuadratureRule(self.parameters, self.dimensions, self.basis.orders)
+            p,w = getTensorQuadratureRule(self.parameters, self.dimensions, [6,6,6,6,6,6,6])
+            return p,w
     
     @staticmethod
     def get_F_stat(coefficients_0, A_0, coefficients_1, A_1, y):
@@ -171,7 +187,7 @@ def getTensorQuadratureRule(stackOfParameters, dimensions, orders):
         for u in range(0, dimensions):
 
             # Call to get local quadrature method (for dimension 'u')
-            local_points, local_weights = stackOfParameters[u].getLocalQuadrature(orders[u])
+            local_points, local_weights = stackOfParameters[u].getLocalQuadrature(orders[u], scale=True)
 
             # Tensor product of the weights
             ww = np.kron(ww, local_weights)
@@ -199,6 +215,8 @@ def get_R_squared(alpha, A, y):
     return 1 - RSS/TSS
 
 def getPolynomial(stackOfParameters, stackOfPoints, chosenBasis):
+    #print stackOfPoints
+    #return 0
     # "Unpack" parameters from "self"
     basis = chosenBasis.elements
     basis_entries, dimensions = basis.shape
@@ -222,6 +240,7 @@ def getPolynomial(stackOfParameters, stackOfPoints, chosenBasis):
         for k in range(0, dimensions):
             polynomial[i,:] = p[k][int(basis[i,k])] * temp
             temp = polynomial[i,:]
+    
     return polynomial
 
 def getPolynomialGradient(stackOfParameters, stackOfPoints, chosenBasis, gradDirection):

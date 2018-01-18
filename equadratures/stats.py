@@ -1,7 +1,8 @@
 """Computing Statistics from Polynomial Expansions"""
 import numpy as np
-#from .plotting import barplot, triplebarplot
-#from .polyint import Polyint
+from .plotting import barplot, triplebarplot, piechart
+from .polyint import Polyint
+#from .polyreg import Polyreg
 from basis import Basis
 from itertools import *
 class Statistics(object):
@@ -30,14 +31,20 @@ class Statistics(object):
         
         #Prepare evals of polynomials for skewness and kurtosis
         if (quadrature_points is None) and (quadrature_weights is None) and (polynomial_evals is None):
-            polyint = Polyint(parameters, basis)
-            quad_pts, quad_wts = polyint.getPointsAndWeights()
-            evals,deriv = polyint.getMultivariatePolynomial(quad_pts)
-            self.weighted_evals = evals * coefficients
-            self.quad_wts = quad_wts
+            # now stats embedded in polyreg no need for this.
+#            polyreg = Polyreg(parameters, basis)
+#            quad_pts, quad_wts = polyreg.getQuadratureRule()
+#            evals,deriv = polyreg.getPolynomial_t(quad_pts)
+#            self.weighted_evals = evals * coefficients
+#            self.quad_wts = quad_wts
+            pass
         else:
             self.weighted_evals = polynomial_evals * coefficients
+            print polynomial_evals[3,:]
+            print self.weighted_evals[3,:]
+            print coefficients[3]
             self.quad_wts = quadrature_weights
+#            print sum(self.quad_wts)
         self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
         self.kurtosis = getKurtosis(self.quad_wts, self.weighted_evals, self.basis, self.variance)
         
@@ -129,6 +136,46 @@ class Statistics(object):
         svals = [x for _,x in sorted(zip(v.keys(), s.values()), key = lambda pair:(len(pair[0]), pair[0][0]))]
         kvals = [x for _,x in sorted(zip(v.keys(), k.values()), key = lambda pair:(len(pair[0]), pair[0][0]))]
         triplebarplot(a, vvals, svals, kvals, "Dimensions", "Index Value", sorted(v.keys(), key = len))
+    
+    #Pie chart of variance, skewness and kurtosis indices
+    
+    def pie_chart(self, list_of_indices_dicts):
+        v = list_of_indices_dicts[0]
+        if len(list_of_indices_dicts) > 1:
+            s = list_of_indices_dicts[1]
+        if len(list_of_indices_dicts) > 2:
+            k = list_of_indices_dicts[2]
+        labels_and_values = {}
+        for i in v.keys():
+            if v[i] > 1e-3:
+                if len(i) == 1:
+                    labels_and_values[i[0]] = v[i]
+                else:
+                    key = "order " + str(len(i))
+                    try:
+                        labels_and_values[key] += v[i]
+                    except KeyError:
+                        labels_and_values[key] = v[i]
+                    
+#        for i in s.keys():
+#            if len(i) == 1:
+#                labels_and_values[i[0]] = s.values[i]
+#            else:
+#                key = "order " + str(len(i))
+#                labels_and_values[key] += s.values[i]
+#        for i in k.keys():
+#            if len(i) == 1:
+#                labels_and_values[i[0]] = k.values[i]
+#            else:
+#                key = "order " + str(len(i))
+#                labels_and_values[key] += k.values[i]
+        labels = labels_and_values.keys()
+        values = labels_and_values.values()
+        piechart(labels, values, "Sobol' indices")
+                
+                
+            
+        
             
             
         
@@ -187,8 +234,9 @@ def getAllSobol(coefficients, basis):
 # Return global skewness        
 def getSkewness(quad_wts, weighted_evals, basis, variance):    
     total_evals = np.sum(weighted_evals[1:],0)
+#    print weighted_evals[0]
     third_total_evals = total_evals**3
-      
+    
     return np.dot(third_total_evals,quad_wts)/(variance**1.5)
 
 # Return global kurtosis
@@ -222,7 +270,6 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
         if sum(norm_ind[i]) == order:
             combo_index[norm_ind[i]] = combo_index[norm_ind[i]] + integral1[i] /(variance**1.5 * skewness)
     
-    
     valid_indices = []
     for i in range(1, basis.cardinality):
         if sum(norm_ind[i]) <= order:
@@ -243,9 +290,10 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
                 continue
 
             evals2 = (weighted_evals[p,:]**2)*weighted_evals[q,:]
-            integral2 = np.dot(evals2, quad_wts)            
+            integral2 = np.dot(evals2, quad_wts)        
             combo_index[summed_norm_index] = combo_index[summed_norm_index] + 3 * integral2 /(variance**1.5* skewness)
     
+#    print combo_index
     temp_ind = basis.elements.copy()
     #3rd term (Can we avoid for loops in the future?)
     for a in range(len(valid_indices)):
@@ -271,7 +319,8 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
                 integral3 = np.dot(evals3, quad_wts)
                 
                 combo_index[summed_norm_index] = combo_index[summed_norm_index] + 6 * integral3 /(variance**1.5* skewness)
-                
+    
+#    print combo_index            
     combo_index = {tuple(np.nonzero(key)[0]): value for key, value in combo_index.iteritems()}
     return combo_index
 
@@ -300,6 +349,7 @@ def CondKurtosis(order, quad_wts, weighted_evals, basis, variance, kurtosis):
     for i in range(1, basis.cardinality):
         if sum(norm_ind[i]) <= order:
             valid_indices.append(i)
+#    print combo_index
     #2nd term (Can we avoid for loops in the future?)
     for p in valid_indices:
         for q in valid_indices:
@@ -317,7 +367,7 @@ def CondKurtosis(order, quad_wts, weighted_evals, basis, variance, kurtosis):
             evals2 = (weighted_evals[p,:]**3)*weighted_evals[q,:]    
             integral2 = np.dot(evals2, quad_wts)            
             combo_index[summed_norm_index] = combo_index[summed_norm_index] + 4 * integral2 /(variance**2 * kurtosis)
-
+#    print combo_index
     #3rd term (Can we avoid for loops in the future?)
     for a in range(len(valid_indices)):
         for b in range(a+1,len(valid_indices)):
@@ -330,7 +380,7 @@ def CondKurtosis(order, quad_wts, weighted_evals, basis, variance, kurtosis):
             integral3 = np.dot(evals3, quad_wts)  
             combo_index[summed_norm_index] = combo_index[summed_norm_index] + 6 * integral3 /(variance**2 * kurtosis)
     
-    
+#    print combo_index
     #4th term (Can we avoid for loops in the future?)
     for a in range(len(valid_indices)):
         for b in range(len(valid_indices)):
@@ -356,7 +406,7 @@ def CondKurtosis(order, quad_wts, weighted_evals, basis, variance, kurtosis):
                 integral4 = np.dot(evals4, quad_wts)
                 
                 combo_index[summed_norm_index] = combo_index[summed_norm_index] + 12 * integral4 /(variance**2 * kurtosis)
-
+#    print combo_index
     #5th term (Can we avoid for loops in the future?) (especially this. Scales poorly!)
     temp_ind = basis.elements.copy()
     for a in range(len(valid_indices)):
@@ -384,6 +434,7 @@ def CondKurtosis(order, quad_wts, weighted_evals, basis, variance, kurtosis):
                     summed_norm_index = tuple(np.logical_or(np.logical_or(np.logical_or(norm_ind[p], norm_ind[q]), norm_ind[r]), norm_ind[t]).astype(int))
                     combo_index[summed_norm_index] = combo_index[summed_norm_index] + 24 * integral5 /(variance**2 * kurtosis)
     combo_index = {tuple(np.nonzero(key)[0]): value for key, value in combo_index.iteritems()}
+#    print combo_index
     return combo_index
     
  

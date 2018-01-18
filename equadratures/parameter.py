@@ -300,7 +300,7 @@ class Parameter(object):
         """
         return orthoPolynomial_and_derivative(self, points, order)
 
-    def getLocalQuadrature(self, order=None):
+    def getLocalQuadrature(self, order=None, scale=None):
         """
         Returns the 1D quadrature points and weights for the parameter
         :param Parameter self: An instance of the Parameter class
@@ -316,7 +316,7 @@ class Parameter(object):
             >> var1 = Parameter(points=5, shape_parameter_A=0.5, param_type='Exponential')
             >> p, w = var1.getLocalQuadrature()
         """
-        return getlocalquadrature(self, order)
+        return getlocalquadrature(self, order, scale)
 
 #-----------------------------------------------------------------------------------
 #
@@ -563,11 +563,12 @@ def jacobiMatrix(self, order=None):
     return JacobiMatrix
 
 # Computes 1D quadrature points and weights between [-1,1]
-def getlocalquadrature(self, order=None):
+def getlocalquadrature(self, order=None, scale=None):
 
     # Check for extra input argument!
     if order is None:
         order = self.order + 1
+
 
     # Get the recurrence coefficients & the jacobi matrix
     recurrence_coeffs = recurrence_coefficients(self, order)
@@ -596,8 +597,16 @@ def getlocalquadrature(self, order=None):
             p[u,0] = local_points[u]
         local_weights = w
         local_points = p
-    # Return 1D gauss points and weights
-    return local_points, local_weights
+        
+    if scale==True:
+        scaled_points = p.copy()
+        if self.param_type=='Uniform':
+            for i in range(0, len(p)):
+                scaled_points[i] = 0.5* ( p[i] + 1. ) * (self.upper - self.lower) + self.lower
+        return scaled_points, local_weights
+    else:
+        # Return 1D gauss points and weights
+        return local_points, local_weights
 
 def jacobiEigenvectors(self, order=None):
 
@@ -623,7 +632,8 @@ def orthoPolynomial_and_derivative(self, points, order=None):
         order = self.order
     gridPoints = np.asarray(points).copy()
     ab = recurrence_coefficients(self, order)
-    true_mid = np.mean(self.bounds)
+#    true_mid = np.mean(self.bounds)
+    """
     if np.isinf(true_mid) and not(np.isinf(self.bounds[0])) :
         pass
     elif not(np.isnan(true_mid)):
@@ -636,6 +646,7 @@ def orthoPolynomial_and_derivative(self, points, order=None):
     if not(np.isinf(true_interval)):
         scale = true_interval/(self.upper - self.lower)
         gridPoints = np.multiply(scale, gridPoints)
+    """   
     orthopoly = np.zeros((order, len(gridPoints))) # create a matrix full of zeros
     derivative_orthopoly = np.zeros((order, len(gridPoints)))
 

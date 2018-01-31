@@ -1,6 +1,6 @@
 """Computing Statistics from Polynomial Expansions"""
 import numpy as np
-from .plotting import barplot, triplebarplot, piechart
+from .plotting import barplot, triplebarplot, piechart, scatterplot2
 from .polyint import Polyint
 #from .polyreg import Polyreg
 from basis import Basis
@@ -40,9 +40,6 @@ class Statistics(object):
             pass
         else:
             self.weighted_evals = polynomial_evals * coefficients
-            print polynomial_evals[3,:]
-            print self.weighted_evals[3,:]
-            print coefficients[3]
             self.quad_wts = quadrature_weights
 #            print sum(self.quad_wts)
         self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
@@ -138,18 +135,21 @@ class Statistics(object):
         triplebarplot(a, vvals, svals, kvals, "Dimensions", "Index Value", sorted(v.keys(), key = len))
     
     #Pie chart of variance, skewness and kurtosis indices
-    
-    def pie_chart(self, list_of_indices_dicts):
+    #Var names in list form
+    @staticmethod
+    def pie_chart( list_of_indices_dicts, highest_order = 1, var_names = None, title = "Sobol' indices"):
         v = list_of_indices_dicts[0]
         if len(list_of_indices_dicts) > 1:
             s = list_of_indices_dicts[1]
         if len(list_of_indices_dicts) > 2:
             k = list_of_indices_dicts[2]
         labels_and_values = {}
+        if not(var_names is None):
+            v = dict((tuple([var_names[i] for i in key]), val) for key, val in v.iteritems())
         for i in v.keys():
-            if v[i] > 1e-3:
-                if len(i) == 1:
-                    labels_and_values[i[0]] = v[i]
+            if v[i] > 1e-6:
+                if len(i) <= highest_order:
+                    labels_and_values[i] = v[i]
                 else:
                     key = "order " + str(len(i))
                     try:
@@ -169,10 +169,38 @@ class Statistics(object):
 #            else:
 #                key = "order " + str(len(i))
 #                labels_and_values[key] += k.values[i]
+        
         labels = labels_and_values.keys()
         values = labels_and_values.values()
-        piechart(labels, values, "Sobol' indices")
-                
+        vl = sorted(zip(values, labels), reverse = True)
+        values, labels = zip(*vl)
+        
+        piechart(labels, values, title)
+        
+    @staticmethod
+    def scatter_plot(list_of_indices_dicts, highest_order = 2, var_names = None, title = "Sobol' indices"):
+        # Assume all dicts have the same keys!
+        list_of_dicts = list_of_indices_dicts[:]
+        if not(var_names is None):
+            for j in range(len(list_of_indices_dicts)):
+                list_of_dicts[j] = dict((tuple([var_names[i] for i in key]), val) for key, val in list_of_indices_dicts[j].iteritems())
+        
+        valid_keys = [i for i in list_of_dicts[0].keys() if len(i) <= highest_order]
+        
+        labels = sorted(valid_keys, key = len)
+
+        col = np.reshape(np.arange(len(valid_keys), dtype = 'float'), (len(valid_keys),1))
+        list_of_cols = []
+        for i in range(len(list_of_dicts)):
+            list_of_cols.append(col.copy())
+        x = np.hstack(list_of_cols)
+        y = x.copy()
+        for i in range(len(list_of_dicts)):
+            for j in range(y.shape[0]):
+                y[j,i] = list_of_dicts[i][labels[j]]
+        
+        
+        scatterplot2(x,y,labels)
                 
             
         

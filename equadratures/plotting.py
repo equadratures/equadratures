@@ -8,6 +8,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
+from cycler import cycler
 
 
 def errorplot2D(errors, x_label=None, y_label=None, xlim=None, ylim=None, filename=None):
@@ -334,7 +335,9 @@ def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_c
     x = np.mat(x)
     y = np.mat(y)
     m, n = x.shape
+    print m
     p, q = y.shape
+    print p
     if n > m:
         x = x.T
         y = y.T
@@ -370,6 +373,43 @@ def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_c
     #plt.xlim(np.min(x)-0.5, np.max(x)+0.5)
     #plt.ylim(np.min(y)-0.5, np.max(y)+0.5)
     #plt.tight_layout()
+    if filename is None:
+        plt.show()
+    else:
+        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
+        
+def scatterplot2(x, y, x_label, filename=None, marker_type=None):
+    # x is m by n where m is the number of points for each series and n is number of series. (each col constitutes a series)
+    # y is also m by n
+    x = np.mat(x)
+    y = np.mat(y)
+    assert x.shape == y.shape
+    m,n = x.shape
+
+    if marker_type is None:
+        marker_type = 's'
+ 
+    opacity = 1.0
+    #plt.rc('text', usetex=True)
+    plt.rc('font', family='serif')
+    mpl.rcParams['axes.linewidth'] = 2.0
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    plt.grid()
+    cm = plt.get_cmap('tab20')
+    ax.set_prop_cycle(cycler('color', [cm(i) for i in np.linspace(0, 1,x.shape[1])]))
+    ax.set_axis_bgcolor('whitesmoke')
+    for i in range(n):    
+        plt.scatter([x[:,i]], [y[:,i]], marker=marker_type, s=20, alpha=opacity)
+    ax.set_axisbelow(True)
+    adjust_spines(ax, ['left', 'bottom'])
+#    plt.xlabel(x_label, fontsize=3)
+#    plt.ylabel(y_label, fontsize=16)
+    plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
+    plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
+#    plt.xticks(fontsize=16)
+#    plt.yticks(fontsize=16)
+    plt.xticks(x[:,0], x_label, fontsize=8, rotation = 30)
     if filename is None:
         plt.show()
     else:
@@ -506,8 +546,12 @@ def triplebarplot(x, y1, y2, y3, x_label, y_label, x_ticks, filename=None):
         
 def piechart(labels, sizes, title):
     fig1, ax1 = plt.subplots()
-    patches, texts = ax1.pie(sizes, shadow=True, startangle=90)
+    cm = plt.get_cmap('tab20')
+    ax1.set_prop_cycle(cycler('color', [cm(i) for i in np.linspace(0, 1,len(labels))]))
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    patches, texts = ax1.pie(sizes, shadow=True, startangle=90)
+    
+    ax1.axis([0,1.2,-1,1])
     plt.legend(patches, labels, loc='best')
     plt.title(title)
     plt.show()

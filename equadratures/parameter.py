@@ -568,7 +568,8 @@ def getlocalquadrature(self, order=None, scale=None):
     # Check for extra input argument!
     if order is None:
         order = self.order + 1
-
+    else:
+        order = order + 1
 
     # Get the recurrence coefficients & the jacobi matrix
     recurrence_coeffs = recurrence_coefficients(self, order)
@@ -629,9 +630,12 @@ def jacobiEigenvectors(self, order=None):
 # Univariate orthogonal polynomial correspoding to the weight of the parameter
 def orthoPolynomial_and_derivative(self, points, order=None):
     if order is None:
-        order = self.order
+        order = self.order + 1
+    else:
+        order = order + 1
     gridPoints = np.asarray(points).copy()
     ab = recurrence_coefficients(self, order)
+    
 #    true_mid = np.mean(self.bounds)
     """
     if np.isinf(true_mid) and not(np.isinf(self.bounds[0])) :
@@ -648,6 +652,7 @@ def orthoPolynomial_and_derivative(self, points, order=None):
         gridPoints = np.multiply(scale, gridPoints)
     """   
     orthopoly = np.zeros((order, len(gridPoints))) # create a matrix full of zeros
+#    print order
     derivative_orthopoly = np.zeros((order, len(gridPoints)))
 
     # Convert the grid points to a numpy array -- simplfy life!
@@ -657,18 +662,18 @@ def orthoPolynomial_and_derivative(self, points, order=None):
     orthopoly[0,:] = 1.0
 
     # Cases
-    if order == 1:
+    if order == 1: #CHANGED 2/2/18
         return orthopoly, derivative_orthopoly
     orthopoly[1,:] = ((gridPointsII[:,0] - ab[0,0]) * orthopoly[0,:] ) * (1.0)/(1.0 * np.sqrt(ab[1,1]) )
     derivative_orthopoly[1,:] = orthopoly[0,:] / (np.sqrt(ab[1,1]))
-    if order == 2:
+    if order == 2: #CHANGED 2/2/18
         return orthopoly, derivative_orthopoly
 
-    if order >= 3:
-        for u in range(2,order):
+    if order >= 3: #CHANGED 2/2/18
+        for u in range(2,order): #CHANGED 2/2/18
             # Three-term recurrence rule in action!
             orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0])*orthopoly[u-1,:]) - np.sqrt(ab[u-1,1])*orthopoly[u-2,:] )/(1.0 * np.sqrt(ab[u,1]))
-        for u in range(2, order):
+        for u in range(2, order): #CHANGED 2/2/18
             # Four-term recurrence formula for derivatives of orthogonal polynomials!
             derivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
         return orthopoly, derivative_orthopoly

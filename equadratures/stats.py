@@ -39,7 +39,11 @@ class Statistics(object):
 #            self.quad_wts = quad_wts
             pass
         else:
+#            print basis.elements
+#            print quadrature_points
+#            print polynomial_evals
             self.weighted_evals = polynomial_evals * coefficients
+#            print self.weighted_evals
             self.quad_wts = quadrature_weights
 #            print sum(self.quad_wts)
         self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
@@ -298,10 +302,12 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
         if sum(norm_ind[i]) == order:
             combo_index[norm_ind[i]] = combo_index[norm_ind[i]] + integral1[i] /(variance**1.5 * skewness)
     
+#    print combo_index
     valid_indices = []
     for i in range(1, basis.cardinality):
         if sum(norm_ind[i]) <= order:
             valid_indices.append(i)
+#    print valid_indices
     #2nd term (Can we avoid for loops in the future?)
     for p in range(1,basis.cardinality):
         for q in range(1,basis.cardinality):           
@@ -316,9 +322,13 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
                     break
             if delta:
                 continue
-
+#            print basis.elements[p]
+#            print basis.elements[q]
             evals2 = (weighted_evals[p,:]**2)*weighted_evals[q,:]
-            integral2 = np.dot(evals2, quad_wts)        
+            integral2 = np.dot(evals2, quad_wts)
+#            print basis.elements[p]
+#            print basis.elements[q]
+#            print 3* integral2 /(variance**1.5* skewness)
             combo_index[summed_norm_index] = combo_index[summed_norm_index] + 3 * integral2 /(variance**1.5* skewness)
     
 #    print combo_index
@@ -330,11 +340,12 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
                 p = valid_indices[a]
                 q = valid_indices[b]
                 r = valid_indices[c]
-
+                
                 summed_norm_index =tuple(np.logical_or(np.logical_or(norm_ind[p], norm_ind[q]), norm_ind[r]).astype(int))
                 if sum(summed_norm_index) != order:
                     continue
                 #check if selection function is zero, in which case delta = True
+#                print [p,q,r]
                 delta = False
                 for d in range(dimensions):
                     if delta_pqr([temp_ind[p,:],temp_ind[q,:],temp_ind[r,:]]):

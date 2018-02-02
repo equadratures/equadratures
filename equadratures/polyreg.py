@@ -81,7 +81,6 @@ class Polyreg(object):
     def getStatistics(self, quadratureRule=None):
         p, w = self.getQuadratureRule(quadratureRule)
         evals = getPolynomial(self.parameters, self.scalingX(p), self.basis)
-        print evals[3,:]
 #        print evals.shape
         return Statistics(self.coefficients, self.basis, self.parameters, p, w, evals)
 
@@ -125,16 +124,14 @@ class Polyreg(object):
             w = 1.0/float(default_number_of_points) * np.ones((default_number_of_points))
             for i in range(0, self.dimensions):
                 p[:,i] = self.parameters[i].getSamples(m=default_number_of_points).reshape((default_number_of_points,))
-            print p
-            print w
             
             return p, w
             
         
         if options.lower() == 'tensor grid':
             
-#            p,w = getTensorQuadratureRule(self.parameters, self.dimensions, self.basis.orders)
-            p,w = getTensorQuadratureRule(self.parameters, self.dimensions, [6,6,6,6,6,6,6])
+            p,w = getTensorQuadratureRule(self.parameters, self.dimensions, self.basis.orders)
+#            p,w = getTensorQuadratureRule(self.parameters, self.dimensions, [6,6,6,6])
             return p,w
     
     @staticmethod
@@ -160,7 +157,7 @@ class Polyreg(object):
 
 def get_t_value(coefficients, A, y):
     RSS = np.linalg.norm(y - np.dot(A,coefficients))**2
-    p, n = A.shape
+    n,p = A.shape
     if n == p:
         return "exact"
     RSE = RSS/(n-p)
@@ -187,8 +184,8 @@ def getTensorQuadratureRule(stackOfParameters, dimensions, orders):
         for u in range(0, dimensions):
 
             # Call to get local quadrature method (for dimension 'u')
-            local_points, local_weights = stackOfParameters[u].getLocalQuadrature(orders[u], scale=True)
-
+            local_points, local_weights = stackOfParameters[u].getLocalQuadrature(orders[u]+1, scale=True)
+#            print local_points
             # Tensor product of the weights
             ww = np.kron(ww, local_weights)
 
@@ -202,7 +199,7 @@ def getTensorQuadratureRule(stackOfParameters, dimensions, orders):
         # Ignore the first column of pp
         points = pp[:,1::]
         weights = ww
-
+        
         # Return tensor grid quad-points and weights
         return points, weights
 
@@ -226,13 +223,14 @@ def getPolynomial(stackOfParameters, stackOfPoints, chosenBasis):
 
     # Save time by returning if univariate!
     if dimensions == 1:
-        poly , _ =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
+#        print "hi"
+        poly , _ =  stackOfParameters[0].getOrthoPoly(stackOfPoints, int(np.max(basis)))
         return poly
     else:
         for i in range(0, dimensions):
             if len(stackOfPoints.shape) == 1:
                 stackOfPoints = np.array([stackOfPoints])
-            p[i] , _ = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i]) + 1 ) )
+            p[i] , _ = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i])) )
 
     # One loop for polynomials
     for i in range(0, basis_entries):
@@ -254,6 +252,7 @@ def getPolynomialGradient(stackOfParameters, stackOfPoints, chosenBasis, gradDir
 
     # Save time by returning if univariate!
     if dimensions == 1:
+        
         poly , _ =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
         return poly
     else:

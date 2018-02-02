@@ -280,9 +280,10 @@ class Parameter(object):
         """
         return jacobiEigenvectors(self, order)
 
-    def getOrthoPoly(self, points, order=None):
+    def _getOrthoPoly(self, points, order=None):
         """
         Returns orthogonal polynomials & its derivatives, evaluated at a set of points.
+        WARNING: Should not be called under normal circumstances, without normalization of points.
         :param Parameter self: An instance of the Parameter class
         :param ndarray points: Points at which the orthogonal polynomial (and its derivatives) should be evaluated at
         :param int order: This value of order overwrites the order defined for the constructor.
@@ -300,9 +301,10 @@ class Parameter(object):
         """
         return orthoPolynomial_and_derivative(self, points, order)
 
-    def getLocalQuadrature(self, order=None, scale=None):
+    def _getLocalQuadrature(self, order=None, scale=None):
         """
         Returns the 1D quadrature points and weights for the parameter
+        WARNING: Should not be called under normal circumstances.
         :param Parameter self: An instance of the Parameter class
         :param int N: Number of quadrature points and weights required. If order is not specified, then
             by default the method will return the number of points defined in the parameter itself.
@@ -635,7 +637,8 @@ def orthoPolynomial_and_derivative(self, points, order=None):
         order = order + 1
     gridPoints = np.asarray(points).copy()
     ab = recurrence_coefficients(self, order)
-    
+    if (gridPoints > 1.0).any() or (gridPoints < -1.0).any():
+        raise(ValueError, "Points not normalized.")
 #    true_mid = np.mean(self.bounds)
     """
     if np.isinf(true_mid) and not(np.isinf(self.bounds[0])) :

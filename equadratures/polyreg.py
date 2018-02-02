@@ -154,7 +154,13 @@ class Polyreg(object):
         F = (RSS_0 - RSS_1) * (n-p_1)/(RSS_1 * (p_1 - p_0))
         # p-value is scipy.stats.f.cdf(F, n - p_1, p_1 - p_0)
         return F
-
+    
+    # Get points of polynomial basis functions on the points specified by x
+    # basically just calls getPolynomial with scaled points
+    # rows = number of points, cols = number of dimensions
+    def getPolynomial_x(self, x):
+        return getPolynomial(self.parameters, self.scalingX(x) , self.basis)
+    
 def get_t_value(coefficients, A, y):
     RSS = np.linalg.norm(y - np.dot(A,coefficients))**2
     n,p = A.shape
@@ -184,7 +190,7 @@ def getTensorQuadratureRule(stackOfParameters, dimensions, orders):
         for u in range(0, dimensions):
 
             # Call to get local quadrature method (for dimension 'u')
-            local_points, local_weights = stackOfParameters[u].getLocalQuadrature(orders[u]+1, scale=True)
+            local_points, local_weights = stackOfParameters[u]._getLocalQuadrature(orders[u]+1, scale=True)
 #            print local_points
             # Tensor product of the weights
             ww = np.kron(ww, local_weights)
@@ -224,13 +230,13 @@ def getPolynomial(stackOfParameters, stackOfPoints, chosenBasis):
     # Save time by returning if univariate!
     if dimensions == 1:
 #        print "hi"
-        poly , _ =  stackOfParameters[0].getOrthoPoly(stackOfPoints, int(np.max(basis)))
+        poly , _ =  stackOfParameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis)))
         return poly
     else:
         for i in range(0, dimensions):
             if len(stackOfPoints.shape) == 1:
                 stackOfPoints = np.array([stackOfPoints])
-            p[i] , _ = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i])) )
+            p[i] , _ = stackOfParameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i])) )
 
     # One loop for polynomials
     for i in range(0, basis_entries):
@@ -253,13 +259,13 @@ def getPolynomialGradient(stackOfParameters, stackOfPoints, chosenBasis, gradDir
     # Save time by returning if univariate!
     if dimensions == 1:
         
-        poly , _ =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
+        poly , _ =  stackOfParameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis)))
         return poly
     else:
         for i in range(0, dimensions):
             if len(stackOfPoints.shape) == 1:
                 stackOfPoints = np.array([stackOfPoints])
-            p[i] , dp[i] = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i]) + 1 ) )
+            p[i] , dp[i] = stackOfParameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i]) ) )
 
     # One loop for polynomials
     for i in range(0, basis_entries):

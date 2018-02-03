@@ -2,7 +2,6 @@
 from parameter import Parameter
 from basis import Basis
 import numpy as np
-#from qr import solveLSQ, qr_MGS
 from stats import Statistics, getAllSobol
 import scipy
 
@@ -36,18 +35,9 @@ class Polyreg(object):
             raise(ValueError, 'Polyreg:__init__:: The number of parameters and the number of dimensions in the index set must be the same.')
         self.parameters = parameters
         self.A =  getPolynomial(self.parameters, self.scalingX(self.x), self.basis).T
-        print self.A.shape, np.linalg.cond(self.A)
         self.cond = np.linalg.cond(self.A)
         self.y = np.reshape(self.y, (len(self.y), 1)) 
         self.computeCoefficients()
-
-    #def computeWeights(self):
-    #    self.weights = 1.0
-        #for i in range(0, self.dimensions):
-        #    if (self.parameters[i].param_type == "Uniform"):
-        #        self.weights = self.weights * (self.parameters[i].upper - self.parameters[i].lower) / (2.0)
-        #    elif (self.parameters[i].param_type == "Beta" ):
-        #        self.weights = 1.0 / (self.parameters[i].upper - self.parameters[i].lower) 
 
     def scalingX(self, x_points_scaled):
         rows, cols = x_points_scaled.shape
@@ -58,10 +48,7 @@ class Polyreg(object):
         for i in range(0, self.dimensions):
             for j in range(0, rows):
                 if (self.parameters[i].param_type == "Uniform"):
-                    #print points[j,i]
                     points[j,i] = 2.0 * ( ( points[j,i] - self.parameters[i].lower) / (self.parameters[i].upper - self.parameters[i].lower) ) - 1.0
-                    #print points[j,i]
-                    #print '--------'
                 elif (self.parameters[i].param_type == "Beta" ):
                     points[j,i] =  ( points[j,i] - self.parameters[i].lower) / (self.parameters[i].upper - self.parameters[i].lower) 
         

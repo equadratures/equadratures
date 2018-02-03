@@ -28,11 +28,41 @@ def iCDF_BetaDistribution(xx, a, b, lower, upper):
                 break
     return yy
 
+def iCDF_GammaDistribution(xx, k, theta):
+    yy = []
+    [x, c] = CDF_GammaDistribution(1000, k, theta)
+    for k in range(0, len(xx)):
+        for i in range(0, len(x)):
+            if ( (xx[k]>=c[i]) and (xx[k]<=c[i+1]) ):
+                value =  float( (xx[k]-c[i])/(c[i+1]-c[i])*(x[i+1]-x[i])+x[i] )
+                yy.append(value)
+                break
+    return yy
+
 def iCDF_TruncatedGaussianDistribution(xx, mu, sigma, a, b):
     yy = iCDF_Gaussian(xx, mu, sigma)
     for i in range(0, len(xx)):
         if(yy[i,0] < a or yy[i,0] > b):
             yy[i,0] = 0
+    return yy
+
+
+def iCDF_CustomDistribution(xx, data):
+    [x, y] = PDF_CustomDistribution(1000, data)
+    c = []
+    yy = []
+    c.append(0.0)
+    for i in range(1, len(x)):
+        c.append(c[i-1]+(x[i]-x[i-1])*(y[i]+y[i-1])*.5)
+    for i in range(1, len(x)):
+        c[i]=c[i]/c[len(x)-1]
+
+    for k in range(0, len(xx)):
+        for i in range(0, len(x)):
+            if ( (xx[k]>=c[i]) and (xx[k]<=c[i+1]) ):
+                value =  float( (xx[k]-c[i])/(c[i+1]-c[i])*(x[i+1]-x[i])+x[i] )
+                yy.append(value)
+                break
     return yy
 
 # Cumulative distribution
@@ -89,33 +119,25 @@ def CDF_ExponentialDistribution(N, lambda_value):
     return x, w
 
 def CDF_CustomDistribution(N, data):
-    [x, y] = PDF_CustomDistribution(1000, data)
+    x, y = PDF_CustomDistribution(N, data)
     c = []
     c.append(0.0)
     for i in range(1, len(x)):
         c.append(c[i-1]+(x[i]-x[i-1])*(y[i]+y[i-1])*.5)
-
     for i in range(1, len(x)):
         c[i]=c[i]/c[len(x)-1]
+    return x, c
 
-    for k in range(0, len(xx)):
-        for i in range(0, len(x)):
-            if ( (xx[k]>=c[i]) and (xx[k]<=c[i+1]) ):
-                value =  float( (xx[k]-c[i])/(c[i+1]-c[i])*(x[i+1]-x[i])+x[i] )
-                yy.append(value)
-                break
-    return yy
 
 def PDF_CustomDistribution(N, data):
     mean = np.mean(data)
     std = np.std(data)
-    lower = mean - np.sqrt(std) * 1.96
-    upper = mean + np.sqrt(std) * 1.96
+    lower = mean - (np.sqrt(std) * 5.0)
+    upper = mean + (np.sqrt(std) * 5.0)
     xo = np.linspace(lower, upper, N)
     kernel = stats.gaussian_kde(data)
     wts = kernel(xo)
     return xo, wts
-
 
 def PDF_UniformDistribution(N, lower, upper):
     x = np.linspace(lower, upper, N)
@@ -148,7 +170,7 @@ def PDF_GammaDistribution(N, k, theta):
 def PDF_CauchyDistribution(N, x0, gammavalue):
     x = np.linspace(-15*gammavalue, 15*gammavalue, N)
     x = x + x0
-    w = 1.0/(pi * gammavalue * (1 + ((x - x0)/(gammavalue))**2) )
+    w = 1.0/(np.pi * gammavalue * (1 + ((x - x0)/(gammavalue))**2) )
     return x, w
 
 def PDF_ExponentialDistribution(N, lambda_value):

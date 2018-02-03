@@ -2,7 +2,6 @@
 import numpy as np
 from scipy.special import gamma
 import analyticaldistributions as analytical
-import matplotlib.pyplot as plt
 class Parameter(object):
 
     """
@@ -126,7 +125,7 @@ class Parameter(object):
         elif self.param_type is "Beta":
             x, y = analytical.PDF_BetaDistribution(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Gamma":
-            x, y = analytical.PDF_Gamma(N, self.shape_parameter_A, self.shape_parameter_B)
+            x, y = analytical.PDF_GammaDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Weibull":
             x, y = analytical.PDF_WeibullDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Cauchy":
@@ -150,16 +149,11 @@ class Parameter(object):
         : param integer m: Number of random samples. If no value is provided, a default of 5e5 is assumed.
         """
         if m is None:
-            number_of_random_samples = 5e5
+            number_of_random_samples = 500
         else:
             number_of_random_samples = m
-
         uniform_samples = np.random.random((number_of_random_samples, 1))
         yy = self.getiCDF(uniform_samples)
-
-        #if graph is not None:
-        # histogram(yy, 'Parameter', 'PDF', filename=None)
-
         return yy
 
     def getCDF(self, N):
@@ -183,7 +177,7 @@ class Parameter(object):
         elif self.param_type is "Beta":
             x, y = analytical.CDF_BetaDistribution(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Gamma":
-            x, y = analytical.CDF_Gamma(N, self.shape_parameter_A, self.shape_parameter_B)
+            x, y = analytical.CDF_GammaDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Weibull":
             x, y = analytical.CDF_WeibullDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Cauchy":
@@ -213,7 +207,7 @@ class Parameter(object):
         elif self.param_type is "Beta":
             y = analytical.iCDF_BetaDistribution(x, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Gamma":
-            y = analytical.iCDF_Gamma(x, self.shape_parameter_A, self.shape_parameter_B)
+            y = analytical.iCDF_GammaDistribution(x, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Weibull":
             y = analytical.iCDF_WeibullDistribution(x, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Cauchy":
@@ -224,6 +218,8 @@ class Parameter(object):
             y = analytical.iCDF_TruncatedGaussianDistribution(x, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Exponential":
             y = analytical.iCDF_ExponentialDistribution(x, self.shape_parameter_A)
+        elif self.param_type is "Custom":
+            y = analytical.iCDF_CustomDistribution(x, self.data)
         else:
             raise(ValueError, 'parameter getiCDF(): invalid parameter type!')
         return y
@@ -338,9 +334,9 @@ def recurrence_coefficients(self, order=None):
         param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
         param_B = self.shape_parameter_A - 1
         if(param_B <= 0):
-            error_function('ERROR: parameter_A (beta shape parameter A) must be greater than 1!')
+            raise(ValueError, 'ERROR: parameter_A (beta shape parameter A) must be greater than 1!')
         if(param_A <= 0):
-            error_function('ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
+            raise(ValueError, 'ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
         ab =  jacobi_recurrence_coefficients_01(param_A, param_B , order)
         #alpha = self.shape_parameter_A
         #beta = self.shape_parameter_B
@@ -413,7 +409,7 @@ def recurrence_coefficients(self, order=None):
         ab = custom_recurrence_coefficients(order, x, w)
         self.bounds = [self.lower, self.upper]
     else:
-        error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential, TruncatedGaussian or Beta')
+        raise(ValueError, 'ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential, TruncatedGaussian or Beta')
 
     return ab
 
@@ -606,6 +602,9 @@ def getlocalquadrature(self, order=None, scale=None):
         if self.param_type=='Uniform':
             for i in range(0, len(p)):
                 scaled_points[i] = 0.5* ( p[i] + 1. ) * (self.upper - self.lower) + self.lower
+        if self.param_type == 'Beta':
+            for i in range(0, len(p)):
+                scaled_points[i] =  p[i] * (self.upper - self.lower) + self.lower
         return scaled_points, local_weights
     else:
         # Return 1D gauss points and weights
@@ -637,25 +636,14 @@ def orthoPolynomial_and_derivative(self, points, order=None):
         order = order + 1
     gridPoints = np.asarray(points).copy()
     ab = recurrence_coefficients(self, order)
-    if (gridPoints > 1.0).any() or (gridPoints < -1.0).any():
-        raise(ValueError, "Points not normalized.")
-#    true_mid = np.mean(self.bounds)
-    """
-    if np.isinf(true_mid) and not(np.isinf(self.bounds[0])) :
-        pass
-    elif not(np.isnan(true_mid)):
-        mid = 0.5*(self.upper + self.lower)
-        gridPoints = np.add(gridPoints, true_mid-mid)
-    else:
-        assert(self.bounds == [-np.inf, np.inf])
+    if self.param_type == 'Uniform':
+        if (gridPoints > 1.0).any() or (gridPoints < -1.0).any():
+            raise(ValueError, "Points not normalized.")
+    if self.param_type == 'Beta':
+        if (gridPoints > 1.0).any() or (gridPoints < 0.0).any():
+            raise(ValueError, "Points not normalized.")
 
-    true_interval = self.bounds[1] - self.bounds[0]
-    if not(np.isinf(true_interval)):
-        scale = true_interval/(self.upper - self.lower)
-        gridPoints = np.multiply(scale, gridPoints)
-    """   
     orthopoly = np.zeros((order, len(gridPoints))) # create a matrix full of zeros
-#    print order
     derivative_orthopoly = np.zeros((order, len(gridPoints)))
 
     # Convert the grid points to a numpy array -- simplfy life!

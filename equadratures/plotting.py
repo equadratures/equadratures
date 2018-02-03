@@ -15,12 +15,12 @@ def errorplot2D(errors, x_label=None, y_label=None, xlim=None, ylim=None, filena
     G = np.log10(np.abs(errors))
     Zm = np.ma.masked_where(np.isnan(G),G)
     opacity = 0.8
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
-    ax.set_axis_bgcolor('whitesmoke')
+    #ax.set_axis_bgcolor('whitesmoke')
+    ax.set_facecolor('whitesmoke')
     plt.pcolor(errors, cmap= cm.jet, vmin=-14, vmax=1)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
@@ -92,8 +92,6 @@ def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None, vmin_l
 def bestfit(x_train, y_train, x_test, y_test, CI, x_label, y_label, filename=None):
 
     opacity = 0.8
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
@@ -135,8 +133,6 @@ def bestfit3D(x_train, y_train, x_test, y_test, x_label, y_label, z_label, filen
     xx1 = x_test[0]
     xx2 = x_test[1]
     opacity = 0.8
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     mpl.rc('axes', edgecolor='white', labelcolor='black', grid=True)
     mpl.rc('xtick', color='black')
@@ -171,8 +167,6 @@ def bestfit3D(x_train, y_train, x_test, y_test, x_label, y_label, z_label, filen
 
 def parameterplot(x_axis, y_pdf, y_cdf, filename=None, x_label=None, y_label1=None, y_label2=None):
     opacity = 0.8
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
 
     fig = plt.figure()
@@ -213,13 +207,11 @@ def parameterplot(x_axis, y_pdf, y_cdf, filename=None, x_label=None, y_label1=No
 
 def lineplot(x, y, x_label, y_label, filename=None):
     opacity = 0.8
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
-    ax.set_axis_bgcolor('whitesmoke')
+    ax.set_facecolor('whitesmoke')
     plt.plot(x, y, linestyle='-', linewidth=3, color='deepskyblue')
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
@@ -229,6 +221,7 @@ def lineplot(x, y, x_label, y_label, filename=None):
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
+    plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
     else:
@@ -237,12 +230,11 @@ def lineplot(x, y, x_label, y_label, filename=None):
 def contour_plot(x, y , z, filename=None, pts=None, other_pts=None, path_points = None):
 
     opacity = 0.8
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
-    ax.set_axis_bgcolor('whitesmoke')
+    ax.set_facecolor('whitesmoke')
     K = plt.contourf(x, y, z, 100, rasterized=False) 
 
     if pts is not None:
@@ -294,8 +286,6 @@ def scatterplot3D(x, f, x1_label=None, x2_label=None, f_label=None, filename=Non
         raise(ValueError, 'scatterplot(x, y): The number of rows in x must be equivalent to the number of rows in y')
     
     opacity = 0.8
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     mpl.rc('axes', edgecolor='white', labelcolor='black', grid=True)
     mpl.rc('xtick', color='black')
@@ -353,8 +343,6 @@ def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_c
     #    raise(ValueError, 'scatterplot(x, y): The number of rows in x must be equivalent to the number of rows in y')
  
     opacity = 0.8
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
@@ -390,8 +378,6 @@ def scatterplot2(x, y, x_label, filename=None, marker_type=None):
         marker_type = 's'
  
     opacity = 1.0
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
@@ -418,15 +404,14 @@ def scatterplot2(x, y, x_label, filename=None, marker_type=None):
 def histogram(samples, x_label, y_label, filename=None):
     opacity = 1.0
     error_config = {'ecolor': '0.3'}
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
-    ax.set_axis_bgcolor('whitesmoke')
+    ax.set_facecolor('whitesmoke')
     plt.hist(samples, 30, normed=1, facecolor='saddlebrown', alpha=opacity)
-    plt.xlim(0.08*np.min(samples), 1.2*np.max(samples))
+    std_dev = np.std(samples)
+    plt.xlim(np.min(samples) - 1.2* std_dev, np.max(samples) + 1.2*std_dev)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
     plt.xlabel(x_label, fontsize=16)
@@ -445,8 +430,6 @@ def barplot(x, y, x_label, y_label, x_ticks, filename=None):
     bar_width = 0.35
     opacity = 1.0
     error_config = {'ecolor': '0.3'}
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
@@ -519,8 +502,6 @@ def triplebarplot(x, y1, y2, y3, x_label, y_label, x_ticks, filename=None):
     bar_width = 0.2
     opacity = 1.0
     error_config = {'ecolor': '0.3'}
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)

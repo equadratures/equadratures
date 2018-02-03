@@ -136,7 +136,6 @@ class Polyreg(object):
             
         
         if options.lower() == 'tensor grid':
-            
             p,w = getTensorQuadratureRule(self.parameters, self.dimensions, self.basis.orders)
 #            p,w = getTensorQuadratureRule(self.parameters, self.dimensions, [6,6,6,6])
             return p,w
@@ -181,10 +180,6 @@ def get_t_value(coefficients, A, y):
     # p-value is scipy.stats.t.cdf(t_stat, n - p)
     return t_stat
 
-
-    
-
-
 def getTensorQuadratureRule(stackOfParameters, dimensions, orders):
         flag = 0
 
@@ -215,8 +210,6 @@ def getTensorQuadratureRule(stackOfParameters, dimensions, orders):
         
         # Return tensor grid quad-points and weights
         return points, weights
-
-
 
 def get_R_squared(alpha, A, y):
     y_bar = scipy.mean(y) * np.ones(len(y))
@@ -260,13 +253,13 @@ def getPolynomialGradient(stackOfParameters, stackOfPoints, chosenBasis):
 
     # Save time by returning if univariate!
     if dimensions == 1:
-        poly , _ =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
+        poly , _ =  stackOfParameters[0]._getOrthoPoly(stackOfPoints)
         return poly
     else:
         for i in range(0, dimensions):
             if len(stackOfPoints.shape) == 1:
                 stackOfPoints = np.array([stackOfPoints])
-            p[i] , dp[i] = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i]) + 1 ) )
+            p[i] , dp[i] = stackOfParameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i]) + 1 ) )
 
     # One loop for polynomials
     R = []

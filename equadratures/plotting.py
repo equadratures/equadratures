@@ -203,7 +203,27 @@ def parameterplot(x_axis, y_pdf, y_cdf, filename=None, x_label=None, y_label1=No
     else:
         plt.show()
 
-
+def semilogy_lineplot(x, y, x_label, y_label, filename=None):
+    opacity = 0.8
+    mpl.rcParams['axes.linewidth'] = 2.0
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    plt.grid()
+    ax.set_facecolor('whitesmoke')
+    plt.semilogy(x, y, linestyle='-', linewidth=3, color='deepskyblue')
+    ax.set_axisbelow(True)
+    adjust_spines(ax, ['left', 'bottom'])
+    plt.xlabel(x_label, fontsize=16)
+    plt.ylabel(y_label, fontsize=16)
+    plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
+    plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+    plt.tight_layout()
+    if filename is not None:
+        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
+    else:
+        plt.show()
 
 def lineplot(x, y, x_label, y_label, filename=None):
     opacity = 0.8
@@ -294,20 +314,10 @@ def scatterplot3D(x, f, x1_label=None, x2_label=None, f_label=None, filename=Non
     ax = fig.add_subplot(111, projection='3d')
     for i in range(0, m):
         ax.scatter(x[i,0], x[i,1], f[i],  marker='H', s=90, alpha=opacity, color='darkorange',linewidth=1.5)
-    ax.grid(False)
     ax.w_xaxis.set_pane_color((0.961, 0.961, 0.961, 1.0))
     ax.w_yaxis.set_pane_color((0.961, 0.961, 0.961, 1.0))
     ax.w_zaxis.set_pane_color((0.961, 0.961, 0.961, 1.0))
-    ax.w_xaxis.line.set_linewidth(2)
-    ax.w_yaxis.line.set_linewidth(2)
-    ax.w_zaxis.line.set_linewidth(2)
-    plt.grid()
-    ax.w_xaxis.gridlines.set_lw(2.0)
-    ax.w_yaxis.gridlines.set_lw(2.0)
-    ax.w_zaxis.gridlines.set_lw(2.0)
-    ax.w_xaxis._axinfo.update({'grid' : {'color': (1.0, 1.0, 1.0, 1)}})
-    ax.w_yaxis._axinfo.update({'grid' : {'color': (1.0, 1.0, 1.0, 1)}})
-    ax.w_zaxis._axinfo.update({'grid' : {'color': (1.0, 1.0, 1.0, 1)}})
+    ax.set_facecolor('whitesmoke')
     
     if not x1_label is None:
         ax.set_xlabel(x1_label)
@@ -325,9 +335,7 @@ def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_c
     x = np.mat(x)
     y = np.mat(y)
     m, n = x.shape
-    print m
     p, q = y.shape
-    print p
     if n > m:
         x = x.T
         y = y.T
@@ -337,17 +345,13 @@ def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_c
         marker_type = 's'
     if color_choice is None:
         color_choice = 'limegreen'
-    #if n > m :
-    #    raise(ValueError, 'scatterplot(x, y): Matrix x of size m-by-n, must satisfy m>=n')
-    #if m != p:
-    #    raise(ValueError, 'scatterplot(x, y): The number of rows in x must be equivalent to the number of rows in y')
- 
+   
     opacity = 0.8
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
-    ax.set_axis_bgcolor('whitesmoke')
+    ax.set_facecolor('whitesmoke')
     for i in range(0, m):
         plt.scatter(x[i,0], y[i,0], marker=marker_type, s=140, alpha=opacity, color=color_choice,linewidth=1.5)
     ax.set_axisbelow(True)
@@ -360,7 +364,7 @@ def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_c
     plt.yticks(fontsize=16)
     #plt.xlim(np.min(x)-0.5, np.max(x)+0.5)
     #plt.ylim(np.min(y)-0.5, np.max(y)+0.5)
-    #plt.tight_layout()
+    plt.tight_layout()
     if filename is None:
         plt.show()
     else:

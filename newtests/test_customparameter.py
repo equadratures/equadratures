@@ -1,7 +1,6 @@
 # Sample test utility!
 from equadratures import *
 import numpy as np
-import matplotlib.pyplot as plt
 
 # Select a custom distribution!
 loc, scale = 0., 1.

@@ -54,6 +54,32 @@ class Polyreg(object):
         
         return points
 
+    def computeActiveSubspaces(self, samples=None):
+        d = self.dimensions
+        if samples is  None:
+            M = 300
+            X = np.zeros((M, d))
+            for j in range(0, d):
+                X[:, j] =  np.reshape( self.parameters[j].getSamples(M), M)
+                print np.max(X[:,j]), np.min(X[:,j])
+        else:
+            X = samples
+            M, _ = X.shape
+            X = samples
+
+        # Gradient matrix!
+        polygrad = self.getPolynomialGradientApproximant(xvalue=X)
+        weights = np.ones((M, 1)) / M
+        R = polygrad.transpose() * weights
+        C = np.dot(polygrad, R )
+
+        # Compute eigendecomposition!
+        e, W = np.linalg.eigh(C)
+        idx = e.argsort()[::-1]
+        eigs = e[idx]
+        eigVecs = W[:, idx]
+        return eigs, eigVecs
+
 
     # Solve for coefficients using ordinary least squares
     def computeCoefficients(self):
@@ -68,26 +94,20 @@ class Polyreg(object):
     def getStatistics(self, quadratureRule=None):
         p, w = self.getQuadratureRule(quadratureRule)
         evals = getPolynomial(self.parameters, self.scalingX(p), self.basis)
-#        print evals.shape
         return Statistics(self.coefficients, self.basis, self.parameters, p, w, evals)
 
     def getPolynomialApproximant(self):
         return self.A * np.mat(self.coefficients)
-    
-    def getPolynomialGradientApproximant(self, direction=None, xvalue=None):
+
+    def getPolynomialGradientApproximant(self, xvalue=None):
         if xvalue is None:
             xvalue = self.x
-        
-        if direction is not None:
-            C = getPolynomialGradient(self.parameters, self.scalingX(xvalue), self.basis, direction).T
-            return C * np.mat(self.coefficients)
-        else:
-            grads = np.zeros((self.dimensions, len(xvalue) ) )
-            for i in range(0, self.dimensions):
-                v = getPolynomialGradient(self.parameters, self.scalingX(xvalue), self.basis, i).T * np.mat(self.coefficients)
-                grads[i, :] = v.reshape((len(xvalue), ))
-            return grads
-    
+        H = getPolynomialGradient(self.parameters, self.scalingX(xvalue), self.basis)
+        grads = np.zeros((self.dimensions, len(xvalue) ) )
+        for i in range(0, self.dimensions):
+            grads[i,:] = np.mat(self.coefficients).T * H[i]
+        return grads
+
     def getPolyFit(self):
         return lambda (x): getPolynomial(self.parameters, self.scalingX(x) , self.basis).T *  np.mat(self.coefficients)
     
@@ -205,9 +225,6 @@ def get_R_squared(alpha, A, y):
     return 1 - RSS/TSS
 
 def getPolynomial(stackOfParameters, stackOfPoints, chosenBasis):
-    #print stackOfPoints
-    #return 0
-    # "Unpack" parameters from "self"
     basis = chosenBasis.elements
     basis_entries, dimensions = basis.shape
     no_of_points, _ = stackOfPoints.shape
@@ -216,7 +233,6 @@ def getPolynomial(stackOfParameters, stackOfPoints, chosenBasis):
 
     # Save time by returning if univariate!
     if dimensions == 1:
-#        print "hi"
         poly , _ =  stackOfParameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis)))
         return poly
     else:
@@ -234,35 +250,37 @@ def getPolynomial(stackOfParameters, stackOfPoints, chosenBasis):
     
     return polynomial
 
-def getPolynomialGradient(stackOfParameters, stackOfPoints, chosenBasis, gradDirection):
+def getPolynomialGradient(stackOfParameters, stackOfPoints, chosenBasis):
      # "Unpack" parameters from "self"
     basis = chosenBasis.elements
     basis_entries, dimensions = basis.shape
     no_of_points, _ = stackOfPoints.shape
-    polynomialgradient = np.zeros((basis_entries, no_of_points))
     p = {}
     dp = {}
 
     # Save time by returning if univariate!
     if dimensions == 1:
-        
-        poly , _ =  stackOfParameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis)))
+        poly , _ =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
         return poly
     else:
         for i in range(0, dimensions):
             if len(stackOfPoints.shape) == 1:
                 stackOfPoints = np.array([stackOfPoints])
-            p[i] , dp[i] = stackOfParameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i]) ) )
+            p[i] , dp[i] = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i]) + 1 ) )
 
     # One loop for polynomials
-    for i in range(0, basis_entries):
-        temp = np.ones((1, no_of_points))
-        for k in range(0, dimensions):
-            if k == gradDirection:
-                polynomialgradient[i,:] = dp[k][int(basis[i,k])] * temp
-            else:
-                polynomialgradient[i,:] = p[k][int(basis[i,k])] * temp
-            temp = polynomialgradient[i,:]
+    R = []
+    for v in range(0, dimensions):
+        gradDirection = v
+        polynomialgradient = np.zeros((basis_entries, no_of_points))
+        for i in range(0, basis_entries):
+            temp = np.ones((1, no_of_points))
+            for k in range(0, dimensions):
+                if k == gradDirection:
+                    polynomialgradient[i,:] = dp[k][int(basis[i,k])] * temp
+                else:
+                    polynomialgradient[i,:] = p[k][int(basis[i,k])] * temp
+                temp = polynomialgradient[i,:]
+        R.append(polynomialgradient)
 
-    return polynomialgradient
-    
+    return R

@@ -334,6 +334,7 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
 #    print combo_index
     temp_ind = basis.elements.copy()
     #3rd term (Can we avoid for loops in the future?)
+    i = 0
     for a in range(len(valid_indices)):
         for b in range(a+1, len(valid_indices)):
             for c in range(b+1, len(valid_indices)):
@@ -350,9 +351,11 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
                 for d in range(dimensions):
                     if delta_pqr([temp_ind[p,:],temp_ind[q,:],temp_ind[r,:]]):
                         delta = True
+#                        print "hi"
                         break
                 if delta:
                     continue
+                
                 evals3 = weighted_evals[p,:]*weighted_evals[q,:]*weighted_evals[r,:]
                 
                 integral3 = np.dot(evals3, quad_wts)
@@ -509,13 +512,15 @@ def delta_pqrs(rows):
             non_zeros = indices.nonzero()[0]
             assert(len(non_zeros) == 2)
             if indices[non_zeros][0] == indices[non_zeros][1]:
-                return False
+                pass
             else:
                 return True
     return False
 
 #Calculates delta_pqr (Geraci)
 def delta_pqr(rows):
+#    print "-----"
+#    print rows
     assert(len(rows) == 3)
     norm_rows = []
     norm_rows[:] = rows[:]
@@ -524,13 +529,18 @@ def delta_pqr(rows):
         for j in range(dimensions):
             if rows[i][j] != 0:
                 norm_rows[i][j] = 1
+#    print norm_rows
     for d in range(dimensions):
         col_sum = norm_rows[0][d] + norm_rows[1][d] + norm_rows[2][d]
+#        print "dimesnion = " + str(d)
+#        print col_sum
+        
         if col_sum == 1:
             return True
         elif col_sum == 2:
             if (rows[0][d] == rows[1][d]) or (rows[1][d] == rows[2][d]) or (rows[0][d] == rows[2][d]): #Hack
-                return False
+                pass
             else:
                 return True
+    return False
 

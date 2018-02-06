@@ -136,8 +136,8 @@ class Polyreg(object):
             
         
         if options.lower() == 'tensor grid':
-            p,w = getTensorQuadratureRule(self.parameters, self.dimensions, self.basis.orders)
-#            p,w = getTensorQuadratureRule(self.parameters, self.dimensions, [6,6,6,6])
+            p,w = getTensorQuadratureRule(self.parameters, self.dimensions, [2*i for i in self.basis.orders])
+            print p.shape
             return p,w
     
     @staticmethod

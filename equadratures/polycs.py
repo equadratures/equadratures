@@ -130,8 +130,6 @@ class Polycs(object):
     def getStatistics(self, quadratureRule=None):
         p, w = self.getQuadratureRule(quadratureRule)
         evals = getPolynomial(self.parameters, self.scalingX(p), self.basis)
-        print evals[3,:]
-#        print evals.shape
         return Statistics(self.coefficients, self.basis, self.parameters, p, w, evals)
 
     def getPolynomialApproximant(self):
@@ -174,16 +172,12 @@ class Polycs(object):
             w = 1.0/float(default_number_of_points) * np.ones((default_number_of_points))
             for i in range(0, self.dimensions):
                 p[:,i] = self.parameters[i].getSamples(m=default_number_of_points).reshape((default_number_of_points,))
-            print p
-            print w
             
             return p, w
-            
-        
         if options.lower() == 'tensor grid':
             
-#            p,w = getTensorQuadratureRule(self.parameters, self.dimensions, self.basis.orders)
-            p,w = getTensorQuadratureRule(self.parameters, self.dimensions, [6,6,6,6,6,6,6])
+            p,w = getTensorQuadratureRule(self.parameters, self.dimensions, [2*i for i in self.basis.orders])
+            
             return p,w
     
     @staticmethod
@@ -275,13 +269,13 @@ def getPolynomial(stackOfParameters, stackOfPoints, chosenBasis):
 
     # Save time by returning if univariate!
     if dimensions == 1:
-        poly , _ =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
+        poly , _ =  stackOfParameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis)))
         return poly
     else:
         for i in range(0, dimensions):
             if len(stackOfPoints.shape) == 1:
                 stackOfPoints = np.array([stackOfPoints])
-            p[i] , _ = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i]) + 1 ) )
+            p[i] , _ = stackOfParameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i])) )
 
     # One loop for polynomials
     for i in range(0, basis_entries):
@@ -303,23 +297,28 @@ def getPolynomialGradient(stackOfParameters, stackOfPoints, chosenBasis, gradDir
 
     # Save time by returning if univariate!
     if dimensions == 1:
-        poly , _ =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
+        poly , _ =  stackOfParameters[0]._getOrthoPoly(stackOfPoints)
         return poly
     else:
         for i in range(0, dimensions):
             if len(stackOfPoints.shape) == 1:
                 stackOfPoints = np.array([stackOfPoints])
-            p[i] , dp[i] = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i]) + 1 ) )
+            p[i] , dp[i] = stackOfParameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i])) )
 
     # One loop for polynomials
-    for i in range(0, basis_entries):
-        temp = np.ones((1, no_of_points))
-        for k in range(0, dimensions):
-            if k == gradDirection:
-                polynomialgradient[i,:] = dp[k][int(basis[i,k])] * temp
-            else:
-                polynomialgradient[i,:] = p[k][int(basis[i,k])] * temp
-            temp = polynomialgradient[i,:]
+    R = []
+    for v in range(0, dimensions):
+        gradDirection = v
+        polynomialgradient = np.zeros((basis_entries, no_of_points))
+        for i in range(0, basis_entries):
+            temp = np.ones((1, no_of_points))
+            for k in range(0, dimensions):
+                if k == gradDirection:
+                    polynomialgradient[i,:] = dp[k][int(basis[i,k])] * temp
+                else:
+                    polynomialgradient[i,:] = p[k][int(basis[i,k])] * temp
+                temp = polynomialgradient[i,:]
+        R.append(polynomialgradient)
 
-    return polynomialgradient
+    return R
     

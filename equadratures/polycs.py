@@ -78,7 +78,7 @@ class Polycs(object):
         y = self.y.flatten()
         N = A.shape[0]
         # Possible noise levels
-        log_epsilon = [-5, -4, -3, -2, -1, 0]
+        log_epsilon = [-8,-7,-6,-5, -4, -3, -2, -1, 0]
         epsilon = [float(10**i) for i in log_epsilon]
         errors = np.zeros(5)
         mean_errors = np.zeros(len(epsilon))

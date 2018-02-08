@@ -487,17 +487,14 @@ def twoDgrid(coefficients, index_set):
 
     # Now create a tensor grid with this max. order
     x, y = np.mgrid[0:max_order, 0:max_order]
-    z = (x*0 + y*0) + float('NaN')
-    counter = 0
 
-    for counter in range(0, len(coefficients)):
-        for i in range(0, max_order):
-            for j in range(0, max_order):
-                if (i == index_set[counter, 0]) and (j == index_set[counter, 1]) : 
-                    z[i,j] = coefficients[counter]
-                    break
+    # create grid of NaNs
+    z = np.full(x.shape, float('NaN'))
 
-                    
+    # directly index the numpy grid with the index_set
+    indices = index_set.astype(int)
+    z[indices[:,0], indices[:,1]] = coefficients[:,0]
+              
     return x,y,z, max_order
 
 #plot 3 series together

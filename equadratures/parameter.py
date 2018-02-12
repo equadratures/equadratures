@@ -76,8 +76,10 @@ class Parameter(object):
 
         if data is not None:
             self.data = data
-
+            if self.param_type != 'Custom':
+                raise(ValueError, 'parameter __init__: if data is provided then the custom distribution must be selected!')
         self.bounds = None
+
     # Routine for computing the mean of the distributions
     def computeMean(self):
         """

@@ -265,8 +265,6 @@ class Polyint(object):
         # Method to compute the coefficients
         method = self.index_sets.index_set_type
         # Get the right polynomial coefficients
-        if method == "Tensor grid":
-            coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self, function)
         if method == "Sparse grid":
             coefficients, indexset, evaled_pts = getSparsePseudospectralCoefficients(self, function)
         else:

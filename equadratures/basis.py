@@ -29,17 +29,24 @@ class Basis(object):
         >> Basis('Hyperbolic basis', [3,3], q=0.75)
 
     """
+<<<<<<< HEAD
     def __init__(self, basis_type, orders=None, level=None, growth_rule=None, dimension=None, q=None):
+=======
+    def __init__(self, basis_type, orders=None, level=None, growth_rule=None, q=None):
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
 
         # Required
         self.basis_type = basis_type # string
 
+<<<<<<< HEAD
         # Orders
         if orders is None:
             self.orders = []
         else:
             self.orders = orders
 
+=======
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
         # Check for the levels (only for sparse grids)
         if level is None:
             self.level = []
@@ -58,12 +65,17 @@ class Basis(object):
         else:
             self.q = q
 
-        # Check for problem dimensionality (only for sparse grids)
-        if dimension is None:
-            self.dimension = len(orders)
+        # Orders
+        if orders is None:
+            self.orders = []
         else:
-            self.dimension = dimension
+            self.setOrders(orders)
 
+    def setOrders(self, orders):
+        self.orders = []
+        for i in range(0, len(orders)):
+            self.orders.append(orders[i])
+        self.dimension = len(self.orders)
         name = self.basis_type
         if name == "Total order":
             basis = total_order_basis(self.orders)
@@ -90,7 +102,7 @@ class Basis(object):
             self.sort()
         elif name == "Total order":
             self.sort()
-
+        
     def prune(self, number_of_elements_to_delete):
         """
         Prunes down the number of elements in an index set

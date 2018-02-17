@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 """Finding coefficients via compressive sensing"""
+=======
+"""Operations involving polynomial regression on a data set"""
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
 from parameter import Parameter
 from basis import Basis
 import numpy as np
@@ -6,8 +10,11 @@ import numpy as np
 from stats import Statistics, getAllSobol
 from convex import *
 import scipy
+<<<<<<< HEAD
 # Or do with vanilla numpy?
 from sklearn.preprocessing import normalize
+=======
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
 
 
 #TODO: Compute coherence, examine sampling methods
@@ -23,6 +30,7 @@ class Polycs(object):
     
     """
     # Constructor
+<<<<<<< HEAD
     def __init__(self, parameters, basis, training_x = None, sampling = None, no_of_points = None, fun=None, training_y=None):
         self.basis = basis
         self.dimensions = len(parameters)
@@ -34,10 +42,16 @@ class Polycs(object):
             w = np.eye(self.x.shape[0])
         else:
             self.x, w = self.sample_X(self.parameters, self.basis, sampling, no_of_points)
+=======
+    def __init__(self, training_x, parameters, basis, fun=None, training_y=None):
+        self.x = training_x
+        assert self.x.shape[1] == len(parameters) # Check that x is in the correct shape
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
         if not((training_y is None) ^ (fun is None)):
             raise ValueError("Specify only one of fun or training_y.")
         if not(fun is None):
             try:
+<<<<<<< HEAD
                 
                 self.y = np.dot(w, np.apply_along_axis(fun, 1, self.x))
                 
@@ -123,6 +137,24 @@ class Polycs(object):
         w = v.copy()
         return x, w
     
+=======
+                self.y = np.apply_along_axis(fun, 1, self.x)
+            except:
+                raise ValueError("Fun must be callable.")
+        else:
+            self.y = training_y                           
+        self.basis = basis
+        self.dimensions = len(parameters)
+        if self.dimensions != self.basis.elements.shape[1]:
+            raise(ValueError, 'Polyreg:__init__:: The number of parameters and the number of dimensions in the index set must be the same.')
+        self.parameters = parameters
+        self.A =  getPolynomial(self.parameters, self.scalingX(self.x), self.basis).T
+        print self.A.shape
+        self.cond = np.linalg.cond(self.A)
+        self.y = np.reshape(self.y, (len(self.y), 1)) 
+        self.computeCoefficients()
+
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
     #def computeWeights(self):
     #    self.weights = 1.0
         #for i in range(0, self.dimensions):
@@ -179,18 +211,32 @@ class Polycs(object):
                 assert y_trained.shape == y_ver.shape
                 errors[n] = np.mean(np.abs(y_trained - y_ver))/len(y_ver)
             
+<<<<<<< HEAD
 #            print "noise"
 #            print epsilon[e]
 #            print "errors"
 #            print errors
 #            print "mean error"
 #            print np.mean(errors)
+=======
+            print "noise"
+            print epsilon[e]
+            print "errors"
+            print errors
+            print "mean error"
+            print np.mean(errors)
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
             
             mean_errors[e] = np.mean(errors)
         
         best_epsilon = epsilon[np.argmin(mean_errors)]
+<<<<<<< HEAD
 #        print "best epsilon"
 #        print best_epsilon
+=======
+        print "best epsilon"
+        print best_epsilon
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
         x = bp_denoise(A, y, best_epsilon)
         
         #Calculate residue
@@ -280,6 +326,7 @@ class Polycs(object):
         # p-value is scipy.stats.f.cdf(F, n - p_1, p_1 - p_0)
         return F
 
+<<<<<<< HEAD
 # Compute coherence of matrix A
 def coherence(A):
     norm_A = normalize(A, axis = 0)
@@ -295,6 +342,8 @@ def coherence(A):
 
 
 
+=======
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
 def get_t_value(coefficients, A, y):
     RSS = np.linalg.norm(y - np.dot(A,coefficients))**2
     p, n = A.shape
@@ -324,8 +373,13 @@ def getTensorQuadratureRule(stackOfParameters, dimensions, orders):
         for u in range(0, dimensions):
 
             # Call to get local quadrature method (for dimension 'u')
+<<<<<<< HEAD
             local_points, local_weights = stackOfParameters[u]._getLocalQuadrature(orders[u], scale=True)
 #            print local_points
+=======
+            local_points, local_weights = stackOfParameters[u].getLocalQuadrature(orders[u], scale=True)
+
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
             # Tensor product of the weights
             ww = np.kron(ww, local_weights)
 

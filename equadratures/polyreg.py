@@ -1,12 +1,13 @@
 """Operations involving polynomial regression on a data set"""
 from parameter import Parameter
 from basis import Basis
+from poly import Poly
 import numpy as np
 from stats import Statistics, getAllSobol
 import scipy
 
 
-class Polyreg(object):
+class Polyreg(Poly):
     """
     This class defines a Polyreg (polynomial via regression) object
     :param training_x: A numpy 
@@ -17,11 +18,12 @@ class Polyreg(object):
     
     """
     # Constructor
-    def __init__(self, training_x, parameters, basis, fun=None, training_y=None):
+    def __init__(self, parameters, basis, training_x, fun=None, training_y=None):
+        super(Polyreg, self).__init__(parameters, basis)
         self.x = training_x
-        assert self.x.shape[1] == len(parameters) # Check that x is in the correct shape
+        assert self.x.shape[1] == len(self.parameters) # Check that x is in the correct shape
         if not((training_y is None) ^ (fun is None)):
-            raise ValueError("Specify only one of fun or training_y.")
+            raise ValueError("Specify atleast one of fun or training_y.")
         if not(fun is None):
             try:
                 self.y = np.apply_along_axis(fun, 1, self.x)
@@ -29,16 +31,19 @@ class Polyreg(object):
                 raise ValueError("Fun must be callable.")
         else:
             self.y = training_y                           
-        self.basis = basis
-        self.dimensions = len(parameters)
         if self.dimensions != self.basis.elements.shape[1]:
             raise(ValueError, 'Polyreg:__init__:: The number of parameters and the number of dimensions in the index set must be the same.')
+<<<<<<< HEAD
         self.parameters = parameters
         self.A =  getPolynomial(self.parameters, self.scalingX(self.x), self.basis).T
+=======
+        self.setDesignMatrix()
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
         self.cond = np.linalg.cond(self.A)
         self.y = np.reshape(self.y, (len(self.y), 1)) 
         self.computeCoefficients()
 
+<<<<<<< HEAD
     def scalingX(self, x_points_scaled):
         rows, cols = x_points_scaled.shape
         points = np.zeros((rows, cols))
@@ -81,15 +86,23 @@ class Polyreg(object):
         return eigs, eigVecs
 
 
+=======
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
     # Solve for coefficients using ordinary least squares
     def computeCoefficients(self):
         alpha = np.linalg.lstsq(self.A, self.y) # Opted for numpy's standard version because of speed!
         self.coefficients = alpha[0]
+        super(Polyreg, self).__setCoefficients__(self.coefficients)
+
+    def setDesignMatrix(self):
+        self.A = self.getPolynomial(self.scalingX(self.x)).T
+        super(Polyreg, self).__setDesignMatrix__(self.A)
 
     def getfitStatistics(self):
         t_stat = get_t_value(self.coefficients, self.A, self.y)
         r_sq = get_R_squared(self.coefficients, self.A, self.y)
         return t_stat, r_sq
+<<<<<<< HEAD
 
     def getStatistics(self, quadratureRule=None):
         p, w = self.getQuadratureRule(quadratureRule)
@@ -139,6 +152,8 @@ class Polyreg(object):
             p,w = getTensorQuadratureRule(self.parameters, self.dimensions, [2*i for i in self.basis.orders])
 #            print p.shape
             return p,w
+=======
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
     
     @staticmethod
     def get_F_stat(coefficients_0, A_0, coefficients_1, A_1, y):
@@ -161,11 +176,14 @@ class Polyreg(object):
         # p-value is scipy.stats.f.cdf(F, n - p_1, p_1 - p_0)
         return F
     
+<<<<<<< HEAD
     # Get points of polynomial basis functions on the points specified by x
     # basically just calls getPolynomial with scaled points
     # rows = number of points, cols = number of dimensions
     def getPolynomial_x(self, x):
         return getPolynomial(self.parameters, self.scalingX(x) , self.basis)
+=======
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
     
 def get_t_value(coefficients, A, y):
     RSS = np.linalg.norm(y - np.dot(A,coefficients))**2
@@ -180,6 +198,7 @@ def get_t_value(coefficients, A, y):
     # p-value is scipy.stats.t.cdf(t_stat, n - p)
     return t_stat
 
+<<<<<<< HEAD
 def getTensorQuadratureRule(stackOfParameters, dimensions, orders):
         flag = 0
 
@@ -212,12 +231,15 @@ def getTensorQuadratureRule(stackOfParameters, dimensions, orders):
         # Return tensor grid quad-points and weights
         return points, weights
 
+=======
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
 def get_R_squared(alpha, A, y):
     y_bar = scipy.mean(y) * np.ones(len(y))
     TSS = np.linalg.norm(y - y_bar)**2
     RSS = np.linalg.norm(np.dot(A,alpha) - y)**2
     return 1 - RSS/TSS
 
+<<<<<<< HEAD
 def getPolynomial(stackOfParameters, stackOfPoints, chosenBasis):
     basis = chosenBasis.elements
     basis_entries, dimensions = basis.shape
@@ -278,3 +300,5 @@ def getPolynomialGradient(stackOfParameters, stackOfPoints, chosenBasis):
         R.append(polynomialgradient)
 
     return R
+=======
+>>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0

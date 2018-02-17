@@ -213,14 +213,6 @@ def semilogy_lineplot(x, y, x_label, y_label, filename=None):
     plt.semilogy(x, y, linestyle='-', linewidth=3, color='deepskyblue')
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
-<<<<<<< HEAD
-    plt.xlabel(x_label, fontsize=16)
-    plt.ylabel(y_label, fontsize=16)
-    plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
-    plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
-=======
     plt.xlabel(x_label, fontsize=13)
     plt.ylabel(y_label, fontsize=13)
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)

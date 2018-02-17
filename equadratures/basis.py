@@ -29,24 +29,12 @@ class Basis(object):
         >> Basis('Hyperbolic basis', [3,3], q=0.75)
 
     """
-<<<<<<< HEAD
-    def __init__(self, basis_type, orders=None, level=None, growth_rule=None, dimension=None, q=None):
-=======
+
     def __init__(self, basis_type, orders=None, level=None, growth_rule=None, q=None):
->>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
 
         # Required
         self.basis_type = basis_type # string
 
-<<<<<<< HEAD
-        # Orders
-        if orders is None:
-            self.orders = []
-        else:
-            self.orders = orders
-
-=======
->>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
         # Check for the levels (only for sparse grids)
         if level is None:
             self.level = []

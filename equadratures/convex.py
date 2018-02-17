@@ -450,14 +450,9 @@ def l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgm
           cgres = np.linalg.norm(np.dot(H11p, dx).flatten() - w1p.flatten()) / np.linalg.norm(w1p)
           cgiter = -1
       if (cgres > 0.5):
-<<<<<<< HEAD
           if verbose:
               print "cgres = " + str(cgres)
               print 'Cannot solve system.  Returning previous iterate.'
-=======
-          print "cgres = " + str(cgres)
-          print 'Cannot solve system.  Returning previous iterate.'
->>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
           xp = x.flatten()
           up = u.flatten()
           return xp, up, 0

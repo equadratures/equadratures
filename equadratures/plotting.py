@@ -245,7 +245,6 @@ def polynomialplot(Polymatrix, points, filename=None):
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
     plt.xticks(fontsize=13)
     plt.yticks(fontsize=13)
->>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
     plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
@@ -266,13 +265,8 @@ def lineplot(x, y, x_label, y_label, filename=None):
     plt.ylabel(y_label, fontsize=13)
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
-<<<<<<< HEAD
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
-=======
     plt.xticks(fontsize=13)
     plt.yticks(fontsize=13)
->>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
     plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
@@ -426,19 +420,11 @@ def scatterplot2(x, y, x_label, filename=None, marker_type=None):
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
 #    plt.xlabel(x_label, fontsize=3)
-<<<<<<< HEAD
-#    plt.ylabel(y_label, fontsize=16)
-    plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
-    plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
-#    plt.xticks(fontsize=16)
-#    plt.yticks(fontsize=16)
-=======
 #    plt.ylabel(y_label, fontsize=13)
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
 #    plt.xticks(fontsize=13)
 #    plt.yticks(fontsize=13)
->>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
     plt.xticks(x[:,0], x_label, fontsize=8, rotation = 30)
     if filename is None:
         plt.show()
@@ -576,8 +562,5 @@ def piechart(labels, sizes, title):
     ax1.axis([0,1.2,-1,1])
     plt.legend(patches, labels, loc='best')
     plt.title(title)
-<<<<<<< HEAD
     plt.show()
-=======
-    plt.show()
->>>>>>> 6c602e89c29e644fbc991efe756a706b4a9706c0
+

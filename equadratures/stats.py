@@ -1,6 +1,6 @@
 """Computing Statistics from Polynomial Expansions"""
 import numpy as np
-from .plotting import barplot, triplebarplot, piechart
+from .plotting import barplot, triplebarplot, piechart, scatterplot2
 from .polyint import Polyint
 #from .polyreg import Polyreg
 from basis import Basis
@@ -39,10 +39,11 @@ class Statistics(object):
 #            self.quad_wts = quad_wts
             pass
         else:
+#            print basis.elements
+#            print quadrature_points
+#            print polynomial_evals
             self.weighted_evals = polynomial_evals * coefficients
-            print polynomial_evals[3,:]
-            print self.weighted_evals[3,:]
-            print coefficients[3]
+#            print self.weighted_evals
             self.quad_wts = quadrature_weights
 #            print sum(self.quad_wts)
         self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
@@ -138,18 +139,21 @@ class Statistics(object):
         triplebarplot(a, vvals, svals, kvals, "Dimensions", "Index Value", sorted(v.keys(), key = len))
     
     #Pie chart of variance, skewness and kurtosis indices
-    
-    def pie_chart(self, list_of_indices_dicts):
+    #Var names in list form
+    @staticmethod
+    def pie_chart( list_of_indices_dicts, highest_order = 1, var_names = None, title = "Sobol' indices"):
         v = list_of_indices_dicts[0]
         if len(list_of_indices_dicts) > 1:
             s = list_of_indices_dicts[1]
         if len(list_of_indices_dicts) > 2:
             k = list_of_indices_dicts[2]
         labels_and_values = {}
+        if not(var_names is None):
+            v = dict((tuple([var_names[i] for i in key]), val) for key, val in v.iteritems())
         for i in v.keys():
-            if v[i] > 1e-3:
-                if len(i) == 1:
-                    labels_and_values[i[0]] = v[i]
+            if v[i] > 1e-6:
+                if len(i) <= highest_order:
+                    labels_and_values[i] = v[i]
                 else:
                     key = "order " + str(len(i))
                     try:
@@ -169,10 +173,38 @@ class Statistics(object):
 #            else:
 #                key = "order " + str(len(i))
 #                labels_and_values[key] += k.values[i]
+        
         labels = labels_and_values.keys()
         values = labels_and_values.values()
-        piechart(labels, values, "Sobol' indices")
-                
+        vl = sorted(zip(values, labels), reverse = True)
+        values, labels = zip(*vl)
+        
+        piechart(labels, values, title)
+        
+    @staticmethod
+    def scatter_plot(list_of_indices_dicts, highest_order = 2, var_names = None, title = "Sobol' indices"):
+        # Assume all dicts have the same keys!
+        list_of_dicts = list_of_indices_dicts[:]
+        if not(var_names is None):
+            for j in range(len(list_of_indices_dicts)):
+                list_of_dicts[j] = dict((tuple([var_names[i] for i in key]), val) for key, val in list_of_indices_dicts[j].iteritems())
+        
+        valid_keys = [i for i in list_of_dicts[0].keys() if len(i) <= highest_order]
+        
+        labels = sorted(valid_keys, key = len)
+
+        col = np.reshape(np.arange(len(valid_keys), dtype = 'float'), (len(valid_keys),1))
+        list_of_cols = []
+        for i in range(len(list_of_dicts)):
+            list_of_cols.append(col.copy())
+        x = np.hstack(list_of_cols)
+        y = x.copy()
+        for i in range(len(list_of_dicts)):
+            for j in range(y.shape[0]):
+                y[j,i] = list_of_dicts[i][labels[j]]
+        
+        
+        scatterplot2(x,y,labels)
                 
             
         
@@ -270,10 +302,12 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
         if sum(norm_ind[i]) == order:
             combo_index[norm_ind[i]] = combo_index[norm_ind[i]] + integral1[i] /(variance**1.5 * skewness)
     
+#    print combo_index
     valid_indices = []
     for i in range(1, basis.cardinality):
         if sum(norm_ind[i]) <= order:
             valid_indices.append(i)
+#    print valid_indices
     #2nd term (Can we avoid for loops in the future?)
     for p in range(1,basis.cardinality):
         for q in range(1,basis.cardinality):           
@@ -288,32 +322,40 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
                     break
             if delta:
                 continue
-
+#            print basis.elements[p]
+#            print basis.elements[q]
             evals2 = (weighted_evals[p,:]**2)*weighted_evals[q,:]
-            integral2 = np.dot(evals2, quad_wts)        
+            integral2 = np.dot(evals2, quad_wts)
+#            print basis.elements[p]
+#            print basis.elements[q]
+#            print 3* integral2 /(variance**1.5* skewness)
             combo_index[summed_norm_index] = combo_index[summed_norm_index] + 3 * integral2 /(variance**1.5* skewness)
     
 #    print combo_index
     temp_ind = basis.elements.copy()
     #3rd term (Can we avoid for loops in the future?)
+    i = 0
     for a in range(len(valid_indices)):
         for b in range(a+1, len(valid_indices)):
             for c in range(b+1, len(valid_indices)):
                 p = valid_indices[a]
                 q = valid_indices[b]
                 r = valid_indices[c]
-
+                
                 summed_norm_index =tuple(np.logical_or(np.logical_or(norm_ind[p], norm_ind[q]), norm_ind[r]).astype(int))
                 if sum(summed_norm_index) != order:
                     continue
                 #check if selection function is zero, in which case delta = True
+#                print [p,q,r]
                 delta = False
                 for d in range(dimensions):
                     if delta_pqr([temp_ind[p,:],temp_ind[q,:],temp_ind[r,:]]):
                         delta = True
+#                        print "hi"
                         break
                 if delta:
                     continue
+                
                 evals3 = weighted_evals[p,:]*weighted_evals[q,:]*weighted_evals[r,:]
                 
                 integral3 = np.dot(evals3, quad_wts)
@@ -470,13 +512,15 @@ def delta_pqrs(rows):
             non_zeros = indices.nonzero()[0]
             assert(len(non_zeros) == 2)
             if indices[non_zeros][0] == indices[non_zeros][1]:
-                return False
+                pass
             else:
                 return True
     return False
 
 #Calculates delta_pqr (Geraci)
 def delta_pqr(rows):
+#    print "-----"
+#    print rows
     assert(len(rows) == 3)
     norm_rows = []
     norm_rows[:] = rows[:]
@@ -485,13 +529,18 @@ def delta_pqr(rows):
         for j in range(dimensions):
             if rows[i][j] != 0:
                 norm_rows[i][j] = 1
+#    print norm_rows
     for d in range(dimensions):
         col_sum = norm_rows[0][d] + norm_rows[1][d] + norm_rows[2][d]
+#        print "dimesnion = " + str(d)
+#        print col_sum
+        
         if col_sum == 1:
             return True
         elif col_sum == 2:
             if (rows[0][d] == rows[1][d]) or (rows[1][d] == rows[2][d]) or (rows[0][d] == rows[2][d]): #Hack
-                return False
+                pass
             else:
                 return True
+    return False
 

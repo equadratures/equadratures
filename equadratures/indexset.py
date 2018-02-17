@@ -41,7 +41,12 @@ class IndexSet(object):
         if orders is None:
             self.orders = []
         else:
-            self.orders = orders
+            if isinstance(orders, int) and not(dimension is None):
+                self.orders = [orders for i in range(dimension)]
+            elif isinstance(orders, list) and dimension is None:
+                self.orders = orders
+            else:
+                raise(ValueError, 'indexset __init__: For orders, either specify list or int + dimensionality')
         
         # Check for the levels (only for sparse grids)
         if level is None:
@@ -63,7 +68,7 @@ class IndexSet(object):
 
         # Check for problem dimensionality (only for sparse grids)
         if dimension is None:
-            self.dimension = len(orders)
+            self.dimension = len(self.orders)
         else:
             self.dimension = dimension
 

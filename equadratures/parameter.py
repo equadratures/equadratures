@@ -2,7 +2,6 @@
 import numpy as np
 from scipy.special import gamma
 import analyticaldistributions as analytical
-import matplotlib.pyplot as plt
 class Parameter(object):
 
     """
@@ -126,7 +125,7 @@ class Parameter(object):
         elif self.param_type is "Beta":
             x, y = analytical.PDF_BetaDistribution(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Gamma":
-            x, y = analytical.PDF_Gamma(N, self.shape_parameter_A, self.shape_parameter_B)
+            x, y = analytical.PDF_GammaDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Weibull":
             x, y = analytical.PDF_WeibullDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Cauchy":
@@ -150,16 +149,11 @@ class Parameter(object):
         : param integer m: Number of random samples. If no value is provided, a default of 5e5 is assumed.
         """
         if m is None:
-            number_of_random_samples = 5e5
+            number_of_random_samples = 500
         else:
             number_of_random_samples = m
-
         uniform_samples = np.random.random((number_of_random_samples, 1))
         yy = self.getiCDF(uniform_samples)
-
-        #if graph is not None:
-        # histogram(yy, 'Parameter', 'PDF', filename=None)
-
         return yy
 
     def getCDF(self, N):
@@ -183,7 +177,7 @@ class Parameter(object):
         elif self.param_type is "Beta":
             x, y = analytical.CDF_BetaDistribution(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Gamma":
-            x, y = analytical.CDF_Gamma(N, self.shape_parameter_A, self.shape_parameter_B)
+            x, y = analytical.CDF_GammaDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Weibull":
             x, y = analytical.CDF_WeibullDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Cauchy":
@@ -213,7 +207,7 @@ class Parameter(object):
         elif self.param_type is "Beta":
             y = analytical.iCDF_BetaDistribution(x, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Gamma":
-            y = analytical.iCDF_Gamma(x, self.shape_parameter_A, self.shape_parameter_B)
+            y = analytical.iCDF_GammaDistribution(x, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Weibull":
             y = analytical.iCDF_WeibullDistribution(x, self.shape_parameter_A, self.shape_parameter_B)
         elif self.param_type is "Cauchy":
@@ -224,6 +218,8 @@ class Parameter(object):
             y = analytical.iCDF_TruncatedGaussianDistribution(x, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Exponential":
             y = analytical.iCDF_ExponentialDistribution(x, self.shape_parameter_A)
+        elif self.param_type is "Custom":
+            y = analytical.iCDF_CustomDistribution(x, self.data)
         else:
             raise(ValueError, 'parameter getiCDF(): invalid parameter type!')
         return y
@@ -280,9 +276,10 @@ class Parameter(object):
         """
         return jacobiEigenvectors(self, order)
 
-    def getOrthoPoly(self, points, order=None):
+    def _getOrthoPoly(self, points, order=None):
         """
         Returns orthogonal polynomials & its derivatives, evaluated at a set of points.
+        WARNING: Should not be called under normal circumstances, without normalization of points.
         :param Parameter self: An instance of the Parameter class
         :param ndarray points: Points at which the orthogonal polynomial (and its derivatives) should be evaluated at
         :param int order: This value of order overwrites the order defined for the constructor.
@@ -300,9 +297,10 @@ class Parameter(object):
         """
         return orthoPolynomial_and_derivative(self, points, order)
 
-    def getLocalQuadrature(self, order=None, scale=None):
+    def _getLocalQuadrature(self, order=None, scale=None):
         """
         Returns the 1D quadrature points and weights for the parameter
+        WARNING: Should not be called under normal circumstances.
         :param Parameter self: An instance of the Parameter class
         :param int N: Number of quadrature points and weights required. If order is not specified, then
             by default the method will return the number of points defined in the parameter itself.
@@ -336,9 +334,9 @@ def recurrence_coefficients(self, order=None):
         param_A = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
         param_B = self.shape_parameter_A - 1
         if(param_B <= 0):
-            error_function('ERROR: parameter_A (beta shape parameter A) must be greater than 1!')
+            raise(ValueError, 'ERROR: parameter_A (beta shape parameter A) must be greater than 1!')
         if(param_A <= 0):
-            error_function('ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
+            raise(ValueError, 'ERROR: parameter_B (beta shape parameter B) must be greater than 1!')
         ab =  jacobi_recurrence_coefficients_01(param_A, param_B , order)
         #alpha = self.shape_parameter_A
         #beta = self.shape_parameter_B
@@ -411,7 +409,7 @@ def recurrence_coefficients(self, order=None):
         ab = custom_recurrence_coefficients(order, x, w)
         self.bounds = [self.lower, self.upper]
     else:
-        error_function('ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential, TruncatedGaussian or Beta')
+        raise(ValueError, 'ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential, TruncatedGaussian or Beta')
 
     return ab
 
@@ -568,7 +566,8 @@ def getlocalquadrature(self, order=None, scale=None):
     # Check for extra input argument!
     if order is None:
         order = self.order + 1
-
+    else:
+        order = order + 1
 
     # Get the recurrence coefficients & the jacobi matrix
     recurrence_coeffs = recurrence_coefficients(self, order)
@@ -603,6 +602,9 @@ def getlocalquadrature(self, order=None, scale=None):
         if self.param_type=='Uniform':
             for i in range(0, len(p)):
                 scaled_points[i] = 0.5* ( p[i] + 1. ) * (self.upper - self.lower) + self.lower
+        if self.param_type == 'Beta':
+            for i in range(0, len(p)):
+                scaled_points[i] =  p[i] * (self.upper - self.lower) + self.lower
         return scaled_points, local_weights
     else:
         # Return 1D gauss points and weights
@@ -629,24 +631,18 @@ def jacobiEigenvectors(self, order=None):
 # Univariate orthogonal polynomial correspoding to the weight of the parameter
 def orthoPolynomial_and_derivative(self, points, order=None):
     if order is None:
-        order = self.order
+        order = self.order + 1
+    else:
+        order = order + 1
     gridPoints = np.asarray(points).copy()
     ab = recurrence_coefficients(self, order)
-#    true_mid = np.mean(self.bounds)
-    """
-    if np.isinf(true_mid) and not(np.isinf(self.bounds[0])) :
-        pass
-    elif not(np.isnan(true_mid)):
-        mid = 0.5*(self.upper + self.lower)
-        gridPoints = np.add(gridPoints, true_mid-mid)
-    else:
-        assert(self.bounds == [-np.inf, np.inf])
+    if self.param_type == 'Uniform':
+        if (gridPoints > 1.0).any() or (gridPoints < -1.0).any():
+            raise(ValueError, "Points not normalized.")
+    if self.param_type == 'Beta':
+        if (gridPoints > 1.0).any() or (gridPoints < 0.0).any():
+            raise(ValueError, "Points not normalized.")
 
-    true_interval = self.bounds[1] - self.bounds[0]
-    if not(np.isinf(true_interval)):
-        scale = true_interval/(self.upper - self.lower)
-        gridPoints = np.multiply(scale, gridPoints)
-    """   
     orthopoly = np.zeros((order, len(gridPoints))) # create a matrix full of zeros
     derivative_orthopoly = np.zeros((order, len(gridPoints)))
 
@@ -657,18 +653,18 @@ def orthoPolynomial_and_derivative(self, points, order=None):
     orthopoly[0,:] = 1.0
 
     # Cases
-    if order == 1:
+    if order == 1: #CHANGED 2/2/18
         return orthopoly, derivative_orthopoly
     orthopoly[1,:] = ((gridPointsII[:,0] - ab[0,0]) * orthopoly[0,:] ) * (1.0)/(1.0 * np.sqrt(ab[1,1]) )
     derivative_orthopoly[1,:] = orthopoly[0,:] / (np.sqrt(ab[1,1]))
-    if order == 2:
+    if order == 2: #CHANGED 2/2/18
         return orthopoly, derivative_orthopoly
 
-    if order >= 3:
-        for u in range(2,order):
+    if order >= 3: #CHANGED 2/2/18
+        for u in range(2,order): #CHANGED 2/2/18
             # Three-term recurrence rule in action!
             orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0])*orthopoly[u-1,:]) - np.sqrt(ab[u-1,1])*orthopoly[u-2,:] )/(1.0 * np.sqrt(ab[u,1]))
-        for u in range(2, order):
+        for u in range(2, order): #CHANGED 2/2/18
             # Four-term recurrence formula for derivatives of orthogonal polynomials!
             derivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
         return orthopoly, derivative_orthopoly

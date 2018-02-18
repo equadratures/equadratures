@@ -5,15 +5,16 @@ from equadratures import *
 import numpy as np
 import os
 
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-X_TESTDATA_FILENAME =  'tests/AirfoilX.py'
-Y_TESTDATA_FILENAME =  'tests/AirfoilY.py'
 
 class TestDR(TestCase):
 
     def test_dimension_reduction(self):
-        X = np.loadtxt(X_TESTDATA_FILENAME)
-        fX = np.loadtxt(Y_TESTDATA_FILENAME)
+        X = np.random.rand(520,25)*2 - 1.
+        A = np.random.rand(25,2)
+        Q, R = np.linalg.qr(A)
+        A[:] = Q[:,0:2]
+        y = np.dot(X , A)
+        fX = 0.02 * y[:,1]**2 + 1.5 * y[:,0]**2 + 50*y[:,1]*y[:,0] -3.5 # A quadratic model!
         m, n = X.shape
         fX = np.reshape(fX, (m,1))
         parameters = []
@@ -34,8 +35,7 @@ class TestDR(TestCase):
 
         # Sufficient summary plot!
         active1 = np.dot( X , W[:,0:1] )
-        scatterplot(active1, fX, x_label='w1', y_label='Efficiency')
-
+        scatterplot(active1, fX, x_label='w1', y_label='Output')
 
 
 if __name__ == '__main__':

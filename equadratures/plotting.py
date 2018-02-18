@@ -67,7 +67,7 @@ def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None, vmin_l
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
-    ax.set_axis_bgcolor('whitesmoke')
+    ax.set_facecolor('whitesmoke')
     plt.pcolor(y,x, Zm, cmap= cm.jet, vmin=vmin_log, vmax=vmax_log)
     plt.xlim(0, max_order)
     plt.ylim(0, max_order)

@@ -10,27 +10,29 @@ import scipy
 class Polyreg(Poly):
     """
     This class defines a Polyreg (polynomial via regression) object
-    :param training_x: A numpy 
+    :param training_inputs: A numpy 
     :param IndexSet basis: An instance of the IndexSet class, in case the user wants to overwrite the indices that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter corresponds to a tensor grid index set and is the default option if no basis parameter input is given.
     :param parameters: List of instances of Parameters class.
-    :param training_y: Column vector (np array) of regression targets corresponding to each row of training_x. Either this or fun should be specified, but not both.
-    :param fun: Function to evaluate training_x on to obtain regression targets automatically. Either this or fun should be specified, but not both.
+    :param training_outputs: Column vector (np array) of regression targets corresponding to each row of training_inputs. Either this or fun should be specified, but not both.
+    :param fun: Function to evaluate training_inputs on to obtain regression targets automatically. Either this or fun should be specified, but not both.
     
     """
     # Constructor
-    def __init__(self, parameters, basis, training_x, fun=None, training_y=None):
+    def __init__(self, parameters, basis, training_inputs, fun=None, training_outputs=None):
         super(Polyreg, self).__init__(parameters, basis)
-        self.x = training_x
-        assert self.x.shape[1] == len(self.parameters) # Check that x is in the correct shape
-        if not((training_y is None) ^ (fun is None)):
-            raise ValueError("Specify atleast one of fun or training_y.")
+        if not(training_inputs is None):
+            self.x = training_inputs
+            assert self.x.shape[1] == len(self.parameters) # Check that x is in the correct shape
+        
+        if not((training_outputs is None) ^ (fun is None)):
+            raise ValueError("Specify atleast one of fun or training_outputs.")
         if not(fun is None):
             try:
                 self.y = np.apply_along_axis(fun, 1, self.x)
             except:
                 raise ValueError("Fun must be callable.")
         else:
-            self.y = training_y                           
+            self.y = training_outputs                           
         if self.dimensions != self.basis.elements.shape[1]:
             raise(ValueError, 'Polyreg:__init__:: The number of parameters and the number of dimensions in the index set must be the same.')
         self.setDesignMatrix()
@@ -40,12 +42,12 @@ class Polyreg(Poly):
 
     # Solve for coefficients using ordinary least squares
     def computeCoefficients(self):
-        alpha = np.linalg.lstsq(self.A, self.y) # Opted for numpy's standard version because of speed!
+        alpha = np.linalg.lstsq(self.A, self.y, rcond=None) # Opted for numpy's standard version because of speed!
         self.coefficients = alpha[0]
         super(Polyreg, self).__setCoefficients__(self.coefficients)
 
     def setDesignMatrix(self):
-        self.A = self.getPolynomial(self.scalingX(self.x)).T
+        self.A = self.getPolynomial(self.scaleInputs(self.x)).T
         super(Polyreg, self).__setDesignMatrix__(self.A)
 
     def getfitStatistics(self):

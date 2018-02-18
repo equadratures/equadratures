@@ -7,6 +7,7 @@ def nchoosek(n, k):
     numerator = factorial(n)
     denominator = factorial(k) * factorial(n - k)
     return (1.0 * numerator) / (1.0 * denominator)
+
 def efficient_kron_mult(Q, Uc):
     # Adapted from Gleich and Constantine's kronmult.m
     N = len(Q)
@@ -39,7 +40,6 @@ def efficient_kron_mult(Q, Uc):
         nright = int(nright * n[i,0])
 
     return Uc
-
 
 def rowNormalize(A):
     rows, cols = A.shape

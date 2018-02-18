@@ -450,8 +450,9 @@ def l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgm
           cgres = np.linalg.norm(np.dot(H11p, dx).flatten() - w1p.flatten()) / np.linalg.norm(w1p)
           cgiter = -1
       if (cgres > 0.5):
-          print "cgres = " + str(cgres)
-          print 'Cannot solve system.  Returning previous iterate.'
+          if verbose:
+              print "cgres = " + str(cgres)
+              print 'Cannot solve system.  Returning previous iterate.'
           xp = x.flatten()
           up = u.flatten()
           return xp, up, 0
@@ -550,4 +551,3 @@ def find(vec, thres):
     vec_new = np.matrix(vec_new)
     vec_new = vec_new.T
     return vec_new, t
-

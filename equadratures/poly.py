@@ -6,11 +6,8 @@ from stats import Statistics
 
 class Poly(object):
     """
-    The master polynomial class!
-
-
-    Children: Polyreg, Polyint, Polycs
-    
+    The class defines a Poly object. It is the parent class to Polyreg, Polyint, Polylsq and Polycs. 
+    It is defined by a list of Parameter objects and a Basis.
     """
     def __init__(self, parameters, basis):
         self.parameters = parameters
@@ -30,7 +27,7 @@ class Poly(object):
     def clone(self):
         return type(self)(self.parameters, self.basis)
 
-    def scalingX(self, x_points_scaled):
+    def scaleInputs(self, x_points_scaled):
         rows, cols = x_points_scaled.shape
         points = np.zeros((rows, cols))
         points[:] = x_points_scaled
@@ -42,7 +39,6 @@ class Poly(object):
                     points[j,i] = 2.0 * ( ( points[j,i] - self.parameters[i].lower) / (self.parameters[i].upper - self.parameters[i].lower) ) - 1.0
                 elif (self.parameters[i].param_type == "Beta" ):
                     points[j,i] =  ( points[j,i] - self.parameters[i].lower) / (self.parameters[i].upper - self.parameters[i].lower) 
-        
         return points        
 
     def getPolynomial(self, stackOfPoints):
@@ -138,7 +134,7 @@ class Poly(object):
 
     def getStatistics(self, quadratureRule=None):
         p, w = self.getQuadratureRule(quadratureRule)
-        evals = self.getPolynomial(self.scalingX(p))
+        evals = self.getPolynomial(self.scaleInputs(p))
         return Statistics(self.coefficients, self.basis, self.parameters, p, w, evals)
 
     def getQuadratureRule(self, options=None):
@@ -160,17 +156,17 @@ class Poly(object):
             return p,w
 
     def evaluatePolyGradFit(self, xvalue):
-        H = self.getPolynomialGradient(self.scalingX(xvalue))
+        H = self.getPolynomialGradient(self.scaleInputs(xvalue))
         grads = np.zeros((self.dimensions, len(xvalue) ) )
         for i in range(0, self.dimensions):
             grads[i,:] = np.mat(self.coefficients).T * H[i]
         return grads
 
     def getPolyFitFunction(self, x):
-        return lambda (x): self.getPolynomial(self.scalingX(x)).T *  np.mat(self.coefficients)
+        return lambda (x): self.getPolynomial(self.scaleInputs(x)).T *  np.mat(self.coefficients)
     
     def evaluatePolyFit(self, x):
-        return self.getPolynomial(self.scalingX(x)).T *  np.mat(self.coefficients)
+        return self.getPolynomial(self.scaleInputs(x)).T *  np.mat(self.coefficients)
     
     def getPolyGradFitFunction(self):
         return lambda (x) : self.evaluatePolyGradFit(xvalue=x)

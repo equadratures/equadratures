@@ -6,7 +6,7 @@ from poly import Poly
 def computeActiveSubspaces(PolynomialObject, samples=None):
     d = PolynomialObject.dimensions
     if samples is  None:
-        M = 300
+        M = 300 # Replace with log factor x d
         X = np.zeros((M, d))
         for j in range(0, d):
             X[:, j] =  np.reshape(PolynomialObject.parameters[j].getSamples(M), M)
@@ -16,7 +16,7 @@ def computeActiveSubspaces(PolynomialObject, samples=None):
         X = samples
 
     # Gradient matrix!
-    polygrad = PolynomialObject.getPolyGradFit(xvalue=X)
+    polygrad = PolynomialObject.evaluatePolyGradFit(xvalue=X)
     weights = np.ones((M, 1)) / M
     R = polygrad.transpose() * weights
     C = np.dot(polygrad, R )

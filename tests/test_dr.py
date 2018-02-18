@@ -6,12 +6,8 @@ import numpy as np
 import os
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-X_TESTDATA_FILENAME =  'tests/AirfoilX.data'
-Y_TESTDATA_FILENAME =  'tests/AirfoilY.data'
-
-#X_TESTDATA_FILENAME = os.path.join(os.path.dirname(__file__), 'AirfoilX.data')
-#Y_TESTDATA_FILENAME = os.path.join(os.path.dirname(__file__), 'AirfoilY.data')
-        
+X_TESTDATA_FILENAME =  'tests/AirfoilX.py'
+Y_TESTDATA_FILENAME =  'tests/AirfoilY.py'
 
 class TestDR(TestCase):
 

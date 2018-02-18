@@ -31,8 +31,6 @@ class TestCS(TestCase):
 
         coeffs_cs = polycs.coefficients
         coeffs_reg = polyreg.coefficients
-        print np.linalg.norm(coeffs_cs - coeffs_reg)/np.linalg.norm(coeffs_reg)
-
 
 if __name__ == '__main__':
     unittest.main()

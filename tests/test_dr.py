@@ -4,8 +4,13 @@ import unittest
 from equadratures import *
 import numpy as np
 import os
-X_TESTDATA_FILENAME = os.path.join(os.path.dirname(__file__), 'AirfoilX.data')
-Y_TESTDATA_FILENAME = os.path.join(os.path.dirname(__file__), 'AirfoilY.data')
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+X_TESTDATA_FILENAME =  'tests/AirfoilX.data'
+Y_TESTDATA_FILENAME =  'tests/AirfoilY.data'
+
+#X_TESTDATA_FILENAME = os.path.join(os.path.dirname(__file__), 'AirfoilX.data')
+#Y_TESTDATA_FILENAME = os.path.join(os.path.dirname(__file__), 'AirfoilY.data')
         
 
 class TestDR(TestCase):

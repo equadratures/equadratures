@@ -1,4 +1,13 @@
 """Dimension Reduction Functionalities"""
+
+"""
+The variable projection algorithm is based on the following paper.
+
+Honkason, J. and Constantine, P. (2018). Data-driven polynomial ridge 
+approximation using variable projection. [online] Arxiv.org. Available at
+https://arxiv.org/abs/1702.05859 [Accessed 12 Mar. 2018].
+
+"""
 import numpy as np
 import scipy
 from parameter import Parameter
@@ -7,6 +16,15 @@ import scipy.io
 from basis import Basis
 
 def computeActiveSubspaces(PolynomialObject, samples=None):
+    """
+    Computes the eigenvalues and corresponding eigenvectors for the high dimensional kernel matrix
+    
+    :param PolynomialObject: an instance of PolynomialObject class
+    :param samples: ndarray, sample vector points, default to None
+    :return:
+        * **eigs (numpy array)**: Eigenvalues obtained
+        * **eigVecs (numpy array)**: Eigenvectors obtained
+    """
     d = PolynomialObject.dimensions
     if samples is  None:
         M = 300 # Replace with log factor x d
@@ -32,30 +50,32 @@ def computeActiveSubspaces(PolynomialObject, samples=None):
     return eigs, eigVecs
 
 def linearModel(Xtrain, ytrain,bounds):
-    #INPUTS
-    #Xtrain and ytrain are regarded as numpy array
-    #Xtrain is N*D, ytrain is N*1, bounds is D*2
-    #OUTPUS
-    #u is the coefficients for each X sample D*1 array
-    #c is the bias, a number
+    """
+    Computes the coefficients for a linear model between inputs and outputs
     
-    #first standardization
+    :param Xtrain: ndarray, the input values
+    :param ytrain: array, the output values
+    :param bounds: ndarray, the upper and lower bounds for input values in each dimension
+    :return:
+        * **u (numpy array)**: Coefficients correspond to each dimension
+        * **c (double)**: Constant bias
+    """
     N,D=Xtrain.shape
-    X_stnd=np.zeros((N,D))
-    for i in range(0,N):
-        for j in range(0,D):
-            X_stnd[i,j]=2*(Xtrain[i,j]-bounds[j,0])/(bounds[j,1]-bounds[j,0])-1
-    #then start the ordinary least squares formulation
-    A=np.concatenate((X_stnd,np.ones((N,1))),axis=1)
+    A=np.concatenate((Xtrain,np.ones((N,1))),axis=1)
     x=np.linalg.lstsq(A,ytrain)[0]
     u=x[0:D-1]
     c=x[D]
     return u,c
 
 def standard(X,bounds):
-    #INPUTS X array M*m
-    #INPUTS bounds array m*2
-    #OUTPUTS X_stnd array M*m
+    """
+    Standardize the inputs before Dimension Reduction
+    
+    :param X: ndarray, the undimensioned input values
+    :param bounds: ndarray, the upper and lower bounds for input values in each dimension
+    :return:
+        * **X_stnd (numpy array)**: Standardized input values
+    """
     M,m=X.shape
     X_stnd=np.zeros((M,m))
     for i in range(0,M):
@@ -64,16 +84,18 @@ def standard(X,bounds):
     return X_stnd
 
 def vandermonde(eta,p):
-    #this function establishes the Vandermonde matrix
-    #this is part of the variable projection algorithm
-    #INPUTS
-    #eta M*n array
-    #p constant
-    #OUTPUTS
-    #V array M*N (N is calculated)
+    """
+    Internal function to variable_projection
+    Calculates the Vandermonde matrix using polynomial basis functions
     
+    :param eta: ndarray, the affine transformed projected values of inputs in active subspace
+    :param p: int, the maximum degree of polynomials
+    :return:
+        * **V (numpy array)**: The resulting Vandermode matrix
+        * **Polybasis (Poly object)**: An instance of Poly object containing the polynomial basis derived
+    """
     _,n=eta.shape
-    listing=[]#the list to store the polynomial degrees
+    listing=[]
     for i in range(0,n):
         listing.append(p)
     Object=Basis('Total order',listing)
@@ -82,40 +104,37 @@ def vandermonde(eta,p):
     P=Parameter(order=p,lower=-1,upper=1,param_type='Uniform')
     for i in range(0,n):
         params.append(P)
-    #Then use the params list to establish the Poly object
+    #Use the params list to establish the Poly object
     Polybasis=Poly(params,Object)
     V=Polybasis.getPolynomial(eta)
     V=V.T
     return V,Polybasis
 
 def jacobian(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
-    #this function genrates the jacobian tensor using derivation from Jeff's
-    #variable projection algorithm
-    #INPUTS
-    #V array M*N
-    #V_plus array N*M
-    #U array m*n
-    #y array M*n
-    #f array M*1
-    #Polybasis Object for the polynomial basis
-    #eta array M*n
-    #minmax array n*2
-    #X array M*m
-    #OUTPUT
-    #J tensor M*m*n
+    """
+    Internal function to variable_projection
+    Calculates the Jacobian tensor using polynomial basis functions
+    
+    :param V: ndarray, the affine transfored outputs
+    :param V_plus: ndarray, psuedoinverse matrix
+    :param U: ndarray, the active subspace directions
+    :param y: array, the untransformed projected values of inputs in active subspace
+    :param f: array, the untransfored outputs
+    :param Polybasis: Poly object, an instance of Poly class
+    :param eta: ndarray, the affine transformed projected values of inputs in active subspace
+    :param minmax: ndarray, the upper and lower bounds of input projections in each dimension
+    :param X: ndarray, the input
+    :return:
+        * **J (ndarray)**: The Jacobian tensor
+    """
     M,N=V.shape
     m,n=U.shape
-    Gradient=Polybasis.getPolynomialGradient(eta)#a list of gradient matrices
-    #n*1 matrices contained, each is an array M*N
-    #Use the minmax matrix to obtain a and d
-    #a array n*1
-    #d array n*1
-    #eta=a+diag(d)y y array M*n
+    Gradient=Polybasis.getPolynomialGradient(eta)
     sub=minmax[:,1]-minmax[:,0]# n*1 array
     vectord=np.reshape(2.0/sub,(2,1))
     #Initialize the tensor
     J=np.zeros((M,m,n))
-    #Then obtain the derivative of this tensor
+    #Obtain the derivative of this tensor
     dV=np.zeros((m,n,M,N))
     for k in range(0,m):
         for l in range(0,n):
@@ -123,11 +142,10 @@ def jacobian(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
                 for j in range(0,N):
                     current=Gradient[l].T
                     dV[k,l,i,j]=np.asscalar(vectord[l])*np.asscalar(X[i,k])*np.asscalar(current[i,j])
-    
-    #first get the P matrix
-    P=np.identity(M)-np.matmul(V,V_plus)#M*M array
-    V_minus=scipy.linalg.pinv(V)#N*M array
-    #Then fill in the elements in the tensor
+    #Get the P matrix
+    P=np.identity(M)-np.matmul(V,V_plus)
+    V_minus=scipy.linalg.pinv(V)
+    #Calculate entries for the tensor
     for j in range(0,m):
         for k in range(0,n):
             temp1=np.linalg.multi_dot([P,dV[j,k,:,:],V_minus])
@@ -136,54 +154,45 @@ def jacobian(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
     
 
 def variable_projection(X,f,n,p,gamma,beta):
-    #INPUTS
-    #sample inputs X array M*m
-    #function values f array M*1
-    #subspace dimension n
-    #polynomial degree p
-    #step length reduction factor gamma \in (0,1)
-    #Armijo tolerance beta \in (0,1)
-
-    #OUTPUTS
-    #active subspace U array M*n
-    #polynomial coeffcients c array N*1 (N is calculated in the function)
+    """
+    Variable Projection function to obtain an active subspace in inputs design space
     
-    #assume uniform sampling for now
+    :param X: ndarray, the input
+    :param f: array, the output
+    :param n: int, degree of active subspace
+    :param p: int, degree of polynomials
+    :param gamma: double, step length reduction factor (0,1)
+    :param beta: double, Armijo tolerance for backtracking line search (0,1)
+    :return:
+        * **U (ndarray)**: The active subspace found   
+    """
+    #Assumed uniform sampling
     M,m=X.shape
     Z=np.random.rand(m,n)*2-1
     U,R=np.linalg.qr(Z)
-    
-    #set a convergence flag
+    #Convergence flag
     convflag=0
     
     while convflag==0:
-        y=np.dot(X,U)# an array M*n
-        #then scaling to ensure y \in (-1 1)^n
+        y=np.dot(X,U)
         minmax=np.zeros((n,2))
         for i in range(0,n):
             minmax[0,i]=min(y[:,i])
             minmax[1,i]=max(y[:,i])
-        #now given the bounds we can do standardization
-        eta=np.zeros((M,n))#\eta is the affine transformation of y, M*n
+        #Construct the affine transformation
+        eta=np.zeros((M,n))
         for i in range(0,M):
             for j in range(0,n):
                 eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
         convflag=1
-        #now establish the Legendre basis
-        #The Vandermonde matrix contains up to p-degree of polynomials and n
-        #degree of input subspaces
-        V,Polybasis=vandermonde(eta,p)# V is array M*N
-        #now get the psuedoinverse
-        V_plus=np.linalg.pinv(V)#array N*M
-        #now get the coefficients
+        #Construct the Vandermonde matrix
+        V,Polybasis=vandermonde(eta,p)
+        V_plus=np.linalg.pinv(V)
         coeff=np.dot(V_plus,f)
-        #calculate the residual
         res=f-np.dot(V,coeff)
-        #now build the Jacobian
-        
+        #Construct the Jacobian
         J=jacobian(V,V_plus,U,y,f,Polybasis,eta,minmax,X)
-
-        #get the gradient
+        #Calculate the gradient of Jacobian
         G=np.zeros((m,n))
         for i in range(0,M):
             G=G+res[i]*J[i,:,:]
@@ -200,14 +209,9 @@ def variable_projection(X,f,n,p,gamma,beta):
         for i in range(0,(m*n-n*n)):
             vec_delta+=temp[i]*np.reshape(Z[:,i],(m*n,1))/S[i]
         delta=np.zeros((m,n))
-        for i in range(0,m):
-            for j in range(0,n):
-                delta[i,j]=vec_delta[i*n+j]
+        delta=np.reshape(vec_delta,(m,n),'C')
         #vectorize G
-        vec_G=np.zeros(((m*n),1))
-        for i in range(0,m):
-            for j in range(0,n):
-                vec_G[i*n+j]=G[i,j]
+        vec_G=np.reshape(G,((m*n),1),'C')
         alpha=np.matmul(vec_G.T,vec_delta)[0,0]
         #check alphd
         if alpha>=0:
@@ -250,21 +254,3 @@ def variable_projection(X,f,n,p,gamma,beta):
         U=U_plus    
     return U
         
-        
-        
-docu=scipy.io.loadmat('Data.mat')
-x_100=docu['x_100']
-eff_100=docu['eff_100']
-bounds=np.concatenate((np.matlib.repmat(np.array([-0.2,0.2]),15,1),
-                          np.matlib.repmat(np.array([-0.1,0.1]),10,1)),axis=0)
-X=standard(x_100,bounds)
-#first check the linear model
-u,c=linearModel(x_100,eff_100,bounds)
-#then run the variable projection
-U=variable_projection(X,eff_100,2,2,0.05,1e-8)
-print U
-    
-    
-    
-    
-    

@@ -1,10 +1,12 @@
 """Dimension Reduction Functionalities"""
 import numpy as np
+
 import scipy
 from parameter import Parameter
 from poly import Poly
 import scipy.io
 from basis import Basis
+
 
 def computeActiveSubspaces(PolynomialObject, samples=None):
     d = PolynomialObject.dimensions
@@ -30,6 +32,7 @@ def computeActiveSubspaces(PolynomialObject, samples=None):
     eigs = e[idx]
     eigVecs = W[:, idx]
     return eigs, eigVecs
+
 
 def linearModel(Xtrain, ytrain,bounds):
     #INPUTS
@@ -263,3 +266,4 @@ u,c=linearModel(x_100,eff_100,bounds)
 #then run the variable projection
 U=variable_projection(X,eff_100,2,2,0.05,1e-8)
 print U
+

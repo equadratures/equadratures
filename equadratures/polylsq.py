@@ -4,7 +4,7 @@ from .polyint import Polyint
 from .qr import qr_MGS, solveLSQ, solveCLSQ
 from .indexset import IndexSet
 from .utils import evalfunction, evalgradients
-from .stats import Statistics
+#from .stats import Statistics
 from .convex import maxdet, binary2indices
 import numpy as np
 from scipy import linalg 

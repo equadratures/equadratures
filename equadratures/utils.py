@@ -3,6 +3,75 @@
 import numpy as np
 import sys
 
+def nchoosek(n, k):
+    numerator = factorial(n)
+    denominator = factorial(k) * factorial(n - k)
+    return (1.0 * numerator) / (1.0 * denominator)
+
+def efficient_kron_mult(Q, Uc):
+    # Adapted from Gleich and Constantine's kronmult.m
+    N = len(Q)
+    n = np.zeros((N,1))
+    nright = 1
+    nleft = 1
+    for i in range(0,N-1):
+        rows_of_Q = len(Q[i])
+        n[i,0] = rows_of_Q
+        nleft = nleft * n[i,0]
+
+    nleft = int(nleft)
+    n[N-1,0] = len(Q[N-1]) # rows of Q[N]
+
+    for i in range(N-1, -1, -1):
+        base = 0
+        jump = n[i,0] * nright
+        for k in range(0, nleft):
+            for j in range(0, nright):
+                index1 = base + j
+                index2 = int( base + j + nright * (n[i] - 1) )
+                indices_required = np.arange(int( index1 ), int( index2 + 1 ), int( nright ) )
+                small_Uc = np.mat(Uc[:, indices_required])
+                temp = np.dot(Q[i] , small_Uc.T )
+                temp_transpose = temp.T
+                Uc[:, indices_required] = temp_transpose
+            base = base + jump
+        temp_val = np.max([i, 0]) - 1
+        nleft = int(nleft/(1.0 * n[temp_val,0] ) )
+        nright = int(nright * n[i,0])
+
+    return Uc
+
+def rowNormalize(A):
+    rows, cols = A.shape
+    row_norms = np.mat(np.zeros((rows, 1)), dtype='float64')
+    Normalization = np.mat(np.eye(rows), dtype='float64')
+    for i in range(0, rows):
+        temp = 0.0
+        for j in range(0, cols):
+            row_norms[i] = temp + A[i,j]**2
+            temp = row_norms[i]
+        row_norms[i] = (row_norms[i] * 1.0/np.float64(cols))**(-1)
+        Normalization[i,i] = row_norms[i]
+    A_normalized = np.dot(Normalization, A)
+    return A_normalized, Normalization
+
+def cell2matrix(G):
+    dimensions = len(G)
+    G0 = G[0] # Which by default has to exist!
+    C0 = G0.T
+    rows, cols = C0.shape
+    BigC = np.zeros((dimensions*rows, cols))
+    counter = 0
+    for i in range(0, dimensions):
+        K = G[i].T
+        for j in range(0, rows):
+            for k in range(0,cols):
+                BigC[counter,k] = K[j,k]
+            counter = counter + 1 
+    BigC = np.mat(BigC)
+    return BigC
+
+
 def column(matrix, i):
     return [row[i] for row in matrix]
     

@@ -8,32 +8,33 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
+from cycler import cycler
 
 
 def errorplot2D(errors, x_label=None, y_label=None, xlim=None, ylim=None, filename=None):
     G = np.log10(np.abs(errors))
     Zm = np.ma.masked_where(np.isnan(G),G)
     opacity = 0.8
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
-    ax.set_axis_bgcolor('whitesmoke')
+    #ax.set_axis_bgcolor('whitesmoke')
+    ax.set_facecolor('whitesmoke')
     plt.pcolor(errors, cmap= cm.jet, vmin=-14, vmax=1)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
     
     if x_label is not None:
-        plt.xlabel(x_label, fontsize=16)
+        plt.xlabel(x_label, fontsize=13)
     
     if y_label is not None:
-        plt.ylabel(y_label, fontsize=16)
+        plt.ylabel(y_label, fontsize=13)
     
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
 
     if xlim is not None:
         plt.xlim(xlim[0], xlim[1])
@@ -66,18 +67,18 @@ def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None, vmin_l
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
-    ax.set_axis_bgcolor('whitesmoke')
+    ax.set_facecolor('whitesmoke')
     plt.pcolor(y,x, Zm, cmap= cm.jet, vmin=vmin_log, vmax=vmax_log)
     plt.xlim(0, max_order)
     plt.ylim(0, max_order)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
-    plt.xlabel(x_label, fontsize=16)
-    plt.ylabel(y_label, fontsize=16)
+    plt.xlabel(x_label, fontsize=13)
+    plt.ylabel(y_label, fontsize=13)
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
     cbar = plt.colorbar(extend='neither', spacing='proportional',
                 orientation='vertical', shrink=0.8, format="%.0f")
     cbar.ax.tick_params(labelsize=16) 
@@ -91,8 +92,6 @@ def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None, vmin_l
 def bestfit(x_train, y_train, x_test, y_test, CI, x_label, y_label, filename=None):
 
     opacity = 0.8
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
@@ -112,12 +111,12 @@ def bestfit(x_train, y_train, x_test, y_test, CI, x_label, y_label, filename=Non
     plt.plot(x_test, y_test, linestyle='-', linewidth=2, color='steelblue')
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
-    plt.xlabel(x_label, fontsize=16)
-    plt.ylabel(y_label, fontsize=16)
+    plt.xlabel(x_label, fontsize=13)
+    plt.ylabel(y_label, fontsize=13)
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
     plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
@@ -134,8 +133,6 @@ def bestfit3D(x_train, y_train, x_test, y_test, x_label, y_label, z_label, filen
     xx1 = x_test[0]
     xx2 = x_test[1]
     opacity = 0.8
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     mpl.rc('axes', edgecolor='white', labelcolor='black', grid=True)
     mpl.rc('xtick', color='black')
@@ -170,8 +167,6 @@ def bestfit3D(x_train, y_train, x_test, y_test, x_label, y_label, z_label, filen
 
 def parameterplot(x_axis, y_pdf, y_cdf, filename=None, x_label=None, y_label1=None, y_label2=None):
     opacity = 0.8
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
 
     fig = plt.figure()
@@ -182,12 +177,12 @@ def parameterplot(x_axis, y_pdf, y_cdf, filename=None, x_label=None, y_label1=No
     plt.plot(x_axis, y_pdf, linestyle='-', linewidth=3, color='deepskyblue')
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
-    #plt.xlabel(x_label, fontsize=16)
-    plt.ylabel(y_label1, fontsize=16)
+    #plt.xlabel(x_label, fontsize=13)
+    plt.ylabel(y_label1, fontsize=13)
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
-    #plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
+    #plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
     ax.set_xticklabels([])
     # subplot 1
     ax2 = plt.subplot(2, 1, 2)
@@ -196,38 +191,83 @@ def parameterplot(x_axis, y_pdf, y_cdf, filename=None, x_label=None, y_label1=No
     plt.plot(x_axis, y_cdf, linestyle='-', linewidth=3, color='crimson')
     ax2.set_axisbelow(True)
     adjust_spines(ax2, ['left', 'bottom'])
-    plt.xlabel(x_label, fontsize=16)
-    plt.ylabel(y_label2, fontsize=16)
+    plt.xlabel(x_label, fontsize=13)
+    plt.ylabel(y_label2, fontsize=13)
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
 
     if filename is not None:
         plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
     else:
         plt.show()
 
-
-
-def lineplot(x, y, x_label, y_label, filename=None):
+def semilogy_lineplot(x, y, x_label, y_label, filename=None):
     opacity = 0.8
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
-    ax.set_axis_bgcolor('whitesmoke')
+    ax.set_facecolor('whitesmoke')
+    plt.semilogy(x, y, linestyle='-', linewidth=3, color='deepskyblue')
+    ax.set_axisbelow(True)
+    adjust_spines(ax, ['left', 'bottom'])
+    plt.xlabel(x_label, fontsize=13)
+    plt.ylabel(y_label, fontsize=13)
+    plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
+    plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
+    plt.tight_layout()
+    if filename is not None:
+        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
+    else:
+        plt.show()
+
+def polynomialplot(Polymatrix, points, filename=None):
+    opacity = 0.8
+    mpl.rcParams['axes.linewidth'] = 2.0
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    plt.grid()
+    ax.set_facecolor('whitesmoke')
+    p, q = Polymatrix.shape
+    for i in range(0, p):
+        plt.plot(points, Polymatrix[i,:], linestyle='-', linewidth=3, label='order %i'%i)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
+          ncol=3, fancybox=True, shadow=True)
+    ax.set_axisbelow(True)
+    adjust_spines(ax, ['left', 'bottom'])
+    plt.xlabel(r'$\zeta$', fontsize=13)
+    plt.ylabel('Orthogonal polynomials' , fontsize=13)
+    plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
+    plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
+    plt.tight_layout()
+    if filename is not None:
+        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
+    else:
+        plt.show()
+
+def lineplot(x, y, x_label, y_label, filename=None):
+    opacity = 0.8
+    mpl.rcParams['axes.linewidth'] = 2.0
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    plt.grid()
+    ax.set_facecolor('whitesmoke')
     plt.plot(x, y, linestyle='-', linewidth=3, color='deepskyblue')
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
-    plt.xlabel(x_label, fontsize=16)
-    plt.ylabel(y_label, fontsize=16)
+    plt.xlabel(x_label, fontsize=13)
+    plt.ylabel(y_label, fontsize=13)
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
+    plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
     else:
@@ -236,12 +276,11 @@ def lineplot(x, y, x_label, y_label, filename=None):
 def contour_plot(x, y , z, filename=None, pts=None, other_pts=None, path_points = None):
 
     opacity = 0.8
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
-    ax.set_axis_bgcolor('whitesmoke')
+    ax.set_facecolor('whitesmoke')
     K = plt.contourf(x, y, z, 100, rasterized=False) 
 
     if pts is not None:
@@ -256,12 +295,12 @@ def contour_plot(x, y , z, filename=None, pts=None, other_pts=None, path_points 
 
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
-    plt.xlabel(r'$\zeta_1$', fontsize=16)
-    plt.ylabel(r'$\zeta_2$', fontsize=16)
+    plt.xlabel(r'$\zeta_1$', fontsize=13)
+    plt.ylabel(r'$\zeta_2$', fontsize=13)
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
     cbar = plt.colorbar(K)
     cbar.ax.tick_params(labelsize=16) 
     plt.tight_layout()
@@ -293,8 +332,6 @@ def scatterplot3D(x, f, x1_label=None, x2_label=None, f_label=None, filename=Non
         raise(ValueError, 'scatterplot(x, y): The number of rows in x must be equivalent to the number of rows in y')
     
     opacity = 0.8
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     mpl.rc('axes', edgecolor='white', labelcolor='black', grid=True)
     mpl.rc('xtick', color='black')
@@ -303,20 +340,10 @@ def scatterplot3D(x, f, x1_label=None, x2_label=None, f_label=None, filename=Non
     ax = fig.add_subplot(111, projection='3d')
     for i in range(0, m):
         ax.scatter(x[i,0], x[i,1], f[i],  marker='H', s=90, alpha=opacity, color='darkorange',linewidth=1.5)
-    ax.grid(False)
     ax.w_xaxis.set_pane_color((0.961, 0.961, 0.961, 1.0))
     ax.w_yaxis.set_pane_color((0.961, 0.961, 0.961, 1.0))
     ax.w_zaxis.set_pane_color((0.961, 0.961, 0.961, 1.0))
-    ax.w_xaxis.line.set_linewidth(2)
-    ax.w_yaxis.line.set_linewidth(2)
-    ax.w_zaxis.line.set_linewidth(2)
-    plt.grid()
-    ax.w_xaxis.gridlines.set_lw(2.0)
-    ax.w_yaxis.gridlines.set_lw(2.0)
-    ax.w_zaxis.gridlines.set_lw(2.0)
-    ax.w_xaxis._axinfo.update({'grid' : {'color': (1.0, 1.0, 1.0, 1)}})
-    ax.w_yaxis._axinfo.update({'grid' : {'color': (1.0, 1.0, 1.0, 1)}})
-    ax.w_zaxis._axinfo.update({'grid' : {'color': (1.0, 1.0, 1.0, 1)}})
+    ax.set_facecolor('whitesmoke')
     
     if not x1_label is None:
         ax.set_xlabel(x1_label)
@@ -344,32 +371,61 @@ def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_c
         marker_type = 's'
     if color_choice is None:
         color_choice = 'limegreen'
-    #if n > m :
-    #    raise(ValueError, 'scatterplot(x, y): Matrix x of size m-by-n, must satisfy m>=n')
-    #if m != p:
-    #    raise(ValueError, 'scatterplot(x, y): The number of rows in x must be equivalent to the number of rows in y')
- 
+   
     opacity = 0.8
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
-    ax.set_axis_bgcolor('whitesmoke')
+    ax.set_facecolor('whitesmoke')
     for i in range(0, m):
         plt.scatter(x[i,0], y[i,0], marker=marker_type, s=140, alpha=opacity, color=color_choice,linewidth=1.5)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
-    plt.xlabel(x_label, fontsize=16)
-    plt.ylabel(y_label, fontsize=16)
+    plt.xlabel(x_label, fontsize=13)
+    plt.ylabel(y_label, fontsize=13)
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
     #plt.xlim(np.min(x)-0.5, np.max(x)+0.5)
     #plt.ylim(np.min(y)-0.5, np.max(y)+0.5)
-    #plt.tight_layout()
+    plt.tight_layout()
+    if filename is None:
+        plt.show()
+    else:
+        plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
+        
+def scatterplot2(x, y, x_label, filename=None, marker_type=None):
+    # x is m by n where m is the number of points for each series and n is number of series. (each col constitutes a series)
+    # y is also m by n
+    x = np.mat(x)
+    y = np.mat(y)
+    assert x.shape == y.shape
+    m,n = x.shape
+
+    if marker_type is None:
+        marker_type = 's'
+ 
+    opacity = 1.0
+    mpl.rcParams['axes.linewidth'] = 2.0
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    plt.grid()
+    cm = plt.get_cmap('tab20')
+    ax.set_prop_cycle(cycler('color', [cm(i) for i in np.linspace(0, 1,x.shape[1])]))
+    ax.set_axis_bgcolor('whitesmoke')
+    for i in range(n):    
+        plt.scatter([x[:,i]], [y[:,i]], marker=marker_type, s=20, alpha=opacity)
+    ax.set_axisbelow(True)
+    adjust_spines(ax, ['left', 'bottom'])
+#    plt.xlabel(x_label, fontsize=3)
+#    plt.ylabel(y_label, fontsize=13)
+    plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
+    plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
+#    plt.xticks(fontsize=13)
+#    plt.yticks(fontsize=13)
+    plt.xticks(x[:,0], x_label, fontsize=8, rotation = 30)
     if filename is None:
         plt.show()
     else:
@@ -378,23 +434,22 @@ def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_c
 def histogram(samples, x_label, y_label, filename=None):
     opacity = 1.0
     error_config = {'ecolor': '0.3'}
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
-    ax.set_axis_bgcolor('whitesmoke')
+    ax.set_facecolor('whitesmoke')
     plt.hist(samples, 30, normed=1, facecolor='saddlebrown', alpha=opacity)
-    plt.xlim(0.08*np.min(samples), 1.2*np.max(samples))
+    std_dev = np.std(samples)
+    plt.xlim(np.min(samples) - 1.2* std_dev, np.max(samples) + 1.2*std_dev)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
-    plt.xlabel(x_label, fontsize=16)
-    plt.ylabel(y_label, fontsize=16)
+    plt.xlabel(x_label, fontsize=13)
+    plt.ylabel(y_label, fontsize=13)
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
     plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
@@ -405,8 +460,6 @@ def barplot(x, y, x_label, y_label, x_ticks, filename=None):
     bar_width = 0.35
     opacity = 1.0
     error_config = {'ecolor': '0.3'}
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
@@ -415,12 +468,12 @@ def barplot(x, y, x_label, y_label, x_ticks, filename=None):
     plt.bar(x, y, bar_width, alpha=opacity, color='steelblue',error_kw=error_config, linewidth=1.5)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
-    plt.xlabel(x_label, fontsize=16)
-    plt.ylabel(y_label, fontsize=16)
+    plt.xlabel(x_label, fontsize=13)
+    plt.ylabel(y_label, fontsize=13)
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
-    plt.xticks(x, x_ticks, fontsize=16)
-    plt.yticks(fontsize=16)
+    plt.xticks(x, x_ticks, fontsize=13)
+    plt.yticks(fontsize=13)
     plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
@@ -460,17 +513,14 @@ def twoDgrid(coefficients, index_set):
 
     # Now create a tensor grid with this max. order
     x, y = np.mgrid[0:max_order, 0:max_order]
-    z = (x*0 + y*0) + float('NaN')
-    counter = 0
 
-    for counter in range(0, len(coefficients)):
-        for i in range(0, max_order):
-            for j in range(0, max_order):
-                if (i == index_set[counter, 0]) and (j == index_set[counter, 1]) : 
-                    z[i,j] = coefficients[counter]
-                    break
+    # create grid of NaNs
+    z = np.full(x.shape, float('NaN'))
 
-                    
+    # directly index the numpy grid with the index_set
+    indices = index_set.astype(int)
+    z[indices[:,0], indices[:,1]] = coefficients[:,0]
+              
     return x,y,z, max_order
 
 #plot 3 series together
@@ -479,8 +529,6 @@ def triplebarplot(x, y1, y2, y3, x_label, y_label, x_ticks, filename=None):
     bar_width = 0.2
     opacity = 1.0
     error_config = {'ecolor': '0.3'}
-    #plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
@@ -491,15 +539,27 @@ def triplebarplot(x, y1, y2, y3, x_label, y_label, x_ticks, filename=None):
     bar3 = plt.bar(x+ 2*bar_width*np.ones((len(x))), y3, bar_width, alpha=opacity, color='yellow',error_kw=error_config, linewidth=1.5)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
-    plt.xlabel(x_label, fontsize=16)
-    plt.ylabel(y_label, fontsize=16)
+    plt.xlabel(x_label, fontsize=13)
+    plt.ylabel(y_label, fontsize=13)
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
     plt.xticks(x + np.ones((len(x))) * 1.5 * bar_width, x_ticks, fontsize=12)
-    plt.yticks(fontsize=16)
+    plt.yticks(fontsize=13)
     plt.tight_layout()
     plt.legend((bar1[0], bar2[0], bar3[0]), ("Variance", "Skewness", "Kurtosis"))
     if filename is not None:
         plt.savefig(filename, format='eps', dpi=300, bbox_inches='tight')
     else:
         plt.show()
+        
+def piechart(labels, sizes, title):
+    fig1, ax1 = plt.subplots()
+    cm = plt.get_cmap('tab20')
+    ax1.set_prop_cycle(cycler('color', [cm(i) for i in np.linspace(0, 1,len(labels))]))
+    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    patches, texts = ax1.pie(sizes, shadow=True, startangle=90)
+    
+    ax1.axis([0,1.2,-1,1])
+    plt.legend(patches, labels, loc='best')
+    plt.title(title)
+    plt.show()

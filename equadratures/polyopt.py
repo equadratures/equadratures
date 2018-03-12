@@ -2,8 +2,6 @@
 #TODO: combine methods to detect constraints intelligently
 
 from .parameter import Parameter
-from .indexset import IndexSet
-from .polyint import Polyint
 from .plotting import contour_plot
 import numpy as np
 import scipy as sp

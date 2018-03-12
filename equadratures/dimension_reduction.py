@@ -1,6 +1,11 @@
 """Dimension Reduction Functionalities"""
 
 """
+The functionalities of this script includes:
+    1. The active subspaces DR subroutine;
+    2. A ordinary least squares linear fit subroutine;
+    3. The variable projection subroutine.
+
 The variable projection algorithm is based on the following paper.
 
 Honkason, J. and Constantine, P. (2018). Data-driven polynomial ridge 
@@ -232,14 +237,12 @@ def variable_projection(X,f,n,p,gamma,beta):
             print t
             U_plus=np.linalg.multi_dot([U,Z,np.cos(np.diag(S)*t),Z.T])+np.linalg.multi_dot([Y,np.sin(np.diag(S)*t),Z.T])
             #Update the values with the new U matrix
-            y=np.dot(X,U_plus)# an array M*n
-            #then scaling to ensure y \in (-1 1)^n
+            y=np.dot(X,U_plus)
             minmax=np.zeros((n,2))
             for i in range(0,n):
                 minmax[0,i]=min(y[:,i])
                 minmax[1,i]=max(y[:,i])
-            #now given the bounds we can do standardization
-            eta=np.zeros((M,n))#\eta is the affine transformation of y, M*n
+            eta=np.zeros((M,n))
             for i in range(0,M):
                 for j in range(0,n):
                     eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
@@ -247,8 +250,8 @@ def variable_projection(X,f,n,p,gamma,beta):
             res_plus=f-np.linalg.multi_dot([V,np.linalg.pinv(V),f])
             if np.linalg.norm(res_plus)<=np.linalg.norm(res)+alpha*beta*t or t<1e-10:
                 breakflag=1
-        #Now check convergence of U
-        diff=np.absolute(U-U_plus)#here diff is a m*n matrix
+        #U convergence check
+        diff=np.absolute(U-U_plus)
         if diff.max()<0.002:
             convflag=1
         U=U_plus    

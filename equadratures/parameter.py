@@ -3,36 +3,23 @@ import numpy as np
 from scipy.special import gamma
 import analyticaldistributions as analytical
 class Parameter(object):
-
     """
     This class defines a univariate parameter. Below are details of its constructor.
-    :param double lower: Lower bound for the parameter.
-    :param double upper: Upper bound for the parameter
-    :param integer order: Order of the parameter (also # of points - 1).
-    :param string param_type: The type of distribution that characteristizes the parameter. Options include:
-            `Gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_, `TruncatedGaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_,
-            `Beta <https://en.wikipedia.org/wiki/Beta_distribution>`_, `Cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_,
-            `Exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_, `Uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_,
-            `Gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_ and `Weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_.
-            If no string is provided, a `Uniform` distribution is assumed.
-    :param double shape_parameter_A: Most of the aforementioned distributions are characterized by two shape
-            parameters. For instance, in the case of a `Gaussian` (or `TruncatedGaussian`), this represents the mean. In the case of a Beta
-            distribution this represents the alpha value. For a uniform distribution this input is not required.
-    :param double shape_parameter_B: This is the second shape parameter that characterizes the distribution selected.
-            In the case of a `Gaussian` or `TruncatedGaussian`, this is the variance.
-    :param boolean derivative_flag: If flag is set to 1, then derivatives are used in polynomial computations. The default value is set to 0.
-    **Sample declarations**
-    ::
-        # Uniform distribution with 5 points on [-2,2]
-        >> Parameter(points=5, lower=-2, upper=2, param_type='Uniform')
-        # Gaussian distribution with 3 points with mean=4.0, variance=2.5
-        >> Parameter(points=3, shape_parameter_A=4, shape_parameter_B=2.5,
-        param_type='Gaussian')
-        # Gamma distribution with 15 points with k=1.0 and theta=2.0
-        >> Parameter(points=15, shape_parameter_A=1.0, shape_parameter_B=2.0,
-        param_type='Gamma')
-        # Exponential distribution with 12 points with lambda=0.5
-        >> Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
+
+    :param double lower:
+        Lower bound for the parameter.
+    :param double upper:
+        Upper bound for the parameter.
+    :param integer order:
+        Order of the parameter.
+    :param string param_type:
+        The type of distribution that characterizes the parameter. Options include: `Gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_, `Truncated-Gaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_, `Beta <https://en.wikipedia.org/wiki/Beta_distribution>`_, `Cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_, `Exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_, `Uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_, `Gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_, `Weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_. If no string is provided, a `Uniform` distribution is assumed. If the user provides data, and would like to generate orthogonal polynomials (and quadrature rules) based on the data, they can set this option to be Custom.
+    :param double shape_parameter_A:
+        Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a `Gaussian` (or `TruncatedGaussian`), this represents the mean. In the case of a Beta distribution this represents the alpha value. For a uniform distribution this input is not required.
+    :param double shape_parameter_B:
+        This is the second shape parameter that characterizes the distribution selected. In the case of a `Gaussian` or `TruncatedGaussian`, this is the variance.
+    :param data:
+        A numpy array with data values (x-y column format). Note this option is only invoked if the user uses the Custom param_type.
     """
 
     # constructor
@@ -83,14 +70,13 @@ class Parameter(object):
     # Routine for computing the mean of the distributions
     def computeMean(self):
         """
-        Returns the mean of the parameter
-        :param Parameter self: An instance of the Parameter class
-        :return: mu, mean of the parameter
-        :rtype: double
-        **Sample declaration**
-        ::
-            >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
-            >> mu = var1.computeMean()
+        Returns the mean of the parameter.
+
+        :param Parameter self:
+            An instance of the Parameter class.
+        :return:
+            Mean of the parameter.
+
         """
         if self.param_type == "Gaussian":
             mu = self.shape_parameter_A
@@ -104,23 +90,22 @@ class Parameter(object):
             mu = self.shape_parameter_A * gamma(1.0 + 1.0/self.shape_parameter_B)
         elif self.param_type == "Gamma":
             mu = self.shape_parameter_A * self.shape_parameter_B
+        elif self.param_type == 'Custom':
+            mu = np.mean(self.getSamples)
         return mu
 
 
     def getPDF(self, N):
         """
-        Returns the probability density function of the parameter
+        Returns the probability density function of the parameter.
 
-        :param Parameter self: An instance of the Parameter class
-        :param integer N: Number of points along the x-axis
-        :return: x, 1-by-N matrix that contains the values of the x-axis along the support of the parameter
-        :rtype: ndarray
-        :return: w, 1-by-N matrix that contains the values of the PDF of the parameter
-        :rtype: ndarray
-        **Sample declaration**
-        ::
-            >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
-            >> x, y = var1.getPDF(50)
+        :param Parameter self:
+            An instance of the Parameter class.
+        :param integer N:
+            Number of points along the x-axis.
+        :return:
+            A 1-by-N matrix that contains the values of the x-axis along the support of the parameter.
+
         """
         if self.param_type is "Gaussian":
             x, y = analytical.PDF_GaussianDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
@@ -146,9 +131,14 @@ class Parameter(object):
 
     def getSamples(self, m=None, graph=None):
         """
-        Returns samples of the Parameter
-        : param Parameter self: An instance of the Parameter class
-        : param integer m: Number of random samples. If no value is provided, a default of 5e5 is assumed.
+        Returns samples of the parameter.
+
+        :param Parameter self:
+            An instance of the Parameter class.
+        :param integer m:
+            Number of random samples. If no value is provided, a default of 5e5 is assumed.
+        :return:
+            A N-by-1 vector that contains the samples.
         """
         if m is None:
             number_of_random_samples = 500
@@ -160,19 +150,17 @@ class Parameter(object):
 
     def getCDF(self, N):
         """
-        Returns the cumulative density function of the parameter
+        Returns the cumulative density function of the parameter.
 
-        :param Parameter self: An instance of the Parameter class
-        :param integer N: Number of points along the x-axis
-        :return: x, 1-by-N matrix that contains the values of the x-axis along the support of the parameter
-        :rtype: ndarray
-        :return: w, 1-by-N matrix that contains the values of the PDF of the parameter
-        :rtype: ndarray
+        :param Parameter self:
+            An instance of the Parameter class.
+        :param integer N:
+            Number of points along the x-axis.
+        :return:
+            A 1-by-N matrix that contains the values of the x-axis along the support of the parameter.
+        :return:
+            A 1-by-N matrix that contains the values of the PDF of the parameter.
 
-        **Sample declaration**
-        ::
-            >> var1 = Parameter(points=12, shape_parameter_A=0.5, param_type='Exponential')
-            >> x, y = var1.getCDF(50)
         """
         if self.param_type is "Gaussian":
             x, y = analytical.CDF_GaussianDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
@@ -196,13 +184,15 @@ class Parameter(object):
 
     def getiCDF(self, x):
         """
-        Returns values of the inverse CDF
-        : param Parameter self: An instance of the Parameter class
-        : param numpy array x: 1-by-N array of doubles where each entry is between [0,1]
-        : return: y, 1-by-N array where each entry is the inverse CDF of input x
-        : rtype: ndarray
-        **Notes**
-        This routine is called by the getSamples function. It makes a call to analyticalDistributions
+        Returns values of the inverse CDF.
+
+        :param Parameter self:
+            An instance of the Parameter class.
+        :param numpy array:
+            A 1-by-N array of doubles where each entry is between [0,1].
+        :return:
+            A 1-by-N array where each entry is the inverse CDF of input x.
+
         """
         if self.param_type is "Gaussian":
             y = analytical.iCDF_Gaussian(x, self.shape_parameter_A, self.shape_parameter_B)
@@ -228,93 +218,75 @@ class Parameter(object):
 
     def getRecurrenceCoefficients(self, order=None):
         """
-        Returns the recurrence coefficients of the parameter
-        :param Parameter self: An instance of the Parameter class
-        :param int order: The number of recurrence coefficients required. By default this is
-            the same as the number of points used when the parameter constructor is initiated.
-        :return: ab, order-by-2 matrix that containts the recurrence coefficients
-        :rtype: ndarray
+        Returns the recurrence coefficients of the parameter.
 
-        **Sample declaration**
-        ::
-            >> var1 = Parameter(points=12, shape_parameter_A=0.5,
-            param_type='Exponential')
-            >> ab = getRecurrenceCoefficients()
+        :param Parameter self:
+            An instance of the Parameter class.
+        :param int order:
+            The number of recurrence coefficients required. By default this is the same as the number of points used when the parameter constructor is initiated.
+        :return:
+            An order-by-2 matrix that containts the recurrence coefficients.
+
         """
 
         return recurrence_coefficients(self, order)
 
     def getJacobiMatrix(self, order=None):
         """
-        Returns the tridiagonal Jacobi matrix
-        :param Parameter self: An instance of the Parameter class
-        :param int order: The number of rows and columns of the JacobiMatrix that is required. By default, this
-            value is set to be the same as the number of points used when the parameter constructor is initiated.
-        :return: J, order-by-order sized Jacobi tridiagonal matrix
-        :rtype: ndarray
-        **Sample declaration**
-        ::
-            # Code to compute the first 5 quadrature points & weights
-            >> var3 = Parameter(points=5, param_type='Beta', lower=0, upper=1,
-            shape_parameter_A=2, shape_parameter_B=3)
-            >> J = var3.getJacobiMatrix()
+        Returns the tridiagonal Jacobi matrix.
+
+        :param Parameter self:
+            An instance of the Parameter class.
+        :param int order:
+            The number of rows and columns of the JacobiMatrix that is required. By default, this value is set to be the same as the number of points used when the parameter constructor is initiated.
+        :return:
+            An order-by-order sized Jacobi tridiagonal matrix.
+
         """
         return jacobiMatrix(self, order)
 
     def getJacobiEigenvectors(self, order=None):
         """
-        Returns the eigenvectors of the tridiagonal Jacobi matrix. These are used for computing
-        quadrature rules for numerical integration.
-        :param Parameter self: An instance of the Parameter class
-        :param int order: Number of eigenvectors required. This function makes the call getJacobiMatrix(order) and then computes
-            the corresponding eigenvectors.
-        :return: V, order-by-order matrix that contains the eigenvectors of the Jacobi matrix
-        :rtype: ndarray
-        **Sample declaration**
-        ::
-            # Code to Jacobi eigenvectors
-            >> var4 = Parameter(points=5, param_type='Gaussian', shape_parameter_A=0, shape_parameter_B=2)
-            >> V = var4.getJacobiEigenvectors()
+        Returns the eigenvectors of the tridiagonal Jacobi matrix. These are used for computing quadrature rules for numerical integration.
+
+        :param Parameter self:
+            An instance of the Parameter class.
+        :param int order:
+            Number of eigenvectors required. This function makes the call getJacobiMatrix(order) and then computes the corresponding eigenvectors.
+        :return:
+            A order-by-order matrix that contains the eigenvectors of the Jacobi matrix.
         """
         return jacobiEigenvectors(self, order)
 
     def _getOrthoPoly(self, points, order=None):
         """
-        Returns orthogonal polynomials & its derivatives, evaluated at a set of points.
-        WARNING: Should not be called under normal circumstances, without normalization of points.
-        :param Parameter self: An instance of the Parameter class
-        :param ndarray points: Points at which the orthogonal polynomial (and its derivatives) should be evaluated at
-        :param int order: This value of order overwrites the order defined for the constructor.
-        :return: orthopoly, order-by-k matrix where order defines the number of orthogonal polynomials that will be evaluated
-            and k defines the points at which these points should be evaluated at.
-        :rtype: ndarray
-        :return: derivative_orthopoly, order-by-k matrix where order defines the number of derivative of the orthogonal polynomials that will be evaluated
-            and k defines the points at which these points should be evaluated at.
-        :rtype: ndarray
-        **Sample declaration**
-        ::
-            >> x = np.linspace(-1,1,10)
-            >> var6 = Parameter(points=10, param_type='Uniform', lower=-1, upper=1)
-            >> poly = var6.getOrthoPoly(x)
+        Returns orthogonal polynomials & its derivatives, evaluated at a set of points. WARNING: Should not be called under normal circumstances, without normalization of points!
+
+        :param Parameter self:
+            An instance of the Parameter class.
+        :param ndarray points:
+            Points at which the orthogonal polynomial (and its derivatives) should be evaluated at.
+        :param int order:
+            This value of order overwrites the order defined for the constructor.
+        :return:
+            An order-by-k matrix where order defines the number of orthogonal polynomials that will be evaluated and k defines the points at which these points should be evaluated at.
+        :return:
+            An order-by-k matrix where order defines the number of derivative of the orthogonal polynomials that will be evaluated and k defines the points at which these points should be evaluated at.
         """
         return orthoPolynomial_and_derivative(self, points, order)
 
     def _getLocalQuadrature(self, order=None, scale=None):
         """
-        Returns the 1D quadrature points and weights for the parameter
-        WARNING: Should not be called under normal circumstances.
-        :param Parameter self: An instance of the Parameter class
-        :param int N: Number of quadrature points and weights required. If order is not specified, then
-            by default the method will return the number of points defined in the parameter itself.
-        :return: points, N-by-1 matrix that contains the quadrature points
-        :rtype: ndarray
-        :return: weights, 1-by-N matrix that contains the quadrature weights
-        :rtype: ndarray
-        **Sample declaration**
-        ::
-            # Code to compute the first 5 quadrature points & weights
-            >> var1 = Parameter(points=5, shape_parameter_A=0.5, param_type='Exponential')
-            >> p, w = var1.getLocalQuadrature()
+        Returns the 1D quadrature points and weights for the parameter. WARNING: Should not be called under normal circumstances.
+
+        :param Parameter self:
+            An instance of the Parameter class
+        :param int N:
+            Number of quadrature points and weights required. If order is not specified, then by default the method will return the number of points defined in the parameter itself.
+        :return:
+            A N-by-1 matrix that contains the quadrature points
+        :return:
+            A 1-by-N matrix that contains the quadrature weights
         """
         return getlocalquadrature(self, order, scale)
 
@@ -598,7 +570,7 @@ def getlocalquadrature(self, order=None, scale=None):
             p[u,0] = local_points[u]
         local_weights = w
         local_points = p
-        
+
     if scale==True:
         scaled_points = p.copy()
         if self.param_type=='Uniform':

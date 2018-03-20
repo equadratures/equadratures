@@ -44,15 +44,15 @@ master_doc = 'index'
 
 # General information about the project.
 project = u' '
-copyright = u'2016-2017, Pranay Seshadri'
-author = u'Pranay Seshadri'
+copyright = u'2016-2018, Effective Quadratures'
+author = u'Pranay Seshadri, Nicholas Wong, Henry Yuchi, Tiziano Ghisu'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '1.0'
+version = '6.0'
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -67,7 +67,7 @@ html_theme_options = {
     'navbar_title': "",
 
     # Tab name for entire site. (Default: "Site")
-    'navbar_site_name': "Docs",
+    'navbar_site_name': "Documentation",
 
     # A list of tuples containing pages or urls to link to.
     # Valid tuples should be in the following forms:

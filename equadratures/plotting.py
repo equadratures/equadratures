@@ -12,6 +12,15 @@ from matplotlib.collections import PatchCollection
 from cycler import cycler
 
 def errorplot2D(errors, x_label=None, y_label=None, xlim=None, ylim=None, filename=None):
+    """
+    Computes the eigenvalues and corresponding eigenvectors for the high dimensional kernel matrix
+
+    :param PolynomialObject: an instance of PolynomialObject class
+    :param samples: ndarray, sample vector points, default to None
+    :return:
+        * **eigs (numpy array)**: Eigenvalues obtained
+        * **eigVecs (numpy array)**: Eigenvectors obtained
+    """
     G = np.log10(np.abs(errors))
     Zm = np.ma.masked_where(np.isnan(G),G)
     opacity = 0.8
@@ -24,13 +33,13 @@ def errorplot2D(errors, x_label=None, y_label=None, xlim=None, ylim=None, filena
     plt.pcolor(errors, cmap= cm.jet, vmin=-14, vmax=1)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
-    
+
     if x_label is not None:
         plt.xlabel(x_label, fontsize=13)
-    
+
     if y_label is not None:
         plt.ylabel(y_label, fontsize=13)
-    
+
     plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
     plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
     plt.xticks(fontsize=13)
@@ -42,7 +51,7 @@ def errorplot2D(errors, x_label=None, y_label=None, xlim=None, ylim=None, filena
         plt.ylim(ylim[0], ylim[1])
     cbar = plt.colorbar(extend='neither', spacing='proportional',
                 orientation='vertical', shrink=0.8, format="%.0f")
-    cbar.ax.tick_params(labelsize=16) 
+    cbar.ax.tick_params(labelsize=16)
     if filename is None:
         plt.show()
     else:
@@ -51,7 +60,7 @@ def errorplot2D(errors, x_label=None, y_label=None, xlim=None, ylim=None, filena
 
 
 def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None, vmin_log=None, vmax_log=None):
-    
+
     if vmin_log is None:
         vmin_log = -16
     if vmax_log is None:
@@ -81,7 +90,7 @@ def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None, vmin_l
     plt.yticks(fontsize=13)
     cbar = plt.colorbar(extend='neither', spacing='proportional',
                 orientation='vertical', shrink=0.8, format="%.0f")
-    cbar.ax.tick_params(labelsize=16) 
+    cbar.ax.tick_params(labelsize=16)
     plt.tight_layout()
     if filename is None:
         plt.show()
@@ -281,13 +290,13 @@ def contour_plot(x, y , z, filename=None, pts=None, other_pts=None, path_points 
     ax = fig.add_subplot(1,1,1)
     plt.grid()
     ax.set_facecolor('silver')
-    K = plt.contourf(x, y, z, 100, rasterized=False) 
+    K = plt.contourf(x, y, z, 100, rasterized=False)
 
     if pts is not None:
-        m, n = pts.shape  
+        m, n = pts.shape
         for i in range(0, m):
             plt.scatter(pts[i,0], pts[i,1], marker='o', s=80, color='crimson', linewidth=1.5, edgecolor='black')
-    
+
     if other_pts is not None:
         r, s = other_pts.shape
         for j in range(0, r):
@@ -302,9 +311,9 @@ def contour_plot(x, y , z, filename=None, pts=None, other_pts=None, path_points 
     plt.xticks(fontsize=13)
     plt.yticks(fontsize=13)
     cbar = plt.colorbar(K)
-    cbar.ax.tick_params(labelsize=16) 
+    cbar.ax.tick_params(labelsize=16)
     plt.tight_layout()
-    
+
     # Superimpose a path object (if exists)
     if not(path_points is None):
         vertices = path_points.copy()
@@ -315,8 +324,8 @@ def contour_plot(x, y , z, filename=None, pts=None, other_pts=None, path_points 
         path = Path(vertices, codes)
         patch = patches.PathPatch(path, facecolor='none', edgecolor = 'red', lw=2)
         ax.add_patch(patch)
-        
-    
+
+
     if not filename is None:
         plt.savefig(filename,   dpi=300, bbox_inches='tight')
     else:
@@ -330,7 +339,7 @@ def scatterplot3D(x, f, x1_label=None, x2_label=None, f_label=None, filename=Non
         raise(ValueError, 'scatterplot(x, y): Matrix x of size m-by-n, must satisfy m>=n')
     if m != p:
         raise(ValueError, 'scatterplot(x, y): The number of rows in x must be equivalent to the number of rows in y')
-    
+
     opacity = 0.8
     mpl.rcParams['axes.linewidth'] = 2.0
     mpl.rc('axes', edgecolor='white', labelcolor='black', grid=True)
@@ -344,13 +353,13 @@ def scatterplot3D(x, f, x1_label=None, x2_label=None, f_label=None, filename=Non
     ax.w_yaxis.set_pane_color((0.961, 0.961, 0.961, 1.0))
     ax.w_zaxis.set_pane_color((0.961, 0.961, 0.961, 1.0))
     ax.set_facecolor('silver')
-    
+
     if not x1_label is None:
         ax.set_xlabel(x1_label)
     if not x2_label is None:
         ax.set_ylabel(x2_label)
     if not f_label is None:
-        ax.set_zlabel(f_label)   
+        ax.set_zlabel(f_label)
     plt.tight_layout()
     if not filename is None:
         plt.savefig(filename,   dpi=300, bbox_inches='tight')
@@ -371,7 +380,7 @@ def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_c
         marker_type = 's'
     if color_choice is None:
         color_choice = 'limegreen'
-   
+
     opacity = 0.8
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
@@ -393,7 +402,7 @@ def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_c
         plt.show()
     else:
         plt.savefig(filename, dpi=300, bbox_inches='tight')
-        
+
 def scatterplot2(x, y, x_label, y_label, filename=None, marker_type=None, cycle_colors=None):
     # x is m by n where m is the number of points for each series and n is number of series. (each col constitutes a series)
     # y is also m by n
@@ -412,7 +421,7 @@ def scatterplot2(x, y, x_label, y_label, filename=None, marker_type=None, cycle_
     if cycle_colors is not None:
         ax.set_prop_cycle(cycler('color', [cm(i) for i in np.linspace(0, 1,x.shape[1])]))
     ax.set_facecolor('silver')
-    for i in range(n):    
+    for i in range(n):
         plt.scatter([x[:,i]], [y[:,i]], marker=marker_type, s=20, alpha=opacity, c='orange')
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
@@ -435,7 +444,7 @@ def histogram(samples, x_label, y_label, filename=None):
     ax = fig.add_subplot(1,1,1)
     plt.grid()
     #ax.set_facecolor('silver')
-    
+
     plt.hist(samples, 30, normed=1, facecolor='saddlebrown', alpha=opacity, edgecolor='black', linewidth=0.5)
     std_dev = np.std(samples)
     plt.xlim(np.min(samples) - 1.2* std_dev, np.max(samples) + 1.2*std_dev)
@@ -517,7 +526,7 @@ def twoDgrid(coefficients, index_set):
     # directly index the numpy grid with the index_set
     indices = index_set.astype(int)
     z[indices[:,0], indices[:,1]] = coefficients[:,0]
-              
+
     return x,y,z, max_order
 
 #plot 3 series together
@@ -548,14 +557,14 @@ def triplebarplot(x, y1, y2, y3, x_label, y_label, x_ticks, filename=None):
         plt.savefig(filename,  dpi=300, bbox_inches='tight')
     else:
         plt.show()
-        
+
 def piechart(labels, sizes, title):
     fig1, ax1 = plt.subplots()
     cm = plt.get_cmap('tab20')
     ax1.set_prop_cycle(cycler('color', [cm(i) for i in np.linspace(0, 1,len(labels))]))
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
     patches, texts = ax1.pie(sizes, shadow=True, startangle=90)
-    
+
     ax1.axis([0,1.2,-1,1])
     plt.legend(patches, labels, loc='best')
     plt.title(title)

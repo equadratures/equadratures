@@ -1,7 +1,7 @@
 """Computing Statistics from Polynomial Expansions"""
 import numpy as np
 from .plotting import barplot, triplebarplot, piechart, scatterplot2
-from basis import Basis
+from .basis import Basis
 from itertools import *
 class Statistics(object):
     """

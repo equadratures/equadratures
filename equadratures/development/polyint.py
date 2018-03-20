@@ -1,6 +1,5 @@
 """Operations involving multivariate polynomials (without gradients) via numerical quadrature"""
-from .parameter import Parameter
-from .indexset import IndexSet
+#from .parameter import Parameter
 import numpy as np
 from math import factorial
 from itertools import combinations
@@ -9,7 +8,7 @@ from .plotting import bestfit, bestfit3D, histogram
 from .qr import solveLSQ
 #from .stats import Statistics
 
-class Polyint(object):
+class Polyint(Poly):
     """
     This class defines a Polyint (polynomial via integration) object
 
@@ -25,227 +24,39 @@ class Polyint(object):
         >> s = Parameter(lower=-2, upper=2, param_type='Uniform')
         >> polyObject = Polynomial([s,s]) # Tensor basis is used
     """
+
     # Constructor
-    def __init__(self, uq_parameters, index_sets=None):
+    def __init__(self, parameters, basis, sampling=Nonem fun=None):
+        super(Polyint, self).__init__(parameters, basis)
+        if sampling is None:
+            sampling = 'tensor grid quadrature'
+        self.setSamplingMethod()
     
-        self.uq_parameters = uq_parameters
-
-        # Here we set the index sets if they are not provided
-        if index_sets is None:
-            # Determine the highest orders for a tensor grid
-            highest_orders = []
-            for i in range(0, len(uq_parameters)):
-                highest_orders.append(int( uq_parameters[i].order - 1) ) 
-            self.index_sets = IndexSet('Tensor grid', highest_orders)
-        else:
-            self.index_sets = index_sets
-    
-    def integrals(self, function_values):
-        """
-        Computes the integaral
-    
-        :param Polynomial self: An instance of the Polynomial class
-        :param: callable function: The function that needs to be approximated (or interpolated)
-        :return: integral: The approximation of the integral
-        :rtype: float
-        """
-        coefficients = self.getPolynomialCoefficients(function_values)
-        integral = coefficients[0]
-        return integral[0]
-        
-    def getIndexSet(self):
-        """
-        Returns the index set used for computing the multivariate polynomials
-
-        :param Polynomial self: An instance of the Polynomial class
-        :return: index_set, cardinality-by-dimension matrix which is obtained by calling the getIndexSet() routine of the IndexSet object
-        :rtype: ndarray
-
-        **Sample declaration**
-        :: 
-            >> s = Parameter(lower=-2, upper=2, param_type='Uniform')
-            >> polyObject = Polynomial([s,s])
-            >> I = polyObject.getIndexSet()
-        """
-        return self.index_sets.getIndexSet()
-
-    # Do we really need additional_orders?
-    def getPointsAndWeights(self, override_orders=None):
-        """
-        Returns the nD Gaussian quadrature points and weights based on the recurrence coefficients of each Parameter. This function computes anisotropic and isotropic tensor product rules using a series of Kronecker product operations on univariate Gauss quadrature points and weights. For details on the univariate rules, see Parameter.getLocalQuadrature()
-
-        :param Polynomial self: An instance of the Polynomial class
-        :param array override_orders: Optional input of orders that overrides the orders defined for each Parameter. This functionality is used by the integrals function.
-        :return: points, N-by-d matrix that contains the tensor grid Gauss quadrature points
-        :rtype: ndarray
-        :return: weights, 1-by-N matrix that contains the tensor grid Gauss quadrature weights
-        :rtype: ndarray
+    @staticmethod
+    def setSamplingMethod(self):
+        if not(self.sampling.lower() in ["tensor grid quadrature", "sparse grid quadrature", "effectively subsampled quadrature",
+            "Christoffel subsampled", "induced distribution samples", "randomized quadrature"]) :
+            raise(ValueError, 'Polyint:generatePointsForEvaluation:: Sampling method not defined! Choose from existing ones.') 
+        if sampling.lower() == 'tensor grid quadrature':
+            points, weights = self.tensor_grid_quadrature()
+        elif sampling.lower() == 'sparse grid quadrature':
+            points, weights = self.sparse_grid_quadrature()
+        elif sampling.lower() == 'effectively subsampled quadrature':
+            points, weights = self.effective_quadrature()
+        elif sampling.lower() == 'randomized quadrature'
+            points, weights = self.randomized_quadrature()
+        elif sampling.lower() == 'Christoffel subsampled':
+            points, weights = self.christoffel_quadrature()
+        elif sampling.lower() == 'induced distribution samples'
+        self.points = points
+        self.weights = weights
 
 
-        **Sample declaration**
-        :: 
-            >> s = Parameter(lower=-2, upper=2, param_type='Uniform')
-            >> polyObject = Polynomial([s,s])
-            >> p, w = polyObject.getPointsAndWeights()
-        """
-        # Initialize some temporary variables
-        stackOfParameters = self.uq_parameters
-        dimensions = int(len(stackOfParameters))
-        flag = 0
+    def tensor_grid_quadrature(self):
 
-        orders = []
-        if override_orders is None:
-            for i in range(0, dimensions):
-                orders.append(stackOfParameters[i].order)
-        else:
-            orders = override_orders
-            flag = 1
-
-        if self.index_sets.index_set_type == 'Sparse grid' and flag == 0:
-            points, weights = sparsegrid(self.uq_parameters, self.index_sets.level, self.index_sets.growth_rule)
-            return points, weights
-
-        
-        
-        # Initialize points and weights
-        pp = [1.0]
-        ww = [1.0]
-
-        # number of parameters
-        # For loop across each dimension
-        for u in range(0, dimensions):
-
-            # Call to get local quadrature method (for dimension 'u')
-            local_points, local_weights = stackOfParameters[u].getLocalQuadrature(orders[u])
-
-            # Tensor product of the weights
-            ww = np.kron(ww, local_weights)
-
-            # Tensor product of the points
-            dummy_vec = np.ones((len(local_points), 1))
-            dummy_vec2 = np.ones((len(pp), 1))
-            left_side = np.array(np.kron(pp, dummy_vec))
-            right_side = np.array( np.kron(dummy_vec2, local_points) )
-            pp = np.concatenate((left_side, right_side), axis = 1)
-
-        # Ignore the first column of pp
-        points = pp[:,1::]
-        weights = ww
-
-        # Now re-scale the points and return only if its not a Gaussian!
-        for i in range(0, dimensions):
-            for j in range(0, len(points)):
-                if (stackOfParameters[i].param_type == "Uniform"):
-                    points[j,i] = 0.5 * ( points[j,i] + 1.0 )*( stackOfParameters[i].upper - stackOfParameters[i].lower) + stackOfParameters[i].lower
-        
-                elif (stackOfParameters[i].param_type == "Beta" ):
-                    points[j,i] =  ( points[j,i] )*( stackOfParameters[i].upper - stackOfParameters[i].lower) + stackOfParameters[i].lower
-        
-                elif (stackOfParameters[i].param_type == "Gaussian"):
-                    points[j,i] = points[j,i] # No scaling!
-
-        # Return tensor grid quad-points and weights
-        return points, weights
-
-    def getMultivariatePolynomial(self, stackOfPoints, indexsets=None):
-        """
-        Returns multivariate orthonormal polynomials and their derivatives
-
-        :param Polynomial self: An instance of the Polynomial class
-        :param: ndarray stackOfPoints: An m-by-d matrix that contains points along which the polynomials (and their derivatives) must be evaluated at; here m represents the total number of points across d dimensions. Note that the derivatives are only computed if the Parameters have the derivative_flag set to 1.
-        :return: polynomial, m-by-N matrix where m are the number of points at which the multivariate orthonormal polynomial must be evaluated at, and N is the cardinality of the index set used when declaring a Polynomial object.
-        :rtype: ndarray
-        :return: derivatives, m-by-N matrix for each cell (total cells are d) where m are the number of points at which the multivariate orthonormal polynomial must be evaluated at, and N is the cardinality of the index set used when declaring a Polynomial object.
-        :rtype: cell object
-
-
-        **Sample declaration**
-        :: 
-            >> s = Parameter(lower=-1, upper=1, param_type='Uniform', points=2, derivative_flag=1)
-            >> uq_parameters = [s,s]
-            >> uq = Polynomial(uq_parameters)
-            >> pts, x1, x2 = utils.meshgrid(-1.0, 1.0, 10, 10)
-            >> P , Q = uq.getMultivariatePolynomial(pts)
-        """
-
-        # "Unpack" parameters from "self"
-        empty = np.mat([0])
-        stackOfParameters = self.uq_parameters
-        isets = self.index_sets
-        if indexsets is None:
-            if isets.index_set_type == 'Sparse grid':
-                ic, not_used, index_set = isets.getIndexSet()
-            else:
-                index_set = isets.elements
-        else:
-            index_set = indexsets.elements
-
-        dimensions = len(stackOfParameters)
-        p = {}
-        d = {}
-        C_all = {}
-
-        # Save time by returning if univariate!
-        if dimensions == 1 and stackOfParameters[0].derivative_flag == 0:
-            poly , derivatives =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
-            derivatives = empty
-            return poly, derivatives
-        elif dimensions == 1 and stackOfParameters[0].derivative_flag == 1:
-            poly , derivatives =  stackOfParameters[0].getOrthoPoly(stackOfPoints)
-            C_all[0] = derivatives
-            return poly, C_all
-        else:
-            for i in range(0, dimensions):
-                if len(stackOfPoints.shape) == 1:
-                    stackOfPoints = np.array([stackOfPoints])
-                assert len(stackOfPoints.shape) == 2
-                p[i] , d[i] = stackOfParameters[i].getOrthoPoly(stackOfPoints[:,i], int(np.max(index_set[:,i] + 1) ) )
-
-        # Now we multiply components according to the index set
-        no_of_points = len(stackOfPoints)
-        polynomial = np.zeros((len(index_set), no_of_points))
-        derivatives = np.zeros((len(index_set), no_of_points, dimensions))
-
-        # One loop for polynomials
-        for i in range(0, len(index_set)):
-            temp = np.ones((1, no_of_points))
-            for k in range(0, dimensions):
-                polynomial[i,:] = p[k][int(index_set[i,k])] * temp
-                temp = polynomial[i,:]
-        
-        # Second loop for derivatives!
-        if stackOfParameters[0].derivative_flag == 1:
-            P_others = np.zeros((len(index_set), no_of_points))
-
-            # Going into for loop!
-            for j in range(0, dimensions):
-                # Now what are the remaining dimnensions?
-                C_local = np.zeros((len(index_set), no_of_points))
-                remaining_dimensions = np.arange(0, dimensions)
-                remaining_dimensions = np.delete(remaining_dimensions, j)
-                total_elements = remaining_dimensions.__len__
-
-                # Now we compute the "C" matrix
-                for i in range(0, len(index_set)): 
-                    # Temporary variable!
-                    P_others = np.zeros((len(index_set), no_of_points))
-                    temp = np.ones((1, no_of_points))
-
-                    # Multiply ortho-poly components in these "remaining" dimensions   
-                    for k in range(0, len(remaining_dimensions)):
-                        entry = remaining_dimensions[k]
-                        P_others[i,:] = p[entry][int(index_set[i, entry])] * temp
-                        temp = P_others[i,:]
-                        if len(remaining_dimensions) == 0: # in which case it is emtpy!
-                            C_all[i,:] = d[j][int(index_set[i,j])]
-                        else:
-                            C_local[i,:] = d[j][int(index_set[i, j])] * P_others[i,:]       
-                C_all[j] = C_local
-                del C_local
-            return polynomial, C_all
-        empty = np.mat([0])
-        return polynomial, empty
-
+    def computeCoefficients(self):
+        if sampling.lower() == 'tensor grid':
+            self.coefficients, self.basis_elements, 
 
     def getPolynomialCoefficients(self, function):  
         """
@@ -266,93 +77,13 @@ class Polyint(object):
         method = self.index_sets.index_set_type
         # Get the right polynomial coefficients
         if method == "Tensor grid":
-            coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self, function)
+            
         if method == "Sparse grid":
             coefficients, indexset, evaled_pts = getSparsePseudospectralCoefficients(self, function)
         else:
             coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self, function)
         return coefficients,  indexset, evaled_pts
 
-
-    def getPolynomialApproximation(self, function, plotting_pts, coefficients=None, indexset=None): 
-        """
-        Returns the polynomial approximation of a function. This routine effectively multiplies the coefficients of a polynomial
-        expansion with its corresponding basis polynomials. 
-    
-        :param Polynomial self: An instance of the Polynomial class
-        :param: callable function: The function that needs to be approximated (or interpolated)
-        :param: ndarray plotting_pts: The points at which the polynomial approximation should be evaluated at
-        :return: polyapprox: The polynomial expansion of a function
-        :rtype: numpy matrix
-
-        """
-        # Check to see if we need to call the coefficients
-        if coefficients is None or indexset is None:
-            coefficients,  indexset, evaled_pts = self.getPolynomialCoefficients(function)
-
-        P , Q = self.getMultivariatePolynomial(plotting_pts, indexset)
-        P = np.mat(P)
-        C = np.mat(coefficients)
-        polyapprox = P.T * C
-        return polyapprox
-
-    #def plotPolyonmialApproximation(self, function, plotting_pts, )
-    
-    def getPDF(self, function, graph=1, coefficients=None, indexset=None, filename=None):
-        """
-        Returns the PDF of the model output. This routine effectively multiplies the coefficients of a polynomial
-        expansion with its corresponding basis polynomials. 
-    
-        :param Polynomial self: An instance of the Polynomial class
-        :param: callable function: The function that needs to be approximated (or interpolated)
-        :return: polyapprox: The polynomial expansion of a function
-        :rtype: numpy matrix
-
-        """
-        dimensions = len(self.uq_parameters)
-
-        # Check to see if we need to call the coefficients
-        if coefficients is None or indexset is None:
-            coefficients,  indexset, evaled_pts = self.getPolynomialCoefficients(function)
-        
-        # For each UQ parameter in self, store the samples
-        number_of_samples = 50000 # default value!
-        plotting_pts = np.zeros((number_of_samples, dimensions))
-        for i in range(0, dimensions):
-                univariate_samples = self.uq_parameters[i].getSamples(number_of_samples)
-                for j in range(0, number_of_samples):
-                    plotting_pts[j, i] = univariate_samples[j]
-            
-
-        P , Q = self.getMultivariatePolynomial(plotting_pts, indexset)
-        P = np.mat(P)
-        C = np.mat(coefficients)
-        polyapprox = P.T * C
-
-
-        if graph is not None:   
-            histogram(polyapprox, 'f(x)', 'PDF', filename)
-
-        return polyapprox
-    
-#    def stats(self, function):
-#        """
-#        Returns statistics based on the coefficients
-#
-#        :param EffectiveSubsampling object: An instance of the EffectiveSubsampling class.
-#        :param callable function_values: A callable function or a numpy matrix of model evaluations at the quadrature subsamples.
-#        :param callable gradient_values: A callable function of a numpy matrix of gradient evaluations at the quadrature subsamples.
-#        :param string technique: The least squares technique to be used; options include: 'weighted' (default), 'constrainedDE', 'constrainedNS'. These options only matter when using gradient evaluations. They correspond to a stacked / weighted least squares approach, a constrained approach using       direct elimination, and a constrained approach using the null space method. 
-#        :return: 
-#            * **stats_obj (Statistics)**: A Statistics object
-#
-#        **Sample usage:** 
-#        For useage please see the ipython-notebooks at www.effective-quadratures.org
-#        """
-#        coefficients,  indexset, evaled_pts =  self.getPolynomialCoefficients(function)
-#        stats_obj = Statistics(coefficients, self.index_sets)
-#        return stats_obj
-       
 #--------------------------------------------------------------------------------------------------------------
 #
 #  PRIVATE FUNCTIONS!

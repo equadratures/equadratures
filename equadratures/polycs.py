@@ -1,6 +1,6 @@
 """Finding coefficients via compressive sensing"""
-from parameter import Parameter
-from basis import Basis
+from .parameter import Parameter
+from .basis import Basis
 from poly import Poly
 import numpy as np
 from stats import Statistics, getAllSobol
@@ -83,10 +83,10 @@ class Polycs(Poly):
         
         #Calculate residue
         residue = np.linalg.norm(np.dot(A, x).flatten() - y.flatten())
-        print "-----"
-        print "overall residue (Should be 0!)"
-        print residue
-        print "-----"
+        print("-----")
+        print("overall residue (Should be 0!)")
+        print(residue)
+        print("-----")
         self.coefficients = np.reshape(x, (len(x),1))
     
     @staticmethod

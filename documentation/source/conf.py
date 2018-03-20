@@ -35,7 +35,7 @@ import shlex
 # ones.
 sys.path.insert(0, os.path.abspath('../..'))
 html_theme = "sphinx_rtd_theme"
-source_suffix = '.rst'
+source_suffix = '.txt'
 #html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 extensions = [
     'sphinx.ext.autodoc',

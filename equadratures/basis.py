@@ -262,30 +262,6 @@ def total_order_basis(orders):
         total_order = np.vstack((total_order, R))
     return total_order
 
-"""
-def total_order_basis(orders):
-
-    # Initialize a few parameters for the setup
-    dimensions = len(orders)
-    n_bar = tensor_grid_basis(orders)
-    n_new = [] # list; dynamic array
-
-    # Now cycle through each entry, and check the sum
-    summation = np.sum(n_bar, axis=1)
-    for i in range(0, len(summation)):
-        if(summation[i]  <= np.max(n_bar) ):
-            value = n_bar[i,:]
-            n_new.append(value)
-
-    # But I want to re-cast this list as an array
-    total_index = np.ones((len(n_new), dimensions))
-    for i in range(0, len(n_new)):
-        for j in range(0, dimensions):
-            r = n_new[i]
-            total_index[i,j] = r[j]
-
-    return total_index
-"""
 def sparse_grid_basis(level, growth_rule, dimensions):
 
     # Initialize a few parameters for the setup

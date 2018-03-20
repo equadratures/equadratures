@@ -158,7 +158,7 @@ def jacobian(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
     return J
     
 
-def variable_projection(X,f,n,p,gamma,beta):
+def variable_projection(X,f,n,p,gamma=None,beta=None):
     """
     Variable Projection function to obtain an active subspace in inputs design space
     
@@ -171,6 +171,11 @@ def variable_projection(X,f,n,p,gamma,beta):
     :return:
         * **U (ndarray)**: The active subspace found   
     """
+    if beta is None:
+        beta = 0.1
+    if gamma is None:
+        gamma = 0.1
+        
     #Assumed uniform sampling
     M,m=X.shape
     Z=np.random.rand(m,n)*2-1

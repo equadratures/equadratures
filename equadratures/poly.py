@@ -1,8 +1,6 @@
 """Polynomial Parent Class"""
 import numpy as np
-from parameter import Parameter
-from basis import Basis
-from stats import Statistics
+from .stats import Statistics
 
 class Poly(object):
     """
@@ -172,3 +170,33 @@ class Poly(object):
         return lambda (x) : self.evaluatePolyGradFit(xvalue=x)
 
 
+    def getFunctionPDF(self, function, graph=1, coefficients=None, indexset=None, filename=None):
+        """
+         Need to finish!!!
+        """
+        dimensions = len(self.uq_parameters)
+
+        # Check to see if we need to call the coefficients
+        if coefficients is None or indexset is None:
+            coefficients,  indexset, evaled_pts = self.getPolynomialCoefficients(function)
+        
+        # For each UQ parameter in self, store the samples
+        number_of_samples = 50000 # default value!
+        plotting_pts = np.zeros((number_of_samples, dimensions))
+        for i in range(0, dimensions):
+                univariate_samples = self.uq_parameters[i].getSamples(number_of_samples)
+                for j in range(0, number_of_samples):
+                    plotting_pts[j, i] = univariate_samples[j]
+            
+
+        P , Q = self.getMultivariatePolynomial(plotting_pts, indexset)
+        P = np.mat(P)
+        C = np.mat(coefficients)
+        polyapprox = P.T * C
+
+
+        if graph is not None:   
+            histogram(polyapprox, 'f(x)', 'PDF', filename)
+
+        return polyapprox
+    

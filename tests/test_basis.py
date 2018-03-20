@@ -18,13 +18,16 @@ class TestBasis(TestCase):
         is4 = Basis('Hyperbolic basis', [5,5], q=0.75)
         is4.getBasis()
 
-
     def test_sorting(self):
         is1 = Basis('Total order', [3,2])
         is1.prune(5)
 
     def test_euclidean(self):
         is2 = Basis('Euclidean degree', [7,7,7])
+
+    def test_plot(self):
+        is1 = Basis('Total order', [3,2])
+        scatterplot2(is1.elements[:,0], is1.elements[:,1], '$i_1$', '$i_2$', filename='basis.eps')
 
 
 if __name__ == '__main__':

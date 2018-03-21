@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Basis &#8212;   v6.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootswatch-3.3.6/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     'v6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="  v6.0 documentation" href="index.html" />
+    <link rel="up" title="Core code" href="corecode.html" />
+    <link rel="next" title="Polynomials" href="poly.html" />
+    <link rel="prev" title="Parameter" href="parameter.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default ">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html"><span><img src="_static/logo.png"></span>
+           </a>
+        <span class="navbar-text navbar-version pull-left"><b>v6.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">  <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="corecode.html">Core code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Basis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="poly.html">Polynomials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distributions.html">Probability distributions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dr.html">Dimension reduction utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="convex.html">Convex optimization utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stats.html">Statistics utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plotting.html">Plotting utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Basis</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="parameter.html" title="Previous Chapter: Parameter"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Parameter</span>
+    </a>
+  </li>
+  <li>
+    <a href="poly.html" title="Next Chapter: Polynomials"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Polynomials &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/basis.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="module-equadratures.basis">
+<span id="basis"></span><h1>Basis<a class="headerlink" href="#module-equadratures.basis" title="Permalink to this headline">¶</a></h1>
+<p>Rountines for defining the index set associated with multivariate polynomials.</p>
+<dl class="class">
+<dt id="equadratures.basis.Basis">
+<em class="property">class </em><code class="descclassname">equadratures.basis.</code><code class="descname">Basis</code><span class="sig-paren">(</span><em>basis_type</em>, <em>orders=None</em>, <em>level=None</em>, <em>growth_rule=None</em>, <em>q=None</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.basis.Basis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Basis class constructor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>basis_type</strong> (<em>string</em>) &#8211; The type of index set to be used. Options include:
+<cite>Total order</cite>, <cite>Tensor grid</cite>, <cite>Sparse grid</cite>, <cite>Hyperbolic basis</cite> and <cite>Euclidean degree</cite>. All basis are isotropic. If you require anisotropic basis do email us.</li>
+<li><strong>orders</strong> (<em>ndarray</em>) &#8211; List of integers corresponding to the highest polynomial order in each direction.</li>
+<li><strong>growth_rule</strong> (<em>string</em>) &#8211; The type of growth rule associated with sparse grids. Options include: <a href="#id1"><span class="problematic" id="id2">`</span></a>linear&#8217; and <a href="#id3"><span class="problematic" id="id4">`</span></a>exponential&#8217;. This input is only required when using a sparse grid.</li>
+<li><strong>dimensions</strong> (<em>integer</em>) &#8211; The number of dimensions of the problem. This input is only required when using a sparse grid.</li>
+<li><strong>q</strong> (<em>double</em>) &#8211; The <a href="#id5"><span class="problematic" id="id6">`</span></a>q&#8217; parameter is used to control the number of basis terms used in a hyperbolic basis. It varies between 0.0 to 1.0. A value of 1.0 yields a total order basis.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd><ul class="first last simple">
+<li><strong>self.dimension</strong>: (integer) Number of dimensions of the index set.</li>
+<li><strong>self.elements</strong>: (numpy array) The multi-indices of the index set.</li>
+<li><strong>self.cardinality</strong>:(integer) The cardinality of the index set.</li>
+</ul>
+</dd>
+</dl>
+<p><strong>Notes:</strong></p>
+<p>For details on the Euclidean degree see: <a class="reference external" href="https://arxiv.org/pdf/1608.02216v1.pdf">Trefethen 2016</a>.
+Note that all index sets are sorted in the constructor automatically, by their total orders. We will be adding non-isotropic index sets in a future release. Stay tuned!</p>
+<dl class="method">
+<dt id="equadratures.basis.Basis.getBasis">
+<code class="descname">getBasis</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.basis.Basis.getBasis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the index set elements for the Basis object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>object</strong> (<a class="reference internal" href="#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) &#8211; An instance of the Basis class.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.basis.Basis.prune">
+<code class="descname">prune</code><span class="sig-paren">(</span><em>number_of_elements_to_delete</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.basis.Basis.prune" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prunes down the number of elements in an index set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>object</strong> (<a class="reference internal" href="#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) &#8211; An instance of the Basis class.</li>
+<li><strong>number_of_elements_to_delete</strong> (<em>integer</em>) &#8211; The number of multi-indices the user would like to delete.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.basis.Basis.setOrders">
+<code class="descname">setOrders</code><span class="sig-paren">(</span><em>orders</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.basis.Basis.setOrders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the highest order in each direction of the basis.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>object</strong> (<a class="reference internal" href="#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) &#8211; An instance of the Basis class.</li>
+<li><strong>orders</strong> (<em>list</em>) &#8211; The highest polynomial order along each dimension.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.basis.Basis.sort">
+<code class="descname">sort</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.basis.Basis.sort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Routine that sorts a multi-index in ascending order based on the total orders. The constructor by default calls this function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>object</strong> (<a class="reference internal" href="#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) &#8211; An instance of the Basis class.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2016-2018 by Effective Quadratures.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

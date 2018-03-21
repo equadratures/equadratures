@@ -7,9 +7,6 @@
 # figs directory
 figs/
 
-# docs directory
-documentation/
-
 # test data
 
 # *.npz
@@ -48,4 +45,3 @@ nosetests.xml
 *.mo
 .eggs
 
-*.html

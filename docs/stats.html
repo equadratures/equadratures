@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Statistics utilities &#8212;   v6.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootswatch-3.3.6/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     'v6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="  v6.0 documentation" href="index.html" />
+    <link rel="up" title="Utilities" href="utilities.html" />
+    <link rel="next" title="Plotting utilities" href="plotting.html" />
+    <link rel="prev" title="Convex optimization utilities" href="convex.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default ">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html"><span><img src="_static/logo.png"></span>
+           </a>
+        <span class="navbar-text navbar-version pull-left"><b>v6.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">  <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="corecode.html">Core code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="poly.html">Polynomials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distributions.html">Probability distributions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="utilities.html">Utilities</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dr.html">Dimension reduction utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="convex.html">Convex optimization utilities</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Statistics utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plotting.html">Plotting utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Statistics utilities</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="convex.html" title="Previous Chapter: Convex optimization utilities"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Convex optimi...</span>
+    </a>
+  </li>
+  <li>
+    <a href="plotting.html" title="Next Chapter: Plotting utilities"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Plotting util... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/stats.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="module-equadratures.stats">
+<span id="statistics-utilities"></span><h1>Statistics utilities<a class="headerlink" href="#module-equadratures.stats" title="Permalink to this headline">¶</a></h1>
+<p>Computing Statistics from Polynomial Expansions</p>
+<dl class="class">
+<dt id="equadratures.stats.Statistics">
+<em class="property">class </em><code class="descclassname">equadratures.stats.</code><code class="descname">Statistics</code><span class="sig-paren">(</span><em>coefficients</em>, <em>basis</em>, <em>parameters</em>, <em>quadrature_points=None</em>, <em>quadrature_weights=None</em>, <em>polynomial_evals=None</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.stats.Statistics" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>coefficients</strong> (<em>numpy-matrix</em>) &#8211; Coefficients from a polynomial expansion. Can be computed using any technique.</li>
+<li><strong>basis</strong> (<a class="reference internal" href="basis.html#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) &#8211; Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd><ul class="first last simple">
+<li><strong>self.mean</strong>: (double) Mean of the polynomial expansion.</li>
+<li><strong>self.variance</strong>: (double) Variance of the polynomial expansion.</li>
+<li><strong>self.sobol</strong>:(dict) Sobol&#8217; indices of order up to number of dimensions.</li>
+</ul>
+</dd>
+</dl>
+<p><strong>Notes:</strong>
+In a future release we will be incorporating second order Sobol indices, skewness and kurtosis based indices. Stay tuned!</p>
+<dl class="method">
+<dt id="equadratures.stats.Statistics.getCondKurtosis">
+<code class="descname">getCondKurtosis</code><span class="sig-paren">(</span><em>order=1</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.stats.Statistics.getCondKurtosis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get conditional kurtosis indices at specified order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>int</strong> (<em>order</em>) &#8211; The order at which conditional kurtosis indices are computed. By default, computes first order conditional kurtosis.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">indices, Dictionary where keys specify non-zero dimensions and values represent conditional kurtosis indices.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample usage:</strong>
+stats = Statistics(coeffcients, basis)
+first_order_kurtosis = stats.getCondKurtosis(1)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.stats.Statistics.getCondSkewness">
+<code class="descname">getCondSkewness</code><span class="sig-paren">(</span><em>order=1</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.stats.Statistics.getCondSkewness" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get conditional skewness indices at specified order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>int</strong> (<em>order</em>) &#8211; The order at which conditional skewness indices are computed. By default, computes first order conditional skewness.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">indices, Dictionary where keys specify non-zero dimensions and values represent conditional skewness indices.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample usage:</strong>
+stats = Statistics(coeffcients, basis)
+first_order_skewness = stats.getCondSkewness(1)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.stats.Statistics.getSobol">
+<code class="descname">getSobol</code><span class="sig-paren">(</span><em>order=1</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.stats.Statistics.getSobol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Sobol&#8217; indices at specified order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>int</strong> (<em>order</em>) &#8211; The order at which Sobol&#8217; indices are computed. By default, computes first order Sobol&#8217; indices.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">indices, Dictionary where keys specify non-zero dimensions and values represent Sobol&#8217; indices.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample usage:</strong>
+stats = Statistics(coeffcients, basis)
+fosi = stats.getSobol(1)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.stats.Statistics.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>filename=None</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.stats.Statistics.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a bar graph of the first order Sobol indices</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>object</strong> (<a class="reference internal" href="#equadratures.stats.Statistics" title="equadratures.stats.Statistics"><em>Statistics</em></a>) &#8211; An instance of the Statistics class.</li>
+<li><strong>filename</strong> (<em>string</em>) &#8211; A file name in case the user wishes to save the bar graph. The default output is an eps file.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample usage:</strong>
+For useage please see the ipython-notebooks at www.effective-quadratures.org</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2016-2018 by Effective Quadratures.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

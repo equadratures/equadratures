@@ -9,6 +9,7 @@ Utilities
    convex
    stats
    plotting
+   qr
 
 
 

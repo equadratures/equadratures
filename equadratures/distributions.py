@@ -73,7 +73,7 @@ def iCDF_BetaDistribution(xx, a, b, lower, upper):
         Second shape parameter of the beta distribution. This value has to be greater than 0.
     :param double lower:
         Lower bound of the support of the beta distribution.
-    :param double lower:
+    :param double upper:
         Upper bound of the support of the beta distribution.
     :return:
         Inverse CDF samples associated with the beta distribution.
@@ -123,7 +123,7 @@ def iCDF_TruncatedGaussianDistribution(xx, mu, sigma, a, b):
         Standard deviation of the Gaussian distribution.
     :param double lower:
         Lower bound of the support of the truncated Gaussian distribution.
-    :param double lower:
+    :param double upper:
         Upper bound of the support of the truncated Gaussian distribution.
     :return:
         Inverse CDF samples associated with the truncated Gaussian distribution.
@@ -137,20 +137,14 @@ def iCDF_TruncatedGaussianDistribution(xx, mu, sigma, a, b):
 
 def iCDF_CustomDistribution(xx, data):
     """
-    An inverse custom cumulative density function. Here the custom 
+    An inverse custom cumulative density function. Here the custom distriution is based on the input data.
 
     :param xx:
         A numpy array of uniformly distributed samples between [0,1].
-    :param double mu:
-        Mean of the Gaussian distribution.
-    :param doublesigma:
-        Standard deviation of the Gaussian distribution.
-    :param double lower:
-        Lower bound of the support of the truncated Gaussian distribution.
-    :param double lower:
-        Upper bound of the support of the truncated Gaussian distribution.
+    :param array data:
+        An array of data samples from which a custom distribution is generated.
     :return:
-        Inverse CDF samples associated with the truncated Gaussian distribution.
+        Inverse CDF samples associated with the custom distribution.
     """
     [x, y] = PDF_CustomDistribution(1000, data)
     c = []
@@ -169,14 +163,46 @@ def iCDF_CustomDistribution(xx, data):
                 break
     return yy
 
-# Cumulative distribution
+
 def CDF_GaussianDistribution(N, mu, sigma):
+    """
+    A Gaussian cumulative density function.
+
+    :param integer N:
+        Number of points for defining the cumulative density function.
+    :param double mu:
+        Mean of the Gaussian distribution.
+    :param sigma:
+        Standard deviation of the Gaussian distribution.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Cumulative density values along the support of the distribution.
+    """
     x = np.linspace(-15*sigma, 15*sigma, N)
     x = x + mu # scaling it by the mean!
     w = 0.5*(1 + erf((x - mu)/(sigma * np.sqrt(2) ) ) )
     return x, w
 
 def CDF_TruncatedGaussianDistribution(N, mu, sigma, a, b):
+    """
+    A truncated Gaussian cumulative density function.
+
+    :param integer N:
+        Number of points for defining the cumulative density function.
+    :param double mu:
+        Mean of the truncated Gaussian distribution.
+    :param doublesigma:
+        Standard deviation of the truncated Gaussian distribution.
+    :param double lower:
+        Lower bound of the support of the truncated Gaussian distribution.
+    :param double upper:
+        Upper bound of the support of the truncated Gaussian distribution.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Cumulative density values along the support of the truncated Gaussian distribution.
+    """
     def cumulative(x):
         return 0.5 * (1 + erf(x/np.sqrt(2)))
     x = np.linspace(a, b, N)
@@ -188,6 +214,24 @@ def CDF_TruncatedGaussianDistribution(N, mu, sigma, a, b):
     return x, w
 
 def CDF_BetaDistribution(N, a, b, lower, upper):
+    """
+    A beta cumulative density function.
+
+    :param integer N:
+        Number of points for defining the cumulative density function.
+    :param double a:
+        First shape parameter of the beta distribution. This value has to be greater than 0.
+    :param double b:
+        Second shape parameter of the beta distribution. This value has to be greater than 0.
+    :param double lower:
+        Lower bound of the support of the beta distribution.
+    :param double upper:
+        Upper bound of the support of the beta distribution.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Cumulative density values along the support of the beta distribution.
+    """
     x = np.linspace(0, 1, N)
     w = np.zeros((N,1))
     for i in range(0, N):
@@ -195,34 +239,114 @@ def CDF_BetaDistribution(N, a, b, lower, upper):
     return x, w
 
 def CDF_WeibullDistribution(N, lambda_value, k):
+    """
+    A Weibull cumulative density function.
+
+    :param integer N:
+        Number of points for defining the cumulative density function.
+    :param double lambda_value:
+        Scale parameter of the Weibull distribution. This parameter must be greater than 0.
+    :param double k:
+        Shape parameter of the Weibull distribution. This parameter must be greater than 0.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Cumulative density values along the support of the Weibull distribution.
+    """
     x = np.linspace(0, 15/k, N)
     w = 1 - np.exp(-1.0 * ( (x) / (lambda_value * 1.0)  )**k )
     return x, w
 
 def CDF_UniformDistribution(N, lower, upper):
-     x = np.linspace(lower, upper, N)
-     w = np.zeros((N, 1))
-     for i in range(0, N):
-         w[i] = (x[i] - lower)/(upper - lower)
-     return x, w
+    """
+    A uniform cumulative density function.
+
+    :param integer N:
+        Number of points for defining the cumulative density function.
+    :param double lower:
+        Lower bound of the support of the uniform distribution.
+    :param double upper:
+        Upper bound of the support of the uniform distribution.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Cumulative density values along the support of the uniform distribution.
+    """
+    x = np.linspace(lower, upper, N)
+    w = np.zeros((N, 1))
+    for i in range(0, N):
+        w[i] = (x[i] - lower)/(upper - lower)
+    return x, w
 
 def CDF_GammaDistribution(N, k, theta):
+    """
+    A gamma cumulative density function.
+
+    :param integer N:
+        Number of points for defining the cumulative density function.
+    :param double k:
+        Shape parameter of the gamma distribution. This value has to be greater than 0.
+    :param double theta:
+        Scale parameter of the gamma distribution. This value has to be greater than 0.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Cumulative density values along the support of the Gamma distribution.
+    """
     x = np.linspace(0, k*theta*10, N)
     w = 1.0/(gamma(k)) * gammainc(k, x/theta)
     return x, w
 
 def CDF_CauchyDistribution(N, x0, gammavalue):
+    """
+    A Cauchy cumulative density function.
+
+    :param integer N:
+        Number of points for defining the cumulative density function.
+    :param double x0:
+        Location parameter of the Cauchy distribution.
+    :param double gammavalue:
+        Scale parameter associated with the Cauchy distribution.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Cumulative density values along the support of the Cauchy distribution.
+    """
     x = np.linspace(-15*gammavalue, 15*gammavalue, N)
     x = x + x0
     w = 1.0/np.pi * np.arctan((x - x0) / gammavalue) + 0.5
     return x, w
 
 def CDF_ExponentialDistribution(N, lambda_value):
+    """
+    An exponential cumulative density function.
+
+    :param integer N:
+        Number of points for defining the cumulative density function.
+    :param double lambda_value:
+        Rate parameter of the exponential distribution. This parameter must be greater than 0.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Cumulative density values along the support of the exponential distribution.
+    """
     x = np.linspace(0, 20*lambda_value, N)
     w = 1 - np.exp(-lambda_value * x)
     return x, w
 
 def CDF_CustomDistribution(N, data):
+    """
+    A cumulative density function associated with a given data set.
+
+    :param integer N:
+        Number of points for defining the cumulative density function.
+    :param array data:
+        An array of data samples from which a custom distribution is generated.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Cumulative density values along the support of the custom distribution.
+    """
     x, y = PDF_CustomDistribution(N, data)
     c = []
     c.append(0.0)
@@ -234,6 +358,22 @@ def CDF_CustomDistribution(N, data):
 
 
 def PDF_CustomDistribution(N, data):
+    """
+    A probability density function associated with a given data set.
+
+    :param integer N:
+        Number of points for defining the probability density function.
+    :param array data:
+        An array of data samples from which a custom distribution is generated.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Probability density values along the support of the custom distribution.
+
+    **Notes:**
+
+    To obtain a probability density function from finite samples, this function uses kernel density estimation (with a Gaussian kernel).
+    """
     mean = np.mean(data)
     std = np.std(data)
     lower = mean - (np.sqrt(std) * 5.0)
@@ -244,11 +384,43 @@ def PDF_CustomDistribution(N, data):
     return xo, wts
 
 def PDF_UniformDistribution(N, lower, upper):
+    """
+    A uniform probability distribution.
+
+    :param integer N:
+        Number of points for defining the probability density function.
+    :param double lower:
+        Lower bound of the support of the uniform distribution.
+    :param double upper:
+        Upper bound of the support of the uniform distribution.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Probability density values along the support of the uniform distribution.
+    """
     x = np.linspace(lower, upper, N)
     w = 0*x + (1.0)/(upper - lower)
     return x, w
 
 def PDF_BetaDistribution(N, a, b, lower, upper):
+    """
+    A beta probability distribution.
+
+    :param integer N:
+        Number of points for defining the probability density function.
+    :param double a:
+        First shape parameter of the beta distribution. This value has to be greater than 0.
+    :param double b:
+        Second shape parameter of the beta distribution. This value has to be greater than 0.
+    :param double lower:
+        Lower bound of the support of the uniform distribution.
+    :param double upper:
+        Upper bound of the support of the uniform distribution.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Probability density values along the support of the beta distribution.
+    """
     x = np.linspace(0, 1, N)
     w = (x**(a - 1) * (1 - x)**(b - 1))/(beta(a, b) )
     xreal = np.linspace(lower, upper, N)
@@ -256,34 +428,120 @@ def PDF_BetaDistribution(N, a, b, lower, upper):
     return xreal, wreal
 
 def PDF_GaussianDistribution(N, mu, sigma):
+    """
+    A Gaussian probability distribution.
+
+    :param integer N:
+        Number of points for defining the probability density function.
+    :param double mu:
+        Mean of the Gaussian distribution.
+    :param sigma:
+        Standard deviation of the Gaussian distribution.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Probability density values along the support of the Gaussian distribution.
+    """
     x = np.linspace(-15*sigma, 15*sigma, N)
     x = x + mu # scaling it by the mean!
     w = 1.0/( np.sqrt(2 * sigma**2 * np.pi) ) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma**2) )
     return x, w
 
 def PDF_WeibullDistribution(N, lambda_value, k):
+    """
+    A Weibull probability density function.
+
+    :param integer N:
+        Number of points for defining the probability density function.
+    :param double lambda_value:
+        Scale parameter of the Weibull distribution. This parameter must be greater than 0.
+    :param double k:
+        Shape parameter of the Weibull distribution. This parameter must be greater than 0.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Probability density values along the support of the Weibull distribution.
+    """
     x = np.linspace(0, 15/k, N)
     w = k/lambda_value * (x/lambda_value)**(k-1) * np.exp(-1.0 * (x/lambda_value)**k )
     return x, w
 
 def PDF_GammaDistribution(N, k, theta):
+    """
+    A gamma probability density function.
+
+    :param integer N:
+        Number of points for defining the probability density function.
+    :param double k:
+        Shape parameter of the gamma distribution. This value has to be greater than 0.
+    :param double theta:
+        Scale parameter of the gamma distribution. This value has to be greater than 0.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Probability density values along the support of the Gamma distribution.
+    """
     x = np.linspace(0, k*theta*10, N)
     w = 1.0/(gamma(k) * theta**k) * x**(k-1) * np.exp(-x/theta)
     return x, w
 
 def PDF_CauchyDistribution(N, x0, gammavalue):
+    """
+    A Cauchy probability density function.
+
+    :param integer N:
+        Number of points for defining the probability density function.
+    :param double x0:
+        Location parameter of the Cauchy distribution.
+    :param double gammavalue:
+        Scale parameter associated with the Cauchy distribution.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Probability density values along the support of the Cauchy distribution.
+    """
     x = np.linspace(-15*gammavalue, 15*gammavalue, N)
     x = x + x0
     w = 1.0/(np.pi * gammavalue * (1 + ((x - x0)/(gammavalue))**2) )
     return x, w
 
 def PDF_ExponentialDistribution(N, lambda_value):
+    """
+    An exponential probability density function.
+
+    :param integer N:
+        Number of points for defining the probability density function.
+    :param double lambda_value:
+        Rate parameter of the exponential distribution. This parameter must be greater than 0.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Probability density values along the support of the exponential distribution.
+    """
     x = np.linspace(0, 20*lambda_value, N)
     w = lambda_value * np.exp(-lambda_value * x)
     return x, w
 
 
 def  PDF_TruncatedGaussianDistribution(N, mu, sigma, a, b):
+    """
+    A truncated Gaussian probability density function.
+
+    :param integer N:
+        Number of points for defining the probability density function.
+    :param double mu:
+        Mean of the truncated Gaussian distribution.
+    :param doublesigma:
+        Standard deviation of the truncated Gaussian distribution.
+    :param double lower:
+        Lower bound of the support of the truncated Gaussian distribution.
+    :param double upper:
+        Upper bound of the support of the truncated Gaussian distribution.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Probability density values along the support of the truncated Gaussian distribution.
+    """
     x = np.linspace(a, b, N)
     w = 1.0/( np.sqrt(2 * sigma**2 * np.pi)) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma**2) )
     w = 1.0/sigma * w
@@ -292,6 +550,7 @@ def  PDF_TruncatedGaussianDistribution(N, mu, sigma, a, b):
     w = w / (first_term - second_term)
     return x, w
 
+# A private function!
 def GaussianCDF(constant, mu, sigma):
     w = 1.0/2 * (1 + erf((constant - mu)/(sigma * np.sqrt(2))) )
     return w

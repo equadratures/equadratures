@@ -1,4 +1,17 @@
-"""Operations involving multivariate polynomials (without gradients) via numerical quadrature"""
+"""Operations involving multivariate polynomials (without gradients) via numerical quadrature. The following quadrature techniques are available for coefficient computation:
+    1. Tensor grids;
+    2. Sparse pseudospectral approximation method;
+    3. Effectively subsampled quadratures (both QR and SVD);
+    4. Christoffel subsamples;
+    5. Induced subsamples;
+    6. Randomized quadrature.
+
+References:
+    - Seshadri, P., Narayan, A., & Mahadevan, S. (2017). Effectively Subsampled Quadratures for Least Squares Polynomial Approximations. SIAM/ASA Journal on Uncertainty Quantification, 5(1), 1003-1023. `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`_.
+    - Constantine, P. G., Eldred, M. S., & Phipps, E. T. (2012). Sparse pseudospectral approximation method. Computer Methods in Applied Mechanics and Engineering, 229, 1-12. `Paper <https://www.sciencedirect.com/science/article/pii/S0045782512000953>`_.
+    - Zhou, T., Narayan, A., & Xiu, D. (2015). Weighted discrete least-squares polynomial approximation using randomized quadratures. Journal of Computational Physics, 298, 787-800. `Paper <https://www.sciencedirect.com/science/article/pii/S0021999115004404>`_.
+    - Narayan, A., Jakeman, J., & Zhou, T. (2017). A Christoffel function weighted least squares algorithm for collocation approximations. Mathematics of Computation, 86(306), 1913-1947. `Paper <http://www.ams.org/journals/mcom/2017-86-306/S0025-5718-2016-03192-0/home.html>`_.
+"""
 from parameter import Parameter
 from basis import Basis
 from poly import Poly
@@ -10,20 +23,15 @@ class Polyint(Poly):
     """
     This class defines a Polyint (polynomial via integration) object
 
-    :param array of Parameters uq_parameters: A list of Parameters
-    :param IndexSet index_set: An instance of the IndexSet class, in case the user wants to overwrite the indices that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter corresponds to a tensor grid index set and is the default option if no index_set parameter input is given.
-
-    **Sample declarations**
-    ::
-        >> s = Parameter(lower=-2, upper=2, param_type='Uniform', points=4)
-        >> T = IndexSet('Total order', [3,3])
-        >> polyObject = Polynomial([s,s],T) # basis is defined by T
-
-        >> s = Parameter(lower=-2, upper=2, param_type='Uniform')
-        >> polyObject = Polynomial([s,s]) # Tensor basis is used
+    :param Parameter parameters:
+        A list of parameters.
+    :param Basis basis:
+        A basis selected for the multivariate polynomial.
+    :param string sampling:
+        The sampling technique. Choose from: 'tensor grid quadrature' (default), 'sparse grid quadrature', 'effectively subsampled quadrature', 'Christoffel subsamples', 'Induced subsamples' and 'randomized quadrature'.
+    :param callable fun:
+        Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.
     """
-
-    # Constructor
     def __init__(self, parameters, basis, sampling=None, fun=None):
         super(Polyint, self).__init__(parameters, basis)
         if sampling is None:
@@ -32,6 +40,12 @@ class Polyint(Poly):
 
     @staticmethod
     def setSamplingMethod(self):
+        """
+        This function sets the quadrature method.
+
+        :param Polyint self:
+            An instance of the Polyint class.
+        """
         if not(self.sampling.lower() in ["tensor grid quadrature", "sparse grid quadrature", "effectively subsampled quadrature",
             "Christoffel subsampled", "induced distribution samples", "randomized quadrature"]) :
             raise(ValueError, 'Polyint:generatePointsForEvaluation:: Sampling method not defined! Choose from existing ones.')
@@ -60,10 +74,9 @@ class Polyint(Poly):
 
     def getPolynomialCoefficients(self, function):
         """
-        Returns multivariate orthonormal polynomial coefficients. Depending on the choice of the index set, this function will either return a tensor grid
-        of pseudospectral coefficients or a sparse grid using the SPAM technique by Constantine et al (2012).
+        Returns multivariate orthonormal polynomial coefficients.
 
-        :param Polynomial self: An instance of the Polynomial class
+        :param Polyint self: An instance of the Polyint class
         :param: callable function: The function that needs to be approximated (or interpolated)
         :return: coefficients: The pseudospectral coefficients
         :rtype: ndarray

@@ -1,12 +1,10 @@
 """Operations involving multivariate polynomials (without gradients) via numerical quadrature"""
-#from .parameter import Parameter
+from parameter import Parameter
+from basis import Basis
+from poly import Poly
 import numpy as np
-from math import factorial
-from itertools import combinations
-from .utils import evalfunction, find_repeated_elements, meshgrid, removeDuplicates
-from .plotting import bestfit, bestfit3D, histogram
-from .qr import solveLSQ
-#from .stats import Statistics
+from stats import Statistics, getAllSobol
+import scipy
 
 class Polyint(Poly):
     """
@@ -14,8 +12,8 @@ class Polyint(Poly):
 
     :param array of Parameters uq_parameters: A list of Parameters
     :param IndexSet index_set: An instance of the IndexSet class, in case the user wants to overwrite the indices that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter corresponds to a tensor grid index set and is the default option if no index_set parameter input is given.
-    
-    **Sample declarations** 
+
+    **Sample declarations**
     ::
         >> s = Parameter(lower=-2, upper=2, param_type='Uniform', points=4)
         >> T = IndexSet('Total order', [3,3])
@@ -26,43 +24,45 @@ class Polyint(Poly):
     """
 
     # Constructor
-    def __init__(self, parameters, basis, sampling=Nonem fun=None):
+    def __init__(self, parameters, basis, sampling=None, fun=None):
         super(Polyint, self).__init__(parameters, basis)
         if sampling is None:
             sampling = 'tensor grid quadrature'
         self.setSamplingMethod()
-    
+
     @staticmethod
     def setSamplingMethod(self):
         if not(self.sampling.lower() in ["tensor grid quadrature", "sparse grid quadrature", "effectively subsampled quadrature",
             "Christoffel subsampled", "induced distribution samples", "randomized quadrature"]) :
-            raise(ValueError, 'Polyint:generatePointsForEvaluation:: Sampling method not defined! Choose from existing ones.') 
+            raise(ValueError, 'Polyint:generatePointsForEvaluation:: Sampling method not defined! Choose from existing ones.')
         if sampling.lower() == 'tensor grid quadrature':
             points, weights = self.tensor_grid_quadrature()
         elif sampling.lower() == 'sparse grid quadrature':
             points, weights = self.sparse_grid_quadrature()
         elif sampling.lower() == 'effectively subsampled quadrature':
             points, weights = self.effective_quadrature()
-        elif sampling.lower() == 'randomized quadrature'
+        elif sampling.lower() == 'randomized quadrature':
             points, weights = self.randomized_quadrature()
         elif sampling.lower() == 'Christoffel subsampled':
             points, weights = self.christoffel_quadrature()
-        elif sampling.lower() == 'induced distribution samples'
+        elif sampling.lower() == 'induced distribution samples':
+            points, weights = self.induced_quadrature()
         self.points = points
         self.weights = weights
 
 
     def tensor_grid_quadrature(self):
+        return 0
 
     def computeCoefficients(self):
         if sampling.lower() == 'tensor grid':
-            self.coefficients, self.basis_elements, 
+            self.coefficients, self.basis_elements,
 
-    def getPolynomialCoefficients(self, function):  
+    def getPolynomialCoefficients(self, function):
         """
         Returns multivariate orthonormal polynomial coefficients. Depending on the choice of the index set, this function will either return a tensor grid
-        of pseudospectral coefficients or a sparse grid using the SPAM technique by Constantine et al (2012). 
-    
+        of pseudospectral coefficients or a sparse grid using the SPAM technique by Constantine et al (2012).
+
         :param Polynomial self: An instance of the Polynomial class
         :param: callable function: The function that needs to be approximated (or interpolated)
         :return: coefficients: The pseudospectral coefficients
@@ -77,7 +77,7 @@ class Polyint(Poly):
         method = self.index_sets.index_set_type
         # Get the right polynomial coefficients
         if method == "Tensor grid":
-            
+            coefficients = 0.
         if method == "Sparse grid":
             coefficients, indexset, evaled_pts = getSparsePseudospectralCoefficients(self, function)
         else:
@@ -91,14 +91,14 @@ class Polyint(Poly):
 #--------------------------------------------------------------------------------------------------------------
 def tensorgrid(stackOfParameters, function=None):
     """
-    Computes a tensor grid of quadrature points based on the distributions for each Parameter in stackOfParameters 
+    Computes a tensor grid of quadrature points based on the distributions for each Parameter in stackOfParameters
 
     :param Parameter array stackOfParameters: A list of Parameter objects
     :param callable function: The function whose integral needs to be computed. Can also be input as an array of function values at the
         quadrature points. If the function is given as a callable, then this routine outputs the integral of the function and an array of
         the points at which the function was evaluated at to estimate the integral. These are the quadrature points. In case the function is
-        not given as a callable (or an array, for that matter), then this function outputs the quadrature points and weights. 
-      
+        not given as a callable (or an array, for that matter), then this function outputs the quadrature points and weights.
+
     :return: tensor_int: The tensor grid approximation of the integral
     :rtype: double
     :return: points:  The quadrature points
@@ -128,7 +128,7 @@ def tensorgrid(stackOfParameters, function=None):
 
     # Now compute the points and weights
     points, weights = polyObject.getPointsAndWeights()
-    
+
     # For normalizing!
     for i in range(0, dimensions):
         if flags[i] == 0:
@@ -146,7 +146,7 @@ def tensorgrid(stackOfParameters, function=None):
 
 def sparsegrid(stackOfParameters, level, growth_rule, function=None):
     """
-    Computes a sparse grid of quadrature points based on the distributions for each Parameter in stackOfParameters 
+    Computes a sparse grid of quadrature points based on the distributions for each Parameter in stackOfParameters
 
     :param Parameter array stackOfParameters: A list of Parameter objects
     :param integer level: Level parameter of the sparse grid integration rule
@@ -154,8 +154,8 @@ def sparsegrid(stackOfParameters, level, growth_rule, function=None):
     :param callable function: The function whose integral needs to be computed. Can also be input as an array of function values at the
         quadrature points. If the function is given as a callable, then this routine outputs the integral of the function and an array of
         the points at which the function was evaluated at to estimate the integral. These are the quadrature points. In case the function is
-        not given as a callable (or an array, for that matter), then this function outputs the quadrature points and weights. 
-      
+        not given as a callable (or an array, for that matter), then this function outputs the quadrature points and weights.
+
     :return: sparse_int: The sparse grid approximation of the integral
     :rtype: double
     :return: points:  The quadrature points
@@ -176,7 +176,7 @@ def sparsegrid(stackOfParameters, level, growth_rule, function=None):
             flags.append(uniform)
         else:
             flags.append(not_uniform)
-        
+
     # Call the sparse grid index set
     sparse = IndexSet('Sparse grid', level=level, growth_rule=growth_rule, dimension=dimensions)
     sparse_index, sparse_coeffs, sparse_all_elements =  sparse.getIndexSet()
@@ -187,14 +187,14 @@ def sparsegrid(stackOfParameters, level, growth_rule, function=None):
     points_store = []
     weights_store = []
     factor = 1
-    
+
 
     # Now get the tensor grid for each sparse_index
     for i in range(0, rows):
 
         # loop through the dimensions
         for j in range(0, dimensions):
-            orders[i,j] = np.array(sparse_index[i][j]) 
+            orders[i,j] = np.array(sparse_index[i][j])
 
         # points and weights for each order~
         tensor = IndexSet('Tensor grid', orders[i,:])
@@ -212,7 +212,7 @@ def sparsegrid(stackOfParameters, level, growth_rule, function=None):
 
     dims1 = int( len(points_store) / dimensions )
     points_store = np.reshape(points_store, ( dims1, dimensions ) )
-    
+
     # For normalizing!
     for i in range(0, dimensions):
         if flags[i] == 0:
@@ -231,7 +231,7 @@ def sparsegrid(stackOfParameters, level, growth_rule, function=None):
         return points_store, weights_store
 
 def getPseudospectralCoefficients(self, function, override_orders=None):
-    
+
     stackOfParameters = self.uq_parameters
     dimensions = len(stackOfParameters)
     q0 = [1.0]
@@ -248,8 +248,8 @@ def getPseudospectralCoefficients(self, function, override_orders=None):
             if orders[i] == 1:
                 q0 = np.kron(q0, Qmatrix)
             else:
-                q0 = np.kron(q0, Qmatrix[0,:])   
-            
+                q0 = np.kron(q0, Qmatrix[0,:])
+
     else:
         for i in range(0, dimensions):
             orders.append(override_orders[i])
@@ -300,7 +300,7 @@ def getPseudospectralCoefficients(self, function, override_orders=None):
 
 
 def getSparsePseudospectralCoefficients(self, function):
-    
+
     # INPUTS
     stackOfParameters = self.uq_parameters
     indexSets = self.index_sets
@@ -384,7 +384,7 @@ def getSparsePseudospectralCoefficients(self, function):
     for i in range(0, len(indices)):
         for j in range(0, dimensions):
             indices[i,j] = int(indices[i,j])
-    
+
     K = np.column_stack(coefficients)
     return K, indices, points_saved
 
@@ -427,5 +427,3 @@ def nchoosek(n, k):
     numerator = factorial(n)
     denominator = factorial(k) * factorial(n - k)
     return (1.0 * numerator) / (1.0 * denominator)
-
-

@@ -1,23 +1,83 @@
-#!/usr/bin/env python
-"""Sample probability density functions"""
+"""A set of utilities for cmputing probability and cumulative density functions"""
 import numpy as np
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 import scipy.stats as stats
 
-# inverse-CDFs
 def iCDF_Gaussian(xx, mu, sigma):
+    """
+    An inverse Gaussian cumulative density function.
+
+    :param array xx:
+        A numpy array of uniformly distributed samples between [0,1].
+    :param double mu:
+        Mean of the Gaussian distribution.
+    :param doublesigma:
+        Standard deviation of the Gaussian distribution.
+    :return:
+        Inverse CDF samples associated with the Gaussian distribution.
+    """
     return mu + sigma * np.sqrt(2.0) * erfinv(2.0*xx - 1.0)
 
 def iCDF_CauchyDistribution(xx, x0, gammavalue):
+    """
+    An inverse Cauchy cumulative density function.
+
+    :param array xx:
+        A numpy array of uniformly distributed samples between [0,1].
+    :param double x0:
+        Location parameter of the Cauchy distribution.
+    :param double gammavalue:
+        Scale parameter associated with the Cauchy distribution.
+    :return:
+        Inverse CDF samples associated with the Cauchy distribution.
+    """
     return x0 + gamma * np.tan(np.pi * (xx - 0.5))
 
 def iCDF_WeibullDistribution(xx, lambda_value, k):
+    """
+    An inverse Weibull cumulative density function.
+
+    :param array xx:
+        A numpy array of uniformly distributed samples between [0,1].
+    :param double lambda_value:
+        Scale parameter of the Weibull distribution. This parameter must be greater than 0.
+    :param double k:
+        Shape parameter of the Weibull distribution. This parameter must be greater than 0.
+    :return:
+        Inverse CDF samples associated with the Weibull distribution.
+    """
     return lambda_value * (-np.log(1.0 - xx))**(1.0/k)
 
 def iCDF_ExponentialDistribution(xx, lambda_value):
+    """
+    An inverse exponential cumulative density function.
+
+    :param array xx:
+        A numpy array of uniformly distributed samples between [0,1].
+    :param double lambda_value:
+        Rate parameter of the exponential distribution. This parameter must be greater than 0.
+    :return:
+        Inverse CDF samples associated with the exponential distribution.
+    """
     return (-np.log(1.0 - xx))/(lambda_value)
 
 def iCDF_BetaDistribution(xx, a, b, lower, upper):
+    """
+    An inverse beta cumulative density function.
+
+    :param xx:
+        A numpy array of uniformly distributed samples between [0,1].
+    :param double a:
+        First shape parameter of the beta distribution. This value has to be greater than 0.
+    :param double b:
+        Second shape parameter of the beta distribution. This value has to be greater than 0.
+    :param double lower:
+        Lower bound of the support of the beta distribution.
+    :param double lower:
+        Upper bound of the support of the beta distribution.
+    :return:
+        Inverse CDF samples associated with the beta distribution.
+    """
     yy = []
     [x, c] = CDF_BetaDistribution(1000, a, b, lower, upper)
     for k in range(0, len(xx)):
@@ -29,6 +89,18 @@ def iCDF_BetaDistribution(xx, a, b, lower, upper):
     return yy
 
 def iCDF_GammaDistribution(xx, k, theta):
+    """
+    An inverse gamma cumulative density function.
+
+    :param xx:
+        A numpy array of uniformly distributed samples between [0,1].
+    :param double k:
+        Shape parameter of the gamma distribution. This value has to be greater than 0.
+    :param double theta:
+        Scale parameter of the gamma distribution. This value has to be greater than 0.
+    :return:
+        Inverse CDF samples associated with the gamma distribution.
+    """
     yy = []
     [x, c] = CDF_GammaDistribution(1000, k, theta)
     for k in range(0, len(xx)):
@@ -40,6 +112,22 @@ def iCDF_GammaDistribution(xx, k, theta):
     return yy
 
 def iCDF_TruncatedGaussianDistribution(xx, mu, sigma, a, b):
+    """
+    An inverse truncated Gaussian cumulative density function.
+
+    :param xx:
+        A numpy array of uniformly distributed samples between [0,1].
+    :param double mu:
+        Mean of the Gaussian distribution.
+    :param doublesigma:
+        Standard deviation of the Gaussian distribution.
+    :param double lower:
+        Lower bound of the support of the truncated Gaussian distribution.
+    :param double lower:
+        Upper bound of the support of the truncated Gaussian distribution.
+    :return:
+        Inverse CDF samples associated with the truncated Gaussian distribution.
+    """
     yy = iCDF_Gaussian(xx, mu, sigma)
     for i in range(0, len(xx)):
         if(yy[i,0] < a or yy[i,0] > b):
@@ -48,6 +136,22 @@ def iCDF_TruncatedGaussianDistribution(xx, mu, sigma, a, b):
 
 
 def iCDF_CustomDistribution(xx, data):
+    """
+    An inverse custom cumulative density function. Here the custom 
+
+    :param xx:
+        A numpy array of uniformly distributed samples between [0,1].
+    :param double mu:
+        Mean of the Gaussian distribution.
+    :param doublesigma:
+        Standard deviation of the Gaussian distribution.
+    :param double lower:
+        Lower bound of the support of the truncated Gaussian distribution.
+    :param double lower:
+        Upper bound of the support of the truncated Gaussian distribution.
+    :return:
+        Inverse CDF samples associated with the truncated Gaussian distribution.
+    """
     [x, y] = PDF_CustomDistribution(1000, data)
     c = []
     yy = []

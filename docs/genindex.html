@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Index &#8212;   6.0 documentation</title>
+    <title>Index &#8212;   v6.0 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '6.0',
+        VERSION:     'v6.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -29,7 +29,7 @@
     <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="  6.0 documentation" href="index.html" />
+    <link rel="top" title="  v6.0 documentation" href="index.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
 <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
@@ -49,7 +49,7 @@
         </button>
         <a class="navbar-brand" href="index.html"><span><img src="_static/logo.png"></span>
            </a>
-        <span class="navbar-text navbar-version pull-left"><b>6.0</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>v6.0</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -61,19 +61,22 @@
      id="dLabelGlobalToc"
      data-toggle="dropdown"
      data-target="#"
-     href="index.html">Documentation <b class="caret"></b></a>
+     href="index.html">  <b class="caret"></b></a>
   <ul class="dropdown-menu globaltoc"
       role="menu"
       aria-labelledby="dLabelGlobalToc"><ul>
-<li class="toctree-l1"><a class="reference internal" href="code.html">Code Documentation</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="corecode.html">Core code</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="poly.html">Polynomial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="polyreg.html">Polynomials via Regression</a></li>
-<li class="toctree-l2"><a class="reference internal" href="plotting.html">Plots</a></li>
-<li class="toctree-l2"><a class="reference internal" href="convex.html">Convex optimization utilities</a></li>
 <li class="toctree-l2"><a class="reference internal" href="basis.html">Basis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="stats.html">Statistics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dr.html">Dimension Reduction Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="poly.html">Polynomials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distributions.html">Probability distributions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dr.html">Dimension reduction utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="convex.html">Convex optimization utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stats.html">Statistics utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plotting.html">Plotting utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
@@ -132,11 +135,13 @@
  | <a href="#C"><strong>C</strong></a>
  | <a href="#E"><strong>E</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#I"><strong>I</strong></a>
  | <a href="#J"><strong>J</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
  | <a href="#V"><strong>V</strong></a>
  
 </div>
@@ -172,13 +177,13 @@
   </dt>
 
       
-  <dt><a href="poly.html#equadratures.poly.Poly.clone">clone() (equadratures.poly.Poly method)</a>
+  <dt><a href="polyparent.html#equadratures.poly.Poly.clone">clone() (equadratures.poly.Poly method)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="dr.html#equadratures.dimension_reduction.computeActiveSubspaces">computeActiveSubspaces() (in module equadratures.dimension_reduction)</a>
+  <dt><a href="dr.html#equadratures.dr.computeActiveSubspaces">computeActiveSubspaces() (in module equadratures.dr)</a>
   </dt>
 
       
@@ -192,11 +197,7 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#module-effective_quadratures">effective_quadratures (module)</a>
-  </dt>
-
-      
-  <dt><a href="analyticaldistributions.html#module-effective_quadratures.analyticaldistributions">effective_quadratures.analyticaldistributions (module)</a>
+  <dt><a href="corecode.html#module-equadratures">equadratures (module)</a>, <a href="utilities.html#module-equadratures">[1]</a>
   </dt>
 
       
@@ -208,21 +209,33 @@
   </dt>
 
       
-  <dt><a href="dr.html#module-equadratures.dimension_reduction">equadratures.dimension_reduction (module)</a>
+  <dt><a href="distributions.html#module-equadratures.distributions">equadratures.distributions (module)</a>
+  </dt>
+
+      
+  <dt><a href="dr.html#module-equadratures.dr">equadratures.dr (module)</a>
   </dt>
 
       
   <dt><a href="parameter.html#module-equadratures.parameter">equadratures.parameter (module)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="plotting.html#module-equadratures.plotting">equadratures.plotting (module)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="poly.html#module-equadratures.poly">equadratures.poly (module)</a>
+  <dt><a href="polyparent.html#module-equadratures.poly">equadratures.poly (module)</a>
+  </dt>
+
+      
+  <dt><a href="polycs.html#module-equadratures.polycs">equadratures.polycs (module)</a>
+  </dt>
+
+      
+  <dt><a href="polyint.html#module-equadratures.polyint">equadratures.polyint (module)</a>
   </dt>
 
       
@@ -235,6 +248,10 @@
 
       
   <dt><a href="plotting.html#equadratures.plotting.errorplot2D">errorplot2D() (in module equadratures.plotting)</a>
+  </dt>
+
+      
+  <dt><a href="polyparent.html#equadratures.poly.Poly.evaluatePolyGradFit">evaluatePolyGradFit() (equadratures.poly.Poly method)</a>
   </dt>
 
   </dl></td>
@@ -260,15 +277,13 @@
   </dt>
 
       
-  <dt><a href="poly.html#equadratures.poly.Poly.getFunctionPDF">getFunctionPDF() (equadratures.poly.Poly method)</a>
+  <dt><a href="polyparent.html#equadratures.poly.Poly.getFunctionSamples">getFunctionSamples() (equadratures.poly.Poly method)</a>
   </dt>
 
       
   <dt><a href="parameter.html#equadratures.parameter.Parameter.getiCDF">getiCDF() (equadratures.parameter.Parameter method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="parameter.html#equadratures.parameter.Parameter.getJacobiEigenvectors">getJacobiEigenvectors() (equadratures.parameter.Parameter method)</a>
   </dt>
@@ -279,6 +294,32 @@
 
       
   <dt><a href="parameter.html#equadratures.parameter.Parameter.getPDF">getPDF() (equadratures.parameter.Parameter method)</a>
+  </dt>
+
+      
+  <dt><a href="polyparent.html#equadratures.poly.Poly.getPolyFitFunction">getPolyFitFunction() (equadratures.poly.Poly method)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="polyparent.html#equadratures.poly.Poly.getPolyGradFitFunction">getPolyGradFitFunction() (equadratures.poly.Poly method)</a>
+  </dt>
+
+      
+  <dt><a href="polyparent.html#equadratures.poly.Poly.getPolynomial">getPolynomial() (equadratures.poly.Poly method)</a>
+  </dt>
+
+      
+  <dt><a href="polyint.html#equadratures.polyint.Polyint.getPolynomialCoefficients">getPolynomialCoefficients() (equadratures.polyint.Polyint method)</a>
+  </dt>
+
+      
+  <dt><a href="polyparent.html#equadratures.poly.Poly.getPolynomialGradient">getPolynomialGradient() (equadratures.poly.Poly method)</a>
+  </dt>
+
+      
+  <dt><a href="polyparent.html#equadratures.poly.Poly.getQuadratureRule">getQuadratureRule() (equadratures.poly.Poly method)</a>
   </dt>
 
       
@@ -293,6 +334,54 @@
   <dt><a href="stats.html#equadratures.stats.Statistics.getSobol">getSobol() (equadratures.stats.Statistics method)</a>
   </dt>
 
+      
+  <dt><a href="polyparent.html#equadratures.poly.Poly.getStatistics">getStatistics() (equadratures.poly.Poly method)</a>
+  </dt>
+
+      
+  <dt><a href="polyparent.html#equadratures.poly.Poly.getTensorQuadratureRule">getTensorQuadratureRule() (equadratures.poly.Poly method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="distributions.html#equadratures.distributions.iCDF_BetaDistribution">iCDF_BetaDistribution() (in module equadratures.distributions)</a>
+  </dt>
+
+      
+  <dt><a href="distributions.html#equadratures.distributions.iCDF_CauchyDistribution">iCDF_CauchyDistribution() (in module equadratures.distributions)</a>
+  </dt>
+
+      
+  <dt><a href="distributions.html#equadratures.distributions.iCDF_CustomDistribution">iCDF_CustomDistribution() (in module equadratures.distributions)</a>
+  </dt>
+
+      
+  <dt><a href="distributions.html#equadratures.distributions.iCDF_ExponentialDistribution">iCDF_ExponentialDistribution() (in module equadratures.distributions)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="distributions.html#equadratures.distributions.iCDF_GammaDistribution">iCDF_GammaDistribution() (in module equadratures.distributions)</a>
+  </dt>
+
+      
+  <dt><a href="distributions.html#equadratures.distributions.iCDF_Gaussian">iCDF_Gaussian() (in module equadratures.distributions)</a>
+  </dt>
+
+      
+  <dt><a href="distributions.html#equadratures.distributions.iCDF_TruncatedGaussianDistribution">iCDF_TruncatedGaussianDistribution() (in module equadratures.distributions)</a>
+  </dt>
+
+      
+  <dt><a href="distributions.html#equadratures.distributions.iCDF_WeibullDistribution">iCDF_WeibullDistribution() (in module equadratures.distributions)</a>
+  </dt>
+
   </dl></td>
 </tr></table>
 
@@ -300,7 +389,7 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="dr.html#equadratures.dimension_reduction.jacobian">jacobian() (in module equadratures.dimension_reduction)</a>
+  <dt><a href="dr.html#equadratures.dr.jacobian">jacobian() (in module equadratures.dr)</a>
   </dt>
 
   </dl></td>
@@ -310,7 +399,7 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="dr.html#equadratures.dimension_reduction.linearModel">linearModel() (in module equadratures.dimension_reduction)</a>
+  <dt><a href="dr.html#equadratures.dr.linearModel">linearModel() (in module equadratures.dr)</a>
   </dt>
 
   </dl></td>
@@ -338,11 +427,19 @@
   </dt>
 
       
-  <dt><a href="poly.html#equadratures.poly.Poly">Poly (class in equadratures.poly)</a>
+  <dt><a href="polyparent.html#equadratures.poly.Poly">Poly (class in equadratures.poly)</a>
+  </dt>
+
+      
+  <dt><a href="polycs.html#equadratures.polycs.Polycs">Polycs (class in equadratures.polycs)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="polyint.html#equadratures.polyint.Polyint">Polyint (class in equadratures.polyint)</a>
+  </dt>
+
       
   <dt><a href="polyreg.html#equadratures.polyreg.Polyreg">Polyreg (class in equadratures.polyreg)</a>
   </dt>
@@ -358,7 +455,11 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="poly.html#equadratures.poly.Poly.scaleInputs">scaleInputs() (equadratures.poly.Poly method)</a>
+  <dt><a href="polyparent.html#equadratures.poly.Poly.scaleInputs">scaleInputs() (equadratures.poly.Poly method)</a>
+  </dt>
+
+      
+  <dt><a href="basis.html#equadratures.basis.Basis.setOrders">setOrders() (equadratures.basis.Basis method)</a>
   </dt>
 
       
@@ -368,7 +469,11 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="dr.html#equadratures.dimension_reduction.standard">standard() (in module equadratures.dimension_reduction)</a>
+  <dt><a href="polyint.html#equadratures.polyint.sparsegrid">sparsegrid() (in module equadratures.polyint)</a>
+  </dt>
+
+      
+  <dt><a href="dr.html#equadratures.dr.standard">standard() (in module equadratures.dr)</a>
   </dt>
 
       
@@ -378,17 +483,27 @@
   </dl></td>
 </tr></table>
 
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="polyint.html#equadratures.polyint.tensorgrid">tensorgrid() (in module equadratures.polyint)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="dr.html#equadratures.dimension_reduction.vandermonde">vandermonde() (in module equadratures.dimension_reduction)</a>
+  <dt><a href="dr.html#equadratures.dr.vandermonde">vandermonde() (in module equadratures.dr)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="dr.html#equadratures.dimension_reduction.variable_projection">variable_projection() (in module equadratures.dimension_reduction)</a>
+  <dt><a href="dr.html#equadratures.dr.variable_projection">variable_projection() (in module equadratures.dr)</a>
   </dt>
 
   </dl></td>
@@ -407,7 +522,7 @@
       
     </p>
     <p>
-        &copy; Copyright 2016-2018, Effective Quadratures.<br/>
+        &copy; Copyright 2016-2018 by Effective Quadratures.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.<br/>
     </p>
   </div>

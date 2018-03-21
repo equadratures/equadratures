@@ -44,7 +44,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u' '
-copyright = u'2016-2018, Effective Quadratures'
+copyright = u'2016-2018 by Effective Quadratures'
 author = u'Pranay Seshadri, Nicholas Wong, Henry Yuchi, Tiziano Ghisu'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -52,7 +52,7 @@ author = u'Pranay Seshadri, Nicholas Wong, Henry Yuchi, Tiziano Ghisu'
 # built documents.
 #
 # The short X.Y version.
-version = '6.0'
+version = 'v6.0'
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -67,7 +67,7 @@ html_theme_options = {
     'navbar_title': "",
 
     # Tab name for entire site. (Default: "Site")
-    'navbar_site_name': "Documentation",
+    'navbar_site_name': " ",
 
     # A list of tuples containing pages or urls to link to.
     # Valid tuples should be in the following forms:
@@ -117,7 +117,10 @@ html_theme_options = {
     # such as "amelia" or "cosmo".
     'bootswatch_theme': "cosmo",
     'bootstrap_version': "3",
+
 }
+
+
 
 # on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
 #on_rtd = os.environ.get('READTHEDOCS', None) == 'True'

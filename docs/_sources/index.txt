@@ -8,9 +8,10 @@ Guide
 ^^^^^
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 5
 
-   code
+   corecode 
+   utilities
    contact
    license
 

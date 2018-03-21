@@ -1,4 +1,4 @@
-Code Documentation
+Core code 
 ==================
 
 
@@ -6,14 +6,10 @@ Code Documentation
    :maxdepth: 2
 
    parameter
-   poly
-   polyreg
-   plotting
-   convex
    basis
-   stats
-   dr
+   poly
    distributions
+   
 
 
 .. automodule:: equadratures

@@ -1,19 +1,15 @@
-Code Documentation
+Utilities
 ==================
 
 
 .. toctree::
    :maxdepth: 2
 
-   parameter
-   poly
-   polyreg
-   plotting
-   convex
-   basis
-   stats
    dr
-   distributions
+   convex
+   stats
+   plotting
+
 
 
 .. automodule:: equadratures

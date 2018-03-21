@@ -4,8 +4,7 @@ from .stats import Statistics
 
 class Poly(object):
     """
-    The class defines a Poly object. It is the parent class to Polyreg, Polyint, Polylsq and Polycs.
-    It is defined by a list of Parameter objects and a Basis.
+    The class defines a Poly object. It is the parent class to Polyreg, Polyint and Polycs; the only difference between its children are the way in which the coefficients are computed. This class is defined by a list of Parameter objects and a Basis.
 
     :param Parameter parameters:
         A list of parameters.
@@ -59,12 +58,14 @@ class Poly(object):
 
     def scaleInputs(self, x_points_scaled):
         """
-        Scales the inputs
+        Scales the inputs points for Uniform and Beta distributions.
 
         :param Poly self:
             An instance of the Poly class.
+        :param matrix x_points_scaled:
+            A matrix of points that need to be scaled depending on the distribution associated with each dimension.
         :return:
-            A clone of the Poly object.
+            A matrix of scaled points.
         """
         rows, cols = x_points_scaled.shape
         points = np.zeros((rows, cols))
@@ -80,6 +81,16 @@ class Poly(object):
         return points
 
     def getPolynomial(self, stackOfPoints):
+        """
+        Evaluates the multivariate polynomial at a set of points.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param matrix stackOfPoints:
+            A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.
+        :return:
+            A N-by-1 matrix of polynomial evaluations at the stackOfPoints.
+        """
         basis = self.basis.elements
         basis_entries, dimensions = basis.shape
         no_of_points, _ = stackOfPoints.shape
@@ -106,6 +117,16 @@ class Poly(object):
         return polynomial
 
     def getPolynomialGradient(self, stackOfPoints):
+        """
+        Evaluates the gradient of the multivariate polynomial at a set of points.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param matrix stackOfPoints:
+            A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.
+        :return:
+            A list with d elements, each with a N-by-1 matrix of polynomial evaluations at the stackOfPoints.
+        """
         # "Unpack" parameters from "self"
         basis = self.basis.elements
         basis_entries, dimensions = basis.shape
@@ -141,6 +162,18 @@ class Poly(object):
         return R
 
     def getTensorQuadratureRule(self, orders=None):
+        """
+        Generates a tensor grid quadrature rule based on the parameters in Poly.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param list orders:
+            A list of the highest polynomial orders along each dimension.
+        :return:
+            A numpy array of quadrature points.
+        :return:
+            A numpy array of quadrature weights.
+        """
         # Initialize points and weights
         pp = [1.0]
         ww = [1.0]
@@ -171,11 +204,33 @@ class Poly(object):
         return points, weights
 
     def getStatistics(self, quadratureRule=None):
+        """
+        Creates an instance of the Statistics class.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param string quadratureRule:
+            Two options exist for this string. The user can use 'qmc' for a distribution specific Monte Carlo (QMC) or they can use 'tensor grid' for standard tensor product grid. Typically, if the number of dimensions is less than 8, the tensor grid is the default option selected.
+        :return:
+            A Statistics object.
+        """
         p, w = self.getQuadratureRule(quadratureRule)
         evals = self.getPolynomial(self.scaleInputs(p))
         return Statistics(self.coefficients, self.basis, self.parameters, p, w, evals)
 
     def getQuadratureRule(self, options=None):
+        """
+        Generates quadrature points and weights.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param string options:
+            Two options exist for this string. The user can use 'qmc' for a distribution specific Monte Carlo (QMC) or they can use 'tensor grid' for standard tensor product grid. Typically, if the number of dimensions is less than 8, the tensor grid is the default option selected.
+        :return:
+            A numpy array of quadrature points.
+        :return:
+            A numpy array of quadrature weights.
+        """
         if options is None:
             if self.dimensions > 8:
                 options = 'qmc'
@@ -193,26 +248,68 @@ class Poly(object):
             p,w = self.getTensorQuadratureRule([2*i for i in self.basis.orders])
             return p,w
 
-    def evaluatePolyGradFit(self, xvalue):
-        H = self.getPolynomialGradient(self.scaleInputs(xvalue))
-        grads = np.zeros((self.dimensions, len(xvalue) ) )
+    def evaluatePolyGradFit(self, stackOfPoints):
+        """
+        Evaluates the gradient of the polynomial approximation of a function (or model data) at prescribed points.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param matrix stackOfPoints:
+            A N-by-d matrix of points (can be unscaled) at which the polynomial gradient must be evaluated at.
+        :return:
+            A d-by-N matrix of the gradients of the polynomial approximation.
+
+        **Notes:**
+
+        This function should not be confused with getPolynomialGradient(). The latter is only concerned with approximating what the multivariate polynomials
+        gradient values are at prescribed points.
+        """
+        H = self.getPolynomialGradient(self.scaleInputs(stackOfPoints))
+        grads = np.zeros((self.dimensions, len(x) ) )
         for i in range(0, self.dimensions):
             grads[i,:] = np.mat(self.coefficients).T * H[i]
         return grads
 
-    def getPolyFitFunction(self, x):
+    def getPolyFitFunction(self):
+        """
+        Returns a callable polynomial approximation of a function (or model data).
+
+        :param Poly self:
+            An instance of the Poly class.
+        :return:
+            A callable function.
+
+        """
         return lambda (x): self.getPolynomial(self.scaleInputs(x)).T *  np.mat(self.coefficients)
 
-    def evaluatePolyFit(self, x):
-        return self.getPolynomial(self.scaleInputs(x)).T *  np.mat(self.coefficients)
-
     def getPolyGradFitFunction(self):
-        return lambda (x) : self.evaluatePolyGradFit(xvalue=x)
-
-
-    def getFunctionPDF(self, function, graph=1, coefficients=None, indexset=None, filename=None):
         """
-         Need to finish!!!
+        Returns a callable for the gradients of the polynomial approximation of a function (or model data).
+
+        :param Poly self:
+            An instance of the Poly class.
+        :return:
+            A callable function.
+
+        """
+        return lambda (x) : self.evaluatePolyGradFit(x)
+
+
+    def getFunctionSamples(self, function, coefficients=None, indexset=None):
+        """
+        Returns a set of function samples; useful for computing probabilities.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param callable function:
+            A callable function (or evaluations of the function at the prerequisite quadrature points).
+        :param array coefficients:
+            A numpy array of the coefficients
+        :param matrix indexset:
+            A K-by-d matrix of the index set.
+        :return:
+            A 50000-by-1 array of function evaluations.
+
         """
         dimensions = len(self.uq_parameters)
 
@@ -228,14 +325,9 @@ class Poly(object):
                 for j in range(0, number_of_samples):
                     plotting_pts[j, i] = univariate_samples[j]
 
-
         P , Q = self.getMultivariatePolynomial(plotting_pts, indexset)
         P = np.mat(P)
         C = np.mat(coefficients)
         polyapprox = P.T * C
-
-
-        if graph is not None:
-            histogram(polyapprox, 'f(x)', 'PDF', filename)
 
         return polyapprox

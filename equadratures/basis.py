@@ -1,8 +1,11 @@
+"Rountines for defining the index set associated with multivariate polynomials."
 import numpy as np
 import math as mt
 
 class Basis(object):
     """
+    Basis class constructor.
+
     :param string basis_type: The type of index set to be used. Options include:
         `Total order`, `Tensor grid`, `Sparse grid`, `Hyperbolic basis` and `Euclidean degree`. All basis are isotropic. If you require anisotropic basis do email us.
     :param ndarray orders: List of integers corresponding to the highest polynomial order in each direction.
@@ -19,14 +22,6 @@ class Basis(object):
 
     For details on the Euclidean degree see: `Trefethen 2016 <https://arxiv.org/pdf/1608.02216v1.pdf>`_.
     Note that all index sets are sorted in the constructor automatically, by their total orders. We will be adding non-isotropic index sets in a future release. Stay tuned!
-
-    **Sample usage**
-    ::
-
-        >> Basis('Tensor grid', [3,3,3])
-        >> Basis('Sparse grid', level=3, growth_rule=5, dimension=3)
-        >> Basis('Total order' [3, 3, 3])
-        >> Basis('Hyperbolic basis', [3,3], q=0.75)
 
     """
     def __init__(self, basis_type, orders=None, level=None, growth_rule=None, q=None):
@@ -59,6 +54,13 @@ class Basis(object):
             self.setOrders(orders)
 
     def setOrders(self, orders):
+        """
+        Sets the highest order in each direction of the basis.
+
+        :param Basis object: An instance of the Basis class.
+        :param list orders: The highest polynomial order along each dimension.
+
+        """
         self.orders = []
         for i in range(0, len(orders)):
             self.orders.append(orders[i])
@@ -89,16 +91,14 @@ class Basis(object):
             self.sort()
         elif name == "Total order":
             self.sort()
-        
+
     def prune(self, number_of_elements_to_delete):
         """
-        Prunes down the number of elements in an index set
+        Prunes down the number of elements in an index set.
 
         :param Basis object: An instance of the Basis class.
-        :param integer number_of_elements_to_delete: The number of multi-indices the user would like to delete
+        :param integer number_of_elements_to_delete: The number of multi-indices the user would like to delete.
 
-        **Sample usage:**
-        For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
         index_entries = self.elements
         total_elements = self.cardinality
@@ -113,9 +113,6 @@ class Basis(object):
         Routine that sorts a multi-index in ascending order based on the total orders. The constructor by default calls this function.
 
         :param Basis object: An instance of the Basis class.
-
-        **Sample usage:**
-        For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
         number_of_elements = len(self.elements)
         combined_indices_for_sorting = np.ones((number_of_elements, 1))
@@ -138,13 +135,9 @@ class Basis(object):
 
     def getBasis(self):
         """
-        Prunes down the number of elements in an index set
+        Gets the index set elements for the Basis object.
 
         :param Basis object: An instance of the Basis class.
-        :param integer number_of_elements_to_delete: The number of multi-indices the user would like to delete
-
-        **Sample usage:**
-        For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
         name = self.basis_type
         if name == "Total order":
@@ -161,7 +154,6 @@ class Basis(object):
         else:
             raise(ValueError, 'Basis __init__: invalid value for basis_type!')
             basis = [0]
-
         return basis
 
 

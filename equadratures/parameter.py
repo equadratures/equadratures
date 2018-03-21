@@ -1,7 +1,7 @@
 """Core class for setting the properties of a univariate parameter."""
 import numpy as np
 from scipy.special import gamma
-import analyticaldistributions as analytical
+import distributions as analytical
 class Parameter(object):
     """
     This class defines a univariate parameter. Below are details of its constructor.

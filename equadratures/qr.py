@@ -16,21 +16,21 @@ def implicitSymmetricQR(T):
         [c, s] = givens(x, z)
         G = np.mat(np.eye(n), dtype='float64')
         G[k,k] = c
-        G[k, k+1] = -s 
+        G[k, k+1] = -s
         G[k+1, k] = s
         G[k+1, k+1] = c
         T = G.T * T * G
         if k < n - 1:
-            x = T[k+1, k] 
+            x = T[k+1, k]
             z = T[k+2, k]
-    
-    return T
-        
 
-    
+    return T
+
+
+
 def qr_Givens(A):
     """
-    Returns the Givens QR factorization of a matrix A 
+    Returns the Givens QR factorization of a matrix A
 
     :param numpy matrix A: Matrix input for QR factorization
     :return: Q, the m x m orthogonal matrix
@@ -39,7 +39,7 @@ def qr_Givens(A):
     :rtype: numpy matrix
 
     **Sample declaration**
-    :: 
+    ::
         >> Q, R = qr_Givens(A)
     """
 
@@ -49,7 +49,7 @@ def qr_Givens(A):
     #Q_trans = np.mat(np.eye(m,m), dtype='float64')
     G = np.mat( np.eye(2,2), dtype='float64')
     G_store = np.mat( np.eye(m, m), dtype='float64')
-    
+
     # Introduce zeros by rows
     for i in range(1, m):
         for j in range(0, i):
@@ -68,9 +68,9 @@ def qr_Givens(A):
                 G_local[j, i] = -1.0 * s
                 G_local[j, j] = c
                 G_store = G_local * G_store
-    
+
     R = A
-    
+
     return G_store.T, R
 
 def bidiag(A):
@@ -105,23 +105,23 @@ def bidiag(A):
         A[j:m, j:n] = (np.identity(m-j) - np.multiply(beta,  v * v.T )) * A[j:m, j:n]
         G[j+1:m, j] = v[1:m-j+1]
 
-        if j <= n - 2 : 
+        if j <= n - 2 :
             v, beta = house(A[j,j+1:n].T)
             A[j:m, j+1:n] = A[j:m, j+1:n] * (np.identity(n-j-1) -  np.multiply(beta,  v * v.T ) )
             G[j,j+2:n] = v[1 : n-j].T
-   
-    # Unpack U 
+
+    # Unpack U
     for j in range(n-1, -1, -1):
         if j >= m - 1:
             if not G[j+1:m, j]:
                 beta = 2.0
                 U[j:m, j:n] = U[j:m, j:m] - ( np.multiply( beta,  U[j:m, j:m] ) )
-        else:    
+        else:
             v = np.mat(np.vstack([1.0, G[j+1:m, j] ]), dtype='float64')
             beta =  2.0/(1.0 + np.linalg.norm(G[j+1:m, j], 2)**2)
             U[j:m, j:n] = U[j:m, j:n] - ( ( np.multiply( beta,  v) ) * (v.T  * U[j:m, j:n] ) )
 
-    # Unpack V 
+    # Unpack V
     for j in range(n-2, -1, -1):
         if j == n-2:
             beta = 2.0
@@ -155,14 +155,14 @@ def solveCLSQ(A,b,C,d, technique=None):
     p, q = b.shape
     k, l = C.shape
     s, t = d.shape
-    
+
     # Check that the number of elements in b are equivalent to the number of rows in A
     if m != p:
         raise(ValueError, 'solveCLSQ(): mismatch in sizes of A and b')
     elif k != s:
-        raise(ValueError, 'solveCLSQ(): mismatch in sizes of C and d') 
-        
-    # Stacked least squares 
+        raise(ValueError, 'solveCLSQ(): mismatch in sizes of C and d')
+
+    # Stacked least squares
     if technique is 'weighted' or technique is None:
         x, cond = solveLSQ(np.mat(np.vstack([A, C])), np.mat(np.vstack([b, d])))
     elif technique is 'constrainedDE':
@@ -177,7 +177,7 @@ def nullSpaceMethod(A, b, C, d):
     Solves the constrained least squares problem min ||Ax-b||_2 subject to Cx=d via the null space method.
     :param numpy ndarray A: an m-by-n A matrix
     :param numpy ndarray b: an m-by-1 b matrix
-      
+
     :return: x, the coefficients of the least squares problem.
     :rtype: ndarray
     :return: cond, the condition number of the final matrix on which least squares is performed
@@ -200,13 +200,13 @@ def nullSpaceMethod(A, b, C, d):
     x = (Q1 * y1) + (Q2 * y2)
     cond = np.linalg.cond(AQ2)
     return x, cond
-    
+
 def directElimination(A, b, C, d):
     """
-    Solves the constrained least squares problem min ||Ax-b||_2 subject to Cx=d via the direct elimination method. 
+    Solves the constrained least squares problem min ||Ax-b||_2 subject to Cx=d via the direct elimination method.
     :param numpy ndarray A: an m-by-n A matrix
     :param numpy ndarray b: an m-by-1 b matrix
-      
+
     :return: x, the coefficients of the least squares problem.
     :rtype: ndarray
     :return: cond, the condition number of the final matrix on which least squares is performed
@@ -226,7 +226,7 @@ def directElimination(A, b, C, d):
     A2_tilde = A_tilde[:, r : m1]
     A2_hat = A2_tilde - A1_tilde * np.linalg.inv(R_11) * R_12
     b_hat = b - A1_tilde * np.linalg.inv(R_11) * d1_tilde
-    x2_tilde , cond_not_used = solveLSQ(A2_hat, b_hat)    
+    x2_tilde , cond_not_used = solveLSQ(A2_hat, b_hat)
     x1_tilde = np.linalg.inv(R_11) * (d1_tilde - R_12 * x2_tilde)
     x_tilde = np.mat( np.vstack([x1_tilde, x2_tilde]) , dtype='float64')
     cond = np.linalg.cond(A2_hat)
@@ -238,13 +238,13 @@ def solveLSQ(A, b):
 
     :param numpy ndarray A: an m-by-n A matrix
     :param numpy ndarray b: an m-by-1 b matrix
-      
+
     :return: x, the coefficients of the least squares problem.
     :rtype: ndarray
     :return: cond, the condition number of the matrix A
-    :rtype: float 
+    :rtype: float
 
-    """ 
+    """
     # Direct methods!
     A = np.mat(A)
     b = np.mat(b)
@@ -305,20 +305,20 @@ def qr_MGS(A, pivoting=None):
     :rtype: numpy matrix
 
     **Sample declaration**
-    :: 
+    ::
         >> Q, R = qr_MGS(A)
         >> Q, R, p = qr_MGS(A, pivoting='yes')
     """
     if pivoting is not None:
         return qr_MGS_Pivoting(A)
-    
+
     A = np.matrix(A)
     m , n = A.shape
     Q = np.mat(np.eye(m,n), dtype='float64')
     R = np.mat(np.zeros((n, n)), dtype='float64')
 
     # Min and maximum values
-    u = np.min([m,n]) 
+    u = np.min([m,n])
     h = np.max([m,n])
 
     # Outer for loop for MGS QR factorization
@@ -340,8 +340,8 @@ def qr_MGS(A, pivoting=None):
         if k != n:
             for j in range(k+1, n):
                 R[k,j] = (Q[0:m,k]).T * A[0:m,j];
-                A[0:m,j] = A[0:m,j] - R[k,j]* Q[0:m,k];          
-            
+                A[0:m,j] = A[0:m,j] - R[k,j]* Q[0:m,k];
+
     return Q, R
 
 def qr_MGS_Pivoting(A):
@@ -418,7 +418,7 @@ def qr_MGS_Pivoting(A):
 
 def qr_Householder(A):
     """
-    Returns the Householder QR factorization of a matrix A 
+    Returns the Householder QR factorization of a matrix A
 
     :param numpy matrix A: Matrix input for QR factorization
     :return: Q, the m x m orthogonal matrix
@@ -427,7 +427,7 @@ def qr_Householder(A):
     :rtype: numpy matrix
 
     **Sample declaration**
-    :: 
+    ::
         >> Q, R = qr_Householder(A)
     """
     A = np.mat(A)
@@ -442,7 +442,7 @@ def qr_Householder(A):
         # The section below ensures that the lower triangular portion of A stores the Householder
         # vectors that will be used when computing Q!
         if j < m :
-            A[j+1:m, j] = v[2-1:m-j+1] 
+            A[j+1:m, j] = v[2-1:m-j+1]
 
     R = np.triu(A)
 
@@ -482,7 +482,7 @@ def permvec2mat(vec):
 
 # Private functions below!
 def givens(a, b):
-    
+
     if b == 0:
         c = 1
         s = 1

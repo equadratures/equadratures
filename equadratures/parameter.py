@@ -275,6 +275,114 @@ class Parameter(object):
         """
         return orthoPolynomial_and_derivative(self, points, order)
 
+    def induced_jacobi_distribution(self, x, order=None):
+        """
+        Evaluates the induced distribution.
+
+        :param Parameter self:
+            An instance of the Parameter class
+        :param array x:
+            ????
+        :param int order:
+            Order of the distribution. Note that this value will override the order associated with the Parameter instance.
+        :return:
+            The median estimate (double)
+        """
+        if order is None:
+            order = self.order
+        if self.param_type is 'Beta':
+            alpha = self.shape_parameter_B - 1
+            beta = self.shape_parameter_A - 1
+        elif self.param_type is 'Uniform':
+            alpha = 0.0
+            beta = 0.0
+        else:
+            raise(ValueError: 'Parameter: median_approximation_jacobi:: Unrecognized parameter type!')
+
+        # A few quick checks before we proceed!
+        assert( (alpha > -1)) and (beta > -1) ):
+        assert(all(np.abs(x)) <= 1)
+        if len(x) == 0:
+            F = []
+
+        if M is None:
+            M = 10
+        A = np.floor(np.abs(alpha))
+        Aa = alpha - A
+        F = np.zeros((len(x)))
+        centroid = self.median_approximation_jacobi()
+        xreflect = np.ones((len(x)), dtype=bool)
+
+        for i in range(0, len(xreflect)):
+            if x[i] > centroid:
+                xreflect[i] = 1
+            else:
+                xreflect[i] = 0
+
+        F[xreflect] = 1 - self.induced_jacobi_distribution(-x[xreflect])
+        ab = self.getRecurrenceCoefficients(self.order + 1)
+        a = ab[:,0]
+        b = ab[:,1]
+        b[0,0] = 1.0 # Normalize to make it a probability measure
+
+        if self.order > 0:
+            xn, wn = self._getLocalQuadrature
+
+        # Scaling factor for the inverse nth root of the leading coefficient square of pn
+        kn_factor = np.exp(-1.0 / self.order * np.sum(np.log(b))  )
+
+        for xq in range(0, len(x)):
+            if x[xq] == -1:
+                F[xq] = 0
+
+            print xreflect[xq]
+
+            # Recurrence coefficients for quadrature rule!
+            neworder = 2 * self.order + A + M + 1
+            ab = self.getRecurrenceCoefficients(neworder)
+            ab[0,1] = 1 # To ensure that it is a probability measure!
+
+            if self.order > 0:
+                un = ( 2.0 / (x[xq] + 1.0) * (xn + 1.0) ) - 1.0
+
+            logfactor = 0.0 # Keep this so that beta(1) always equals what it did before?
+
+            # Sucessive quadratic measure modifications!
+            for j in range(0, self.orders):
+                ab = self._quadraticModification(un[j])
+                logfactor = logfactor + np.log( b[0] *  ((x[xq] + 1.0)/2.0)**2 * kn_factor )
+                b[1] = 1.0
+
+            # Linear modification
+            
+
+    def median_approximation_jacobi(self, order=None):
+        """
+        Returns an estimate for the median of the order-n Jacobi induced distribution.
+
+        :param Parameter self:
+            An instance of the Parameter class
+        :param int order:
+            Order of the distribution. Note that this value will override the order associated with the Parameter instance.
+        :return:
+            The median estimate (double)
+        """
+        if order is None:
+            order = self.order
+        if self.param_type is 'Beta':
+            alpha = self.shape_parameter_B - 1 # bug fix @ 9/6/2016
+            beta = self.shape_parameter_A - 1
+        elif self.param_type is 'Uniform':
+            alpha = 0.0
+            beta = 0.0
+        else:
+            raise(ValueError: 'Parameter: median_approximation_jacobi:: Unrecognized parameter type!')
+        if n > 0 :
+            x0 = (beta**2 - alpha**2) / (2 * order + alpha + beta)**2
+        else:
+            x0 = 2.0/(1.0 + (alpha + 1.0)/(beta + 1.0))  - 1.0
+        return x0
+
     def _getLocalQuadrature(self, order=None, scale=None):
         """
         Returns the 1D quadrature points and weights for the parameter. WARNING: Should not be called under normal circumstances.
@@ -290,11 +398,87 @@ class Parameter(object):
         """
         return getlocalquadrature(self, order, scale)
 
+    def _quadraticModification(self, x0):
+        """
+        Performs a quadratic modification of the orthogonal polynomial recurrence coefficients. It transforms the coefficients
+        such that the new coefficients are associated with a polynomial family that is orthonormal under the weight (x - x0)**2
+
+        :param Parameter self:
+            An instance of the Parameter class
+        :param double:
+            The shift in the weights
+        :return:
+            A N-by-2 matrix that contains the modified recurrence coefficients.
+        """
+        N = self.order
+        if N < 2:
+            raise(ValueError, 'N should be greater than 2!')
+        ab = np.zeros((N-2, N-2))
+        alphabeta = self.getRecurrenceCoefficients()
+        alpha = alphabeta[:,0]
+        beta = alphabeta[:,1]
+        C = np.reshape(  christoffelNormalizedOrthogonalPolynomials(alpha, beta, x0, N-1)  , [N, 1] )
+
+        # q is the length N -- new coefficients have length N-2
+        acorrect = np.zeros((N-2, 1))
+        bcorrect = np.zeros((N-2, 1))
+        temp = np.zeros((N-1))
+        temp_2 = np.zeros((N-1))
+
+        for i in range(2, N):
+            j = i - 2
+            temp[i-2] = np.sqrt(beta[i]) * C[i] * C[j] * 1.0/(np.sqrt(1 + C[j]**2 ))
+        temp[0] = np.sqrt(beta[1]) * C[1] # A special case -- why?
+
+        for i in range(0, N-2):
+            acorrect[i] = temp[i + 1] - temp[i]
+
+        for i in range(0, N-1):
+            temp_2[i] = 1.0 + C[i]**2
+
+        for i in range(0, N-2):
+            bcorrect[i] = temp[i+1] / temp[i]
+            if i == 0:
+                bcorrect[0] = 1.0 + C[1]**2
+            ab[i,0] = alpha[i+2] + acorrect[i,0]
+            ab[i,1] = beta[i+2] * bcorrect[i]
+        return ab
+
+
 #-----------------------------------------------------------------------------------
 #
 #                               PRIVATE FUNCTIONS BELOW
 #
 #-----------------------------------------------------------------------------------
+def christoffelNormalizedOrthogonalPolynomials(a, b, x, N):
+    # Evaluates the Christoffel normalized orthogonal getPolynomialCoefficients
+    nx = len(x)
+    assert N>= 0
+    assert N <= len(a)
+    assert N <= len(b)
+
+    C = np.zeros((nx, N+1))
+    xf = x
+
+    # Initialize the polynomials!
+    C[:,0] = 1.0/ sqrt(b[0])
+    if N > 0:
+        for k in range(0, len(x)):
+            C[k,1] = 1.0 / np.sqrt(b[1]) * (xf[k] - a[0])
+
+    if N > 1:
+        for k in range(0, len(x)):
+            C[k,2] = 1.0 / np.sqrt(1.0 + C[k,1]**2)  * (  (xf[k] - a[1]) * C[k,1] - np.sqrt(b[1]) )
+            C[k,2] = C[k,2] / np.sqrt(b[2])
+
+    if N > 2:
+        for n in range(2, N):
+            for k in range(0, len(x)):
+                C[k,n+1] = 1.0/np.sqrt(1.0 + C[k,n]**2) * (  (xf[k] - a[n]) * C[k,n] - np.sqrt(b[n]) ) * C[k,n-1] / np.sqrt(1.0 + C[k, n-1]**2)
+                C[k,n+1] = C[k,n+1] / np.sqrt(b[n+1])
+    return C
+
+
 # Call different methods depending on the choice of the polynomial parameter
 def recurrence_coefficients(self, order=None):
 

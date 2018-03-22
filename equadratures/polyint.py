@@ -36,7 +36,7 @@ class Polyint(Poly):
         super(Polyint, self).__init__(parameters, basis)
         if sampling is None:
             sampling = 'tensor grid quadrature'
-        self.setSamplingMethod()
+
 
     @staticmethod
     def setSamplingMethod(self):
@@ -97,11 +97,112 @@ class Polyint(Poly):
             coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self, function)
         return coefficients,  indexset, evaled_pts
 
+    def getSubsamples(self, samplingStrategy, optimizingStrategy):
+        # Get samples with some oversampling factor!
+
+
+        # Clean through samples with some optimization strategy
+        return 0
+
+    def getChristoffelSamples(self, M):
+
+        # Only for the uniform case!
+        N = self.basis.cardinality
+        random_samples = np.random.rand(M, self.dimensions)
+        x = np.cos(np.pi * random_samples)
+        w = ( N * 1.0 )/(M * 1.0) * 1.0/ np.sum( (self.getPolynomial(x))**2 , 0)
+        return x, w
+
+
+    def PaduaPoints(self, N):
+        return 0
+        
+    def getEffectivelySubsampledQuadratures(self, function):
+        return 0
+
+    def getFastInducedDistribution(self, M):
+
+        # Construct piecewise polynomial data!
+        for i in range(0, self.dimensions):
+            x_gauss, w_gauss = self.parameters._getLocalQuadrature()
+
+            ug = idist_jacobi(x_gauss, self.orders[i], alpha, beta, 50)
+
+
+        mrs_centroid = medapprox_jacobi(alph, bet, n);
+        xreflect = x > mrs_centroid;
+
+        F(xreflect) = 1 - idist_jacobi(-x(xreflect), n, bet, alph, M);
+
+        [a,b] = jacobi_recurrence(n+1, alph, bet);
+        b(1) = 1; % To make it a probability measure
+
+        if n > 0
+          % Zeros of p_n
+          xn = gauss_quadrature(a, b, n);
+        end
+
+        % This is the (inverse) n'th root of the leading coefficient square of p_n
+        % We'll use it for scaling later
+        kn_factor = exp(-1/n*sum(log(b)));
+
+        for xq = 1:numel(x)
+
+          if x(xq) == -1
+            F(xq) = 0;
+            continue
+          end
+
+          if xreflect(xq)
+            continue
+          end
+
+          % Recurrence coefficients for quadrature rule
+          [a,b] = jacobi_recurrence(2*n+A+M+1, 0, bet);
+          b(1) = 1; % To make it a probability measure
+          a = a.'; b = b.';
+
+          if n > 0
+            % Transformed
+            un = (2/(x(xq)+1)) * (xn + 1) - 1;
+          end
+
+          logfactor = 0; % Keep this so that bet(1) always equals what it did before
+
+          % Successive quadratic measure modifications
+          for j = 1:n
+            [a,b] = quadratic_modification_C(a, b, un(j));
+
+            logfactor = logfactor + log(b(1)*((x(xq)+1)/2)^2 * kn_factor);
+            b(1) = 1;
+          end
+
+          % Linear modification by factors (2 - 1/2*(u+1)*(x+1)), having root u = (3-x)/(1+x)
+          root = (3-x(xq))/(1+x(xq));
+          for aq = 1:A
+            [a, b] = linear_modification(a, b, root);
+
+            logfactor = logfactor + log(b(1) * 1/2 * (x(xq)+1));
+            b(1) = 1;
+          end
+
+          % M-point Gauss quadrature for evaluation of auxilliary integral I
+          [u,w] = gauss_quadrature(a, b, M);
+          I = w.'*(2 - 1/2 * (u+1) * (x(xq)+1) ).^Aa;
+
+          F(xq) = exp(logfactor - alph*log(2) - betaln(bet+1, alph+1) - log(bet+1) + (bet+1)*log((x(xq)+1)/2)) * I;
+
+        end
+
+
 #--------------------------------------------------------------------------------------------------------------
 #
 #  PRIVATE FUNCTIONS!
 #
 #--------------------------------------------------------------------------------------------------------------
+
+
+
 def tensorgrid(stackOfParameters, function=None):
     """
     Computes a tensor grid of quadrature points based on the distributions for each Parameter in stackOfParameters

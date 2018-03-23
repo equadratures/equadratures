@@ -1,4 +1,10 @@
-"""Core class for setting the properties of a univariate parameter."""
+"""Core class for setting the properties of a univariate parameter.
+
+References:
+    - Akil Narayan Paper on Induced Distributions `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`_.
+    - Walter Gautschi resources on orthogonal polynomials
+    - Tiziano's paper on adaptive polynomial expansions
+"""
 import numpy as np
 from scipy.special import gamma, betaln
 import distributions as analytical
@@ -21,8 +27,6 @@ class Parameter(object):
     :param data:
         A numpy array with data values (x-y column format). Note this option is only invoked if the user uses the Custom param_type.
     """
-
-    # constructor
     def __init__(self, order, lower=None, upper=None, param_type=None, shape_parameter_A=None, shape_parameter_B=None, data=None):
         self.order = order
 
@@ -66,8 +70,6 @@ class Parameter(object):
             if self.param_type != 'Custom':
                 raise(ValueError, 'parameter __init__: if data is provided then the custom distribution must be selected!')
         self.bounds = None
-
-    # Routine for computing the mean of the distributions
     def computeMean(self):
         """
         Returns the mean of the parameter.
@@ -93,8 +95,6 @@ class Parameter(object):
         elif self.param_type == 'Custom':
             mu = np.mean(self.getSamples)
         return mu
-
-
     def getPDF(self, N):
         """
         Returns the probability density function of the parameter.
@@ -128,7 +128,6 @@ class Parameter(object):
         else:
             raise(ValueError, 'parameter getPDF(): invalid parameter type!')
         return x, y
-
     def getSamples(self, m=None, graph=None):
         """
         Returns samples of the parameter.
@@ -147,7 +146,6 @@ class Parameter(object):
         uniform_samples = np.random.random((number_of_random_samples, 1))
         yy = self.getiCDF(uniform_samples)
         return yy
-
     def getCDF(self, N):
         """
         Returns the cumulative density function of the parameter.
@@ -181,7 +179,6 @@ class Parameter(object):
         else:
             raise(ValueError, 'parameter getCDF(): invalid parameter type!')
         return x, y
-
     def getiCDF(self, x):
         """
         Returns values of the inverse CDF.
@@ -215,7 +212,6 @@ class Parameter(object):
         else:
             raise(ValueError, 'parameter getiCDF(): invalid parameter type!')
         return y
-
     def getRecurrenceCoefficients(self, order=None):
         """
         Returns the recurrence coefficients of the parameter.
@@ -228,9 +224,7 @@ class Parameter(object):
             An order-by-2 matrix that containts the recurrence coefficients.
 
         """
-
         return recurrence_coefficients(self, order)
-
     def getJacobiMatrix(self, order=None):
         """
         Returns the tridiagonal Jacobi matrix.
@@ -244,7 +238,6 @@ class Parameter(object):
 
         """
         return jacobiMatrix(self, order)
-
     def getJacobiEigenvectors(self, order=None):
         """
         Returns the eigenvectors of the tridiagonal Jacobi matrix. These are used for computing quadrature rules for numerical integration.
@@ -257,7 +250,6 @@ class Parameter(object):
             A order-by-order matrix that contains the eigenvectors of the Jacobi matrix.
         """
         return jacobiEigenvectors(self, order)
-
     def _getOrthoPoly(self, points, order=None):
         """
         Returns orthogonal polynomials & its derivatives, evaluated at a set of points. WARNING: Should not be called under normal circumstances, without normalization of points!
@@ -274,10 +266,36 @@ class Parameter(object):
             An order-by-k matrix where order defines the number of derivative of the orthogonal polynomials that will be evaluated and k defines the points at which these points should be evaluated at.
         """
         return orthoPolynomial_and_derivative(self, points, order)
+    def _fastInducedJacobiDistributionSetup(self, n, data):
+        ns = np.arange(0, n)
+        if self.param_type is 'Beta':
+            alpha = self.shape_parameter_B - 1
+            beta = self.shape_parameter_A - 1
+        elif self.param_type is 'Uniform':
+            alpha = 0.0
+            beta = 0.0
+        print('One time setup computations!')
 
-    def fast_induced_jacobi_distribution_setup(self, data):
-        return 0
-        
+        for q in range(0, len(ns)):
+            nn = ns[q]
+            cmd = 'Case n = %i'%nn
+            print(cmd)
+            if nn == 0:
+                ab = [0, 2] # is this always true regardless of alph and bet?
+            else:
+                ab = jacobi_recurrence_coefficients(alpha, beta, nn)
+
+            x, g = getlocalquadrature(self, order=nn-1)
+            print x, g
+
+    def fast_induced_jacobi_distribution(self, order=None):
+        """
+        Sets up the computations for a fast induced distribution inverse routine for Jacobi weights.
+
+        """
+        #try:
+        #        np.loadtxt()
+        data = self.fast_induced_jacobi_distribution_setup( )
     def induced_jacobi_distribution(self, x, order=None):
         """
         Evaluates the induced distribution.
@@ -303,8 +321,8 @@ class Parameter(object):
             raise(ValueError, 'Parameter: median_approximation_jacobi:: Unrecognized parameter type!')
 
         # A few quick checks before we proceed!
-        assert ((alpha > -1)) and (beta > -1) ), "Shape parameter values are incorrect!"
-        assert (all(np.abs(x)) <= 1), "Issue with quadrature points!"
+        #assert ((alpha > -1)) and (beta > -1) ), "Shape parameter values are incorrect!"
+        #assert (all(np.abs(x)) <= 1), "Issue with quadrature points!"
         if len(x) == 0:
             F = []
 
@@ -371,7 +389,6 @@ class Parameter(object):
             F[xq] = I * np.exp(logfactor - alpha * np.log(2) - betaln(beta + 1, alpha + 1) - np.log(beta + 1) + (beta + 1) * np.log((x[xq])/2.0)  )
 
         return F
-
     def median_approximation_jacobi(self, order=None):
         """
         Returns an estimate for the median of the order-n Jacobi induced distribution.
@@ -398,7 +415,6 @@ class Parameter(object):
         else:
             x0 = 2.0/(1.0 + (alpha + 1.0)/(beta + 1.0))  - 1.0
         return x0
-
     def _getLocalQuadrature(self, order=None, scale=None):
         """
         Returns the 1D quadrature points and weights for the parameter. WARNING: Should not be called under normal circumstances.
@@ -413,7 +429,6 @@ class Parameter(object):
             A 1-by-N matrix that contains the quadrature weights
         """
         return getlocalquadrature(self, order, scale)
-
     def _linearModification(self, x0):
         """
         Performs a linear modification of the orthogonal polynomial recurrence coefficients. It transforms the coefficients
@@ -449,7 +464,6 @@ class Parameter(object):
             ab[i, 0] = alpha[i] + sign * acorrect[i]
 
         return ab
-
     def _quadraticModification(self, x0):
         """
         Performs a quadratic modification of the orthogonal polynomial recurrence coefficients. It transforms the coefficients
@@ -495,8 +509,6 @@ class Parameter(object):
             ab[i,0] = alpha[i+2] + acorrect[i,0]
             ab[i,1] = beta[i+2] * bcorrect[i]
         return ab
-
-
 #-----------------------------------------------------------------------------------
 #
 #                               PRIVATE FUNCTIONS BELOW
@@ -528,7 +540,6 @@ def evaluateRatioSuccessiveOrthoPolynomials(a, b, x, N):
         r[:,q] = r1
 
     return r
-
 def christoffelNormalizedOrthogonalPolynomials(a, b, x, N):
     # Evaluates the Christoffel normalized orthogonal getPolynomialCoefficients
     nx = len(x)
@@ -556,9 +567,6 @@ def christoffelNormalizedOrthogonalPolynomials(a, b, x, N):
                 C[k,n+1] = 1.0/np.sqrt(1.0 + C[k,n]**2) * (  (xf[k] - a[n]) * C[k,n] - np.sqrt(b[n]) ) * C[k,n-1] / np.sqrt(1.0 + C[k, n-1]**2)
                 C[k,n+1] = C[k,n+1] / np.sqrt(b[n+1])
     return C
-
-
-# Call different methods depending on the choice of the polynomial parameter
 def recurrence_coefficients(self, order=None):
 
     # Preliminaries.
@@ -649,9 +657,6 @@ def recurrence_coefficients(self, order=None):
         raise(ValueError, 'ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential, TruncatedGaussian or Beta')
 
     return ab
-
-
-# Recurrence coefficients for Jacobi type parameters
 def jacobi_recurrence_coefficients(param_A, param_B, order):
 
     a0 = (param_B - param_A)/(param_A + param_B + 2.0)
@@ -671,8 +676,6 @@ def jacobi_recurrence_coefficients(param_A, param_B, order):
             ab[k,1] = ( 4.0 * (temp - 1) * (temp - 1 + param_A) * (temp - 1 + param_B) * (temp - 1 + param_A + param_B) ) / ((2 * (temp - 1) + param_A + param_B)**2 * ( 2 *(temp -1) + param_A + param_B + 1) * (2 * (temp - 1) + param_A + param_B -1 ) )
 
     return ab
-
-# Jacobi coefficients defined over [0,1]
 def jacobi_recurrence_coefficients_01(param_A, param_B, order):
 
     ab = np.zeros((order+1,2))
@@ -688,9 +691,6 @@ def jacobi_recurrence_coefficients_01(param_A, param_B, order):
         ab[i,1] = cd[i,1]/4.0
 
     return ab
-
-# Recurrence coefficients for Hermite type parameters with a variance given by param_B + 0.5
-# and mean of 0.0
 def hermite_recurrence_coefficients(param_A, param_B, order):
 
     # Allocate memory
@@ -718,9 +718,6 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
     ab[0,1] = gamma(param_A + 0.5)#2.0
 
     return ab
-
-
-# Recurrence coefficients for Custom parameters
 def custom_recurrence_coefficients(order, x, w):
 
     # Allocate memory for recurrence coefficients
@@ -763,9 +760,6 @@ def custom_recurrence_coefficients(order, x, w):
         s = s1
 
     return ab
-
-# Compute the Jacobi matrix. The eigenvalues and eigenvectors of this matrix
-# forms the basis of gaussian quadratures
 def jacobiMatrix(self, order=None):
 
     if order is None:
@@ -796,8 +790,6 @@ def jacobiMatrix(self, order=None):
         JacobiMatrix[order-1, order-2] = np.sqrt(ab[order-1,1])
 
     return JacobiMatrix
-
-# Computes 1D quadrature points and weights between [-1,1]
 def getlocalquadrature(self, order=None, scale=None):
 
     # Check for extra input argument!
@@ -846,7 +838,6 @@ def getlocalquadrature(self, order=None, scale=None):
     else:
         # Return 1D gauss points and weights
         return local_points, local_weights
-
 def jacobiEigenvectors(self, order=None):
 
     if order is None:
@@ -863,9 +854,6 @@ def jacobiEigenvectors(self, order=None):
         V = V[:,i]
 
     return V
-
-
-# Univariate orthogonal polynomial correspoding to the weight of the parameter
 def orthoPolynomial_and_derivative(self, points, order=None):
     if order is None:
         order = self.order + 1
@@ -905,3 +893,12 @@ def orthoPolynomial_and_derivative(self, points, order=None):
             # Four-term recurrence formula for derivatives of orthogonal polynomials!
             derivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
         return orthopoly, derivative_orthopoly
+
+def main():
+    data = 0
+    n = 8
+    po = Parameter(param_type='Uniform', lower=-1., upper=1., order=4)
+    po._fastInducedJacobiDistributionSetup(n, data)
+    #fast_induced_jacobi_distribution_setup(highest_order, 0, 0, 0)
+
+main()

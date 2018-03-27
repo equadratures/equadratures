@@ -324,7 +324,7 @@ class Parameter(object):
             The median estimate (double)
         """
         assert((alph > -1) and (bet > -1))
-        #assert( all(np.abs(x[:]) <= 1) )
+        assert( all(np.abs(x[:]) <= 1) )
         assert( n >= 0 )
         if len(x) == 1:
             F = []
@@ -333,27 +333,26 @@ class Parameter(object):
         A = np.floor(abs(alph)) # is an integer
         Aa = alph - A
         F = np.zeros(len(x))
+        F = np.zeros((len(x), 1))
         mrs_centroid = median_approximation_jacobi(alph, bet, n);
-        xreflect = x >= mrs_centroid
-        #print x, xreflect, mrs_centroid
-        #var = -x[xreflect]
-        #print var
-        #try:
-        #    F[xreflect] = 1.0 - self.induced_jacobi_distribution(-x[xreflect], n, bet, alph, M)
-        #except TypeError:
-        #    print 'Stopped recursion'
-        ab = self.getRecurrenceCoefficients(n)
-        ab[0,1] = 1 # To make it a probability measure
+        xreflect = x > mrs_centroid
+        
+        try:
+            F[xreflect] = 1.0 - self.induced_jacobi_distribution(-x[xreflect], n, alph, bet,  M)
+        except TypeError:
+            print 'Stopped recursion'
+        ab = self.getRecurrenceCoefficients(n+1)
+        ab[0,1] = 1.0 # To make it a probability measure
         if n > 0:
             # Zeros of p_n
             xn, wn = self._getLocalQuadrature(n)
 
         # This is the (inverse) n'th root of the leading coefficient square of p_n
         # We'll use it for scaling later
-        kn_factor = np.exp(-1.0/(1.0 * n) * np.sum(  np.log(ab[:,1]) , axis=0  ) )
-        print 'All the way up -- kn factor!'
-        print ab[:,1]
-        print kn_factor
+        kn_factor = np.exp(-1.0/(1.0 * n+1.0) * np.sum(  np.log(ab[:,1]) , axis=0  ) )
+        #print 'All the way up -- kn factor!'
+        #print ab[:,1]
+        #print kn_factor
         for xq in range(0, len(x)):
             if x[xq] == -1:
                 F[xq] = 0
@@ -361,52 +360,54 @@ class Parameter(object):
             if xreflect[xq]:
                 continue
             # Recurrence coefficients for quadrature rule
-            ab = self.getRecurrenceCoefficients(2*n+A+M);
+            ab = self.getRecurrenceCoefficients(2*n+A+M+1)
             ab[0,1] = 1 # To make it a probability measure
-            print x, xq
+            #print x, xq
             if n > 0:
                 # Transformed
                 un = (2.0/(x[xq]+1.0)) * (xn + 1.0) - 1.0
             logfactor = 0.0 # Keep this so that bet(1) always equals what it did before
             # Successive quadratic measure modifications
-            print 'For loop below!'
-            print un 
-            for j in range(0, n):
-                print ab, un[j]
+            #print 'For loop below!'
+            #print un 
+            for j in range(0, n+1):
+                #print ab, un[j]
                 ab = quadraticModification(ab, un[j])
-                print 'ab'
-                print ab
-                print 'x[xq]'
-                print x[xq]
-                print x, xq
+                #print 'ab'
+                #print ab
+                #print 'x[xq]'
+                #print x[xq]
+                #print x, xq
                 logfactor += np.log( ab[0,1] * ((x[xq]+1.0)/2.0)**2 * kn_factor)
-                print 'inside factor'
-                print ((x[xq]+1.0)/2.0)**2
-                print 'kn factor'
-                print kn_factor
-                print '---logfactor---'
-                print logfactor
+                #print 'inside factor'
+                #print ((x[xq]+1.0)/2.0)**2
+                #print 'kn factor'
+                #print kn_factor
+                #print '---logfactor---'
+                #print logfactor
                 ab[0,1] = 1.0
-            print 'Immediately below quadratic Modification call!'
-            print ab, logfactor, un, kn_factor
+            #print 'Immediately below quadratic Modification call!'
+            #print ab, logfactor, un, kn_factor
 
             # Linear modification by factors (2 - 1/2*(u+1)*(x+1)), having root u = (3-x)/(1+x)
             root = (3-x[xq])/(1+x[xq]);
             for aq in range(0, int(A) ):
-                print 'Linear modification'
-                print ab
+                #print 'Linear modification'
+                #print ab
                 ab = linearModification(ab, root)
-                print ab
-                print '~~~~~~~~~~~~~~~~'
+                #print ab
+                #print '~~~~~~~~~~~~~~~~'
                 logfactor += logfactor + np.log(ab[0,1] * 1.0/2.0 * (x[xq]+1.0));
-                ab[0,1] = 1
+                ab[0,1] = 1.0
 
             # M-point Gauss quadrature for evaluation of auxilliary integral I
             u, w = self._getLocalQuadrature(M)
             I = np.dot(w ,  (2.0 - 1.0/2.0 * (u+1.) * (x[xq]+1.) )**Aa )
             #print logfactor 
+            #print np.exp(logfactor - alph * np.log(2.0) - betaln(bet+1.0, alph+1.0) - np.log(bet+1.0) + (bet+1)* np.log((x[xq]+1.0)/2.0)) * I;
             F[xq] = np.exp(logfactor - alph * np.log(2.0) - betaln(bet+1.0, alph+1.0) - np.log(bet+1.0) + (bet+1)* np.log((x[xq]+1.0)/2.0)) * I;
-
+            #print 'Printing F'
+            #print F
         return F
 
 def median_approximation_jacobi(alpha, beta, n):
@@ -876,7 +877,9 @@ def main():
     x, w = po._getLocalQuadrature()
     alpha = 0. 
     beta = 0.
-    po.induced_jacobi_distribution(x, n, alpha, beta, 6)
+    G = po.induced_jacobi_distribution(x, n, alpha, beta, 6)
+    print '*****'
+    print G
     #po.fastInducedJacobiDistributionSetup(n, data)
     #fast_induced_jacobi_distribution_setup(highest_order, 0, 0, 0)
 

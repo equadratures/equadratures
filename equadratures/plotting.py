@@ -366,7 +366,7 @@ def scatterplot3D(x, f, x1_label=None, x2_label=None, f_label=None, filename=Non
     else:
         plt.show()
 
-def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_choice=None):
+def scatterplot(x, y, x_label, y_label, errorbars=None, filename=None, marker_type=None, color_choice=None, xlim=None, ylim=None):
     x = np.mat(x)
     y = np.mat(y)
     m, n = x.shape
@@ -379,25 +379,37 @@ def scatterplot(x, y, x_label, y_label, filename=None, marker_type=None, color_c
     if marker_type is None:
         marker_type = 's'
     if color_choice is None:
-        color_choice = 'limegreen'
+        color_choice = 'deepskyblue'
 
     opacity = 0.8
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
-    plt.grid()
-    ax.set_facecolor('silver')
+    #plt.grid()
+    #try:
+    #    ax.set_facecolor('silver')
+    #except AttributeError:
+    #    ax.set_axis_bgcolor('silver')
+    plt.plot(x, y, linestyle='-', linewidth=1, color='black')
     for i in range(0, m):
-        plt.scatter(x[i,0], y[i,0], marker=marker_type, s=140, alpha=opacity, color=color_choice,linewidth=1.5)
+        if errorbars is None:
+            plt.scatter(x[i,0], y[i,0], marker=marker_type, s=140, alpha=opacity, color='black',linewidth=1.5)
+        else:
+            plt.errorbar(x[i,0], y[i,0], yerr=errorbars[i], fmt='o',  alpha=0.8, marker='o', elinewidth=3, ecolor='maroon', color='red', ms=10, lw=0.0)
+        
+    if xlim is not None:
+        ax.set_xlim(xlim)
+    if ylim is not None:
+        ax.set_ylim(ylim)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
-    plt.xlabel(x_label, fontsize=13)
-    plt.ylabel(y_label, fontsize=13)
-    plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
-    plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
+    plt.xlabel(x_label, fontsize=15)
+    plt.ylabel(y_label, fontsize=15)
+    #plt.grid(b=True, which='major', color='lightgray', linestyle='-', linewidth=0.5)
+    #plt.grid(b=True, which='minor', color='lightgray', linestyle='-', linewidth=0.5)
     plt.xticks(fontsize=13)
     plt.yticks(fontsize=13)
-    plt.tight_layout()
+    #plt.tight_layout()
     if filename is None:
         plt.show()
     else:
@@ -470,14 +482,14 @@ def barplot(x, y, x_label, y_label, x_ticks, filename=None):
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     plt.grid()
-    ax.set_axis_bgcolor('silver')
+    #ax.set_axis_bgcolor('silver')
     plt.bar(x, y, bar_width, alpha=opacity, color='steelblue',error_kw=error_config, linewidth=1.5)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
     plt.xlabel(x_label, fontsize=13)
     plt.ylabel(y_label, fontsize=13)
-    plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
-    plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
+    #plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
+    #plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
     plt.xticks(x, x_ticks, fontsize=13)
     plt.yticks(fontsize=13)
     plt.tight_layout()

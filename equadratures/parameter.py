@@ -267,6 +267,49 @@ class Parameter(object):
         """
         return orthoPolynomial_and_derivative(self, points, order)
     def fastInducedJacobiDistributionSetup(self, n, data):
+        % data = fidistinv_jacobi_setup(n, alph, bet, data)
+        #ns = length(data):n;
+        #if numel(ns) < 1
+        #return
+        #end
+        ns = arange(0, n)
+        fprintf('One-time setup computations: Computing Jacobi (alpha=%1.3f, beta=%1.3f) induced distribution data for...\n', alph, bet);
+        display_command = 'Computations for a jacobi induced distribution for alpha=%s and beta=%s'%(self.shape_parameter_A, self.shape_parameter_B)
+        print(display_command)
+
+        #% Construct piecewise polynomial data
+        for q in range(0, n):
+            nn = ns[q]
+            display_loop = 'For the case where n=%s'%(q)
+            print(display_loop)
+
+            x, g = getlocalquadrature(self, order=nn-1)
+            ug = induced_jacobi_distribution(self, x, nn-1, alpha, beta, 50)
+            ug = np.insert(ug, 0, 0.0)
+            ug = np.append(ug, 1.0)
+
+            exps = [be]
+            
+
+
+        [a,b] = jacobi_recurrence(nn+1, alph, bet);
+        disp([a,b])
+        xg = gauss_quadrature(a,b,nn)
+        ug = idist_jacobi(xg, nn, alph, bet, 50); % Make it very accurate
+
+        ug = [0;  ug;  1];
+        exps = [bet/(bet+1) alph/(alph+1)];
+        [ug, exponents] = fidistinv_setup_helper1(ug, exps);
+
+        idistinv = @(uu) idistinv_jacobi(uu, nn, alph, bet);
+        M = 50; % Size of Chebyshev transform
+        data{nn+1} = fidistinv_setup_helper2(ug, idistinv, exponents, M);
+
+        end
+        fprintf('Done\n');
+
+        # Below is the older implementation of this file!
+        """
         ns = np.arange(0, n)
         if self.param_type is 'Beta':
             alpha = self.shape_parameter_B - 1
@@ -289,7 +332,7 @@ class Parameter(object):
                 x, g = getlocalquadrature(self, order=nn-1)
                 ug = induced_jacobi_distribution(self, x, nn-1, alpha, beta)
                 break
- 
+        """
     def _getLocalQuadrature(self, order=None, scale=None):
         """
         Returns the 1D quadrature points and weights for the parameter. WARNING: Should not be called under normal circumstances.
@@ -310,6 +353,7 @@ class Parameter(object):
 #                               PRIVATE FUNCTIONS BELOW
 #
 #-----------------------------------------------------------------------------------
+
     def induced_jacobi_distribution(self, x, n, alph, bet, M=None):
         """
         Evaluates the induced distribution.

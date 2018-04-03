@@ -1,8 +1,7 @@
-"""A set of utilities for cmputing probability and cumulative density functions"""
+"""A set of utilities for cmputing probability and cumulative density functions."""
 import numpy as np
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 import scipy.stats as stats
-
 def iCDF_Gaussian(xx, mu, sigma):
     """
     An inverse Gaussian cumulative density function.
@@ -17,7 +16,6 @@ def iCDF_Gaussian(xx, mu, sigma):
         Inverse CDF samples associated with the Gaussian distribution.
     """
     return mu + sigma * np.sqrt(2.0) * erfinv(2.0*xx - 1.0)
-
 def iCDF_CauchyDistribution(xx, x0, gammavalue):
     """
     An inverse Cauchy cumulative density function.
@@ -32,7 +30,6 @@ def iCDF_CauchyDistribution(xx, x0, gammavalue):
         Inverse CDF samples associated with the Cauchy distribution.
     """
     return x0 + gamma * np.tan(np.pi * (xx - 0.5))
-
 def iCDF_WeibullDistribution(xx, lambda_value, k):
     """
     An inverse Weibull cumulative density function.
@@ -47,7 +44,6 @@ def iCDF_WeibullDistribution(xx, lambda_value, k):
         Inverse CDF samples associated with the Weibull distribution.
     """
     return lambda_value * (-np.log(1.0 - xx))**(1.0/k)
-
 def iCDF_ExponentialDistribution(xx, lambda_value):
     """
     An inverse exponential cumulative density function.
@@ -60,7 +56,6 @@ def iCDF_ExponentialDistribution(xx, lambda_value):
         Inverse CDF samples associated with the exponential distribution.
     """
     return (-np.log(1.0 - xx))/(lambda_value)
-
 def iCDF_BetaDistribution(xx, a, b, lower, upper):
     """
     An inverse beta cumulative density function.
@@ -87,7 +82,6 @@ def iCDF_BetaDistribution(xx, a, b, lower, upper):
                 yy.append(value)
                 break
     return yy
-
 def iCDF_GammaDistribution(xx, k, theta):
     """
     An inverse gamma cumulative density function.
@@ -110,7 +104,28 @@ def iCDF_GammaDistribution(xx, k, theta):
                 yy.append(value)
                 break
     return yy
+def iCDF_ChebyshevDistribution(xx, lower, upper):
+    """
+    An inverse Chebyshev cumulative density function.
 
+    :param xx:
+        A numpy array of uniformly distributed samples between [0,1].
+    :param double lower:
+        Lower bound of the support of the Chebyshev distribution.
+    :param double upper:
+        Upper bound of the support of the Chebyshev distribution.
+    :return:
+        Inverse CDF samples associated with the Chebyshev distribution.
+    """
+    yy = []
+    [x, c] = CDF_ChebyshevDistribution(1000, lower, upper)
+    for k in range(0, len(xx)):
+        for i in range(0, len(x)):
+            if ( (xx[k]>=c[i]) and (xx[k]<=c[i+1]) ):
+                value =  float( (xx[k]-c[i])/(c[i+1]-c[i])*(x[i+1]-x[i])+x[i] )
+                yy.append(value)
+                break
+    return yy
 def iCDF_TruncatedGaussianDistribution(xx, mu, sigma, a, b):
     """
     An inverse truncated Gaussian cumulative density function.
@@ -133,8 +148,6 @@ def iCDF_TruncatedGaussianDistribution(xx, mu, sigma, a, b):
         if(yy[i,0] < a or yy[i,0] > b):
             yy[i,0] = 0
     return yy
-
-
 def iCDF_CustomDistribution(xx, data):
     """
     An inverse custom cumulative density function. Here the custom distriution is based on the input data.
@@ -162,8 +175,6 @@ def iCDF_CustomDistribution(xx, data):
                 yy.append(value)
                 break
     return yy
-
-
 def CDF_GaussianDistribution(N, mu, sigma):
     """
     A Gaussian cumulative density function.
@@ -183,7 +194,6 @@ def CDF_GaussianDistribution(N, mu, sigma):
     x = x + mu # scaling it by the mean!
     w = 0.5*(1 + erf((x - mu)/(sigma * np.sqrt(2) ) ) )
     return x, w
-
 def CDF_TruncatedGaussianDistribution(N, mu, sigma, a, b):
     """
     A truncated Gaussian cumulative density function.
@@ -212,7 +222,6 @@ def CDF_TruncatedGaussianDistribution(N, mu, sigma, a, b):
     Z = cumulative(beta) - cumulative(alpha)
     w = (cumulative(zeta) - cumulative(alpha))/(Z)
     return x, w
-
 def CDF_BetaDistribution(N, a, b, lower, upper):
     """
     A beta cumulative density function.
@@ -237,7 +246,6 @@ def CDF_BetaDistribution(N, a, b, lower, upper):
     for i in range(0, N):
         w[i] = betainc(a, b, x[i])
     return x, w
-
 def CDF_WeibullDistribution(N, lambda_value, k):
     """
     A Weibull cumulative density function.
@@ -256,7 +264,6 @@ def CDF_WeibullDistribution(N, lambda_value, k):
     x = np.linspace(0, 15/k, N)
     w = 1 - np.exp(-1.0 * ( (x) / (lambda_value * 1.0)  )**k )
     return x, w
-
 def CDF_UniformDistribution(N, lower, upper):
     """
     A uniform cumulative density function.
@@ -277,7 +284,6 @@ def CDF_UniformDistribution(N, lower, upper):
     for i in range(0, N):
         w[i] = (x[i] - lower)/(upper - lower)
     return x, w
-
 def CDF_GammaDistribution(N, k, theta):
     """
     A gamma cumulative density function.
@@ -296,7 +302,6 @@ def CDF_GammaDistribution(N, k, theta):
     x = np.linspace(0, k*theta*10, N)
     w = 1.0/(gamma(k)) * gammainc(k, x/theta)
     return x, w
-
 def CDF_CauchyDistribution(N, x0, gammavalue):
     """
     A Cauchy cumulative density function.
@@ -316,7 +321,6 @@ def CDF_CauchyDistribution(N, x0, gammavalue):
     x = x + x0
     w = 1.0/np.pi * np.arctan((x - x0) / gammavalue) + 0.5
     return x, w
-
 def CDF_ExponentialDistribution(N, lambda_value):
     """
     An exponential cumulative density function.
@@ -333,7 +337,24 @@ def CDF_ExponentialDistribution(N, lambda_value):
     x = np.linspace(0, 20*lambda_value, N)
     w = 1 - np.exp(-lambda_value * x)
     return x, w
+def CDF_ChebyshevDistribution(N, lower, upper):
+    """
+    A Chebyshev cumulative density function.
 
+    :param integer N:
+        Number of points for defining the cumulative density function.
+    :param double lower:
+        Lower bound of the Chebyshev distribution.
+    :param double upper:
+        Upper bound of the Chebyshev distribution.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Cumulative density values along the support of the Chebyshev (arcsine) distribution.
+    """
+    xreal = np.linspace(lower, upper, N)
+    wreal = 2.0 / (np.pi) * np.arcsin( np.sqrt( (xreal - lower)/(upper - lower) ) ) 
+    return xreal, wreal
 def CDF_CustomDistribution(N, data):
     """
     A cumulative density function associated with a given data set.
@@ -355,8 +376,6 @@ def CDF_CustomDistribution(N, data):
     for i in range(1, len(x)):
         c[i]=c[i]/c[len(x)-1]
     return x, c
-
-
 def PDF_CustomDistribution(N, data):
     """
     A probability density function associated with a given data set.
@@ -382,7 +401,6 @@ def PDF_CustomDistribution(N, data):
     kernel = stats.gaussian_kde(data)
     wts = kernel(xo)
     return xo, wts
-
 def PDF_UniformDistribution(N, lower, upper):
     """
     A uniform probability distribution.
@@ -401,7 +419,6 @@ def PDF_UniformDistribution(N, lower, upper):
     x = np.linspace(lower, upper, N)
     w = 0*x + (1.0)/(upper - lower)
     return x, w
-
 def PDF_BetaDistribution(N, a, b, lower, upper):
     """
     A beta probability distribution.
@@ -426,7 +443,6 @@ def PDF_BetaDistribution(N, a, b, lower, upper):
     xreal = np.linspace(lower, upper, N)
     wreal = w * (1.0)/(upper - lower)
     return xreal, wreal
-
 def PDF_GaussianDistribution(N, mu, sigma):
     """
     A Gaussian probability distribution.
@@ -446,7 +462,6 @@ def PDF_GaussianDistribution(N, mu, sigma):
     x = x + mu # scaling it by the mean!
     w = 1.0/( np.sqrt(2 * sigma**2 * np.pi) ) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma**2) )
     return x, w
-
 def PDF_WeibullDistribution(N, lambda_value, k):
     """
     A Weibull probability density function.
@@ -465,7 +480,6 @@ def PDF_WeibullDistribution(N, lambda_value, k):
     x = np.linspace(0, 15/k, N)
     w = k/lambda_value * (x/lambda_value)**(k-1) * np.exp(-1.0 * (x/lambda_value)**k )
     return x, w
-
 def PDF_GammaDistribution(N, k, theta):
     """
     A gamma probability density function.
@@ -484,7 +498,6 @@ def PDF_GammaDistribution(N, k, theta):
     x = np.linspace(0, k*theta*10, N)
     w = 1.0/(gamma(k) * theta**k) * x**(k-1) * np.exp(-x/theta)
     return x, w
-
 def PDF_CauchyDistribution(N, x0, gammavalue):
     """
     A Cauchy probability density function.
@@ -504,7 +517,6 @@ def PDF_CauchyDistribution(N, x0, gammavalue):
     x = x + x0
     w = 1.0/(np.pi * gammavalue * (1 + ((x - x0)/(gammavalue))**2) )
     return x, w
-
 def PDF_ExponentialDistribution(N, lambda_value):
     """
     An exponential probability density function.
@@ -521,9 +533,25 @@ def PDF_ExponentialDistribution(N, lambda_value):
     x = np.linspace(0, 20*lambda_value, N)
     w = lambda_value * np.exp(-lambda_value * x)
     return x, w
+def PDF_ChebyshevDistribution(N, lower, upper):
+    """
+    A Chebyshev probability density function.
 
-
-def  PDF_TruncatedGaussianDistribution(N, mu, sigma, a, b):
+    :param integer N:
+        Number of points for defining the probability density function.
+    :param double lower:
+        Lower bound of the Chebyshev distribution.
+    :param double upper:
+        Upper bound of the Chebyshev distribution.
+    :return:
+        An array of N equidistant values over the support of the distribution.
+    :return:
+        Probability density values along the support of the Chebyshev (arcsine) distribution.
+    """
+    xreal = np.linspace(lower, upper, N)
+    wreal = 1.0 / (np.pi * np.sqrt( (xreal - lower) * (upper - xreal) )  )
+    return xreal, wreal
+def PDF_TruncatedGaussianDistribution(N, mu, sigma, a, b):
     """
     A truncated Gaussian probability density function.
 
@@ -549,8 +577,6 @@ def  PDF_TruncatedGaussianDistribution(N, mu, sigma, a, b):
     second_term = GaussianCDF(a, mu, sigma)
     w = w / (first_term - second_term)
     return x, w
-
-# A private function!
 def GaussianCDF(constant, mu, sigma):
     w = 1.0/2 * (1 + erf((constant - mu)/(sigma * np.sqrt(2))) )
     return w

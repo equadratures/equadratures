@@ -36,6 +36,7 @@ class Polyint(Poly):
         super(Polyint, self).__init__(parameters, basis)
         if sampling is None:
             sampling = 'tensor grid quadrature'
+        self.setSamplingMethod()
 
 
     @staticmethod
@@ -47,7 +48,7 @@ class Polyint(Poly):
             An instance of the Polyint class.
         """
         if not(self.sampling.lower() in ["tensor grid quadrature", "sparse grid quadrature", "effectively subsampled quadrature",
-            "Christoffel subsampled", "induced distribution samples", "randomized quadrature"]) :
+            "christoffel subsampled", "induced distribution samples", "randomized quadrature"]) :
             raise(ValueError, 'Polyint:generatePointsForEvaluation:: Sampling method not defined! Choose from existing ones.')
         if sampling.lower() == 'tensor grid quadrature':
             points, weights = self.tensor_grid_quadrature()
@@ -63,7 +64,6 @@ class Polyint(Poly):
             points, weights = self.induced_quadrature()
         self.points = points
         self.weights = weights
-
 
     def tensor_grid_quadrature(self):
         return 0
@@ -125,7 +125,36 @@ class Polyint(Poly):
 #  PRIVATE FUNCTIONS!
 #
 #--------------------------------------------------------------------------------------------------------------
+def getA(self):
+    stackOfParameters = self.uq_parameters
+    polynomial_basis = self.index_set
+    dimensions = self.index_set.dimension
 
+    # Crate a new PolynomialParam object to get tensor grid points & weights
+    polyObject_for_pts =  Polyint(stackOfParameters)
+    quadrature_pts, quadrature_wts = polyObject_for_pts.getPointsAndWeights()
+
+    polyObject_for_basis = Polyint(stackOfParameters, polynomial_basis) 
+
+    # Allocate memory for "unscaled points!"
+    unscaled_quadrature_pts = np.zeros((len(quadrature_pts), dimensions))
+    for i in range(0, dimensions):
+        for j in range(0, len(quadrature_pts)):
+                if (stackOfParameters[i].param_type == "Uniform"):
+                    unscaled_quadrature_pts[j,i] = ((quadrature_pts[j,i] - stackOfParameters[i].lower)/(stackOfParameters[i].upper - stackOfParameters[i].lower))*2.0 - 1.0
+
+                elif (stackOfParameters[i].param_type == "Beta" ):
+                    unscaled_quadrature_pts[j,i] = (quadrature_pts[j,i] - stackOfParameters[i].lower)/(stackOfParameters[i].upper - stackOfParameters[i].lower)
+
+    # Ensure that the quadrature weights sum up to 1.0
+    quadrature_wts = quadrature_wts/np.sum(quadrature_wts)
+
+    # Now we create another Polynomial object for the basis set!
+    polynomial_expansions, no_used = polyObject_for_basis.getMultivariatePolynomial(unscaled_quadrature_pts)
+    P = np.mat(polynomial_expansions)
+    W = np.mat( np.diag(np.sqrt(quadrature_wts)))
+    A = W * P.T
+    return A, quadrature_pts, quadrature_wts
 
 
 def tensorgrid(stackOfParameters, function=None):

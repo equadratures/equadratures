@@ -53,5 +53,13 @@ class TestParameters(TestCase):
         lineplot(x, y, 'Samples', 'Kernel density estimate')
         histogram(yy, 'Samples', 'Histogram')
 
+    def test_chebyshev_parameter(self):
+        # Set up the parameter!
+        p1 = Parameter(param_type='Chebyshev', order=4, lower=0.0, upper=1.0)
+        x, y = p1.getPDF(50000)
+        yy = p1.getSamples()
+        lineplot(x, y, 'Samples', 'Kernel density estimate')
+        histogram(yy, 'Samples', 'Histogram')
+
 if __name__ == '__main__':
     unittest.main()

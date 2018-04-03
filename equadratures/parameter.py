@@ -266,73 +266,6 @@ class Parameter(object):
             An order-by-k matrix where order defines the number of derivative of the orthogonal polynomials that will be evaluated and k defines the points at which these points should be evaluated at.
         """
         return orthoPolynomial_and_derivative(self, points, order)
-    def fastInducedJacobiDistributionSetup(self, n, data):
-        % data = fidistinv_jacobi_setup(n, alph, bet, data)
-        #ns = length(data):n;
-        #if numel(ns) < 1
-        #return
-        #end
-        ns = arange(0, n)
-        fprintf('One-time setup computations: Computing Jacobi (alpha=%1.3f, beta=%1.3f) induced distribution data for...\n', alph, bet);
-        display_command = 'Computations for a jacobi induced distribution for alpha=%s and beta=%s'%(self.shape_parameter_A, self.shape_parameter_B)
-        print(display_command)
-
-        #% Construct piecewise polynomial data
-        for q in range(0, n):
-            nn = ns[q]
-            display_loop = 'For the case where n=%s'%(q)
-            print(display_loop)
-
-            x, g = getlocalquadrature(self, order=nn-1)
-            ug = induced_jacobi_distribution(self, x, nn-1, alpha, beta, 50)
-            ug = np.insert(ug, 0, 0.0)
-            ug = np.append(ug, 1.0)
-
-            exps = [be]
-            
-
-
-        [a,b] = jacobi_recurrence(nn+1, alph, bet);
-        disp([a,b])
-        xg = gauss_quadrature(a,b,nn)
-        ug = idist_jacobi(xg, nn, alph, bet, 50); % Make it very accurate
-
-        ug = [0;  ug;  1];
-        exps = [bet/(bet+1) alph/(alph+1)];
-        [ug, exponents] = fidistinv_setup_helper1(ug, exps);
-
-        idistinv = @(uu) idistinv_jacobi(uu, nn, alph, bet);
-        M = 50; % Size of Chebyshev transform
-        data{nn+1} = fidistinv_setup_helper2(ug, idistinv, exponents, M);
-
-        end
-        fprintf('Done\n');
-
-        # Below is the older implementation of this file!
-        """
-        ns = np.arange(0, n)
-        if self.param_type is 'Beta':
-            alpha = self.shape_parameter_B - 1
-            beta = self.shape_parameter_A - 1
-        elif self.param_type is 'Uniform':
-            alpha = 0.0
-            beta = 0.0
-        print('One time setup computations!')
-
-        for q in range(0, len(ns)):
-            nn = ns[q]
-            cmd = 'Case n = %i'%nn
-            print(cmd)
-            if nn == 0:
-                ab = [0, 2] # is this always true regardless of alph and bet?
-                x = []
-                g = []
-            else:
-                ab = jacobi_recurrence_coefficients(alpha, beta, nn)
-                x, g = getlocalquadrature(self, order=nn-1)
-                ug = induced_jacobi_distribution(self, x, nn-1, alpha, beta)
-                break
-        """
     def _getLocalQuadrature(self, order=None, scale=None):
         """
         Returns the 1D quadrature points and weights for the parameter. WARNING: Should not be called under normal circumstances.
@@ -347,16 +280,40 @@ class Parameter(object):
             A 1-by-N matrix that contains the quadrature weights
         """
         return getlocalquadrature(self, order, scale)
-
-#-----------------------------------------------------------------------------------
-#
-#                               PRIVATE FUNCTIONS BELOW
-#
-#-----------------------------------------------------------------------------------
-
-    def induced_jacobi_distribution(self, x, n, alph, bet, M=None):
+    def fastInducedJacobiDistributionSetup(self, n, data):
+        # Filename = fidistinv_jacobi_setup(n, alph, bet, data)
         """
-        Evaluates the induced distribution.
+        Fast computations for inverse Jacobi distributions
+        """
+
+        ns = arange(0, n)
+        fprintf('One-time setup computations: Computing Jacobi (alpha=%1.3f, beta=%1.3f) induced distribution data for...\n', alph, bet);
+        display_command = 'Computations for a jacobi induced distribution for alpha=%s and beta=%s'%(self.shape_parameter_A, self.shape_parameter_B)
+        print(display_command)
+
+        if self.param_type is "Beta":
+            alpha = self.shape_parameter_B - 1.0 # bug fix @ 9/6/2016
+            beta = self.shape_parameter_A - 1.0
+        if self.param_type is "Uniform":
+            alpha = 0.0
+            beta = 0.0
+
+        #% Construct piecewise polynomial data
+        for q in range(0, n):
+            nn = ns[q]
+            display_loop = 'For the case where n=%s'%(q)
+            print(display_loop)
+
+            x, g = getlocalquadrature(self, order=nn-1)
+            ug = induced_jacobi_distribution(self, x, nn-1, alpha, beta, 50)
+            ug = np.insert(ug, 0, 0.0)
+            ug = np.append(ug, 1.0)
+
+            exps = [ beta/(beta + 1.0) , alpha / (alpha + 1.0) ]
+            ug, exponents = fast_induced_jacobi_distribution_setup_helper_1(ug, exps)
+    def induced_jacobi_distribution(self, x, n, M=None):
+        """
+        Evaluates the induced Jacobi distribution.
 
         :param Parameter self:
             An instance of the Parameter class.
@@ -367,6 +324,12 @@ class Parameter(object):
         :return:
             The median estimate (double)
         """
+        if self.param_type is "Beta":
+            alph = self.shape_parameter_B - 1.0 # bug fix @ 9/6/2016
+            bet = self.shape_parameter_A - 1.0
+        if self.param_type is "Uniform":
+            alph = 0.0
+            bet = 0.0
         if len(x) == 0:
             return 
         assert((alph > -1) and (bet > -1))
@@ -380,7 +343,7 @@ class Parameter(object):
         mrs_centroid = median_approximation_jacobi(alph, bet, n);
         xreflect = x > mrs_centroid
         if len(x) != 0:
-            v =  self.induced_jacobi_distribution(-x[xreflect], n, alph, bet,  M)
+            v =  self.induced_jacobi_distribution(-x[xreflect], n,  M)
             if v is not None:
                 counter = 0
                 for i in range(0, len(xreflect)):
@@ -404,7 +367,6 @@ class Parameter(object):
             # Recurrence coefficients for quadrature rule
             ab = self.getRecurrenceCoefficients(2*n+A+M+1)
             ab[0,1] = 1 # To make it a probability measure
-            #print x, xq
             if n > 0:
                 # Transformed
                 un = (2.0/(x[xq]+1.0)) * (xn + 1.0) - 1.0
@@ -426,6 +388,138 @@ class Parameter(object):
             I = np.dot(w ,  (2.0 - 1.0/2.0 * (u+1.) * (x[xq]+1.) )**Aa )
             F[xq] = np.exp(logfactor - alph * np.log(2.0) - betaln(bet+1.0, alph+1.0) - np.log(bet+1.0) + (bet+1)* np.log((x[xq]+1.0)/2.0)) * I
         return F
+    def induced_distribution_jacobi_bisection(self, u, n, alpha, beta):
+        """
+        Computes the inverse of the order-n induced primitive for the Jacobi distribution
+        with shape parameters alpha and beta. Uses a bisection method in conjunction with forward
+        evaluation given by the induced jacobi distribution function.
+        """
+        assert( (all(u) >= 0) and (all(u) <=1 ) )
+        assert( (alpha > -1) and (beta > -1) )
+        assert( all(n >= 0) )
+        x = np.zeros((len(u)))
+        supp = [-1, 1]
+
+        if len(n) == 1:
+            primitive = lambda (x): self.induced_jacobi_distribution(x, n)
+
+        ab = self.getRecurrenceCoefficients(2*n+400)
+        # x = idist_inverse!
+        """
+        if numel(n) == 1
+        %primitive = @(x) jacobi_induced_primitive(x, n, alph, bet);
+        primitive = @(xx) idist_jacobi(xx, n, alph, bet);
+
+        % Need 2*n + K coefficients, where K is the size of the Markov-Stiltjies binning procedure
+        [a,b] = jacobi_recurrence(2*n + 400, alph, bet);
+
+        x = idist_inverse(u, n, primitive, a, b, supp);
+
+        else
+
+        nmax = max(n(:));
+        [nn, ~, bin] = histcounts(n, -0.5:(nmax+0.5));
+
+        [a,b] = jacobi_recurrence(2*nmax + 400, alph, bet);
+
+        for qq = 0:nmax
+
+            flags = bin==(qq+1);
+
+            primitive = @(xx) idist_jacobi(xx, qq, alph, bet);
+            x(flags) = idist_inverse(u(flags), qq, primitive, a, b, supp);
+
+        end
+
+        """
+        return 0
+    def inverse_distribution_primitive(self, u, n, primitive, supp): 
+        def markov_stiltijes_initial_guess(self, u, n, supp):
+            #ab = self.getRecurrenceCoefficients(n+1)
+            # To make it a probability measure
+            #if n > 0:
+            # Zeros of p_n
+            x, w = self._getLocalQuadrature(n) # n or n+1 ?
+            cd = self.getRecurrenceCoefficients(n)
+            cd[0,1] = 1.0 
+
+            for k in range(0, n):
+                ab = quadraticModification(cd, x[k])
+                b[0,1] = 1.0
+
+            N = len(ab)
+            y, w = self._getLocalQuadrature(N)
+
+            if supp[1] > y[N]:
+                X = np.insert(y, 0, supp[0])
+                X = np.append(X, supp[1])
+            else:
+                X = np.insert(y, 0, supp[0]) 
+                X = np.append(X, y[N]) # check that y[N] = y[end]!
+                W = np.cumsum(w)
+                W = np.insert(W, 0, 0.0)
+            W = 1.0 / (1.0 * W[N] ) * W
+
+            for i in len(W):
+                if W[i] > 1.0:
+                    W[i] = 1.0
+            W[N] = 1.0
+
+            # Histograms
+            #_ , j = np.bincount(u)
+            j = np.digitize(u, W)
+            jleft = j
+            jright = jleft + 1
+
+            flags = (jleft == N)
+            jleft[flags] = N + 1
+            jright[flags] = N + 1
+            intervals = [X[jleft], X[jright]]
+            return intervals
+
+        if n == 1:
+            intervals = self.markov_stiltijes_initial_guess(u, n, supp)
+        else:
+            intervals = np.zeros((len(n), 2))
+            nmax = np.max(n)
+            rr = np.arange(-0.5, 0.5+nmax, 1.)
+            nn, __, binvalues = np.digitize(n, )
+            for qq in range(0, nmax):
+                flags = binvalues == (qq + 1)
+                intervals(flags) = self.markov_stiltijes_initial_guess(u[flags], qq, supp)
+        
+        x = np.zeros((len(u)))
+        for q in range(0, len(u)):
+            fun = lambda (xx): primitive(xx) - u[q]
+            x[q] = fzero(fun, intervals[q]) # numpy fzero command!
+
+                
+
+#-----------------------------------------------------------------------------------
+#
+#                               PRIVATE FUNCTIONS BELOW
+#
+#-----------------------------------------------------------------------------------
+def fast_induced_jacobi_distribution_setup_helper_1(ug, exps):
+    N = len(ug)
+    ug_mid = 0.5 * (ug[0:N-1] + ug[1:N])
+    ug = ug.append(ug_mid)
+    exponents = np.zeros((2, len(ug) - 1))
+
+    for q in range(0, len(ug) - 1):
+        if np.mod(q, 2) == 1:
+            exponents[0,q] = 2.0/3.0
+        else:
+            exponents[1,q] = 2.0/3.0
+    
+    exponents[0,0] = exps[0]
+    exponents[1,N-1] = exps[1]
+    return ug, exponents 
+def fast_induced_jacobi_distribution_setup_helper_2(ug, idistinv, exponents, M):
+    xx = np.linspace(np.pi, 0, M)
+    vgrid = np.cos(xx)
+
+
 
 def median_approximation_jacobi(alpha, beta, n):
     """
@@ -443,7 +537,6 @@ def median_approximation_jacobi(alpha, beta, n):
     else:
         x0 = 2.0/(1.0 + (alpha + 1.0)/(beta + 1.0))  - 1.0
     return x0
-    
 def linearModification(ab, x0):
     """
     Performs a linear modification of the orthogonal polynomial recurrence coefficients. It transforms the coefficients
@@ -887,7 +980,6 @@ def orthoPolynomial_and_derivative(self, points, order=None):
             # Four-term recurrence formula for derivatives of orthogonal polynomials!
             derivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
         return orthopoly, derivative_orthopoly
-
 def main():
     data = 0
     n = 3
@@ -895,9 +987,7 @@ def main():
     x, w = po._getLocalQuadrature()
     alpha = 0. 
     beta = 0.
-    G = po.induced_jacobi_distribution(x, n, alpha, beta, 6)
+    G = po.induced_jacobi_distribution(x, n, 6)
     print G
-    #po.fastInducedJacobiDistributionSetup(n, data)
-    #fast_induced_jacobi_distribution_setup(highest_order, 0, 0, 0)
 
 main()

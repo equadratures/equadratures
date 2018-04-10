@@ -431,7 +431,6 @@ class Parameter(object):
             rr = np.arange(-0.5, 0.5+nmax, 1.)
             binvalues = np.digitize(n, rr)
 
-<<<<<<< HEAD
         ab = self.getRecurrenceCoefficients(2*n+400)
         # x = idist_inverse!
         """
@@ -463,13 +462,6 @@ class Parameter(object):
         """
         return 0
     """
-=======
-            for qq in range(0, nmax):
-                flags = binvalues == (qq + 1)
-                primitive = lambda (x) : self.induced_jacobi_distribution(x, qq)
-                x[flags] = self.inverse_distribution_primitive(u[flags], qq, primitive, a, b, supp)
-        return x
->>>>>>> 7833e00a6810057b6bd1326dbef5a35115a8d723
     def inverse_distribution_primitive(self, u, n, primitive, supp): 
         if n == 1:
             intervals = self.markov_stiltijes_initial_guess(u, n, supp)
@@ -485,55 +477,10 @@ class Parameter(object):
         x = np.zeros((len(u)))
         for q in range(0, len(u)):
             fun = lambda (xx): primitive(xx) - u[q]
-<<<<<<< HEAD
             x[q] = fzero(fun, intervals[q]) # numpy fzero command!
 
     """         
 
-=======
-            x[q] = fsolve(fun, intervals[q]) 
-            
-        return x
-    def markov_stiltijes_initial_guess(self, u, n, supp):
-        # Zeros of p_n
-        x, w = self._getLocalQuadrature(n) # n or n+1 ?
-        cd = self.getRecurrenceCoefficients(n)
-        cd[0,1] = 1.0 
-
-        for k in range(0, n):
-            print cd
-            ab = quadraticModification(cd, x[k])
-            b[0,1] = 1.0
-
-        N = len(ab)
-        y, w = self._getLocalQuadrature(N)
-
-        if supp[1] > y[N]:
-            X = np.insert(y, 0, supp[0])
-            X = np.append(X, supp[1])
-        else:
-            X = np.insert(y, 0, supp[0]) 
-            X = np.append(X, y[N]) # check that y[N] = y[end]!
-            W = np.cumsum(w)
-            W = np.insert(W, 0, 0.0)
-        W = 1.0 / (1.0 * W[N] ) * W
-
-        for i in len(W):
-            if W[i] > 1.0:
-                W[i] = 1.0
-        W[N] = 1.0
-
-        # Histograms
-        j = np.digitize(u, W)
-        jleft = j
-        jright = jleft + 1
-
-        flags = (jleft == N)
-        jleft[flags] = N + 1
-        jright[flags] = N + 1
-        intervals = [X[jleft], X[jright]]
-        return intervals
->>>>>>> 7833e00a6810057b6bd1326dbef5a35115a8d723
 #-----------------------------------------------------------------------------------
 #
 #                               PRIVATE FUNCTIONS BELOW

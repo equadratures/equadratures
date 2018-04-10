@@ -19,7 +19,8 @@ class Poly(object):
         self.orders = []
         for i in range(0, self.dimensions):
             self.orders.append(self.parameters[i].order)
-        self.basis.setOrders(self.orders)
+        if not self.basis.orders :
+            self.basis.setOrders(self.orders)
 
     def __setCoefficients__(self, coefficients):
         """
@@ -32,7 +33,6 @@ class Poly(object):
 
         """
         self.coefficients = coefficients
-
     def __setDesignMatrix__(self, designMatrix):
         """
         Sets the design matrix assocaited with the quadrature (depending on the technique) points and the polynomial basis.
@@ -44,7 +44,6 @@ class Poly(object):
 
         """
         self.designMatrix = designMatrix
-
     def clone(self):
         """
         Clones a Poly object.
@@ -55,7 +54,6 @@ class Poly(object):
             A clone of the Poly object.
         """
         return type(self)(self.parameters, self.basis)
-
     def scaleInputs(self, x_points_scaled):
         """
         Scales the inputs points for Uniform and Beta distributions.
@@ -79,7 +77,6 @@ class Poly(object):
                 elif (self.parameters[i].param_type == "Beta" ):
                     points[j,i] =  ( points[j,i] - self.parameters[i].lower) / (self.parameters[i].upper - self.parameters[i].lower)
         return points
-
     def getPolynomial(self, stackOfPoints):
         """
         Evaluates the multivariate polynomial at a set of points.
@@ -115,7 +112,6 @@ class Poly(object):
                 temp = polynomial[i,:]
 
         return polynomial
-
     def getPolynomialGradient(self, stackOfPoints):
         """
         Evaluates the gradient of the multivariate polynomial at a set of points.
@@ -160,7 +156,6 @@ class Poly(object):
             R.append(polynomialgradient)
 
         return R
-
     def getTensorQuadratureRule(self, orders=None):
         """
         Generates a tensor grid quadrature rule based on the parameters in Poly.
@@ -202,7 +197,6 @@ class Poly(object):
 
         # Return tensor grid quad-points and weights
         return points, weights
-
     def getStatistics(self, quadratureRule=None):
         """
         Creates an instance of the Statistics class.
@@ -217,7 +211,6 @@ class Poly(object):
         p, w = self.getQuadratureRule(quadratureRule)
         evals = self.getPolynomial(self.scaleInputs(p))
         return Statistics(self.coefficients, self.basis, self.parameters, p, w, evals)
-
     def getQuadratureRule(self, options=None):
         """
         Generates quadrature points and weights.
@@ -247,6 +240,18 @@ class Poly(object):
         if options.lower() == 'tensor grid':
             p,w = self.getTensorQuadratureRule([2*i for i in self.basis.orders])
             return p,w
+    def evaluatePolyFit(self, stackOfPoints):
+        """
+        Evaluates the the polynomial approximation of a function (or model data) at prescribed points.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param matrix stackOfPoints:
+            A N-by-d matrix of points (can be unscaled) at which the polynomial gradient must be evaluated at.
+        :return:
+            A 1-by-N matrix of the polynomial approximation.
+        """
+        return self.getPolynomial(self.scaleInputs(stackOfPoints)).T *  np.mat(self.coefficients)
 
     def evaluatePolyGradFit(self, stackOfPoints):
         """
@@ -269,7 +274,6 @@ class Poly(object):
         for i in range(0, self.dimensions):
             grads[i,:] = np.mat(self.coefficients).T * H[i]
         return grads
-
     def getPolyFitFunction(self):
         """
         Returns a callable polynomial approximation of a function (or model data).
@@ -281,7 +285,6 @@ class Poly(object):
 
         """
         return lambda (x): self.getPolynomial(self.scaleInputs(x)).T *  np.mat(self.coefficients)
-
     def getPolyGradFitFunction(self):
         """
         Returns a callable for the gradients of the polynomial approximation of a function (or model data).
@@ -293,8 +296,6 @@ class Poly(object):
 
         """
         return lambda (x) : self.evaluatePolyGradFit(x)
-
-
     def getFunctionSamples(self, function, coefficients=None, indexset=None):
         """
         Returns a set of function samples; useful for computing probabilities.
@@ -329,5 +330,4 @@ class Poly(object):
         P = np.mat(P)
         C = np.mat(coefficients)
         polyapprox = P.T * C
-
         return polyapprox

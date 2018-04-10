@@ -288,9 +288,7 @@ def contour_plot(x, y , z, filename=None, pts=None, other_pts=None, path_points 
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
-    plt.grid()
-    ax.set_facecolor('silver')
-    K = plt.contourf(x, y, z, 100, rasterized=False)
+    K = plt.contourf(x, y, z, 100)
 
     if pts is not None:
         m, n = pts.shape

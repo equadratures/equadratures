@@ -433,6 +433,7 @@ class Parameter(object):
 
         """
         return 0
+    """
     def inverse_distribution_primitive(self, u, n, primitive, supp): 
         def markov_stiltijes_initial_guess(self, u, n, supp):
             #ab = self.getRecurrenceCoefficients(n+1)
@@ -493,7 +494,7 @@ class Parameter(object):
             fun = lambda (xx): primitive(xx) - u[q]
             x[q] = fzero(fun, intervals[q]) # numpy fzero command!
 
-                
+    """         
 
 #-----------------------------------------------------------------------------------
 #
@@ -990,4 +991,3 @@ def main():
     G = po.induced_jacobi_distribution(x, n, 6)
     print G
 
-main()

@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.linalg import det, cholesky, lstsq
 
-def maxdet(A, k):
+def maxdet(Amatrix, k):
     """
     Formulation of the determinant maximization as a convex program
     """
@@ -14,8 +14,8 @@ def maxdet(A, k):
     alpha = 0.01
     beta = 0.5
 
-    # Assuming the input matrix is an np.matrix()
-    m, n = A.shape
+    # Amatrixssuming the input matrix is an np.matrix()
+    m, n = Amatrix.shape
     if m < n:
         raise(ValueError, 'maxdet(): requires the number of columns to be greater than the number of rows!')
     z = np.ones((m, 1)) * float(k)/float(m)
@@ -26,13 +26,13 @@ def maxdet(A, k):
 
     # Objective function
     Z = diag(z)
-    fz = -np.log(np.linalg.det(A.T * Z * A)) - kappa * np.sum(np.log(z) + np.log(1.0 - z))
+    fz = -np.log(np.linalg.det(Amatrix.T * Z * Amatrix)) - kappa * np.sum(np.log(z) + np.log(1.0 - z))
 
     # Optimization loop!
     for i in range(0, maxiter) :
         Z = diag(z)
-        W = np.linalg.inv(A.T * Z * A)
-        V = A * W * A.T
+        W = np.linalg.inv(Amatrix.T * Z * Amatrix)
+        V = Amatrix * W * Amatrix.T
         vo = np.matrix(np.diag(V))
         vo = vo.T
 
@@ -65,7 +65,7 @@ def maxdet(A, k):
         while flag == 1:
             zp = z + s*dz
             Zp = diag(zp)
-            fzp = -np.log(np.linalg.det(A.T * Zp * A) ) - kappa * np.sum(np.log(zp) + np.log(1 - zp)  )
+            fzp = -np.log(np.linalg.det(Amatrix.T * Zp * Amatrix) ) - kappa * np.sum(np.log(zp) + np.log(1 - zp)  )
             const = fz + alpha * s * g.T * dz
             if fzp <= const[0,0]:
                 flag = 2
@@ -85,9 +85,9 @@ def maxdet(A, k):
     zhat, not_used = find(z, thres)
     p, q = zhat.shape
     Zhat = diag(zhat)
-    L = np.log(np.linalg.det(A.T * Zhat  * A))
+    L = np.log(np.linalg.det(Amatrix.T * Zhat  * Amatrix))
     ztilde  = z
-    Utilde = np.log(np.linalg.det(A.T * diag(z) * A))  + 2 * m * kappa
+    Utilde = np.log(np.linalg.det(Amatrix.T * diag(z) * Amatrix))  + 2 * m * kappa
 
     return zhat, L, ztilde, Utilde
 

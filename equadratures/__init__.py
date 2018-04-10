@@ -3,6 +3,7 @@ from .parameter import Parameter
 from .polyreg import Polyreg
 from .polycs import Polycs
 from .polyint import Polyint
+from .polylsq import Polylsq
 from .stats import Statistics
 from .basis import Basis
 import numpy as np

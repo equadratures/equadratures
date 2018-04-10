@@ -7,6 +7,7 @@ References:
 """
 import numpy as np
 from scipy.special import gamma, betaln
+from scipy.optimize import fsolve
 import distributions as analytical
 class Parameter(object):
     """
@@ -19,7 +20,7 @@ class Parameter(object):
     :param integer order:
         Order of the parameter.
     :param string param_type:
-        The type of distribution that characterizes the parameter. Options include: `Gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_, `Truncated-Gaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_, `Beta <https://en.wikipedia.org/wiki/Beta_distribution>`_, `Cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_, `Exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_, `Uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_, `Gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_, `Weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_. If no string is provided, a `Uniform` distribution is assumed. If the user provides data, and would like to generate orthogonal polynomials (and quadrature rules) based on the data, they can set this option to be Custom.
+        The type of distribution that characterizes the parameter. Options include: `Chebyshev (arcsine) <https://en.wikipedia.org/wiki/Arcsine_distribution>`_, `Gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_, `Truncated-Gaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_, `Beta <https://en.wikipedia.org/wiki/Beta_distribution>`_, `Cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_, `Exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_, `Uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_, `Gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_, `Weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_. If no string is provided, a `Uniform` distribution is assumed. If the user provides data, and would like to generate orthogonal polynomials (and quadrature rules) based on the data, they can set this option to be Custom.
     :param double shape_parameter_A:
         Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a `Gaussian` (or `TruncatedGaussian`), this represents the mean. In the case of a Beta distribution this represents the alpha value. For a uniform distribution this input is not required.
     :param double shape_parameter_B:
@@ -61,6 +62,10 @@ class Parameter(object):
         if self.param_type == 'TruncatedGaussian' :
             if upper is None or lower is None:
                 raise(ValueError, 'parameter __init__: upper and lower bounds are required for a TruncatedGaussian distribution!')
+        
+        if self.param_type == 'Chebyshev' :
+            if upper is None or lower is None:
+                raise(ValueError, 'parameter __init__: upper and lower bounds are required for a Chebyshev distribution!')
 
         if self.lower >= self.upper  and data is None:
             raise(ValueError, 'parameter __init__: upper bounds must be greater than lower bounds!')
@@ -92,6 +97,8 @@ class Parameter(object):
             mu = self.shape_parameter_A * gamma(1.0 + 1.0/self.shape_parameter_B)
         elif self.param_type == "Gamma":
             mu = self.shape_parameter_A * self.shape_parameter_B
+        elif self.param_type == "Chebyshev":
+            mu = 0.5 * (self.lower + self.upper)
         elif self.param_type == 'Custom':
             mu = np.mean(self.getSamples)
         return mu
@@ -125,6 +132,8 @@ class Parameter(object):
             x, y = analytical.PDF_ExponentialDistribution(N, self.shape_parameter_A)
         elif self.param_type is "Custom":
             x, y = analytical.PDF_CustomDistribution(N, self.data)
+        elif self.param_type is "Chebyshev":
+            x, y = analytical.PDF_ChebyshevDistribution(N, self.lower, self.upper)
         else:
             raise(ValueError, 'parameter getPDF(): invalid parameter type!')
         return x, y
@@ -176,6 +185,8 @@ class Parameter(object):
             x, y = analytical.CDF_TruncatedGaussianDistribution(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
         elif self.param_type is "Exponential":
             x, y = analytical.CDF_ExponentialDistribution(N, self.shape_parameter_A)
+        elif self.param_type is "Chebyshev":
+            x, y = analytical.CDF_ChebyshevDistribution(N, self.lower, self.upper)
         else:
             raise(ValueError, 'parameter getCDF(): invalid parameter type!')
         return x, y
@@ -209,6 +220,8 @@ class Parameter(object):
             y = analytical.iCDF_ExponentialDistribution(x, self.shape_parameter_A)
         elif self.param_type is "Custom":
             y = analytical.iCDF_CustomDistribution(x, self.data)
+        elif self.param_type is "Chebyshev":
+            y = analytical.iCDF_ChebyshevDistribution(x, self.lower, self.upper)
         else:
             raise(ValueError, 'parameter getiCDF(): invalid parameter type!')
         return y
@@ -280,17 +293,18 @@ class Parameter(object):
             A 1-by-N matrix that contains the quadrature weights
         """
         return getlocalquadrature(self, order, scale)
+    def fastInducedJacobiDistribution(self):
+        """
+        Fast computations for inverse Jacobi distributions -- main file!
+        """
+        data = self.fastInducedJacobiDistributionSetup(self.order, 0)
+        return data  
     def fastInducedJacobiDistributionSetup(self, n, data):
         # Filename = fidistinv_jacobi_setup(n, alph, bet, data)
         """
         Fast computations for inverse Jacobi distributions
         """
-
-        ns = arange(0, n)
-        fprintf('One-time setup computations: Computing Jacobi (alpha=%1.3f, beta=%1.3f) induced distribution data for...\n', alph, bet);
-        display_command = 'Computations for a jacobi induced distribution for alpha=%s and beta=%s'%(self.shape_parameter_A, self.shape_parameter_B)
-        print(display_command)
-
+        M = 10
         if self.param_type is "Beta":
             alpha = self.shape_parameter_B - 1.0 # bug fix @ 9/6/2016
             beta = self.shape_parameter_A - 1.0
@@ -298,19 +312,27 @@ class Parameter(object):
             alpha = 0.0
             beta = 0.0
 
+        ns = np.arange(0, n)
+        display_command = 'Computations for a jacobi induced distribution for alpha=%s and beta=%s'%(self.shape_parameter_A, self.shape_parameter_B)
+        print(display_command)
+
         #% Construct piecewise polynomial data
+        data = {}
         for q in range(0, n):
             nn = ns[q]
             display_loop = 'For the case where n=%s'%(q)
             print(display_loop)
 
-            x, g = getlocalquadrature(self, order=nn-1)
-            ug = induced_jacobi_distribution(self, x, nn-1, alpha, beta, 50)
+            x, g = getlocalquadrature(self, order=nn)
+            ug = self.induced_jacobi_distribution(x, nn, M)
             ug = np.insert(ug, 0, 0.0)
             ug = np.append(ug, 1.0)
 
             exps = [ beta/(beta + 1.0) , alpha / (alpha + 1.0) ]
             ug, exponents = fast_induced_jacobi_distribution_setup_helper_1(ug, exps)
+            idistinv = lambda (uu) : self.induced_distribution_jacobi_bisection(uu, nn, alpha, beta)
+            data[nn] = fast_induced_jacobi_distribution_setup_helper_2(ug, idistinv, exponents, M)
+        return data
     def induced_jacobi_distribution(self, x, n, M=None):
         """
         Evaluates the induced Jacobi distribution.
@@ -371,7 +393,7 @@ class Parameter(object):
                 # Transformed
                 un = (2.0/(x[xq]+1.0)) * (xn + 1.0) - 1.0
             logfactor = 0.0 # Keep this so that bet(1) always equals what it did before
-            for j in range(0, n+1):
+            for j in range(1, n+1):
                 ab = quadraticModification(ab, un[j])
                 logfactor += np.log( ab[0,1] * ((x[xq]+1.0)/2.0)**2 * kn_factor)
                 ab[0,1] = 1.0
@@ -396,13 +418,20 @@ class Parameter(object):
         """
         assert( (all(u) >= 0) and (all(u) <=1 ) )
         assert( (alpha > -1) and (beta > -1) )
-        assert( all(n >= 0) )
+        assert( n >= 0 )
         x = np.zeros((len(u)))
         supp = [-1, 1]
 
-        if len(n) == 1:
+        if n == 1:
             primitive = lambda (x): self.induced_jacobi_distribution(x, n)
+            ab = self.getRecurrenceCoefficients(2*n+400)
+            x = self.inverse_distribution_primitive(u, n, primitive, supp)
+        else:
+            nmax = np.max(n)
+            rr = np.arange(-0.5, 0.5+nmax, 1.)
+            binvalues = np.digitize(n, rr)
 
+<<<<<<< HEAD
         ab = self.getRecurrenceCoefficients(2*n+400)
         # x = idist_inverse!
         """
@@ -434,68 +463,77 @@ class Parameter(object):
         """
         return 0
     """
+=======
+            for qq in range(0, nmax):
+                flags = binvalues == (qq + 1)
+                primitive = lambda (x) : self.induced_jacobi_distribution(x, qq)
+                x[flags] = self.inverse_distribution_primitive(u[flags], qq, primitive, a, b, supp)
+        return x
+>>>>>>> 7833e00a6810057b6bd1326dbef5a35115a8d723
     def inverse_distribution_primitive(self, u, n, primitive, supp): 
-        def markov_stiltijes_initial_guess(self, u, n, supp):
-            #ab = self.getRecurrenceCoefficients(n+1)
-            # To make it a probability measure
-            #if n > 0:
-            # Zeros of p_n
-            x, w = self._getLocalQuadrature(n) # n or n+1 ?
-            cd = self.getRecurrenceCoefficients(n)
-            cd[0,1] = 1.0 
-
-            for k in range(0, n):
-                ab = quadraticModification(cd, x[k])
-                b[0,1] = 1.0
-
-            N = len(ab)
-            y, w = self._getLocalQuadrature(N)
-
-            if supp[1] > y[N]:
-                X = np.insert(y, 0, supp[0])
-                X = np.append(X, supp[1])
-            else:
-                X = np.insert(y, 0, supp[0]) 
-                X = np.append(X, y[N]) # check that y[N] = y[end]!
-                W = np.cumsum(w)
-                W = np.insert(W, 0, 0.0)
-            W = 1.0 / (1.0 * W[N] ) * W
-
-            for i in len(W):
-                if W[i] > 1.0:
-                    W[i] = 1.0
-            W[N] = 1.0
-
-            # Histograms
-            #_ , j = np.bincount(u)
-            j = np.digitize(u, W)
-            jleft = j
-            jright = jleft + 1
-
-            flags = (jleft == N)
-            jleft[flags] = N + 1
-            jright[flags] = N + 1
-            intervals = [X[jleft], X[jright]]
-            return intervals
-
         if n == 1:
             intervals = self.markov_stiltijes_initial_guess(u, n, supp)
         else:
             intervals = np.zeros((len(n), 2))
             nmax = np.max(n)
             rr = np.arange(-0.5, 0.5+nmax, 1.)
-            nn, __, binvalues = np.digitize(n, )
+            binvalues = np.digitize(n, rr)
             for qq in range(0, nmax):
                 flags = binvalues == (qq + 1)
-                intervals(flags) = self.markov_stiltijes_initial_guess(u[flags], qq, supp)
+                intervals[flags] = self.markov_stiltijes_initial_guess(u[flags], qq, supp)
         
         x = np.zeros((len(u)))
         for q in range(0, len(u)):
             fun = lambda (xx): primitive(xx) - u[q]
+<<<<<<< HEAD
             x[q] = fzero(fun, intervals[q]) # numpy fzero command!
 
     """         
 
+=======
+            x[q] = fsolve(fun, intervals[q]) 
+            
+        return x
+    def markov_stiltijes_initial_guess(self, u, n, supp):
+        # Zeros of p_n
+        x, w = self._getLocalQuadrature(n) # n or n+1 ?
+        cd = self.getRecurrenceCoefficients(n)
+        cd[0,1] = 1.0 
+
+        for k in range(0, n):
+            print cd
+            ab = quadraticModification(cd, x[k])
+            b[0,1] = 1.0
+
+        N = len(ab)
+        y, w = self._getLocalQuadrature(N)
+
+        if supp[1] > y[N]:
+            X = np.insert(y, 0, supp[0])
+            X = np.append(X, supp[1])
+        else:
+            X = np.insert(y, 0, supp[0]) 
+            X = np.append(X, y[N]) # check that y[N] = y[end]!
+            W = np.cumsum(w)
+            W = np.insert(W, 0, 0.0)
+        W = 1.0 / (1.0 * W[N] ) * W
+
+        for i in len(W):
+            if W[i] > 1.0:
+                W[i] = 1.0
+        W[N] = 1.0
+
+        # Histograms
+        j = np.digitize(u, W)
+        jleft = j
+        jright = jleft + 1
+
+        flags = (jleft == N)
+        jleft[flags] = N + 1
+        jright[flags] = N + 1
+        intervals = [X[jleft], X[jright]]
+        return intervals
+>>>>>>> 7833e00a6810057b6bd1326dbef5a35115a8d723
 #-----------------------------------------------------------------------------------
 #
 #                               PRIVATE FUNCTIONS BELOW
@@ -504,7 +542,7 @@ class Parameter(object):
 def fast_induced_jacobi_distribution_setup_helper_1(ug, exps):
     N = len(ug)
     ug_mid = 0.5 * (ug[0:N-1] + ug[1:N])
-    ug = ug.append(ug_mid)
+    ug = np.append(ug, ug_mid)
     exponents = np.zeros((2, len(ug) - 1))
 
     for q in range(0, len(ug) - 1):
@@ -517,11 +555,43 @@ def fast_induced_jacobi_distribution_setup_helper_1(ug, exps):
     exponents[1,N-1] = exps[1]
     return ug, exponents 
 def fast_induced_jacobi_distribution_setup_helper_2(ug, idistinv, exponents, M):
-    xx = np.linspace(np.pi, 0, M)
+    #xx = np.linspace(np.pi, 0, M+1)
+    xx = np.linspace(0.5*np.pi, 0, M)
     vgrid = np.cos(xx)
+    chebyparameter = Parameter(param_type='Chebyshev', order=M-1, lower=0.0, upper=1.0)
+    V, __ = chebyparameter._getOrthoPoly(vgrid)
+    iV = np.linalg.inv(V) # Shouldn't we replace this with a 
+    lenug = len(ug) - 1
+    ugrid = np.zeros((M, lenug))
+    xgrid = np.zeros((M, lenug))
+    xcoefficients = np.zeros((M, lenug))
+    for q in range(0, lenug):
+        ugrid[:,q] = (vgrid + 1.0) * 0.5 * ( ug[q+1] - ug[q] ) + ug[q]
+        xgrid[:,q] = idistinv(ugrid[:,q])
+        temp = xgrid[:,q]
+        if exponents[0,q] != 0:
+            temp = ( temp - xgrid[0,q] ) / (xgrid[lenug, q] - xgrid[0,q] )
+        else:
+            temp = ( temp - xgrid[0,q] ) / (xgrid[lenug, q] - xgrid[1, q] )
+        
+        for i in range(0, len(temp)):
+            temp[i] = temp[i] * (1 + vgrid[i])**(exponents[0,q]) * (1 - vgrid[i])** exponents[1,q]
+            if np.isinf(temp[i]) or np.isnan(temp[i]):
+                temp[i] = 0.0
+        temp = np.reshape(temp, (M,1))
+        xcoefficients[:,q] = np.reshape( np.dot(iV, temp), M)
 
-
-
+    data = np.zeros((M + 6, lenug))
+    for q in range(0, lenug):
+        data[0,q] = ug[q]
+        data[1,q] = ug[q+1]
+        data[2,q] = xgrid[0,q]
+        data[3,q] = xgrid[lenug,q]
+        data[4,q] = exponents[0,q]
+        data[5,q] = exponents[1,q]
+        for r in range(6, lenug):
+            data[r, q] = xcoefficients[r-6, q] 
+    return data
 def median_approximation_jacobi(alpha, beta, n):
     """
     Returns an estimate for the median of the order-n Jacobi induced distribution.
@@ -600,6 +670,8 @@ def quadraticModification(alphabeta, x0):
     temp1 = 1 + C[0:N-1]**2
     for i in range(0, N-2):
         bcorrect[i] = (1.0 * temp1[i+1] ) / (1.0 *  temp1[i] )
+    print bcorrect.shape
+    print '-----*'
     bcorrect[0] = (1.0 + C[1]**2) * 1.0/(C[0]**2)
     for i in range(0, N-2):
         ab[i,1] = beta[i+1] * bcorrect[i]
@@ -739,12 +811,18 @@ def recurrence_coefficients(self, order=None):
         x, w  = analytical.PDF_TruncatedGaussianDistribution(N, mu, sigma, a, b)
         ab = custom_recurrence_coefficients(order, x, w)
         self.bounds = [self.lower, self.upper]
+    
+    # 8. Chebyshev distribution defined on [a, b]
+    elif self.param_type is "Chebyshev":
+        x, w = analytical.PDF_ChebyshevDistribution(N, self.lower, self.upper)
+        ab = jacobi_recurrence_coefficients_01(-0.5, -0.5, order)
+        self.bounds = [self.lower, self.upper]
+
     else:
-        raise(ValueError, 'ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential, TruncatedGaussian or Beta')
+        raise(ValueError, 'ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential, TruncatedGaussian, Chebyshev or Beta')
 
     return ab
 def jacobi_recurrence_coefficients(param_A, param_B, order):
-
     a0 = (param_B - param_A)/(param_A + param_B + 2.0)
     ab = np.zeros((int(order) + 1,2))
     b2a2 = param_B**2 - param_A**2
@@ -890,10 +968,9 @@ def getlocalquadrature(self, order=None, scale=None):
 
     # If statement to handle the case where order = 1
     if order == 1:
-
         # Check to see whether upper and lower bound are defined:
         if not self.lower or not self.upper:
-            local_points = [computeMean(self)]
+            local_points = self.computeMean()
         else:
             local_points = [(self.upper - self.lower)/(2.0) + self.lower]
         local_weights = [1.0]
@@ -920,6 +997,9 @@ def getlocalquadrature(self, order=None, scale=None):
             for i in range(0, len(p)):
                 scaled_points[i] = 0.5* ( p[i] + 1. ) * (self.upper - self.lower) + self.lower
         if self.param_type == 'Beta':
+            for i in range(0, len(p)):
+                scaled_points[i] =  p[i] * (self.upper - self.lower) + self.lower
+        if self.param_type == 'Chebyshev':
             for i in range(0, len(p)):
                 scaled_points[i] =  p[i] * (self.upper - self.lower) + self.lower
         return scaled_points, local_weights
@@ -955,6 +1035,9 @@ def orthoPolynomial_and_derivative(self, points, order=None):
     if self.param_type == 'Beta':
         if (gridPoints > 1.0).any() or (gridPoints < 0.0).any():
             raise(ValueError, "Points not normalized.")
+    if self.param_type == 'Chebyshev':
+        if (gridPoints > 1.0).any() or (gridPoints < 0.0).any():
+            raise(ValueError, "Points not normalized.")
 
     orthopoly = np.zeros((order, len(gridPoints))) # create a matrix full of zeros
     derivative_orthopoly = np.zeros((order, len(gridPoints)))
@@ -985,9 +1068,19 @@ def main():
     data = 0
     n = 3
     po = Parameter(param_type='Uniform', lower=-1., upper=1., order=n)
+<<<<<<< HEAD
     x, w = po._getLocalQuadrature()
     alpha = 0. 
     beta = 0.
     G = po.induced_jacobi_distribution(x, n, 6)
     print G
 
+=======
+    #x, w = po._getLocalQuadrature()
+    #alpha = 0. 
+    #beta = 0.
+    #G = po.induced_jacobi_distribution(x, n, 6)
+    #print G
+    po.fastInducedJacobiDistribution()
+main()
+>>>>>>> 7833e00a6810057b6bd1326dbef5a35115a8d723

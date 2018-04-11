@@ -101,8 +101,9 @@ class Polylsq(Poly):
         self.Wz = np.mat(np.diag( np.sqrt(wts_orig_normalized) ) )
         self.Az =  self.Wz * Pz.T
         dPcell = super(Polylsq, self).getPolynomialGradient(refined_pts)
-        self.Cz = cell2matrix(dPcell)
-        self.pts = refined_pts     
+        self.Cz = cell2matrix(dPcell)  
+        self.quadraturePoints = refined_pts
+        self.quadratureWeights = np.sqrt(wts_orig_normalized) 
     def __gradientsFalse(self, pts, wts, m_refined, wts_orig):
         P = super(Polylsq, self).getPolynomial(pts)
         W = np.mat( np.diag(wts))
@@ -126,9 +127,10 @@ class Polylsq(Poly):
         self.Az =  Wz * Pz.T
         self.A = A
         self.Wz = Wz
-        self.pts = refined_pts
-    def quadraturePoints(self):
-        return self.pts
+        self.quadraturePoints = refined_pts
+        self.quadratureWeights = np.sqrt(wts_orig_normalized)
+    def quadraturePointsWeights(self)
+        return self.quadraturePoints, self.quadratureWeights
     def computeCoefficients(self, func, gradfunc=None, gradientmethod=None):
         # If there are no gradients, solve via standard least squares!
         if self.gradients is False:

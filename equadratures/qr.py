@@ -162,13 +162,14 @@ def solveCLSQ(A,b,C,d, technique=None):
     elif k != s:
         raise(ValueError, 'solveCLSQ(): mismatch in sizes of C and d')
 
-    # Stacked least squares
-    if technique is 'weighted' or technique is None:
+    if technique.lower() == 'weighted' or technique is None:
         x, cond = solveLSQ(np.mat(np.vstack([A, C])), np.mat(np.vstack([b, d])))
-    elif technique is 'constrainedDE':
+    elif technique.lower() == 'direct-elimination':
         x, cond = directElimination(C, d, A, b)
-    elif technique is 'constrainedNS':
+    elif technique.lower() == 'null-space':
         x, cond = nullSpaceMethod(C, d, A, b)
+    else:
+        raise(ValueError, 'solveCLSQ: Incorrect choice for technique. Choose between weighted, direct-elimination or null-space, please.')
     return x, cond
 
 

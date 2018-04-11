@@ -27,8 +27,10 @@ class Parameter(object):
         This is the second shape parameter that characterizes the distribution selected. In the case of a `Gaussian` or `TruncatedGaussian`, this is the variance.
     :param data:
         A numpy array with data values (x-y column format). Note this option is only invoked if the user uses the Custom param_type.
+    :param Lobatto:
+        A boolean entry. If set to True, then the quadrature points and weights will have end-points.
     """
-    def __init__(self, order, lower=None, upper=None, param_type=None, shape_parameter_A=None, shape_parameter_B=None, data=None):
+    def __init__(self, order, lower=None, upper=None, param_type=None, shape_parameter_A=None, shape_parameter_B=None, data=None, Lobatto=None):
         self.order = order
 
         if param_type is None:
@@ -43,6 +45,11 @@ class Parameter(object):
                 self.lower = -1.0
         else:
             self.lower = lower
+
+        if Lobatto is None:
+            self.Lobatto = False
+        else:
+            self.Lobatto = True
 
         if upper is None and data is None:
             self.upper = 1.0
@@ -64,6 +71,8 @@ class Parameter(object):
                 raise(ValueError, 'parameter __init__: upper and lower bounds are required for a TruncatedGaussian distribution!')
         
         if self.param_type == 'Chebyshev' :
+            self.shape_parameter_A = -0.5
+            self.shape_parameter_B = -0.5
             if upper is None or lower is None:
                 raise(ValueError, 'parameter __init__: upper and lower bounds are required for a Chebyshev distribution!')
 
@@ -292,7 +301,12 @@ class Parameter(object):
         :return:
             A 1-by-N matrix that contains the quadrature weights
         """
-        return getlocalquadrature(self, order, scale)
+        if self.Lobatto is False:
+            return getlocalquadrature(self, order, scale)
+        elif self.Lobatto is True:
+            return getlocalquadraturelobatto(self, order, scale)
+        else:
+            raise(ValueError, '_getLocalQuadrature:: Error with Lobatto entry!')
     def fastInducedJacobiDistribution(self):
         """
         Fast computations for inverse Jacobi distributions -- main file!
@@ -761,11 +775,12 @@ def recurrence_coefficients(self, order=None):
     
     # 8. Chebyshev distribution defined on [a, b]
     elif self.param_type is "Chebyshev":
-        x, w = analytical.PDF_ChebyshevDistribution(N, self.lower, self.upper)
-        ab = jacobi_recurrence_coefficients_01(-0.5, -0.5, order)
+        #x, w = analytical.PDF_ChebyshevDistribution(N, self.lower, self.upper)
+        ab = jacobi_recurrence_coefficients(-0.5, -0.5, order)
         self.bounds = [self.lower, self.upper]
 
     else:
+        print self.param_type
         raise(ValueError, 'ERROR: parameter type is undefined. Choose from Gaussian, Uniform, Gamma, Weibull, Cauchy, Exponential, TruncatedGaussian, Chebyshev or Beta')
 
     return ab
@@ -773,7 +788,7 @@ def jacobi_recurrence_coefficients(param_A, param_B, order):
     a0 = (param_B - param_A)/(param_A + param_B + 2.0)
     ab = np.zeros((int(order) + 1,2))
     b2a2 = param_B**2 - param_A**2
-
+    
     if order > 0 :
         ab[0,0] = a0
         ab[0,1] = ( 2**(param_A + param_B + 1) * gamma(param_A + 1) * gamma(param_B + 1) )/( gamma(param_A + param_B + 2))
@@ -910,7 +925,6 @@ def getlocalquadrature(self, order=None, scale=None):
         order = order + 1
 
     # Get the recurrence coefficients & the jacobi matrix
-    recurrence_coeffs = recurrence_coefficients(self, order)
     JacobiMat = jacobiMatrix(self, order)
 
     # If statement to handle the case where order = 1
@@ -948,7 +962,58 @@ def getlocalquadrature(self, order=None, scale=None):
                 scaled_points[i] =  p[i] * (self.upper - self.lower) + self.lower
         if self.param_type == 'Chebyshev':
             for i in range(0, len(p)):
+                scaled_points[i] =  0.5* ( p[i] + 1. ) *  (self.upper - self.lower) + self.lower
+        return scaled_points, local_weights
+    else:
+        # Return 1D gauss points and weights
+        return local_points, local_weights
+def getlocalquadraturelobatto(self, order=None, scale=None):
+    # Check for extra input argument!
+    if order is None:
+        order = self.order - 2
+    else:
+        order = order - 2
+    a = self.shape_parameter_A
+    b = self.shape_parameter_B
+    N = order
+    # Get the recurrence coefficients & the jacobi matrix
+    ab = recurrence_coefficients(self, order+2)
+    ab[N+2, 0] = (a - b) / (2 * float(N+1) + a + b + 2)
+    ab[N+2, 1] = 4 * (float(N+1) + a + 1) * (float(N+1) + b + 1) * (float(N+1) + a + b + 1) / ((2 * float(N+1) + a + b + 1) * 
+    (2 * float(N+1) + a + b + 2)**2)
+    K = N + 2
+    n0, __ = ab.shape
+    if n0 < K:
+        raise(ValueError, 'getlocalquadraturelobatto: Recurrence coefficients size misalignment!')
+    J = np.zeros((K+1,K+1))
+    for n in range(0, K+1):
+        J[n,n] = ab[n, 0]
+    for n in range(1, K+1):
+        J[n, n-1] = np.sqrt(ab[n,1])
+        J[n-1, n] = J[n, n-1]
+    D, V = np.linalg.eig(J)
+    V = np.mat(V) # convert to matrix
+    local_points = np.sort(D) # sort by the eigenvalues
+    i = np.argsort(D) # get the sorted indices
+    i = np.array(i) # convert to array
+    w = np.linspace(1,K+1,K+1) # create space for weights
+    p = np.ones((int(K+1),1))
+    for u in range(0, len(i) ):
+        w[u] = (V[0,i[u]]**2) # replace weights with right value
+        p[u,0] = local_points[u]
+    local_weights = w
+    local_points = p
+    if scale==True:
+        scaled_points = p.copy()
+        if self.param_type=='Uniform':
+            for i in range(0, len(p)):
+                scaled_points[i] = 0.5* ( p[i] + 1. ) * (self.upper - self.lower) + self.lower
+        if self.param_type == 'Beta':
+            for i in range(0, len(p)):
                 scaled_points[i] =  p[i] * (self.upper - self.lower) + self.lower
+        if self.param_type == 'Chebyshev':
+            for i in range(0, len(p)):
+                scaled_points[i] = 0.5* ( p[i] + 1. ) * (self.upper - self.lower) + self.lower
         return scaled_points, local_weights
     else:
         # Return 1D gauss points and weights
@@ -970,6 +1035,7 @@ def jacobiEigenvectors(self, order=None):
 
     return V
 def orthoPolynomial_and_derivative(self, points, order=None):
+    eps = 1e-15
     if order is None:
         order = self.order + 1
     else:
@@ -977,13 +1043,14 @@ def orthoPolynomial_and_derivative(self, points, order=None):
     gridPoints = np.asarray(points).copy()
     ab = recurrence_coefficients(self, order)
     if self.param_type == 'Uniform':
-        if (gridPoints > 1.0).any() or (gridPoints < -1.0).any():
+        if (np.abs(gridPoints) > (1.0 + eps)).any() :
             raise(ValueError, "Points not normalized.")
     if self.param_type == 'Beta':
         if (gridPoints > 1.0).any() or (gridPoints < 0.0).any():
             raise(ValueError, "Points not normalized.")
     if self.param_type == 'Chebyshev':
-        if (gridPoints > 1.0).any() or (gridPoints < 0.0).any():
+        #print gridPoints
+        if (np.abs(gridPoints) > (1.0 + eps)).any() :
             raise(ValueError, "Points not normalized.")
 
     orthopoly = np.zeros((order, len(gridPoints))) # create a matrix full of zeros
@@ -1012,22 +1079,16 @@ def orthoPolynomial_and_derivative(self, points, order=None):
             derivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
         return orthopoly, derivative_orthopoly
 def main():
-    data = 0
-    n = 3
-    po = Parameter(param_type='Uniform', lower=-1., upper=1., order=n)
-<<<<<<< HEAD
-    x, w = po._getLocalQuadrature()
-    alpha = 0. 
-    beta = 0.
-    G = po.induced_jacobi_distribution(x, n, 6)
-    print G
+    #data = 0
+    n = 4
+    po = Parameter(param_type='Chebyshev', order=n, lower=-1., upper=1., Lobatto=True)
+    pts, wts = po._getLocalQuadrature()
+    print pts, wts
 
-=======
+    #print jacobi_recurrence_coefficients(-0.5, -0.5, 3)
     #x, w = po._getLocalQuadrature()
     #alpha = 0. 
     #beta = 0.
     #G = po.induced_jacobi_distribution(x, n, 6)
     #print G
-    po.fastInducedJacobiDistribution()
-main()
->>>>>>> 7833e00a6810057b6bd1326dbef5a35115a8d723
+#main()

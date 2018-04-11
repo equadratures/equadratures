@@ -2,6 +2,7 @@
 import numpy as np
 from scipy.linalg import det, cholesky, lstsq
 
+
 def maxdet(Amatrix, k):
     """
     Formulation of the determinant maximization as a convex program
@@ -90,7 +91,6 @@ def maxdet(Amatrix, k):
     Utilde = np.log(np.linalg.det(Amatrix.T * diag(z) * Amatrix))  + 2 * m * kappa
 
     return zhat, L, ztilde, Utilde
-
 def CG_solve(A, b, max_iters, tol):
     """
     Solves Ax = b iteratively using conjugate gradient.
@@ -135,7 +135,6 @@ def CG_solve(A, b, max_iters, tol):
         iterations += 1
 
     return x.flatten(), residual, iterations
-
 def bp(A, b, x0 = None, cgtol = None, cgmaxiter = None, pdtol = None, pdmaxiter = None, verbose = False, use_CG = False):
     """
     l1 minimization with equality constraint Ax = b.
@@ -303,7 +302,6 @@ def bp(A, b, x0 = None, cgtol = None, cgmaxiter = None, pdtol = None, pdmaxiter 
             print "CG Res = " + str(cgres) + "CG Iter" + str(cgiter)
 
     return xp
-
 def bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cgmaxiter = 200, verbose = False, use_CG = False):
     """
     l1 minimization with inequality constraint ||Ax - b||_2 <= epsilon.
@@ -370,7 +368,6 @@ def bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cg
       tau *= mu
 
     return xp
-
 def l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter, verbose, use_CG):
     # line search parameters
     alpha = 0.01;

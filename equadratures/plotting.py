@@ -72,8 +72,6 @@ def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None, vmin_l
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
-    plt.grid()
-    ax.set_facecolor('silver')
     plt.pcolor(y,x, Zm, cmap= cm.jet, vmin=vmin_log, vmax=vmax_log)
     plt.xlim(0, max_order)
     plt.ylim(0, max_order)
@@ -81,8 +79,6 @@ def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None, vmin_l
     adjust_spines(ax, ['left', 'bottom'])
     plt.xlabel(x_label, fontsize=13)
     plt.ylabel(y_label, fontsize=13)
-    plt.grid(b=True, which='major', color='w', linestyle='-', linewidth=2)
-    plt.grid(b=True, which='minor', color='w', linestyle='-', linewidth=2)
     plt.xticks(fontsize=13)
     plt.yticks(fontsize=13)
     cbar = plt.colorbar(extend='neither', spacing='proportional',
@@ -220,8 +216,7 @@ def polynomialplot(Polymatrix, points, filename=None):
     p, q = Polymatrix.shape
     for i in range(0, p):
         plt.plot(points, Polymatrix[i,:], linestyle='-', linewidth=3, label='order %i'%i)
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
-          ncol=3, fancybox=True, shadow=True)
+    plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,ncol=4, mode="expand", borderaxespad=0., fontsize=11)
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
     plt.xlabel(r'$\zeta$', fontsize=13)
@@ -467,7 +462,9 @@ def twoDgrid(coefficients, index_set):
 
     # directly index the numpy grid with the index_set
     indices = index_set.astype(int)
-    z[indices[:,0], indices[:,1]] = coefficients[:,0]
+    l = len(coefficients)
+    coefficients = np.reshape(coefficients, (l,))
+    z[indices[:,0], indices[:,1]] = coefficients
 
     return x,y,z, max_order
 

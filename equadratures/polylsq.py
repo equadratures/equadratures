@@ -54,10 +54,10 @@ class Polylsq(Poly):
         if self.gradients is False:
             self.__gradientsFalse(pts, wts, m_refined)
         elif self.gradients is True:
-            self.__gradientsTrue(pts, wts, m_refined, wts_orig)  
-    def __gradientsTrue(self, pts, wts, m_refined, wts_orig):
+            self.__gradientsTrue(pts, wts, m_refined)  
+    def __gradientsTrue(self, pts, wts, m_refined):
         P = super(Polylsq, self).getPolynomial(pts)
-        W = np.mat( np.diag(wts))
+        W = np.mat( np.diag(np.sqrt(wts)) )
         A = W * P.T
         if self.optimization.lower() == 'greedy-qr':    
             __, __, pvec = qr(A.T, pivoting=True)
@@ -79,8 +79,8 @@ class Polylsq(Poly):
             z_chosen = z[0:index]
             refined_pts = pts[z_chosen]
             Pz = super(Polylsq, self).getPolynomial(refined_pts)
-            wts_orig_normalized =  wts_orig[z_chosen] / np.sum(wts_orig[z_chosen])
-            Wz = np.mat(np.diag( np.sqrt(wts_orig_normalized) ) )
+            wts_orig_normalized =  wts[z_chosen] / np.sum(wts[z_chosen])
+            Wz = np.mat(np.diag(wts_orig_normalized ) )
             Az =  Wz * Pz.T
             dPcell = super(Polylsq, self).getPolynomialGradient(refined_pts)
             dP = cell2matrix(dPcell)
@@ -93,7 +93,7 @@ class Polylsq(Poly):
         z_chosen = z[0:index]
         refined_pts = pts[z_chosen]
         Pz = super(Polylsq, self).getPolynomial(refined_pts)
-        wts_orig_normalized =  wts_orig[z_chosen] / np.sum(wts_orig[z_chosen])
+        wts_orig_normalized =  wts[z_chosen] / np.sum(wts[z_chosen])
         self.Wz = np.mat(np.diag( np.sqrt(wts_orig_normalized) ) )
         self.Az =  self.Wz * Pz.T
         dPcell = super(Polylsq, self).getPolynomialGradient(refined_pts)
@@ -159,12 +159,12 @@ class Polylsq(Poly):
             p, q = self.Wz.shape
             # Get function values!
             if callable(func):
-                y = evalfunction(self.pts, func)
+                y = evalfunction(self.quadraturePoints, func)
             else:
                 y = func
             # Get gradient values!
             if callable(func):
-                grad_values = evalgradients(self.pts, gradfunc, 'matrix')
+                grad_values = evalgradients(self.quadraturePoints, gradfunc, 'matrix')
             else:
                 grad_values = gradfunc
             # Assemble gradients into a single long vector called dy!     

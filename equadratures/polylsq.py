@@ -4,7 +4,7 @@ from basis import Basis
 from poly import Poly
 import numpy as np
 from utils import evalfunction, evalgradients, cell2matrix
-from scipy.linalg import qr, svd
+from scipy.linalg import qr, svd, lu
 from qr import solveCLSQ
 import matplotlib.pyplot as plt
 from convex import maxdet, binary2indices
@@ -19,44 +19,40 @@ class Polylsq(Poly):
         self.oversampling = oversampling
         self.gradients = gradients
         n = self.basis.cardinality
-        m_big = int(np.round(7 * n * np.log(n)))
+        #m_big = int(np.round(2 * n * np.log(n)))
         m_refined = int(np.round(self.oversampling * n))
-        
+        m_big = m_refined
         # Check that oversampling factor is greater than 1.2X of basis at the minimum
-        if m_refined > m_big:
-            raise(ValueError, 'Polylsq::__init__:: Oversampling factor should be greater than 1.')
+        #if m_refined > m_big:
+        #    raise(ValueError, 'Polylsq::__init__:: Oversampling factor should be greater than 1.')
 
         # Methods!
         if self.mesh.lower() == 'tensor':
-            pts, wts_orig = super(Polylsq, self).getTensorQuadratureRule() # original weights sum up to 1
-            wts = np.sqrt(wts_orig)  
+            pts, wts = super(Polylsq, self).getTensorQuadratureRule() # original weights sum up to 1
         elif self.mesh.lower() == 'chebyshev':
             pts = np.cos(np.pi * np.random.rand(m_big, self.dimensions ))
             wts = float(n * 1.0)/float(m_big * 1.0) * 1.0/np.sum( (super(Polylsq, self).getPolynomial(pts))**2 , 0)
             wts_orig = wts * 1.0/np.sum(wts)
-            wts = np.sqrt(wts_orig)
         elif self.mesh.lower() == 'uniform':
             pts = np.zeros((m_big, self.dimensions))
             for i in range(0, self.dimensions):
                 univariate_samples = np.linspace(self.parameters[i].lower, self.parameters[i].upper, m_big)
                 for j in range(0, m_big):
                     pts[j, i] = univariate_samples[j]
-            wts =  1.0/np.sum( (super(Polylsq, self).getPolynomial(pts))**2 , 0)
+            wts =  float(n * 1.0)/float(m_big * 1.0) * 1.0/np.sum( (super(Polylsq, self).getPolynomial(pts))**2 , 0)
             wts_orig = wts * 1.0/np.sum(wts)
-            wts = np.sqrt(wts_orig)
         elif self.mesh.lower() == 'random':
             pts = np.zeros((m_big, self.dimensions))
             for i in range(0, self.dimensions):
                 univariate_samples = self.parameters[i].getSamples(m_big)
                 for j in range(0, m_big):
                     pts[j, i] = univariate_samples[j]
-            wts = 1.0/np.sum( (super(Polylsq, self).getPolynomial(pts))**2 , 0)
+            wts = float(n * 1.0)/float(m_big * 1.0) * 1.0/np.sum( (super(Polylsq, self).getPolynomial(pts))**2 , 0)
             wts_orig = wts * 1.0/np.sum(wts)
-            wts = np.sqrt(wts_orig)
         else:
             raise(ValueError, 'Polylsq:__init___:: Unknown mesh! Choose between tensor, chebyshev, random or induced please.')
         if self.gradients is False:
-            self.__gradientsFalse(pts, wts, m_refined, wts_orig)
+            self.__gradientsFalse(pts, wts, m_refined)
         elif self.gradients is True:
             self.__gradientsTrue(pts, wts, m_refined, wts_orig)  
     def __gradientsTrue(self, pts, wts, m_refined, wts_orig):
@@ -104,32 +100,47 @@ class Polylsq(Poly):
         self.Cz = cell2matrix(dPcell)  
         self.quadraturePoints = refined_pts
         self.quadratureWeights = np.sqrt(wts_orig_normalized) 
-    def __gradientsFalse(self, pts, wts, m_refined, wts_orig):
+    def __gradientsFalse(self, pts, wts, m_refined):
         P = super(Polylsq, self).getPolynomial(pts)
-        W = np.mat( np.diag(wts))
+        W = np.mat( np.diag(np.sqrt(wts)))
         A = W * P.T
-        if self.optimization.lower() == 'greedy-qr':    
-            __, __, pvec = qr(A.T, pivoting=True)
-            z = pvec[0:m_refined]
-        elif self.optimization.lower() == 'greedy-svd':   
-            __, __, V = svd(A.T)
-            __, __, pvec = qr(V[:, 0:m_refined].T , pivoting=True )
-            z = pvec[0:m_refined]
-        elif self.optimization.lower() == 'newton':
-            zhat, L, ztilde, Utilde = maxdet(A, m_refined)
-            z = binary2indices(zhat)
+        # If the A provided is square, then we can do no better! So we simply return
+        mmm, nnn = A.shape
+        if mmm != nnn:
+            if self.optimization.lower() == 'greedy-qr':    
+                __, __, pvec = qr(A.T, pivoting=True)
+                z = pvec[0:m_refined]
+            elif self.optimization.lower() == 'greedy-lu':    
+                __, __, pvec = qr(A.T, pivoting=True)
+                z = pvec[0:m_refined]
+            elif self.optimization.lower() == 'greedy-svd':   
+                __, __, V = svd(A.T)
+                __, __, pvec = qr(V[:, 0:m_refined].T , pivoting=True )
+                z = pvec[0:m_refined]
+            elif self.optimization.lower() == 'newton':
+                zhat, L, ztilde, Utilde = maxdet(A, m_refined)
+                z = binary2indices(zhat)
+            elif self.optimization.lower() == 'padua':
+                if self.mesh.lower() == 'tensor':
+                    z = np.arange(0, len(pts), 2) # NEED TO RE-CODE THIS!
+                else:
+                    raise(ValueError, 'Padua points only work on a tensor mesh!')
+            elif self.optimization.lower() == 'none':
+                z = np.arange(0, mmm)
+            else:
+                raise(ValueError, 'Polylsq:__init___:: Unknown optimization technique! Choose between greedy or newton please.')
         else:
-            raise(ValueError, 'Polylsq:__init___:: Unknown optimization technique! Choose between greedy or newton please.')
+            z = np.arange(0, mmm, 1)       
         refined_pts = pts[z]
         Pz = super(Polylsq, self).getPolynomial(refined_pts)
-        wts_orig_normalized =  wts_orig[z] / np.sum(wts_orig[z])
+        wts_orig_normalized =  wts[z] / np.sum(wts[z]) # if we pick a subset of the weights, they should add up to 1.!
         Wz = np.mat(np.diag( np.sqrt(wts_orig_normalized) ) )
         self.Az =  Wz * Pz.T
         self.A = A
         self.Wz = Wz
         self.quadraturePoints = refined_pts
-        self.quadratureWeights = np.sqrt(wts_orig_normalized)
-    def quadraturePointsWeights(self)
+        self.quadratureWeights = wts_orig_normalized
+    def quadraturePointsWeights(self):
         return self.quadraturePoints, self.quadratureWeights
     def computeCoefficients(self, func, gradfunc=None, gradientmethod=None):
         # If there are no gradients, solve via standard least squares!
@@ -137,7 +148,7 @@ class Polylsq(Poly):
             p, q = self.Wz.shape
             # Get function values!
             if callable(func):
-                y = evalfunction(self.pts, func)
+                y = evalfunction(self.quadraturePoints, func)
             else:
                 y = func
             self.bz = np.dot( self.Wz ,  np.reshape(y, (p,1)) )

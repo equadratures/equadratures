@@ -181,7 +181,7 @@ class Poly(object):
         for u in range(0, self.dimensions):
 
             # Call to get local quadrature method (for dimension 'u')
-            local_points, local_weights = self.parameters[u]._getLocalQuadrature(orders[u]+1, scale=True)
+            local_points, local_weights = self.parameters[u]._getLocalQuadrature(orders[u], scale=True)
             ww = np.kron(ww, local_weights)
 
             # Tensor product of the points

@@ -1,4 +1,4 @@
-"""Operations involving polynomial regression on a data set"""
+"""Finding coefficients via regression."""
 from parameter import Parameter
 from basis import Basis
 from poly import Poly
@@ -9,13 +9,18 @@ import scipy
 
 class Polyreg(Poly):
     """
-    This class defines a Polyreg (polynomial via regression) object
-    :param training_inputs: A numpy 
-    :param IndexSet basis: An instance of the IndexSet class, in case the user wants to overwrite the indices that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter corresponds to a tensor grid index set and is the default option if no basis parameter input is given.
-    :param parameters: List of instances of Parameters class.
-    :param training_outputs: Column vector (np array) of regression targets corresponding to each row of training_inputs. Either this or fun should be specified, but not both.
-    :param fun: Function to evaluate training_inputs on to obtain regression targets automatically. Either this or fun should be specified, but not both.
-    
+    The class defines a Polyreg object. It is the child of Poly.
+
+    :param Parameter parameters:
+        A list of parameters.
+    :param Basis basis:
+        A basis selected for the multivariate polynomial.
+    :param matrix training_inputs:
+        A N-by-d matrix of input training points.
+    :param matrix training_outputs:
+        A N-by-1 matrix of output training points.
+    :param callable fun:
+        Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.
     """
     # Constructor
     def __init__(self, parameters, basis, training_inputs, fun=None, training_outputs=None):
@@ -23,7 +28,7 @@ class Polyreg(Poly):
         if not(training_inputs is None):
             self.x = training_inputs
             assert self.x.shape[1] == len(self.parameters) # Check that x is in the correct shape
-        
+
         if not((training_outputs is None) ^ (fun is None)):
             raise ValueError("Specify atleast one of fun or training_outputs.")
         if not(fun is None):
@@ -32,51 +37,77 @@ class Polyreg(Poly):
             except:
                 raise ValueError("Fun must be callable.")
         else:
-            self.y = training_outputs                           
+            self.y = training_outputs
         if self.dimensions != self.basis.elements.shape[1]:
             raise(ValueError, 'Polyreg:__init__:: The number of parameters and the number of dimensions in the index set must be the same.')
         self.setDesignMatrix()
         self.cond = np.linalg.cond(self.A)
-        self.y = np.reshape(self.y, (len(self.y), 1)) 
+        self.y = np.reshape(self.y, (len(self.y), 1))
         self.computeCoefficients()
 
     # Solve for coefficients using ordinary least squares
     def computeCoefficients(self):
+        """
+        This function computes the coefficients using least squares. To access the coefficients simply use the class's attribute self.coefficients.
+
+        :param Polyreg self:
+            An instance of the Polyreg class.
+        """
         alpha = np.linalg.lstsq(self.A, self.y, rcond=None) # Opted for numpy's standard version because of speed!
         self.coefficients = alpha[0]
         super(Polyreg, self).__setCoefficients__(self.coefficients)
 
     def setDesignMatrix(self):
+        """
+        Sets the design matrix using the polynomials defined in the basis.
+
+        :param Polyreg self:
+            An instance of the Polyreg class.
+        """
         self.A = self.getPolynomial(self.scaleInputs(self.x)).T
+        rows, cols = self.A.shape
+        if rows <= cols:
+            raise(ValueError, 'Polyreg:setDesignMatrix:: Number of columns have to be less than (or equal to) the number of rows!')
         super(Polyreg, self).__setDesignMatrix__(self.A)
 
     def getfitStatistics(self):
+        """
+        Computes statistics based on the quality of the fit
+
+        :param Polyreg self:
+            An instance of the Polyreg class.
+        :return:
+            `T statistic <https://en.wikipedia.org/wiki/T-statistic>`_.
+        :return:
+            `Coefficient of determination / R-squared value <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_.
+
+        """
         t_stat = get_t_value(self.coefficients, self.A, self.y)
         r_sq = get_R_squared(self.coefficients, self.A, self.y)
         return t_stat, r_sq
-    
-    @staticmethod
-    def get_F_stat(coefficients_0, A_0, coefficients_1, A_1, y):
-        assert len(coefficients_0) != len(coefficients_1)
-        assert A_0.shape[0] == A_1.shape[0]
-        # Set 0 to be reduced model, 1 to be "full" model
-        if len(coefficients_0) > len(coefficients_1):
-            temp = coefficients_0.copy()
-            coefficients_0 = coefficients_1.copy()
-            coefficients_1 = temp
-        assert len(coefficients_0) < len(coefficients_1)
-        
-        RSS_0 = np.linalg.norm(y - np.dot(A_0,coefficients_0))**2
-        RSS_1 = np.linalg.norm(y - np.dot(A_1,coefficients_1))**2
-        
-        n = A_0.shape[0]
-        p_1 = A_1.shape[1]
-        p_0 = A_0.shape[1]
-        F = (RSS_0 - RSS_1) * (n-p_1)/(RSS_1 * (p_1 - p_0))
-        # p-value is scipy.stats.f.cdf(F, n - p_1, p_1 - p_0)
-        return F
-    
-    
+
+@staticmethod
+def get_F_stat(coefficients_0, A_0, coefficients_1, A_1, y):
+    assert len(coefficients_0) != len(coefficients_1)
+    assert A_0.shape[0] == A_1.shape[0]
+    # Set 0 to be reduced model, 1 to be "full" model
+    if len(coefficients_0) > len(coefficients_1):
+        temp = coefficients_0.copy()
+        coefficients_0 = coefficients_1.copy()
+        coefficients_1 = temp
+    assert len(coefficients_0) < len(coefficients_1)
+
+    RSS_0 = np.linalg.norm(y - np.dot(A_0,coefficients_0))**2
+    RSS_1 = np.linalg.norm(y - np.dot(A_1,coefficients_1))**2
+
+    n = A_0.shape[0]
+    p_1 = A_1.shape[1]
+    p_0 = A_0.shape[1]
+    F = (RSS_0 - RSS_1) * (n-p_1)/(RSS_1 * (p_1 - p_0))
+    # p-value is scipy.stats.f.cdf(F, n - p_1, p_1 - p_0)
+    return F
+
+
 def get_t_value(coefficients, A, y):
     RSS = np.linalg.norm(y - np.dot(A,coefficients))**2
     n,p = A.shape
@@ -95,4 +126,3 @@ def get_R_squared(alpha, A, y):
     TSS = np.linalg.norm(y - y_bar)**2
     RSS = np.linalg.norm(np.dot(A,alpha) - y)**2
     return 1 - RSS/TSS
-

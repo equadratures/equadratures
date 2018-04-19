@@ -67,14 +67,14 @@ def cell2matrix(G):
         for j in range(0, rows):
             for k in range(0,cols):
                 BigC[counter,k] = K[j,k]
-            counter = counter + 1 
+            counter = counter + 1
     BigC = np.mat(BigC)
     return BigC
 
 
 def column(matrix, i):
     return [row[i] for row in matrix]
-    
+
 # A sample utility to get a 2D meshgrid of points
 def meshgrid(lower_lim, upper_lim, nx1, nx2):
 
@@ -153,13 +153,13 @@ def compute_errors(coefficients_large, index_set_large, coefficients_small, inde
     no_of_large_coefficients = len(coefficients_large)
     dimensions = len(index_set_small[0])
     error = np.ones((no_of_small_coefficients))
-    counter = 0 
-    for i in range(0, no_of_small_coefficients):    
+    counter = 0
+    for i in range(0, no_of_small_coefficients):
         current_index  = index_set_small[i,:]
         for j in range(0, no_of_large_coefficients):
             temp_index = index_set_large[j, :]
             if compare_lists(current_index, temp_index):
-                error[counter] = coefficients_large[j] - coefficients_small[i] 
+                error[counter] = coefficients_large[j] - coefficients_small[i]
                 counter = counter + 1
                 break
 
@@ -171,7 +171,7 @@ def compare_lists(list1, list2):
     elements_in_list = len(list1)
     counter = 0
     for i in range(0, len(list1)):
-        if list1[i] == list2[i]: 
+        if list1[i] == list2[i]:
             counter = counter + 1
     if counter == elements_in_list:
         return True

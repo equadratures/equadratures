@@ -1,24 +1,37 @@
-#TODO: 2nd derivative?
-#TODO: combine methods to detect constraints intelligently
-
-from .parameter import Parameter
-from .plotting import contour_plot
+"""Optimization Utilities"""
 import numpy as np
-import scipy as sp
 import warnings
+from .parameter import Parameter
+from .poly import Poly
 
-class Polyopt(object):
-    def __init__(self, coeffs, index_set, parameters):
-        """
-        Class for optimization routines using polynomial expansion
-        """
-        self.coeffs = coeffs
-        self.index_set = index_set
-        # Prepare for evaluations, need each variable to have derivative_flag == 1!
-        for i in parameters:
-            assert i.derivative_flag == 1, "Set derivative flag to 1 to use optimization routines."
-        self.polyint = Polyint(parameters, index_set)
-        self.parameters = parameters
+class Objective(object):
+    def __init__(parameters):
+        
+
+class Constraints(object):
+    def __init__(parameters)
+
+
+class Optimization(object):
+    def __init(optimizer=None, initialGuess=None, )       
+
+
+
+def minimize(parameters, fun=None, initialGuess=None, training_inputs=None, training_outputs=None, gradfun=None, training_gradient_outputs=None, 
+    optimizer=None, maximumEvaluations=None, convergenceLevel=None):
+    """
+        A routine that computes the minima of a given function--either by assuming some form of the function is provided, or by generating a 
+        polynomial model using training data.
+    """
+
+
+
+    return minimum_value, input_at_minimum_value, number_of_iterations
+
+
+def setBasis(parameters, ):
+
+
 
     def SD(self, max_evals, convergence = None, init_guess = None, maximize = False):
         p = self.polyint

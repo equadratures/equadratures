@@ -6,13 +6,15 @@ Code Documentation
    :maxdepth: 2
 
    parameter
-   polyint
-   polylsq
+   poly
    polyreg
-   indexset
-   qr
+   plotting
+   convex
+   basis
    stats
+   dr
+   distributions
 
 
-.. automodule:: effective_quadratures
+.. automodule:: equadratures
     :members:

@@ -66,16 +66,16 @@ class Basis(object):
             self.orders.append(orders[i])
         self.dimension = len(self.orders)
         name = self.basis_type
-        if name == "Total order":
+        if name.lower() == "total order":
             basis = total_order_basis(self.orders)
-        elif name == "Sparse grid":
+        elif name.lower() == "sparse grid":
             sparse_index, a, SG_set = sparse_grid_basis(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
             basis = SG_set
-        elif name == "Tensor grid":
+        elif (name.lower() == "tensor grid") or (name.lower() == "tensor") :
             basis = tensor_grid_basis(self.orders)
-        elif name == "Hyperbolic basis":
+        elif name.lower() == "hyperbolic basis":
             basis = hyperbolic_basis(self.orders, self.q)
-        elif name == "Euclidean degree":
+        elif name.lower() == "euclidean degree":
             basis = euclidean_degree_basis(self.orders)
         else:
             raise(ValueError, 'Basis __init__: invalid value for basis_type!')
@@ -257,15 +257,16 @@ def total_order_basis(orders):
 def sparse_grid_basis(level, growth_rule, dimensions):
 
     # Initialize a few parameters for the setup
-    lhs = int(level) + 1
-    rhs = int(level) + dimensions
+    level_new = level - 1
+    lhs = int(level_new) + 1
+    rhs = int(level_new) + dimensions
 
     # Set up a global tensor grid
     tensor_elements = np.ones((dimensions))
     for i in range(0, dimensions):
         tensor_elements[i] = int(rhs)
 
-    n_bar = tensor_grid_basis(tensor_elements) + 1
+    n_bar = tensor_grid_basis(tensor_elements) #+ 1
 
     # Check constraints
     n_new = [] # list; a dynamic array
@@ -275,13 +276,11 @@ def sparse_grid_basis(level, growth_rule, dimensions):
             value = n_bar[i,:]
             n_new.append(value)
 
-    #print 'n_new'
-    #print n_new
     # Sparse grid coefficients
     summation2 = np.sum(n_new, axis=1)
     a = [] # sparse grid coefficients
     for i in range(0, len(summation2)):
-        k = int(level + dimensions - summation2[i])
+        k = int(level_new + dimensions - summation2[i])
         n = int(dimensions -1)
         value = (-1)**k  * (mt.factorial(n) / (1.0 * mt.factorial(n - k) * mt.factorial(k)) )
         a.append(value)

@@ -345,7 +345,7 @@ class Parameter(object):
 
             exps = [ beta/(beta + 1.0) , alpha / (alpha + 1.0) ]
             ug, exponents = fast_induced_jacobi_distribution_setup_helper_1(ug, exps)
-            idistinv = lambda (uu) : self.induced_distribution_jacobi_bisection(uu, nn, alpha, beta)
+            idistinv = lambda uu : self.induced_distribution_jacobi_bisection(uu, nn, alpha, beta)
             data[nn] = fast_induced_jacobi_distribution_setup_helper_2(ug, idistinv, exponents, M)
         return data
     def induced_jacobi_distribution(self, x, n, M=None):
@@ -697,18 +697,18 @@ def recurrence_coefficients(self, order=None):
         order = self.order
 
     # 1. Beta distribution
-    if self.param_type is "Beta":
+    if self.param_type.lower() == "beta":
         ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, order)
         #self.bounds = [0,1]
 
     # 2. Uniform distribution
-    elif self.param_type is "Uniform":
+    elif self.param_type.lower() == "uniform":
         self.shape_parameter_A = 0.0
         self.shape_parameter_B = 0.0
         ab =  jacobi_recurrence_coefficients(0., 0., self.lower, self.upper, order)
         self.bounds = [-1, 1]
 
-    elif self.param_type is "Custom":
+    elif self.param_type.lower() == "custom":
         x, w = analytical.PDF_CustomDistribution(N, self.data)
         ab = custom_recurrence_coefficients(order, x, w)
         self.bounds = [np.min(x), np.max(x)]
@@ -716,7 +716,7 @@ def recurrence_coefficients(self, order=None):
         self.lower = np.min(x)
 
     # 3. Analytical Gaussian defined on [-inf, inf]
-    elif self.param_type is "Gaussian":
+    elif (self.param_type.lower() == "gaussian") or (self.param_type.lower() == 'normal'):
         mu = self.shape_parameter_A
         sigma = np.sqrt(self.shape_parameter_B)
         x, w  = analytical.PDF_GaussianDistribution(N, mu, sigma)
@@ -724,14 +724,14 @@ def recurrence_coefficients(self, order=None):
         self.bounds = [-np.inf, np.inf]
 
     # 4. Analytical Exponential defined on [0, inf]
-    elif self.param_type is "Exponential":
+    elif self.param_type.lower() == "exponential":
         lambda_value = self.shape_parameter_A
         x, w  = analytical.PDF_ExponentialDistribution(N, lambda_value)
         ab = custom_recurrence_coefficients(order, x, w)
         self.bounds = [0, np.inf]
 
     # 5. Analytical Cauchy defined on [-inf, inf]
-    elif self.param_type is "Cauchy":
+    elif self.param_type.lower() == "cauchy":
         x0 = self.shape_parameter_A
         gammavalue = self.shape_parameter_B
         x, w  = analytical.PDF_CauchyDistribution(N, x0, gammavalue)
@@ -739,7 +739,7 @@ def recurrence_coefficients(self, order=None):
         self.bounds = [-np.inf, np.inf]
 
     # 5. Analytical Gamma defined on [0, inf]
-    elif self.param_type is "Gamma":
+    elif self.param_type.lower() == "gamma":
         k = self.shape_parameter_A
         theta = self.shape_parameter_B
         x, w  = analytical.PDF_GammaDistribution(N, k, theta)
@@ -747,7 +747,7 @@ def recurrence_coefficients(self, order=None):
         self.bounds = [0, np.inf]
 
     # 6. Analytical Weibull defined on [0, inf]
-    elif self.param_type is "Weibull":
+    elif self.param_type.lower() == "weibull":
         lambda_value= self.shape_parameter_A
         k = self.shape_parameter_B
         x, w  = analytical.PDF_WeibullDistribution(N, lambda_value, k)
@@ -755,7 +755,7 @@ def recurrence_coefficients(self, order=None):
         self.bounds = [0, np.inf]
 
     # 7. Analytical Truncated Gaussian defined on [a,b]
-    elif self.param_type is "TruncatedGaussian":
+    elif (self.param_type.lower() == "truncated-gaussian") or (self.param_type.lower() == "truncated gaussian"):
         mu = self.shape_parameter_A
         sigma = np.sqrt(self.shape_parameter_B)
         a = self.lower
@@ -765,7 +765,7 @@ def recurrence_coefficients(self, order=None):
         self.bounds = [self.lower, self.upper]
     
     # 8. Chebyshev distribution defined on [a, b]
-    elif self.param_type is "Chebyshev":
+    elif self.param_type.lower() == "chebyshev":
         ab = jacobi_recurrence_coefficients(-0.5, -0.5, self.lower, self.upper, order)
         self.bounds = [self.lower, self.upper]
 
@@ -907,10 +907,10 @@ def getlocalquadrature(self, order=None):
     if order == 1:
         # Check to see whether upper and lower bound are defined:
         if not self.lower or not self.upper:
-            local_points = self.computeMean()
+            p = self.computeMean()
         else:
-            local_points = [(self.upper - self.lower)/(2.0) + self.lower]
-        local_weights = [1.0]
+            p = [(self.upper - self.lower)/(2.0) + self.lower]
+        w = [1.0]
     else:
         # Compute eigenvalues & eigenvectors of Jacobi matrix
         D,V = np.linalg.eig(JacobiMat)

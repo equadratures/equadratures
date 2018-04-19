@@ -72,7 +72,7 @@ def coeffplot2D(coefficients, index_set, x_label, y_label, filename=None, vmin_l
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
-    plt.pcolor(y,x, Zm, cmap= cm.jet, vmin=vmin_log, vmax=vmax_log)
+    plt.pcolor(x,y, Zm, cmap= cm.jet, vmin=vmin_log, vmax=vmax_log)
     plt.xlim(0, max_order)
     plt.ylim(0, max_order)
     ax.set_axisbelow(True)
@@ -340,7 +340,7 @@ def scatterplot(x, y, x_label, y_label, errorbars=None, filename=None, marker_ty
     plt.plot(x, y, linestyle='-', linewidth=1, color='black')
     for i in range(0, m):
         if errorbars is None:
-            plt.scatter(x[i,0], y[i,0], marker=marker_type, s=140, alpha=opacity, color='black',linewidth=1.5)
+            plt.scatter(x[i,0], y[i,0], marker='o', s=140, color='maroon',linewidth=0.5)
         else:
             plt.errorbar(x[i,0], y[i,0], yerr=errorbars[i], fmt='o',  alpha=0.8, marker='o', elinewidth=3, ecolor='maroon', color='red', ms=10, lw=0.0) 
     if xlim is not None:

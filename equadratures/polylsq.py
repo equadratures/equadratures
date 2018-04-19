@@ -24,7 +24,7 @@ class Polylsq(Poly):
 
         # Methods!
         if self.mesh.lower() == 'tensor':
-            if (self.optimization.lower() == 'random') or (self.optimization.lower() == 'padua'):
+            if self.optimization.lower() == 'random':
                 pts, wts = [] , [] # empty points and weights to save memory!
             else:
                 pts, wts = super(Polylsq, self).getTensorQuadratureRule() # original weights sum up to 1
@@ -120,12 +120,6 @@ class Polylsq(Poly):
                     refined_pts[i, j] = P_j[int( selected_indices[i, j] ) ]
                     wts[i] = wts[i] * W_j[ int( selected_indices[i, j] )]
             wts_orig_normalized = wts / np.sum(wts)
-
-        elif self.optimization.lower() == 'padua':
-            n = self.basis.cardinality
-            padua_samples = np.random.choice(n, n, replace=False)
-            # Put code here!
-
         else:
             P = super(Polylsq, self).getPolynomial(pts)
             W = np.mat( np.diag(np.sqrt(wts)))
@@ -149,6 +143,26 @@ class Polylsq(Poly):
                 zhat, L, ztilde, Utilde = maxdet(A, m_refined)
                 z = binary2indices(zhat)
 
+            elif self.optimization.lower() == 'padua':
+                last_index = 0
+                counter = 0
+                flag = 'ascending'
+                organize_indices = np.zeros((mmm), dtype='int')
+                while counter < mmm:
+                    if flag == 'ascending':
+                        for k in range(counter, counter + self.parameters[1].order + 1):
+                            organize_indices[counter] = k
+                            counter += 1
+                            last_index = k
+                        flag = 'descending'
+                    else:
+                        for k in range(last_index + self.parameters[1].order + 1, last_index, -1):
+                            organize_indices[counter] = k
+                            counter += 1
+                            last_index = k
+                        flag = 'ascending'
+                z = organize_indices[0::2]
+                
             elif self.optimization.lower() == 'none':
                 z = np.arange(0, mmm, 1)
 

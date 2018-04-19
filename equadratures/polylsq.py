@@ -24,7 +24,7 @@ class Polylsq(Poly):
 
         # Methods!
         if self.mesh.lower() == 'tensor':
-            if self.optimization.lower() == 'random':
+            if (self.optimization.lower() == 'random') or (self.optimization.lower() == 'padua'):
                 pts, wts = [] , [] # empty points and weights to save memory!
             else:
                 pts, wts = super(Polylsq, self).getTensorQuadratureRule() # original weights sum up to 1
@@ -100,7 +100,6 @@ class Polylsq(Poly):
         self.quadraturePoints = refined_pts
         self.quadratureWeights = np.sqrt(wts_orig_normalized) 
     def __gradientsFalse(self, pts, wts, m_refined):
-        # If the A provided is square, then we can do no better! So we simply return
         if self.optimization.lower() == 'random':
             m = 1.0
             n = self.basis.cardinality
@@ -121,33 +120,41 @@ class Polylsq(Poly):
                     refined_pts[i, j] = P_j[int( selected_indices[i, j] ) ]
                     wts[i] = wts[i] * W_j[ int( selected_indices[i, j] )]
             wts_orig_normalized = wts / np.sum(wts)
+
+        elif self.optimization.lower() == 'padua':
+            n = self.basis.cardinality
+            padua_samples = np.random.choice(n, n, replace=False)
+            # Put code here!
+
         else:
             P = super(Polylsq, self).getPolynomial(pts)
             W = np.mat( np.diag(np.sqrt(wts)))
             A = W * P.T
             mmm, nnn = A.shape
+
             if self.optimization.lower() == 'greedy-qr':    
                 __, __, pvec = qr(A.T, pivoting=True)
                 z = pvec[0:m_refined]
+
             elif self.optimization.lower() == 'greedy-lu':    
                 __, __, pvec = qr(A.T, pivoting=True)
                 z = pvec[0:m_refined]
+                
             elif self.optimization.lower() == 'greedy-svd':   
                 __, __, V = svd(A.T)
                 __, __, pvec = qr(V[:, 0:m_refined].T , pivoting=True )
                 z = pvec[0:m_refined]
+
             elif self.optimization.lower() == 'newton':
                 zhat, L, ztilde, Utilde = maxdet(A, m_refined)
                 z = binary2indices(zhat)
-            elif self.optimization.lower() == 'padua':
-                if self.mesh.lower() == 'tensor':
-                    z = np.arange(0, len(pts), 2) # NEED TO RE-CODE THIS!
-                else:
-                    raise(ValueError, 'Padua points only work on a tensor mesh!')
+
             elif self.optimization.lower() == 'none':
                 z = np.arange(0, mmm, 1)
+
             else:
                 raise(ValueError, 'Polylsq:__init___:: Unknown optimization technique! Choose between greedy or newton please.')
+
             refined_pts = pts[z]
             wts_orig_normalized =  wts[z] / np.sum(wts[z]) # if we pick a subset of the weights, they should add up to 1.!
             self.A = A

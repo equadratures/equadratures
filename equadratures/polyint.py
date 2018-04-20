@@ -25,7 +25,7 @@ class Polyint(Poly):
     :param callable fun:
         Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.
     """
-    def __init__(self, parameters, basis, sampling=None, fun=None):
+    def __init__(self, parameters, basis):
         super(Polyint, self).__init__(parameters, basis)
 
     def computeCoefficients(self, function):
@@ -45,12 +45,13 @@ class Polyint(Poly):
         # Method to compute the coefficients
         method = self.basis.basis_type
         if method.lower() == 'sparse grid':
-            coefficients, indexset, evaled_pts = getSparsePseudospectralCoefficients(self, function)
-        elif  method.lower() == 'tensor grid':
-            coefficients, indexset, evaled_pts = getPseudospectralCoefficients(self, function)
+            coefficients, indexset, evaled_pts, weights = getSparsePseudospectralCoefficients(self, function)
+        elif (method.lower() == 'tensor grid') or (method.lower() == 'tensor'):
+            coefficients, indexset, evaled_pts, weights = getPseudospectralCoefficients(self, function)
         self.coefficients = coefficients
         self.multi_index = indexset
         self.quadraturePoints = evaled_pts
+        self.quadratureWeights = weights
         super(Polyint, self).__setCoefficients__(self.coefficients)
 
 #--------------------------------------------------------------------------------------------------------------
@@ -117,7 +118,7 @@ def getPseudospectralCoefficients(self, function, override_orders=None):
     K = efficient_kron_mult(Q, Uc)
     F = function_values
     K = np.column_stack(K)
-    return K, tensor_set, p
+    return K, tensor_set, p, w
 def getSparsePseudospectralCoefficients(self, function):
 
     # INPUTS
@@ -132,19 +133,22 @@ def getSparsePseudospectralCoefficients(self, function):
     individual_tensor_coefficients = {}
     individual_tensor_indices = {}
     points_store = {}
+    weights_store = {}
     indices = np.zeros((rows))
 
     for i in range(0,rows):
         orders = sparse_indices[i,:] 
-        K, I, points = getPseudospectralCoefficients(self, function, orders)
+        K, I, points , weights = getPseudospectralCoefficients(self, function, orders)
         individual_tensor_indices[i] = I
         individual_tensor_coefficients[i] =  K
         points_store[i] = points
+        weights_store[i] = weights
         indices[i] = len(I)
 
     sum_indices = int(np.sum(indices))
     store = np.zeros((sum_indices, dimensions+1))
     points_saved = np.zeros((sum_indices, dimensions))
+    weights_saved = np.zeros((sum_indices))
     counter = int(0)
     for i in range(0,rows):
         for j in range(0, int(indices[i])):
@@ -152,6 +156,7 @@ def getSparsePseudospectralCoefficients(self, function):
              for d in range(0, dimensions):
                  store[counter,d+1] = individual_tensor_indices[i][j][d]
                  points_saved[counter,d] = points_store[i][j][d]
+             weights_saved[counter] = weights_store[i][j]
              counter = counter + 1
 
     # Now we use a while loop to iteratively delete the repeated elements while summing up the
@@ -204,7 +209,7 @@ def getSparsePseudospectralCoefficients(self, function):
             indices[i,j] = int(indices[i,j])
 
     K = np.column_stack(coefficients)
-    return K, indices, points_saved
+    return K, indices, points_saved, weights_saved
 def efficient_kron_mult(Q, Uc):
     N = len(Q)
     n = np.zeros((N,1))

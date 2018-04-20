@@ -19,6 +19,12 @@ class Statistics(object):
 
     # constructor
     def __init__(self, coefficients, basis, parameters, quadrature_points=None, quadrature_weights=None, polynomial_evals=None):
+        m, n = coefficients.shape
+        if m > n:
+            coefficients[:] = np.reshape(coefficients, (m, 1))
+        if n > m:
+            coefficients[:] = np.reshape(coefficients, (n, 1))
+
         self.coefficients = coefficients
         self.basis = basis
         self.parameters = parameters #should be a list containing instances of Parameter
@@ -28,15 +34,13 @@ class Statistics(object):
         self.sobol = getAllSobol(self.coefficients, self.basis)
 
         #Prepare evals of polynomials for skewness and kurtosis
-        if (quadrature_points is None) and (quadrature_weights is None) and (polynomial_evals is None):
-            pass
-        else:
-            self.weighted_evals = polynomial_evals * coefficients
-            self.quad_wts = quadrature_weights
-        self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
-        self.kurtosis = getKurtosis(self.quad_wts, self.weighted_evals, self.basis, self.variance)
-
-
+        #if (quadrature_points is None) and (quadrature_weights is None) and (polynomial_evals is None):
+        #    pass
+        #else:
+        #    self.weighted_evals = polynomial_evals.T * coefficients
+        #    self.quad_wts = quadrature_weights
+        #self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
+        #self.kurtosis = getKurtosis(self.quad_wts, self.weighted_evals, self.basis, self.variance)
     def plot(self, filename=None):
         """
         Produces a bar graph of the first order Sobol indices
@@ -50,7 +54,6 @@ class Statistics(object):
         # A bar graph plot of the first order Sobol indices!
         x = range(len(self.getSobol(1).keys()))
         barplot(x, self.getSobol(1).values(), 'Parameters', 'Sobol indices', self.getSobol(1).keys())
-
     def getSobol(self, order = 1):
         """
         Get Sobol' indices at specified order.
@@ -200,15 +203,15 @@ class Statistics(object):
 
 # Private functions!
 def getMean(coefficients):
-    mean = coefficients[0,0]
-    return mean
+    mean = coefficients[0]
+    return float(mean)
 
 def getVariance(coefficients):
-    m, n = coefficients.shape
-    if m > n:
-        coefficients = coefficients.T
-    variance = np.sum(coefficients[0][1:m]**2)
-    return variance
+    p = len(coefficients)
+    variance = 0.0
+    for i in range(1, p):
+        variance = variance + coefficients[i]**2
+    return float(variance)
 
 
 
@@ -216,8 +219,8 @@ def getVariance(coefficients):
 def getAllSobol(coefficients, basis):
     m, n = coefficients.shape
     variance = getVariance(coefficients)
-    if m > n:
-        coefficients = coefficients.T
+    #if m > n:
+    #   coefficients = coefficients.T
 
     if not(isinstance(basis, np.ndarray)):
         basis = basis.elements
@@ -242,7 +245,7 @@ def getAllSobol(coefficients, basis):
                 non_zero_entries = np.nonzero(row)[0]
                 non_zero_entries.sort()    #just in case
                 if len(non_zero_entries) == order: #neglect entries that should actually be zero (what constitutes as zero?)
-                    combo_index[tuple(non_zero_entries)] = combo_index[tuple(non_zero_entries)] + coefficients[0][i]**2 / variance
+                    combo_index[tuple(non_zero_entries)] = combo_index[tuple(non_zero_entries)] + coefficients[i]**2 / variance
 
         check_sum = sum(combo_index.values())
         if (abs(check_sum - 1.0) >= 1e-2):
@@ -252,18 +255,21 @@ def getAllSobol(coefficients, basis):
 
 # Return global skewness
 def getSkewness(quad_wts, weighted_evals, basis, variance):
-    total_evals = np.sum(weighted_evals[1:],0)
-#    print weighted_evals[0]
-    third_total_evals = total_evals**3
-
-    return np.dot(third_total_evals,quad_wts)/(variance**1.5)
+    result = 0.0
+    for i in range(0, len(quad_wts)):
+        result = result +  weighted_evals[i] * quad_wts[i]
+    third_total_evals =  1.0/ np.sqrt(variance ** 3)  * result**3
+    return float(third_total_evals)
+    #return np.dot(third_total_evals,quad_wts)/(variance**1.5)
 
 # Return global kurtosis
 def getKurtosis(quad_wts, weighted_evals, basis, variance):
-    total_evals = np.sum(weighted_evals[1:],0)
-    fourth_total_evals = total_evals**4
-
-    return np.dot(fourth_total_evals,quad_wts)/(variance**2)
+    #total_evals = np.sum(weighted_evals[1:],0)
+    result = 0.0
+    for i in range(0, len(quad_wts)):
+        result = result +  weighted_evals[i] * quad_wts[i]
+    fourth_total_evals = 1.0/(variance ** 2)  * result**4
+    return float(fourth_total_evals)
 
 # Return conditional skewness of specified order, in dictionary format similar to Sobol' indices
 #Unfortunately, to compute conditional indices, this slow method must be used!

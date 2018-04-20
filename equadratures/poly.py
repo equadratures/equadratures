@@ -238,7 +238,7 @@ class Poly(object):
             return p, w
 
         if options.lower() == 'tensor grid':
-            p,w = self.getTensorQuadratureRule([2*i for i in self.basis.orders])
+            p,w = self.getTensorQuadratureRule([i for i in self.basis.orders])
             return p,w
     def evaluatePolyFit(self, stackOfPoints):
         """

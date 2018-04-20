@@ -112,16 +112,18 @@ class Polylsq(Poly):
                 ff = np.unravel_index(random_samples[i], dims=orders_plus_one, order='C')
                 for j in range(0, self.dimensions):
                     selected_indices[i, j] = ff[j]
-            refined_pts = np.zeros((m_refined, self.dimensions))
+            quadraturePoints_subsampled = np.zeros((m_refined, self.dimensions))
             wts = np.ones((m_refined))
             for j in range(0, self.dimensions):
                 P_j, W_j = self.parameters[j]._getLocalQuadrature()
                 for i in range(0, m_refined):
-                    refined_pts[i, j] = P_j[int( selected_indices[i, j] ) ]
+                    quadraturePoints_subsampled[i, j] = P_j[int( selected_indices[i, j] ) ]
                     wts[i] = wts[i] * W_j[ int( selected_indices[i, j] )]
             wts_orig_normalized = wts / np.sum(wts)
+            nondimensional_points_subsampled = super(Polylsq, self).scaleInputs(quadraturePoints_subsampled)
         else:
-            P = super(Polylsq, self).getPolynomial(pts)
+            nondimensional_points = super(Polylsq, self).scaleInputs(pts)
+            P = super(Polylsq, self).getPolynomial(nondimensional_points)
             W = np.mat( np.diag(np.sqrt(wts)))
             A = W * P.T
             mmm, nnn = A.shape
@@ -169,14 +171,15 @@ class Polylsq(Poly):
             else:
                 raise(ValueError, 'Polylsq:__init___:: Unknown optimization technique! Choose between greedy or newton please.')
 
-            refined_pts = pts[z]
+            nondimensional_points_subsampled = nondimensional_points[z,:]
+            quadraturePoints_subsampled = pts[z,:]
             wts_orig_normalized =  wts[z] / np.sum(wts[z]) # if we pick a subset of the weights, they should add up to 1.!
             self.A = A
-        Pz = super(Polylsq, self).getPolynomial(refined_pts)
+        Pz = super(Polylsq, self).getPolynomial(nondimensional_points_subsampled)
         Wz = np.mat(np.diag( np.sqrt(wts_orig_normalized) ) )
         self.Az =  Wz * Pz.T
         self.Wz = Wz
-        self.quadraturePoints = refined_pts
+        self.quadraturePoints = quadraturePoints_subsampled
         self.quadratureWeights = wts_orig_normalized
     def quadraturePointsWeights(self):
         return self.quadraturePoints, self.quadratureWeights
@@ -186,6 +189,7 @@ class Polylsq(Poly):
             p, q = self.Wz.shape
             # Get function values!
             if callable(func):
+                #scaled_points = super(Polylsq, self).scaleInputs(self.quadraturePoints)
                 y = evalfunction(self.quadraturePoints, func)
             else:
                 y = func

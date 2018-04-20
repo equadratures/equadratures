@@ -410,11 +410,11 @@ def histogram(samples, x_label, y_label, filename=None):
 def barplot(x, y, x_label, y_label, x_ticks, filename=None):
     bar_width = 0.35
     opacity = 1.0
-    error_config = {'ecolor': '0.3'}
     mpl.rcParams['axes.linewidth'] = 2.0
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
-    plt.bar(x, y, bar_width, alpha=opacity, color='steelblue',error_kw=error_config, linewidth=1.5)
+    for i in range(0, len(x)):
+        plt.bar(x[i], y[i], bar_width, alpha=opacity, color='steelblue')
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
     plt.xlabel(x_label, fontsize=13)

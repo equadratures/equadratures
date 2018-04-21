@@ -14,7 +14,7 @@ from poly import Poly
 import scipy.io
 from basis import Basis
 
-def computeActiveSubspaces(PolynomialObject, samples=None):
+def computeActiveSubspaces(poly, samples=None):
     """
     Computes the eigenvalues and corresponding eigenvectors for the high dimensional kernel matrix
 
@@ -24,19 +24,19 @@ def computeActiveSubspaces(PolynomialObject, samples=None):
         * **eigs (numpy array)**: Eigenvalues obtained
         * **eigVecs (numpy array)**: Eigenvectors obtained
     """
-    d = PolynomialObject.dimensions
+    d = poly.dimensions
     if samples is  None:
         M = 300 # Replace with log factor x d
         X = np.zeros((M, d))
         for j in range(0, d):
-            X[:, j] =  np.reshape(PolynomialObject.parameters[j].getSamples(M), M)
+            X[:, j] =  np.reshape(poly.parameters[j].getSamples(M), M)
     else:
         X = samples
         M, _ = X.shape
         X = samples
 
     # Gradient matrix!
-    polygrad = PolynomialObject.evaluatePolyGradFit(xvalue=X)
+    polygrad = poly.evaluatePolyGradFit(xvalue=X)
     weights = np.ones((M, 1)) / M
     R = polygrad.transpose() * weights
     C = np.dot(polygrad, R )

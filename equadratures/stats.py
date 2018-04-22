@@ -34,13 +34,13 @@ class Statistics(object):
         self.sobol = getAllSobol(self.coefficients, self.basis)
 
         #Prepare evals of polynomials for skewness and kurtosis
-        #if (quadrature_points is None) and (quadrature_weights is None) and (polynomial_evals is None):
-        #    pass
-        #else:
-        #    self.weighted_evals = polynomial_evals.T * coefficients
-        #    self.quad_wts = quadrature_weights
-        #self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
-        #self.kurtosis = getKurtosis(self.quad_wts, self.weighted_evals, self.basis, self.variance)
+        if (quadrature_points is None) and (quadrature_weights is None) and (polynomial_evals is None):
+            pass
+        else:
+            self.weighted_evals = polynomial_evals.T * coefficients
+            self.quad_wts = quadrature_weights
+        self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
+        self.kurtosis = getKurtosis(self.quad_wts, self.weighted_evals, self.basis, self.variance)
     def plot(self, filename=None):
         """
         Produces a bar graph of the first order Sobol indices

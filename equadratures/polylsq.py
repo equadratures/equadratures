@@ -225,6 +225,7 @@ class Polylsq(Poly):
         elif self.gradients is True and gradfunc is None:
             raise(ValueError, 'Polylsq:computeCoefficients:: Gradient function evaluations must be provided, either a callable function or as vectors.')
         super(Polylsq, self).__setCoefficients__(self.coefficients)
+        super(Polylsq, self).__setQuadrature__(self.quadraturePoints, self.quadratureWeights)
     def getDesignMatrix(self):
         super(Polylsq, self).__setDesignMatrix__(self.Az)
 

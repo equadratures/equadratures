@@ -33,6 +33,19 @@ class Poly(object):
 
         """
         self.coefficients = coefficients
+    def __setQuadrature__(self, quadraturePoints, quadratureWeights):
+        """
+        Sets the quadrature points and weights
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param matrix quadraturePoints:
+            A numpy matrix filled with the quadrature points.
+        :param matrix quadratureWeights:
+            A numpy matrix filled with the quadrature weights.
+        """
+        self.quadraturePoints = quadraturePoints
+        self.quadratureWeights = quadratureWeights
     def __setDesignMatrix__(self, designMatrix):
         """
         Sets the design matrix assocaited with the quadrature (depending on the technique) points and the polynomial basis.
@@ -208,9 +221,8 @@ class Poly(object):
         :return:
             A Statistics object.
         """
-        p, w = self.getQuadratureRule(quadratureRule)
-        evals = self.getPolynomial(self.scaleInputs(p))
-        return Statistics(self.coefficients, self.basis, self.parameters, p, w, evals)
+        evals = self.getPolynomial(self.scaleInputs(self.quadraturePoints))
+        return Statistics(self.coefficients, self.basis, self.parameters, self.quadraturePoints, self.quadratureWeights, evals)
     def getQuadratureRule(self, options=None):
         """
         Generates quadrature points and weights.

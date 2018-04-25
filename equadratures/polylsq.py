@@ -163,7 +163,7 @@ class Polylsq(Poly):
                             counter += 1
                             last_index = k
                         flag = 'ascending'
-                z = organize_indices[0::2]
+                z = organize_indices[1::2]
                 
             elif self.optimization.lower() == 'none':
                 z = np.arange(0, mmm, 1)

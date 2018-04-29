@@ -203,7 +203,6 @@ def getVariance(coefficients):
     for i in range(1, len(coefficients)):
         variance = result + float(coefficients[i]**2)
         result = variance
-    print variance
     return variance
 
 

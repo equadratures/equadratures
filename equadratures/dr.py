@@ -36,7 +36,7 @@ def computeActiveSubspaces(poly, samples=None):
         X = samples
 
     # Gradient matrix!
-    polygrad = poly.evaluatePolyGradFit(xvalue=X)
+    polygrad = poly.evaluatePolyGradFit(X)
     weights = np.ones((M, 1)) / M
     R = polygrad.transpose() * weights
     C = np.dot(polygrad, R )

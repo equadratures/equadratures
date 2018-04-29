@@ -282,7 +282,7 @@ class Poly(object):
         gradient values are at prescribed points.
         """
         H = self.getPolynomialGradient(self.scaleInputs(stackOfPoints))
-        grads = np.zeros((self.dimensions, len(x) ) )
+        grads = np.zeros((self.dimensions, len(stackOfPoints) ) )
         for i in range(0, self.dimensions):
             grads[i,:] = np.mat(self.coefficients).T * H[i]
         return grads

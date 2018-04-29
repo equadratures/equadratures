@@ -414,7 +414,7 @@ def barplot(x, y, x_label, y_label, x_ticks, filename=None):
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     for i in range(0, len(x)):
-        plt.bar(x[i], y[i], bar_width, alpha=opacity, color='steelblue')
+        plt.bar(x[i], float(y[i]), bar_width, alpha=opacity, color='steelblue')
     ax.set_axisbelow(True)
     adjust_spines(ax, ['left', 'bottom'])
     plt.xlabel(x_label, fontsize=13)

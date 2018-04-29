@@ -78,6 +78,7 @@ entire combination fits its criteria of freedom.  The Lesser General
 Public License permits more lax criteria for linking other code with
 the library.
 
+  We call this license the "Lesser" General Public License because it
 does Less to protect the user's freedom than the ordinary General
 Public License.  It also provides other free software developers Less
 of an advantage over competing non-free programs.  These disadvantages

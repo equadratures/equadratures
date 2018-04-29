@@ -12,17 +12,22 @@ class Polylsq(Poly):
     """
     This class defines a Polylsq (polynomial via least squares) object
     """
-    def __init__(self, parameters, basis, mesh, optimization, oversampling, gradients=False):
+    def __init__(self, parameters, basis, mesh, optimization=None, oversampling=None, gradients=False):
         super(Polylsq, self).__init__(parameters, basis)
         self.mesh = mesh
         self.optimization = optimization
-        self.oversampling = oversampling
+        if self.optimization is None:
+            self.optimization = 'none'
+        if oversampling is None:
+            self.oversampling = 1.0
+        else:
+            self.oversampling = oversampling
         self.gradients = gradients
         n = self.basis.cardinality
         m_refined = int(np.round(self.oversampling * n))
-        m_big = m_refined
-
-        # Methods!
+        m_big = 1
+        for i in range(0, self.dimensions):
+            m_big = (self.parameters[i].order  + 1) * m_big
         if self.mesh.lower() == 'tensor':
             if self.optimization.lower() == 'random':
                 pts, wts = [] , [] # empty points and weights to save memory!
@@ -30,24 +35,29 @@ class Polylsq(Poly):
                 pts, wts = super(Polylsq, self).getTensorQuadratureRule() # original weights sum up to 1
         elif self.mesh.lower() == 'chebyshev':
             pts = np.cos(np.pi * np.random.rand(m_big, self.dimensions ))
-            wts = float(n * 1.0)/float(m_big * 1.0) * 1.0/np.sum( (super(Polylsq, self).getPolynomial(pts))**2 , 0)
-            wts_orig = wts * 1.0/np.sum(wts)
+            wts =  1.0/np.sum( super(Polylsq, self).getPolynomial(pts)**2 , 0)
+            wts = wts * 1.0/np.sum(wts)
+        elif self.mesh.lower() == 'tensorcheck':
+            pts, _ = super(Polylsq, self).getTensorQuadratureRule()
+            wts =  1.0/np.sum( super(Polylsq, self).getPolynomial(pts)**2 , 0)
+            wts = wts * 1.0/np.sum(wts)
         elif self.mesh.lower() == 'uniform':
             pts = np.zeros((m_big, self.dimensions))
             for i in range(0, self.dimensions):
                 univariate_samples = np.linspace(self.parameters[i].lower, self.parameters[i].upper, m_big)
                 for j in range(0, m_big):
                     pts[j, i] = univariate_samples[j]
-            wts =  float(n * 1.0)/float(m_big * 1.0) * 1.0/np.sum( (super(Polylsq, self).getPolynomial(pts))**2 , 0)
-            wts_orig = wts * 1.0/np.sum(wts)
+            wts =  1.0/np.sum( super(Polylsq, self).getPolynomial(pts)**2 , 0)
+            wts = wts * 1.0/np.sum(wts)
         elif self.mesh.lower() == 'random':
             pts = np.zeros((m_big, self.dimensions))
             for i in range(0, self.dimensions):
                 univariate_samples = self.parameters[i].getSamples(m_big)
                 for j in range(0, m_big):
                     pts[j, i] = univariate_samples[j]
-            wts = float(n * 1.0)/float(m_big * 1.0) * 1.0/np.sum( (super(Polylsq, self).getPolynomial(pts))**2 , 0)
-            wts_orig = wts * 1.0/np.sum(wts)
+            #wts = float(n * 1.0)/float(m_big * 1.0) * 1.0/np.sum( (super(Polylsq, self).getPolynomial(pts))**2 , 0)
+            wts =  1.0/(np.sum( super(Polylsq, self).getPolynomial(pts)**2 , 0) )**2
+            wts = wts * 1.0/np.sum(wts)
         else:
             raise(ValueError, 'Polylsq:__init___:: Unknown mesh! Choose between tensor, chebyshev, random or induced please.')
         if self.gradients is False:

@@ -22,6 +22,6 @@ params = {'legend.fontsize': 18,
           'mathtext.rm': 'sans',
           'font.variant':'small-caps',
           'grid.linestyle': ':',
-          'grid.linewidth': 0.5,
+          #'grid.linewidth': 0.5,
          }
 matplotlib.rcParams.update(params)

@@ -66,8 +66,6 @@ def getPseudospectralCoefficients(self, function, override_orders=None):
         pts, wts = super(Polyint, self).getTensorQuadratureRule()
     else:
         pts, wts = super(Polyint, self).getTensorQuadratureRule(override_orders)
-    print pts
-    print '*******'
     m = len(wts)
     P = super(Polyint, self).getPolynomial(pts)
     W = np.mat( np.diag(np.sqrt(wts)))
@@ -77,9 +75,7 @@ def getPseudospectralCoefficients(self, function, override_orders=None):
     else:
         y = function
     b = np.dot( W  ,  np.reshape(y, (m,1)) )
-    #alpha = np.linalg.lstsq(A, b, rcond=None) 
-    #print A.T * A
-    coefficients = np.dot(A.T , b)  #alpha[0]
+    coefficients = np.dot(A.T , b)  
     return coefficients, self.basis.elements, pts, wts
     
     """

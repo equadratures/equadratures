@@ -66,30 +66,6 @@ class Poly(object):
             A clone of the Poly object.
         """
         return type(self)(self.parameters, self.basis)
-    def scaleInputs(self, x_points_scaled):
-        """
-        Scales the inputs points for Uniform and Beta distributions.
-
-        :param Poly self:
-            An instance of the Poly class.
-        :param matrix x_points_scaled:
-            A matrix of points that need to be scaled depending on the distribution associated with each dimension.
-        :return:
-            A matrix of scaled points.
-        """
-        x_points_scaled = np.mat(x_points_scaled)
-        rows, cols = x_points_scaled.shape
-        points = np.zeros((rows, cols))
-        points[:] = x_points_scaled
-
-        # Now re-scale
-        for i in range(0, self.dimensions):
-            for j in range(0, rows):
-                if (self.parameters[i].param_type.lower() == "uniform") or (self.parameters[i].param_type.lower() == "beta" ):
-                    points[j,i] = 2.0 * ( ( points[j,i] - self.parameters[i].lower) / (self.parameters[i].upper - self.parameters[i].lower) ) - 1.0
-                #elif (self.parameters[i].param_type.lower() == "beta" ):
-                #    points[j,i] =  ( points[j,i] - self.parameters[i].lower) / (self.parameters[i].upper - self.parameters[i].lower)
-        return points
     def getPolynomial(self, stackOfPoints):
         """
         Evaluates the multivariate polynomial at a set of points.
@@ -101,10 +77,6 @@ class Poly(object):
         :return:
             A N-by-1 matrix of polynomial evaluations at the stackOfPoints.
         """
-        #stackOfPoints = self.scaleInputs(inputPoints)
-        #print '**Polynomial()**'
-        #print stackOfPoints
-        #print '**********'
         basis = self.basis.elements
         basis_entries, dimensions = basis.shape
         no_of_points, _ = stackOfPoints.shape
@@ -267,10 +239,6 @@ class Poly(object):
         :return:
             A 1-by-N matrix of the polynomial approximation.
         """
-        #print self.getPolynomial(self.scaleInputs(stackOfPoints)).T 
-        #print '******'
-        #print self.scaleInputs(stackOfPoints)
-        #return self.getPolynomial(self.scaleInputs(stackOfPoints)).T *  np.mat(self.coefficients)
         return self.getPolynomial(stackOfPoints).T *  np.mat(self.coefficients)
 
     def evaluatePolyGradFit(self, stackOfPoints):

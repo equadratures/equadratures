@@ -8,7 +8,7 @@ References:
 from parameter import Parameter
 from basis import Basis
 from basis import sparse_grid_basis
-from utils import find_repeated_elements
+from utils import find_repeated_elements, evalfunction
 from poly import Poly
 import numpy as np
 
@@ -48,11 +48,13 @@ class Polyint(Poly):
             coefficients, indexset, evaled_pts, weights = getSparsePseudospectralCoefficients(self, function)
         elif (method.lower() == 'tensor grid') or (method.lower() == 'tensor'):
             coefficients, indexset, evaled_pts, weights = getPseudospectralCoefficients(self, function)
+            self.basis.elements = indexset
         self.coefficients = coefficients
         self.multi_index = indexset
         self.quadraturePoints = evaled_pts
         self.quadratureWeights = weights
         super(Polyint, self).__setCoefficients__(self.coefficients)
+
 
 #--------------------------------------------------------------------------------------------------------------
 #
@@ -60,6 +62,27 @@ class Polyint(Poly):
 #
 #--------------------------------------------------------------------------------------------------------------
 def getPseudospectralCoefficients(self, function, override_orders=None):
+    if override_orders is None:
+        pts, wts = super(Polyint, self).getTensorQuadratureRule()
+    else:
+        pts, wts = super(Polyint, self).getTensorQuadratureRule(override_orders)
+    print pts
+    print '*******'
+    m = len(wts)
+    P = super(Polyint, self).getPolynomial(pts)
+    W = np.mat( np.diag(np.sqrt(wts)))
+    A = np.mat(W * P.T)
+    if callable(function):
+        y = evalfunction(points=pts, function=function)
+    else:
+        y = function
+    b = np.dot( W  ,  np.reshape(y, (m,1)) )
+    #alpha = np.linalg.lstsq(A, b, rcond=None) 
+    #print A.T * A
+    coefficients = np.dot(A.T , b)  #alpha[0]
+    return coefficients, self.basis.elements, pts, wts
+    
+    """
     stackOfParameters = self.parameters
     dimensions = len(stackOfParameters)
     q0 = [1.0]
@@ -101,24 +124,28 @@ def getPseudospectralCoefficients(self, function, override_orders=None):
     orders_plus_one = [x+1 for x in orders]
     gn = int(np.prod(orders_plus_one))
     Uc = np.zeros((N, gn))
-    Uc[0,1] = u0
-
+    Uc[0,0] = u0
     function_values = np.zeros((1,gn))
     for i in range(0, gn):
         function_values[0,i] = function(p[i,:])
 
     # Now we evaluate the solution at all the points
-    for j in range(0, gn): # 0
+    for j in range(1, gn): # 0
         Uc[0,j]  = q0[0,j] * function_values[0,j]
-
     basis = Basis('Tensor grid',  orders)
     tensor_set = basis.elements
 
+    values = np.sum(tensor_set, 1)
+    g = np.argsort(values)
+    new_basis = tensor_set[g,:]
+
     # Now we use kronmult
     K = efficient_kron_mult(Q, Uc)
+    K[0,:] = K[0,g]
     F = function_values
     K = np.column_stack(K)
-    return K, tensor_set, p, w
+    """
+
 def getSparsePseudospectralCoefficients(self, function):
 
     # INPUTS

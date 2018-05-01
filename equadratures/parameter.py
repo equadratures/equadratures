@@ -699,14 +699,14 @@ def recurrence_coefficients(self, order=None):
     # 1. Beta distribution
     if self.param_type.lower() == "beta":
         ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, order)
-        #self.bounds = [0,1]
+        self.bounds = [0.0,1.0]
 
     # 2. Uniform distribution
     elif self.param_type.lower() == "uniform":
         self.shape_parameter_A = 0.0
         self.shape_parameter_B = 0.0
         ab =  jacobi_recurrence_coefficients(0., 0., self.lower, self.upper, order)
-        self.bounds = [-1, 1]
+        self.bounds = [-1.0, 1.0]
 
     elif self.param_type.lower() == "custom":
         x, w = analytical.PDF_CustomDistribution(N, self.data)
@@ -728,7 +728,7 @@ def recurrence_coefficients(self, order=None):
         lambda_value = self.shape_parameter_A
         x, w  = analytical.PDF_ExponentialDistribution(N, lambda_value)
         ab = custom_recurrence_coefficients(order, x, w)
-        self.bounds = [0, np.inf]
+        self.bounds = [0.0, np.inf]
 
     # 5. Analytical Cauchy defined on [-inf, inf]
     elif self.param_type.lower() == "cauchy":
@@ -744,7 +744,7 @@ def recurrence_coefficients(self, order=None):
         theta = self.shape_parameter_B
         x, w  = analytical.PDF_GammaDistribution(N, k, theta)
         ab = custom_recurrence_coefficients(order, x, w)
-        self.bounds = [0, np.inf]
+        self.bounds = [0.0, np.inf]
 
     # 6. Analytical Weibull defined on [0, inf]
     elif self.param_type.lower() == "weibull":
@@ -752,7 +752,7 @@ def recurrence_coefficients(self, order=None):
         k = self.shape_parameter_B
         x, w  = analytical.PDF_WeibullDistribution(N, lambda_value, k)
         ab = custom_recurrence_coefficients(order, x, w)
-        self.bounds = [0, np.inf]
+        self.bounds = [0.0, np.inf]
 
     # 7. Analytical Truncated Gaussian defined on [a,b]
     elif (self.param_type.lower() == "truncated-gaussian") or (self.param_type.lower() == "truncated gaussian"):
@@ -767,7 +767,7 @@ def recurrence_coefficients(self, order=None):
     # 8. Chebyshev distribution defined on [a, b]
     elif self.param_type.lower() == "chebyshev":
         ab = jacobi_recurrence_coefficients(-0.5, -0.5, self.lower, self.upper, order)
-        self.bounds = [self.lower, self.upper]
+        self.bounds = [-1.0, 1.0]
 
     else:
         print self.param_type
@@ -892,7 +892,6 @@ def jacobiMatrix(self, order=None):
 
     return JacobiMatrix
 def getlocalquadrature(self, order=None):
-
     # Check for extra input argument!
     if order is None:
         order = self.order + 1
@@ -925,8 +924,7 @@ def getlocalquadrature(self, order=None):
             p[u,0] = local_points[u]
             if (p[u,0] < 1e-16) and (-1e-16 < p[u,0]):
                 p[u,0] = np.abs(p[u,0])
-    return p, w
-    
+    return p, w   
 def getlocalquadraturelobatto(self, order=None, scale=None):
     # Check for extra input argument!
     if order is None:
@@ -962,12 +960,9 @@ def getlocalquadraturelobatto(self, order=None, scale=None):
         w[u] = ab[0,1] * (V[0,i[u]]**2) # replace weights with right value
         p[u,0] = local_points[u]
     return p, w
-
 def jacobiEigenvectors(self, order=None):
-
     if order is None:
         order = self.order + 1
-
     JacobiMat = jacobiMatrix(self, order)
     if order == 1:
         V = [1.0]
@@ -977,7 +972,8 @@ def jacobiEigenvectors(self, order=None):
         i = np.argsort(D) # get the sorted indices
         i = np.array(i) # convert to array
         V = V[:,i]
-
+        #for u in range(0, len(i)):
+        #    V[:,u] = np.sign(V[0,u]) * V[:,u]
     return V
 def orthoPolynomial_and_derivative(self, points, order=None):
     eps = 1e-15
@@ -987,16 +983,9 @@ def orthoPolynomial_and_derivative(self, points, order=None):
         order = order + 1
     gridPoints = np.asarray(points).copy()
     ab = recurrence_coefficients(self, order)
-    if self.param_type == 'Uniform':
-        if (np.abs(gridPoints) > (1.0 + eps)).any() :
-            raise(ValueError, "Points not normalized.")
-    if self.param_type == 'Beta':
-        if (gridPoints > 1.0).any() or (gridPoints < 0.0).any():
-            raise(ValueError, "Points not normalized.")
-    if self.param_type == 'Chebyshev':
-        #print gridPoints
-        if (np.abs(gridPoints) > (1.0 + eps)).any() :
-            raise(ValueError, "Points not normalized.")
+    if ( any(gridPoints) < self.bounds[0]) or (any(gridPoints) > self.bounds[1] ) :
+        for r in range(0, len(gridPoints)):
+            gridPoints[r] = (gridPoints[r] - self.bounds[0])/(self.bounds[1] - self.bounds[0])
 
     orthopoly = np.zeros((order, len(gridPoints))) # create a matrix full of zeros
     derivative_orthopoly = np.zeros((order, len(gridPoints)))
@@ -1023,17 +1012,3 @@ def orthoPolynomial_and_derivative(self, points, order=None):
             # Four-term recurrence formula for derivatives of orthogonal polynomials!
             derivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
         return orthopoly, derivative_orthopoly
-def main():
-    #data = 0
-    n = 4
-    po = Parameter(param_type='Chebyshev', order=n, lower=-1., upper=1., Endpoints=True)
-    pts, wts = po._getLocalQuadrature()
-    print pts, wts
-
-    #print jacobi_recurrence_coefficients(-0.5, -0.5, 3)
-    #x, w = po._getLocalQuadrature()
-    #alpha = 0. 
-    #beta = 0.
-    #G = po.induced_jacobi_distribution(x, n, 6)
-    #print G
-#main()

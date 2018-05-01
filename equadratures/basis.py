@@ -336,7 +336,6 @@ def tensor_grid_basis(orders):
 
     # Ignore the first column of pp
     basis = I[:,1::]
-
     return basis
 
 def column(matrix, i):

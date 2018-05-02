@@ -21,7 +21,6 @@ class Poly(object):
             self.orders.append(self.parameters[i].order)
         if not self.basis.orders :
             self.basis.setOrders(self.orders)
-
     def __setCoefficients__(self, coefficients):
         """
         Sets the coefficients for polynomial. This function will be called by the children of Poly
@@ -67,30 +66,7 @@ class Poly(object):
             A clone of the Poly object.
         """
         return type(self)(self.parameters, self.basis)
-    def scaleInputs(self, x_points_scaled):
-        """
-        Scales the inputs points for Uniform and Beta distributions.
-
-        :param Poly self:
-            An instance of the Poly class.
-        :param matrix x_points_scaled:
-            A matrix of points that need to be scaled depending on the distribution associated with each dimension.
-        :return:
-            A matrix of scaled points.
-        """
-        rows, cols = x_points_scaled.shape
-        points = np.zeros((rows, cols))
-        points[:] = x_points_scaled
-
-        # Now re-scale
-        for i in range(0, self.dimensions):
-            for j in range(0, rows):
-                if (self.parameters[i].param_type == "Uniform"):
-                    points[j,i] = 2.0 * ( ( points[j,i] - self.parameters[i].lower) / (self.parameters[i].upper - self.parameters[i].lower) ) - 1.0
-                elif (self.parameters[i].param_type == "Beta" ):
-                    points[j,i] =  ( points[j,i] - self.parameters[i].lower) / (self.parameters[i].upper - self.parameters[i].lower)
-        return points
-    def getPolynomial(self, stackOfPoints):
+    def getPolynomial(self, stackOfPoints, customBases=None):
         """
         Evaluates the multivariate polynomial at a set of points.
 
@@ -101,7 +77,10 @@ class Poly(object):
         :return:
             A N-by-1 matrix of polynomial evaluations at the stackOfPoints.
         """
-        basis = self.basis.elements
+        if customBases is None:
+            basis = self.basis.elements
+        else:
+            basis = customBases
         basis_entries, dimensions = basis.shape
         no_of_points, _ = stackOfPoints.shape
         polynomial = np.zeros((basis_entries, no_of_points))
@@ -194,7 +173,7 @@ class Poly(object):
         for u in range(0, self.dimensions):
 
             # Call to get local quadrature method (for dimension 'u')
-            local_points, local_weights = self.parameters[u]._getLocalQuadrature(orders[u], scale=True)
+            local_points, local_weights = self.parameters[u]._getLocalQuadrature(orders[u])
             ww = np.kron(ww, local_weights)
 
             # Tensor product of the points
@@ -221,7 +200,7 @@ class Poly(object):
         :return:
             A Statistics object.
         """
-        evals = self.getPolynomial(self.scaleInputs(self.quadraturePoints))
+        evals = self.getPolynomial(self.quadraturePoints)
         return Statistics(self.coefficients, self.basis, self.parameters, self.quadraturePoints, self.quadratureWeights, evals)
     def getQuadratureRule(self, options=None):
         """
@@ -263,7 +242,7 @@ class Poly(object):
         :return:
             A 1-by-N matrix of the polynomial approximation.
         """
-        return self.getPolynomial(self.scaleInputs(stackOfPoints)).T *  np.mat(self.coefficients)
+        return self.getPolynomial(stackOfPoints).T *  np.mat(self.coefficients)
 
     def evaluatePolyGradFit(self, stackOfPoints):
         """
@@ -281,7 +260,7 @@ class Poly(object):
         This function should not be confused with getPolynomialGradient(). The latter is only concerned with approximating what the multivariate polynomials
         gradient values are at prescribed points.
         """
-        H = self.getPolynomialGradient(self.scaleInputs(stackOfPoints))
+        H = self.getPolynomialGradient(stackOfPoints)
         grads = np.zeros((self.dimensions, len(stackOfPoints) ) )
         for i in range(0, self.dimensions):
             grads[i,:] = np.mat(self.coefficients).T * H[i]
@@ -296,7 +275,7 @@ class Poly(object):
             A callable function.
 
         """
-        return lambda (x): self.getPolynomial(self.scaleInputs(x)).T *  np.mat(self.coefficients)
+        return lambda (x): self.getPolynomial(x).T *  np.mat(self.coefficients)
     def getPolyGradFitFunction(self):
         """
         Returns a callable for the gradients of the polynomial approximation of a function (or model data).
@@ -308,7 +287,7 @@ class Poly(object):
 
         """
         return lambda (x) : self.evaluatePolyGradFit(x)
-    def getFunctionSamples(self, function, coefficients=None, indexset=None):
+    def getFunctionSamples(self, number_of_samples):
         """
         Returns a set of function samples; useful for computing probabilities.
 
@@ -324,22 +303,13 @@ class Poly(object):
             A 50000-by-1 array of function evaluations.
 
         """
-        dimensions = len(self.uq_parameters)
-
-        # Check to see if we need to call the coefficients
-        if coefficients is None or indexset is None:
-            coefficients,  indexset, evaled_pts = self.getPolynomialCoefficients(function)
-
-        # For each UQ parameter in self, store the samples
-        number_of_samples = 50000 # default value!
+        dimensions = self.dimensions
+        if number_of_samples is None:
+            number_of_samples = 50000 # default value!
         plotting_pts = np.zeros((number_of_samples, dimensions))
         for i in range(0, dimensions):
-                univariate_samples = self.uq_parameters[i].getSamples(number_of_samples)
+                univariate_samples = self.parameters[i].getSamples(number_of_samples)
                 for j in range(0, number_of_samples):
                     plotting_pts[j, i] = univariate_samples[j]
-
-        P , Q = self.getMultivariatePolynomial(plotting_pts, indexset)
-        P = np.mat(P)
-        C = np.mat(coefficients)
-        polyapprox = P.T * C
-        return polyapprox
+        samples = self.evaluatePolyFit(plotting_pts)
+        return plotting_pts, samples

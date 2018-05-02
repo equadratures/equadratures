@@ -241,11 +241,12 @@ def CDF_BetaDistribution(N, a, b, lower, upper):
     :return:
         Cumulative density values along the support of the beta distribution.
     """
+    xreal = np.linspace(lower, upper, N)
     x = np.linspace(0, 1, N)
     w = np.zeros((N,1))
     for i in range(0, N):
         w[i] = betainc(a, b, x[i])
-    return x, w
+    return xreal, w
 def CDF_WeibullDistribution(N, lambda_value, k):
     """
     A Weibull cumulative density function.

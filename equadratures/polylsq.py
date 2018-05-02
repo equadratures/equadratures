@@ -130,10 +130,10 @@ class Polylsq(Poly):
                     quadraturePoints_subsampled[i, j] = P_j[int( selected_indices[i, j] ) ]
                     wts[i] = wts[i] * W_j[ int( selected_indices[i, j] )]
             wts_orig_normalized = wts / np.sum(wts)
-            nondimensional_points_subsampled = super(Polylsq, self).scaleInputs(quadraturePoints_subsampled)
+            #nondimensional_points_subsampled = super(Polylsq, self).scaleInputs(quadraturePoints_subsampled)
         else:
-            nondimensional_points = super(Polylsq, self).scaleInputs(pts)
-            P = super(Polylsq, self).getPolynomial(nondimensional_points)
+            #nondimensional_points = super(Polylsq, self).scaleInputs(pts)
+            P = super(Polylsq, self).getPolynomial(pts)
             W = np.mat( np.diag(np.sqrt(wts)))
             A = W * P.T
             mmm, nnn = A.shape
@@ -181,15 +181,15 @@ class Polylsq(Poly):
             else:
                 raise(ValueError, 'Polylsq:__init___:: Unknown optimization technique! Choose between greedy or newton please.')
 
-            nondimensional_points_subsampled = nondimensional_points[z,:]
-            quadraturePoints_subsampled = pts[z,:]
+            points_subsampled = pts[z,:]
+            #quadraturePoints_subsampled = pts[z,:]
             wts_orig_normalized =  wts[z] / np.sum(wts[z]) # if we pick a subset of the weights, they should add up to 1.!
             self.A = A
-        Pz = super(Polylsq, self).getPolynomial(nondimensional_points_subsampled)
+        Pz = super(Polylsq, self).getPolynomial(points_subsampled)
         Wz = np.mat(np.diag( np.sqrt(wts_orig_normalized) ) )
         self.Az =  Wz * Pz.T
         self.Wz = Wz
-        self.quadraturePoints = quadraturePoints_subsampled
+        self.quadraturePoints = points_subsampled
         self.quadratureWeights = wts_orig_normalized
     def quadraturePointsWeights(self):
         return self.quadraturePoints, self.quadratureWeights

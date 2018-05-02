@@ -66,7 +66,7 @@ class Poly(object):
             A clone of the Poly object.
         """
         return type(self)(self.parameters, self.basis)
-    def getPolynomial(self, stackOfPoints):
+    def getPolynomial(self, stackOfPoints, customBases=None):
         """
         Evaluates the multivariate polynomial at a set of points.
 
@@ -77,7 +77,10 @@ class Poly(object):
         :return:
             A N-by-1 matrix of polynomial evaluations at the stackOfPoints.
         """
-        basis = self.basis.elements
+        if customBases is None:
+            basis = self.basis.elements
+        else:
+            basis = customBases
         basis_entries, dimensions = basis.shape
         no_of_points, _ = stackOfPoints.shape
         polynomial = np.zeros((basis_entries, no_of_points))
@@ -170,7 +173,7 @@ class Poly(object):
         for u in range(0, self.dimensions):
 
             # Call to get local quadrature method (for dimension 'u')
-            local_points, local_weights = self.parameters[u]._getLocalQuadrature(orders[u], scale=True)
+            local_points, local_weights = self.parameters[u]._getLocalQuadrature(orders[u])
             ww = np.kron(ww, local_weights)
 
             # Tensor product of the points

@@ -64,10 +64,15 @@ class Polyint(Poly):
 def getPseudospectralCoefficients(self, function, override_orders=None):
     if override_orders is None:
         pts, wts = super(Polyint, self).getTensorQuadratureRule()
+        tensor_elements = self.basis.elements
+        P = super(Polyint, self).getPolynomial(pts)
     else:
         pts, wts = super(Polyint, self).getTensorQuadratureRule(override_orders)
+        tensor_basis = Basis('Tensor grid', override_orders)
+        tensor_elements = tensor_basis.elements
+        P = super(Polyint, self).getPolynomial(pts, tensor_elements)
+
     m = len(wts)
-    P = super(Polyint, self).getPolynomial(pts)
     W = np.mat( np.diag(np.sqrt(wts)))
     A = np.mat(W * P.T)
     if callable(function):
@@ -76,8 +81,104 @@ def getPseudospectralCoefficients(self, function, override_orders=None):
         y = function
     b = np.dot( W  ,  np.reshape(y, (m,1)) )
     coefficients = np.dot(A.T , b)  
-    return coefficients, self.basis.elements, pts, wts
-    
+    return coefficients, tensor_elements, pts, wts
+
+def getSparsePseudospectralCoefficients(self, function):
+
+    # INPUTS
+    stackOfParameters = self.parameters
+    indexSets = self.basis
+    dimensions = len(stackOfParameters)
+    sparse_indices, sparse_factors, not_used = sparse_grid_basis(self.basis.level, self.basis.growth_rule, self.dimensions)
+    rows = len(sparse_indices)
+    cols = len(sparse_indices[0])
+
+    # For storage we use dictionaries
+    individual_tensor_coefficients = {}
+    individual_tensor_indices = {}
+    points_store = {}
+    weights_store = {}
+    indices = np.zeros((rows))
+
+    for i in range(0,rows):
+        orders = sparse_indices[i,:] 
+        K, I, points , weights = getPseudospectralCoefficients(self, function, orders.astype(int))
+        individual_tensor_indices[i] = I
+        individual_tensor_coefficients[i] =  K
+        points_store[i] = points
+        weights_store[i] = weights
+        indices[i] = len(I)
+        
+    sum_indices = int(np.sum(indices))
+    store = np.zeros((sum_indices, dimensions+1))
+    points_saved = np.zeros((sum_indices, dimensions))
+    weights_saved = np.zeros((sum_indices))
+
+    sum_indices = int(np.sum(indices))
+    store = np.zeros((sum_indices, dimensions+1))
+    points_saved = np.zeros((sum_indices, dimensions))
+    weights_saved = np.zeros((sum_indices))
+    counter = int(0)
+    for i in range(0,rows):
+        for j in range(0, int(indices[i])):
+             store[counter,0] = sparse_factors[i] * individual_tensor_coefficients[i][j]
+             for d in range(0, dimensions):
+                 store[counter,d+1] = int(individual_tensor_indices[i][j, d])
+                 points_saved[counter,d] = points_store[i][j, d]
+             weights_saved[counter] = weights_store[i][j]
+             counter = counter + 1
+    # Now we use a while loop to iteratively delete the repeated elements while summing up the
+    # coefficients!
+    index_to_pick = 0
+    flag = 1
+    counter = 0
+
+    rows = len(store)
+
+    final_store = np.zeros((sum_indices, dimensions + 1))
+    while(flag != 0):
+
+        # find the repeated indices
+        rep = find_repeated_elements(index_to_pick, store)
+        coefficient_value = 0.0
+
+        # Sum up all the coefficient values
+        for i in range(0, len(rep)):
+            actual_index = rep[i]
+            coefficient_value = coefficient_value + store[actual_index,0]
+
+        # Store into a new array
+        final_store[counter,0] = coefficient_value
+        final_store[counter,1::] = store[index_to_pick, 1::]
+        counter = counter + 1
+
+        # Delete index from store
+        store = np.delete(store, rep, axis=0)
+
+        # How many entries remain in store?
+        rows = len(store)
+        if rows == 0:
+            flag = 0
+
+    indices_to_delete = np.arange(counter, sum_indices, 1)
+    final_store = np.delete(final_store, indices_to_delete, axis=0)
+
+    # Now split final store into coefficients and their index sets!
+    coefficients = np.zeros((1, len(final_store)))
+    for i in range(0, len(final_store)):
+        coefficients[0,i] = final_store[i,0]
+
+    # Splitting final_store to get the indices!
+    indices = final_store[:,1::]
+
+    # Now just double check to make sure they are all integers
+    for i in range(0, len(indices)):
+        for j in range(0, dimensions):
+            indices[i,j] = int(indices[i,j])
+
+    K = np.column_stack(coefficients)
+    return K, indices, points_saved, weights_saved
+
     """
     stackOfParameters = self.parameters
     dimensions = len(stackOfParameters)
@@ -142,6 +243,7 @@ def getPseudospectralCoefficients(self, function, override_orders=None):
     K = np.column_stack(K)
     """
 
+"""
 def getSparsePseudospectralCoefficients(self, function):
 
     # INPUTS
@@ -166,24 +268,31 @@ def getSparsePseudospectralCoefficients(self, function):
         individual_tensor_coefficients[i] =  K
         points_store[i] = points
         weights_store[i] = weights
-        indices[i] = len(I)
+        indices[i] = len(weights)
 
-    sum_indices = int(np.sum(indices))
+    sum_indices = int(np.sum(indices)) 
     store = np.zeros((sum_indices, dimensions+1))
     points_saved = np.zeros((sum_indices, dimensions))
     weights_saved = np.zeros((sum_indices))
     counter = int(0)
+    #print sum_indices 
+    #print '******'
     for i in range(0,rows):
+        #print points_store[i]
+        #print '~~~~~~~~~'
+        #print indices[i]
         for j in range(0, int(indices[i])):
              store[counter,0] = sparse_factors[i] * individual_tensor_coefficients[i][j]
              for d in range(0, dimensions):
-                 store[counter,d+1] = individual_tensor_indices[i][j][d]
-                 points_saved[counter,d] = points_store[i][j][d]
+                 store[counter,d+1] = individual_tensor_indices[i][j, d]
+                 points_saved[counter,d] = points_store[i][j, d]
              weights_saved[counter] = weights_store[i][j]
              counter = counter + 1
 
     # Now we use a while loop to iteratively delete the repeated elements while summing up the
     # coefficients!
+    #print points_saved, weights_saved, store
+    #print '**********'
     index_to_pick = 0
     flag = 1
     counter = 0
@@ -195,13 +304,14 @@ def getSparsePseudospectralCoefficients(self, function):
 
         # find the repeated indices
         rep = find_repeated_elements(index_to_pick, store)
+        print rep
         coefficient_value = 0.0
 
         # Sum up all the coefficient values
         for i in range(0, len(rep)):
             actual_index = rep[i]
             coefficient_value = coefficient_value + store[actual_index,0]
-
+        print coefficient_value
         # Store into a new array
         final_store[counter,0] = coefficient_value
         final_store[counter,1::] = store[index_to_pick, 1::]
@@ -209,7 +319,8 @@ def getSparsePseudospectralCoefficients(self, function):
 
         # Delete index from store
         store = np.delete(store, rep, axis=0)
-
+        #print final_store
+        #print '************'
         # How many entries remain in store?
         rows = len(store)
         if rows == 0:
@@ -268,3 +379,4 @@ def nchoosek(n, k):
     numerator = factorial(n)
     denominator = factorial(k) * factorial(n - k)
     return (1.0 * numerator) / (1.0 * denominator)
+"""

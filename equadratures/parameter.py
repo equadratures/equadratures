@@ -289,7 +289,7 @@ class Parameter(object):
             An order-by-k matrix where order defines the number of derivative of the orthogonal polynomials that will be evaluated and k defines the points at which these points should be evaluated at.
         """
         return orthoPolynomial_and_derivative(self, points, order)
-    def _getLocalQuadrature(self, order=None, scale=None):
+    def _getLocalQuadrature(self, order=None):
         """
         Returns the 1D quadrature points and weights for the parameter. WARNING: Should not be called under normal circumstances.
 
@@ -305,7 +305,7 @@ class Parameter(object):
         if self.endpoints is False:
             return getlocalquadrature(self, order)
         elif self.endpoints is True:
-            return getlocalquadraturelobatto(self, order, scale)
+            return getlocalquadraturelobatto(self, order)
         else:
             raise(ValueError, '_getLocalQuadrature:: Error with Endpoints entry!')
     def fastInducedJacobiDistribution(self):
@@ -925,7 +925,7 @@ def getlocalquadrature(self, order=None):
             if (p[u,0] < 1e-16) and (-1e-16 < p[u,0]):
                 p[u,0] = np.abs(p[u,0])
     return p, w   
-def getlocalquadraturelobatto(self, order=None, scale=None):
+def getlocalquadraturelobatto(self, order=None):
     # Check for extra input argument!
     if order is None:
         order = self.order - 2

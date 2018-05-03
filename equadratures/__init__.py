@@ -13,15 +13,29 @@ from .utils import evalfunction, evalgradients, meshgrid
 from .dr import *
 from .distributions import *
 import matplotlib
-params = {'legend.fontsize': 18,
-          'axes.labelsize': 18,
-          'axes.titlesize': 18,
-          'xtick.labelsize' :12,
-          'ytick.labelsize': 12,
+params = {'legend.fontsize': 11,
+          'font.size' : 10.0,
+          'font.family': 'serif',
+          'font.stretch': 'semi-condensed',
+          'axes.labelsize': 11,
+          'axes.titlesize': 11,
+          'axes.axisbelow': True,
+          'xtick.labelsize' :11,
+          'ytick.labelsize': 11,
           'mathtext.fontset': 'cm',
           'mathtext.rm': 'sans',
           'font.variant':'small-caps',
-          'grid.linestyle': ':',
+          'grid.linestyle': '-',
+          'grid.color': 'white',
+          'grid.linewidth': 2.0,
+          'axes.spines.right':False,
+          'axes.spines.top': False,
+          'axes.grid': True,
+          'axes.facecolor':'whitesmoke',
+          'axes.spines.right': False,
+          'axes.spines.top': False,
+          'legend.frameon' : False,
+          'image.cmap' : 'gist_earth'
           #'grid.linewidth': 0.5,
          }
 matplotlib.rcParams.update(params)

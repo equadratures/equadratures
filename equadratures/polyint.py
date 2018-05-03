@@ -27,6 +27,24 @@ class Polyint(Poly):
     """
     def __init__(self, parameters, basis):
         super(Polyint, self).__init__(parameters, basis)
+        """
+        Need to put data here!
+        """
+        self.__computeQuadraturePoints()
+
+    def __computeQuadraturePoints(self):
+        def dummy_function(x):
+            return 1.0
+
+        method = self.basis.basis_type
+        if method.lower() == 'sparse grid':
+            __ , indexset, evaled_pts, weights = getSparsePseudospectralCoefficients(self, dummy_function)
+        elif (method.lower() == 'tensor grid') or (method.lower() == 'tensor'):
+            __ , indexset, evaled_pts, weights = getPseudospectralCoefficients(self, dummy_function)
+            self.basis.elements = indexset
+        self.multi_index = indexset
+        self.quadraturePoints = evaled_pts
+        self.quadratureWeights = weights
 
     def computeCoefficients(self, function):
         """

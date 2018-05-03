@@ -64,7 +64,7 @@ class Polyreg(Poly):
         :param Polyreg self:
             An instance of the Polyreg class.
         """
-        self.A = self.getPolynomial(self.scaleInputs(self.x)).T
+        self.A = self.getPolynomial(self.x).T
         rows, cols = self.A.shape
         if rows <= cols:
             raise(ValueError, 'Polyreg:setDesignMatrix:: Number of columns have to be less than (or equal to) the number of rows!')

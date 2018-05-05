@@ -4,6 +4,9 @@
 # compiled python codes
 *.pyc
 
+# Ipython notebooks
+.ipynb_chekpoints/
+
 # figs directory
 figs/
 

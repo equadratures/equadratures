@@ -122,12 +122,12 @@ class Polylsq(Poly):
                 ff = np.unravel_index(random_samples[i], dims=orders_plus_one, order='C')
                 for j in range(0, self.dimensions):
                     selected_indices[i, j] = ff[j]
-            quadraturePoints_subsampled = np.zeros((m_refined, self.dimensions))
+            points_subsampled = np.zeros((m_refined, self.dimensions))
             wts = np.ones((m_refined))
             for j in range(0, self.dimensions):
                 P_j, W_j = self.parameters[j]._getLocalQuadrature()
                 for i in range(0, m_refined):
-                    quadraturePoints_subsampled[i, j] = P_j[int( selected_indices[i, j] ) ]
+                    points_subsampled[i, j] = P_j[int( selected_indices[i, j] ) ]
                     wts[i] = wts[i] * W_j[ int( selected_indices[i, j] )]
             wts_orig_normalized = wts / np.sum(wts)
             #nondimensional_points_subsampled = super(Polylsq, self).scaleInputs(quadraturePoints_subsampled)

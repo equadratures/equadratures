@@ -84,6 +84,7 @@ class Parameter(object):
             self.data = data
             if self.param_type != 'Custom':
                 raise(ValueError, 'parameter __init__: if data is provided then the custom distribution must be selected!')
+
         self.bounds = None
     def computeMean(self):
         """

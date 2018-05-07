@@ -35,7 +35,7 @@ import shlex
 # ones.
 sys.path.insert(0, os.path.abspath('../..'))
 html_theme = "sphinx_rtd_theme"
-source_suffix = '.rst'
+source_suffix = '.txt'
 #html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 extensions = [
     'sphinx.ext.autodoc',
@@ -44,15 +44,15 @@ master_doc = 'index'
 
 # General information about the project.
 project = u' '
-copyright = u'2016-2017, Pranay Seshadri'
-author = u'Pranay Seshadri'
+copyright = u'2016-2018 by Effective Quadratures'
+author = u'Pranay Seshadri, Nicholas Wong, Henry Yuchi, Tiziano Ghisu'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '1.0'
+version = 'v6.0'
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -67,7 +67,7 @@ html_theme_options = {
     'navbar_title': "",
 
     # Tab name for entire site. (Default: "Site")
-    'navbar_site_name': "Docs",
+    'navbar_site_name': " ",
 
     # A list of tuples containing pages or urls to link to.
     # Valid tuples should be in the following forms:
@@ -117,7 +117,10 @@ html_theme_options = {
     # such as "amelia" or "cosmo".
     'bootswatch_theme': "cosmo",
     'bootstrap_version': "3",
+
 }
+
+
 
 # on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
 #on_rtd = os.environ.get('READTHEDOCS', None) == 'True'

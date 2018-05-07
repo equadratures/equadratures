@@ -1,4 +1,4 @@
-QR Factorization & Least Squares Routines
+Matrix factorization utilities
 ===========================================
 
 .. automodule:: equadratures.qr

@@ -4,11 +4,14 @@
 # compiled python codes
 *.pyc
 
+# Ipython notebooks
+.ipynb_chekpoints/
+
 # figs directory
 figs/
 
-# docs directory
-documentation/
+# private data
+data/
 
 # test data
 
@@ -48,4 +51,3 @@ nosetests.xml
 *.mo
 .eggs
 
-*.html

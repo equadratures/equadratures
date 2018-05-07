@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Effective-Subsampling &#8212;   1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootswatch-3.3.6/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="  1.0 documentation" href="index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default ">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html"><span><img src="_static/logo.png"></span>
+           </a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Docs <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="Code.html">Code Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polyint.html">Polynomials via Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polylsq.html">Polynomials via Least Squares</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polyreg.html">Polynomials via Regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="indexset.html">Index Sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qr.html">QR Factorization &amp; Least Squares Routines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stats.html">Statistics</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Contact.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LICENSE.html">LICENSE</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Effective-Subsampling</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/effectivequads.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="module-effective_quadratures.effectivequads">
+<span id="effective-subsampling"></span><h1>Effective-Subsampling<a class="headerlink" href="#module-effective_quadratures.effectivequads" title="Permalink to this headline">¶</a></h1>
+<p>Effectively subsampled quadratures for least squares polynomial approximations</p>
+<dl class="class">
+<dt id="effective_quadratures.effectivequads.EffectiveSubsampling">
+<em class="property">class </em><code class="descclassname">effective_quadratures.effectivequads.</code><code class="descname">EffectiveSubsampling</code><span class="sig-paren">(</span><em>uq_parameters</em>, <em>index_set=None</em>, <em>method=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.effectivequads.EffectiveSubsampling" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>uq_parameters</strong> (<em>array</em>) &#8211; A list of Parameter objects.</li>
+<li><strong>index_set</strong> (<em>IndexSet</em>) &#8211; Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.</li>
+<li><strong>method</strong> (<em>string</em>) &#8211; Subsampling strategy; options include: &#8216;QR&#8217;, which is the default option and &#8216;Random&#8217;. See this <a class="reference external" href="https://arxiv.org/abs/1601.05470">paper</a>, for further details. 
+We will be adding a &#8216;Hybrid&#8217; strategy shortly that combines both QR and randomized techniques.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd><ul class="first last simple">
+<li><strong>self.A</strong>: (numpy matrix) Matrix of the multivariate orthogonal polynomial (defined as per the index set basis) evaluated at all points of a tensor grid.</li>
+<li><strong>self.C</strong>: (cell) A cell of d-dimensional numpy matrices of the derivative of the orthogonal polynomial evaluated at all points of a tensor grid.</li>
+<li><strong>self.index_set</strong>:(numpy array) An array of the indices used in the multivariate Polynomial. This changes when the user prunes down the number of columns.</li>
+<li><strong>self.tensor_quadrature_points</strong>: (numpy matrix) Full tensor grid quadrature points</li>
+<li><strong>self.tensor_quadrature_weights</strong>: (numpy matrix) Full tensor grid quadrature weights</li>
+<li><strong>self.A_subsampled</strong>: (numpy matrix) Subsampled rows of A, obtained either via QR column pivoting or randomization</li>
+<li><strong>self.C_subsampled</strong>: (numpy matrix) A stacked matrix comprising of subsampled rows of each matrix in the self.C</li>
+<li><strong>self.no_of_basis_terms</strong>: (int) The number of columns in A_subsampled</li>
+<li><strong>self.dimension</strong>: (int) The number of dimensions of the Polynomial</li>
+<li><strong>self.no_of_evals</strong>: (int) The minimum number of model evaluations required to estimate the coefficients of the Polynomial</li>
+<li><strong>self.row_indices</strong>: (int) The rows of A that are used in construction A_subsampled</li>
+<li><strong>self.subsampled_quadrature_points</strong>: (numpy matrix) Subsampled quadrature points</li>
+<li><strong>self.subsampled_quadrature_weights</strong>: (numpy matrix) Subsampled quadrature weights</li>
+</ul>
+</dd>
+</dl>
+<p><strong>Notes:</strong></p>
+<p>For the exact definitions of A, C, A_subsampled and C_subsampled please see: <a class="reference external" href="https://arxiv.org/abs/1601.05470">paper</a>.</p>
+<p><strong>Sample usage:</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">var1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">param_type</span><span class="o">=</span><span class="s1">&#39;Exponential&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">I</span> <span class="o">=</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Total order&#39;</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="o">&gt;&gt;</span> <span class="n">eq</span> <span class="o">=</span> <span class="n">EffectiveSubsampling</span><span class="p">([</span><span class="n">var1</span><span class="p">,</span> <span class="n">var1</span><span class="p">],</span> <span class="n">I</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="nb">print</span> <span class="n">eq</span><span class="o">.</span><span class="n">A</span>
+<span class="o">&gt;&gt;</span> <span class="nb">print</span> <span class="n">eq</span><span class="o">.</span><span class="n">dimensions</span>
+<span class="o">&gt;&gt;</span> <span class="nb">print</span> <span class="n">eq</span><span class="o">.</span><span class="n">subsampled_quadrature_points</span>
+<span class="o">&gt;&gt;</span> <span class="nb">print</span> <span class="n">eq</span><span class="o">.</span><span class="n">no_of_evals</span>
+<span class="o">&gt;&gt;</span> <span class="nb">print</span> <span class="n">esq</span><span class="o">.</span><span class="n">C_subsampled</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="effective_quadratures.effectivequads.EffectiveSubsampling.computeCoefficients">
+<code class="descname">computeCoefficients</code><span class="sig-paren">(</span><em>function_values</em>, <em>gradient_values=None</em>, <em>technique=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.effectivequads.EffectiveSubsampling.computeCoefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the coefficients for the effectively subsampled quadratures least squares problem.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>object</strong> (<a class="reference internal" href="#effective_quadratures.effectivequads.EffectiveSubsampling" title="effective_quadratures.effectivequads.EffectiveSubsampling"><em>EffectiveSubsampling</em></a>) &#8211; An instance of the EffectiveSubsampling class.</li>
+<li><strong>function_values</strong> (<em>callable</em>) &#8211; A callable function or a numpy matrix of model evaluations at the quadrature subsamples.</li>
+<li><strong>gradient_values</strong> (<em>callable</em>) &#8211; A callable function of a numpy matrix of gradient evaluations at the quadrature subsamples.</li>
+<li><strong>technique</strong> (<em>string</em>) &#8211; The least squares technique to be used; options include: &#8216;weighted&#8217; (default), &#8216;constrainedDE&#8217;, &#8216;constrainedNS&#8217;. These options only matter when using gradient evaluations. They correspond to a stacked / weighted least squares approach, a constrained approach using       direct elimination, and a constrained approach using the null space method. This function is still a work in progress! ArXiv preprint underway.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>coefficients (numpy matrix)</strong>: Coefficients of the least squares solution.</li>
+<li><strong>cond (double)</strong>: Condition number of the matrix on which least squares was performed.</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample usage:</strong> 
+For useage please see the ipython-notebooks at www.effective-quadratures.org</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.effectivequads.EffectiveSubsampling.getPolynomialApproximation">
+<code class="descname">getPolynomialApproximation</code><span class="sig-paren">(</span><em>plotting_pts</em>, <em>function_values</em>, <em>gradient_values=None</em>, <em>technique=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.effectivequads.EffectiveSubsampling.getPolynomialApproximation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the polynomial approximation of a function. This routine multiplies the coefficients of a polynomial
+expansion with its corresponding basis polynomials.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="polynomial.html#effective_quadratures.polynomial.Polynomial" title="effective_quadratures.polynomial.Polynomial"><em>Polynomial</em></a>) &#8211; An instance of the Polynomial class</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Param:</th><td class="field-body">numpy array plotting_pts: The points at which the polynomial approximation should be evaluated at. When using numpy&#8217;s meshgrid function to generate points, also use numpy&#8217;s reshape command to ensure that the points are a n-by-d numpy matrix, where n are the number of points and d corresponds to the dimensionality of the problem.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Param:</th><td class="field-body">callable function: The function that needs to be approximated (or interpolated). Call be either a callable or a numpy matrix of function values at the quadrature subsamples.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Param:</th><td class="field-body">callable gradient_values: Either a callable to the gradient of the function or a numpy matrix of gradient evaluations at the quadrature subsamples.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Param:</th><td class="field-body">technique: The technique used for computing gradient evaluations</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">polyapprox: The approximate polynomial expansion of a function</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy matrix</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.effectivequads.EffectiveSubsampling.integrate">
+<code class="descname">integrate</code><span class="sig-paren">(</span><em>function_values</em>, <em>gradient_values=None</em>, <em>technique=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.effectivequads.EffectiveSubsampling.integrate" title="Permalink to this definition">¶</a></dt>
+<dd><p>An integration utility using effective quadrature subsampling</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>object</strong> (<a class="reference internal" href="#effective_quadratures.effectivequads.EffectiveSubsampling" title="effective_quadratures.effectivequads.EffectiveSubsampling"><em>EffectiveSubsampling</em></a>) &#8211; An instance of the EffectiveSubsampling class</li>
+<li><strong>function_values</strong> (<em>callable</em>) &#8211; A callable function or a numpy matrix of model evaluations at the quadrature subsamples.</li>
+<li><strong>gradient_values</strong> (<em>callable</em>) &#8211; A callable function of a numpy matrix of gradient evaluations at the quadrature subsamples.</li>
+<li><strong>technique</strong> (<em>string</em>) &#8211; The least squares technique to be used; options include: &#8216;weighted&#8217; (default), &#8216;constrainedDE&#8217;, &#8216;constrainedNS&#8217;. These options only matter when using gradient evaluations. They correspond to a stacked / weighted least squares approach, a constrained approach using       direct elimination, and a constrained approach using the null space method. This function is still a work in progress! ArXiv preprint underway.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>coefficients (numpy matrix)</strong>: Coefficients of the least squares solution.</li>
+<li><strong>cond (double)</strong>: Condition number of the matrix on which least squares was performed.</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.effectivequads.EffectiveSubsampling.least_no_of_subsamples_reqd">
+<code class="descname">least_no_of_subsamples_reqd</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.effectivequads.EffectiveSubsampling.least_no_of_subsamples_reqd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the least number of subsamples required when using effectively subsampled quadratures.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>object</strong> (<a class="reference internal" href="#effective_quadratures.effectivequads.EffectiveSubsampling" title="effective_quadratures.effectivequads.EffectiveSubsampling"><em>EffectiveSubsampling</em></a>) &#8211; An instance of the EffectiveSubsampling class</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">points, The least number of subsamples required. In the absence of gradients, this function simply returns the number of basis terms. In the presence of gradients this function uses an iterative rank-determination algorithm to compute the number of subsamples required.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.effectivequads.EffectiveSubsampling.prune">
+<code class="descname">prune</code><span class="sig-paren">(</span><em>number_of_columns_to_delete</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.effectivequads.EffectiveSubsampling.prune" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prunes the number of columns based on the ones with the highest total orders.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>object</strong> (<a class="reference internal" href="#effective_quadratures.effectivequads.EffectiveSubsampling" title="effective_quadratures.effectivequads.EffectiveSubsampling"><em>EffectiveSubsampling</em></a>) &#8211; An instance of the EffectiveSubsampling class.</li>
+<li><strong>number_of_columns_to_delete</strong> (<em>integer</em>) &#8211; The number of columns that need to be deleted, which is obviously less than the total number of columns.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.effectivequads.EffectiveSubsampling.set_no_of_evals">
+<code class="descname">set_no_of_evals</code><span class="sig-paren">(</span><em>no_of_evals</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.effectivequads.EffectiveSubsampling.set_no_of_evals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the number of model evaluations the user wishes to afford for generating the polynomial.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>object</strong> (<a class="reference internal" href="#effective_quadratures.effectivequads.EffectiveSubsampling" title="effective_quadratures.effectivequads.EffectiveSubsampling"><em>EffectiveSubsampling</em></a>) &#8211; An instance of the EffectiveSubsampling class.</li>
+<li><strong>no_of_evals</strong> (<em>integer</em>) &#8211; The number of subsamples the user requires</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample usage:</strong> 
+For useage please see the ipython-notebooks at www.effective-quadratures.org</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="effective_quadratures.effectivequads.EffectiveSubsampling.stats">
+<code class="descname">stats</code><span class="sig-paren">(</span><em>function_values</em>, <em>gradient_values=None</em>, <em>technique=None</em><span class="sig-paren">)</span><a class="headerlink" href="#effective_quadratures.effectivequads.EffectiveSubsampling.stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns statistics based on the coefficients computed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>object</strong> (<a class="reference internal" href="#effective_quadratures.effectivequads.EffectiveSubsampling" title="effective_quadratures.effectivequads.EffectiveSubsampling"><em>EffectiveSubsampling</em></a>) &#8211; An instance of the EffectiveSubsampling class.</li>
+<li><strong>function_values</strong> (<em>callable</em>) &#8211; A callable function or a numpy matrix of model evaluations at the quadrature subsamples.</li>
+<li><strong>gradient_values</strong> (<em>callable</em>) &#8211; A callable function of a numpy matrix of gradient evaluations at the quadrature subsamples.</li>
+<li><strong>technique</strong> (<em>string</em>) &#8211; The least squares technique to be used; options include: &#8216;weighted&#8217; (default), &#8216;constrainedDE&#8217;, &#8216;constrainedNS&#8217;. These options only matter when using gradient evaluations. They correspond to a stacked / weighted least squares approach, a constrained approach using       direct elimination, and a constrained approach using the null space method.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>stats_obj (Statistics)</strong>: A Statistics object</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample usage:</strong> 
+For please see the Statistics page.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2016-2017, Pranay Seshadri.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,27 +1,24 @@
 """Computing Statistics from Polynomial Expansions"""
 import numpy as np
 from .plotting import barplot, triplebarplot, piechart, scatterplot2
-from .polyint import Polyint
-#from .polyreg import Polyreg
-from basis import Basis
+from .basis import Basis
 from itertools import *
 class Statistics(object):
     """
     :param numpy-matrix coefficients: Coefficients from a polynomial expansion. Can be computed using any technique.
     :param Basis basis: Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.
-
     Attributes:
         * **self.mean**: (double) Mean of the polynomial expansion.
         * **self.variance**: (double) Variance of the polynomial expansion.
         * **self.sobol**:(dict) Sobol' indices of order up to number of dimensions.
-
     **Notes:** 
     In a future release we will be incorporating second order Sobol indices, skewness and kurtosis based indices. Stay tuned!
     """
 
     # constructor
     def __init__(self, coefficients, basis, parameters, quadrature_points=None, quadrature_weights=None, polynomial_evals=None):
-        self.coefficients = coefficients
+        mm = len(coefficients)
+        self.coefficients = np.reshape(coefficients, (mm, 1))
         self.basis = basis
         self.parameters = parameters #should be a list containing instances of Parameter
         
@@ -31,21 +28,15 @@ class Statistics(object):
         
         #Prepare evals of polynomials for skewness and kurtosis
         if (quadrature_points is None) and (quadrature_weights is None) and (polynomial_evals is None):
-            # now stats embedded in polyreg no need for this.
-#            polyreg = Polyreg(parameters, basis)
-#            quad_pts, quad_wts = polyreg.getQuadratureRule()
-#            evals,deriv = polyreg.getPolynomial_t(quad_pts)
-#            self.weighted_evals = evals * coefficients
-#            self.quad_wts = quad_wts
             pass
         else:
-#            print basis.elements
-#            print quadrature_points
-#            print polynomial_evals
-            self.weighted_evals = polynomial_evals * coefficients
-#            print self.weighted_evals
+            nn = len(quadrature_weights)
+            weighted_evals = np.zeros((mm, nn))
+            for i in range(0, mm):
+                for j in range(0, nn):
+                    weighted_evals[i, j] = polynomial_evals[i, j] * coefficients[i]
+            self.weighted_evals = weighted_evals
             self.quad_wts = quadrature_weights
-#            print sum(self.quad_wts)
         self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
         self.kurtosis = getKurtosis(self.quad_wts, self.weighted_evals, self.basis, self.variance)
         
@@ -53,10 +44,8 @@ class Statistics(object):
     def plot(self, filename=None):
         """
         Produces a bar graph of the first order Sobol indices
-
         :param Statistics object: An instance of the Statistics class.
         :param string filename: A file name in case the user wishes to save the bar graph. The default output is an eps file.
-
         **Sample usage:** 
         For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
@@ -67,11 +56,9 @@ class Statistics(object):
     def getSobol(self, order = 1):
         """
         Get Sobol' indices at specified order. 
-
         :param order int: The order at which Sobol' indices are computed. By default, computes first order Sobol' indices.
         :return: indices, Dictionary where keys specify non-zero dimensions and values represent Sobol' indices.
         :rtype: dict
-
         **Sample usage:**
         stats = Statistics(coeffcients, basis)
         fosi = stats.getSobol(1)        
@@ -83,11 +70,9 @@ class Statistics(object):
     def getCondSkewness(self, order = 1):
         """
         Get conditional skewness indices at specified order. 
-
         :param order int: The order at which conditional skewness indices are computed. By default, computes first order conditional skewness.
         :return: indices, Dictionary where keys specify non-zero dimensions and values represent conditional skewness indices.
         :rtype: dict
-
         **Sample usage:**
         stats = Statistics(coeffcients, basis)
         first_order_skewness = stats.getCondSkewness(1)        
@@ -97,11 +82,9 @@ class Statistics(object):
     def getCondKurtosis(self, order = 1):
         """
         Get conditional kurtosis indices at specified order. 
-
         :param order int: The order at which conditional kurtosis indices are computed. By default, computes first order conditional kurtosis.
         :return: indices, Dictionary where keys specify non-zero dimensions and values represent conditional kurtosis indices.
         :rtype: dict
-
         **Sample usage:**
         stats = Statistics(coeffcients, basis)
         first_order_kurtosis = stats.getCondKurtosis(1)        
@@ -213,25 +196,20 @@ class Statistics(object):
         
 # Private functions!
 def getMean(coefficients):
-    mean = coefficients[0,0]
-    return mean
+    return float(coefficients[0])
         
 def getVariance(coefficients):
-    m, n = coefficients.shape
-    if m > n:
-        coefficients = coefficients.T
-    variance = np.sum(coefficients[0][1:m]**2)
+    result = 0.
+    for i in range(1, len(coefficients)):
+        variance = result + float(coefficients[i]**2)
+        result = variance
     return variance
 
 
 
 # Function that computes the Sobol' indices of all orders up to dimension of i/p
 def getAllSobol(coefficients, basis):
-    m, n = coefficients.shape
     variance = getVariance(coefficients)
-    if m > n:
-        coefficients = coefficients.T
-    
     if not(isinstance(basis, np.ndarray)):
         basis = basis.elements
     m, dimensions = basis.shape
@@ -239,11 +217,6 @@ def getAllSobol(coefficients, basis):
         return {0:1.0}
     else:
         basis_entries = m
-
-        #Build dict to contain the Sobol' indices
-        #Keys contain the non-zero indices
-        #Values contain the Sobol' indices
-                
         combo_index = {}
         for order in range(1,dimensions+1): #loop over order            
             for i in combinations(range(dimensions),order):
@@ -255,7 +228,7 @@ def getAllSobol(coefficients, basis):
                 non_zero_entries = np.nonzero(row)[0]
                 non_zero_entries.sort()    #just in case
                 if len(non_zero_entries) == order: #neglect entries that should actually be zero (what constitutes as zero?)
-                    combo_index[tuple(non_zero_entries)] = combo_index[tuple(non_zero_entries)] + coefficients[0][i]**2 / variance
+                    combo_index[tuple(non_zero_entries)] = combo_index[tuple(non_zero_entries)] + coefficients[i]**2 / variance
         
         check_sum = sum(combo_index.values())
         if (abs(check_sum - 1.0) >= 1e-2):
@@ -268,7 +241,10 @@ def getSkewness(quad_wts, weighted_evals, basis, variance):
     total_evals = np.sum(weighted_evals[1:],0)
 #    print weighted_evals[0]
     third_total_evals = total_evals**3
-    
+    #print weighted_evals.shape
+    #print third_total_evals.shape 
+    #print quad_wts.shape 
+
     return np.dot(third_total_evals,quad_wts)/(variance**1.5)
 
 # Return global kurtosis
@@ -543,4 +519,3 @@ def delta_pqr(rows):
             else:
                 return True
     return False
-

@@ -29,9 +29,6 @@
     <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
     <link rel="top" title="  1.0 documentation" href="index.html" />
-    <link rel="up" title="Code Documentation" href="Code.html" />
-    <link rel="next" title="Effective-Subsampling" href="effectivequads.html" />
-    <link rel="prev" title="QR Factorization" href="qr.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
 <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
@@ -66,16 +63,15 @@
      href="index.html">Docs <b class="caret"></b></a>
   <ul class="dropdown-menu globaltoc"
       role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="Code.html">Code Documentation</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="polynomial.html">Polynomial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="indexset.html">IndexSet</a></li>
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="Code.html">Code Documentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="qr.html">QR Factorization</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Statistics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="effectivequads.html">Effective-Subsampling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="integrals.html">Integrals</a></li>
-<li class="toctree-l2"><a class="reference internal" href="analyticaldistributions.html">Analytical Distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polyint.html">Polynomials via Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polylsq.html">Polynomials via Least Squares</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polyreg.html">Polynomials via Regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="indexset.html">Index Sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qr.html">QR Factorization &amp; Least Squares Routines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stats.html">Statistics</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Contact.html">Contact</a></li>
@@ -102,14 +98,6 @@
             
               
                 
-  <li>
-    <a href="qr.html" title="Previous Chapter: QR Factorization"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; QR Factorization</span>
-    </a>
-  </li>
-  <li>
-    <a href="effectivequads.html" title="Next Chapter: Effective-Subsampling"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Effective-Sub... &raquo;</span>
-    </a>
-  </li>
               
             
             
@@ -153,7 +141,7 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>coefficients</strong> (<em>numpy-matrix</em>) &#8211; Coefficients from a polynomial expansion. Can be computed using any technique.</li>
-<li><strong>index_set</strong> (<a class="reference internal" href="indexset.html#effective_quadratures.indexset.IndexSet" title="effective_quadratures.indexset.IndexSet"><em>IndexSet</em></a>) &#8211; Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.</li>
+<li><strong>index_set</strong> (<em>IndexSet</em>) &#8211; Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.</li>
 </ul>
 </td>
 </tr>
@@ -179,7 +167,7 @@ In a future release we will be incorporating second order Sobol indices, skewnes
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>object</strong> (<a class="reference internal" href="#effective_quadratures.computestats.Statistics" title="effective_quadratures.computestats.Statistics"><em>Statistics</em></a>) &#8211; An instance of the Statistics class.</li>
+<li><strong>object</strong> (<a class="reference internal" href="stats.html#equadratures.stats.Statistics" title="equadratures.stats.Statistics"><em>Statistics</em></a>) &#8211; An instance of the Statistics class.</li>
 <li><strong>filename</strong> (<em>string</em>) &#8211; A file name in case the user wishes to save the bar graph. The default output is an eps file.</li>
 </ul>
 </td>

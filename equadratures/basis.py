@@ -1,8 +1,11 @@
+"Rountines for defining the index set associated with multivariate polynomials."
 import numpy as np
 import math as mt
 
 class Basis(object):
     """
+    Basis class constructor.
+
     :param string basis_type: The type of index set to be used. Options include:
         `Total order`, `Tensor grid`, `Sparse grid`, `Hyperbolic basis` and `Euclidean degree`. All basis are isotropic. If you require anisotropic basis do email us.
     :param ndarray orders: List of integers corresponding to the highest polynomial order in each direction.
@@ -19,14 +22,6 @@ class Basis(object):
 
     For details on the Euclidean degree see: `Trefethen 2016 <https://arxiv.org/pdf/1608.02216v1.pdf>`_.
     Note that all index sets are sorted in the constructor automatically, by their total orders. We will be adding non-isotropic index sets in a future release. Stay tuned!
-
-    **Sample usage**
-    ::
-
-        >> Basis('Tensor grid', [3,3,3])
-        >> Basis('Sparse grid', level=3, growth_rule=5, dimension=3)
-        >> Basis('Total order' [3, 3, 3])
-        >> Basis('Hyperbolic basis', [3,3], q=0.75)
 
     """
 
@@ -60,21 +55,28 @@ class Basis(object):
             self.setOrders(orders)
 
     def setOrders(self, orders):
+        """
+        Sets the highest order in each direction of the basis.
+
+        :param Basis object: An instance of the Basis class.
+        :param list orders: The highest polynomial order along each dimension.
+
+        """
         self.orders = []
         for i in range(0, len(orders)):
             self.orders.append(orders[i])
         self.dimension = len(self.orders)
         name = self.basis_type
-        if name == "Total order":
+        if name.lower() == "total order":
             basis = total_order_basis(self.orders)
-        elif name == "Sparse grid":
+        elif name.lower() == "sparse grid":
             sparse_index, a, SG_set = sparse_grid_basis(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
             basis = SG_set
-        elif name == "Tensor grid":
+        elif (name.lower() == "tensor grid") or (name.lower() == "tensor") :
             basis = tensor_grid_basis(self.orders)
-        elif name == "Hyperbolic basis":
+        elif name.lower() == "hyperbolic basis":
             basis = hyperbolic_basis(self.orders, self.q)
-        elif name == "Euclidean degree":
+        elif name.lower() == "euclidean degree":
             basis = euclidean_degree_basis(self.orders)
         else:
             raise(ValueError, 'Basis __init__: invalid value for basis_type!')
@@ -90,16 +92,14 @@ class Basis(object):
             self.sort()
         elif name == "Total order":
             self.sort()
-        
+
     def prune(self, number_of_elements_to_delete):
         """
-        Prunes down the number of elements in an index set
+        Prunes down the number of elements in an index set.
 
         :param Basis object: An instance of the Basis class.
-        :param integer number_of_elements_to_delete: The number of multi-indices the user would like to delete
+        :param integer number_of_elements_to_delete: The number of multi-indices the user would like to delete.
 
-        **Sample usage:**
-        For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
         index_entries = self.elements
         total_elements = self.cardinality
@@ -114,9 +114,6 @@ class Basis(object):
         Routine that sorts a multi-index in ascending order based on the total orders. The constructor by default calls this function.
 
         :param Basis object: An instance of the Basis class.
-
-        **Sample usage:**
-        For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
         number_of_elements = len(self.elements)
         combined_indices_for_sorting = np.ones((number_of_elements, 1))
@@ -139,13 +136,9 @@ class Basis(object):
 
     def getBasis(self):
         """
-        Prunes down the number of elements in an index set
+        Gets the index set elements for the Basis object.
 
         :param Basis object: An instance of the Basis class.
-        :param integer number_of_elements_to_delete: The number of multi-indices the user would like to delete
-
-        **Sample usage:**
-        For useage please see the ipython-notebooks at www.effective-quadratures.org
         """
         name = self.basis_type
         if name == "Total order":
@@ -162,7 +155,6 @@ class Basis(object):
         else:
             raise(ValueError, 'Basis __init__: invalid value for basis_type!')
             basis = [0]
-
         return basis
 
 
@@ -263,42 +255,19 @@ def total_order_basis(orders):
         total_order = np.vstack((total_order, R))
     return total_order
 
-"""
-def total_order_basis(orders):
-
-    # Initialize a few parameters for the setup
-    dimensions = len(orders)
-    n_bar = tensor_grid_basis(orders)
-    n_new = [] # list; dynamic array
-
-    # Now cycle through each entry, and check the sum
-    summation = np.sum(n_bar, axis=1)
-    for i in range(0, len(summation)):
-        if(summation[i]  <= np.max(n_bar) ):
-            value = n_bar[i,:]
-            n_new.append(value)
-
-    # But I want to re-cast this list as an array
-    total_index = np.ones((len(n_new), dimensions))
-    for i in range(0, len(n_new)):
-        for j in range(0, dimensions):
-            r = n_new[i]
-            total_index[i,j] = r[j]
-
-    return total_index
-"""
 def sparse_grid_basis(level, growth_rule, dimensions):
 
     # Initialize a few parameters for the setup
-    lhs = int(level) + 1
-    rhs = int(level) + dimensions
+    level_new = level - 1
+    lhs = int(level_new) + 1
+    rhs = int(level_new) + dimensions
 
     # Set up a global tensor grid
     tensor_elements = np.ones((dimensions))
     for i in range(0, dimensions):
         tensor_elements[i] = int(rhs)
 
-    n_bar = tensor_grid_basis(tensor_elements) + 1
+    n_bar = tensor_grid_basis(tensor_elements) #+ 1
 
     # Check constraints
     n_new = [] # list; a dynamic array
@@ -308,13 +277,11 @@ def sparse_grid_basis(level, growth_rule, dimensions):
             value = n_bar[i,:]
             n_new.append(value)
 
-    #print 'n_new'
-    #print n_new
     # Sparse grid coefficients
     summation2 = np.sum(n_new, axis=1)
     a = [] # sparse grid coefficients
     for i in range(0, len(summation2)):
-        k = int(level + dimensions - summation2[i])
+        k = int(level_new + dimensions - summation2[i])
         n = int(dimensions -1)
         value = (-1)**k  * (mt.factorial(n) / (1.0 * mt.factorial(n - k) * mt.factorial(k)) )
         a.append(value)
@@ -370,7 +337,6 @@ def tensor_grid_basis(orders):
 
     # Ignore the first column of pp
     basis = I[:,1::]
-
     return basis
 
 def column(matrix, i):

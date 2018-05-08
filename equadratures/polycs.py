@@ -12,23 +12,23 @@ import scipy
 class Polycs(Poly):
     """
     This class defines a Polycs (polynomial via compressive sensing) object
-    :param training_x: A numpy 
+    :param training_inputs: A numpy 
     :param IndexSet basis: An instance of the IndexSet class, in case the user wants to overwrite the indices that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter corresponds to a tensor grid index set and is the default option if no basis parameter input is given.
     :param parameters: List of instances of Parameters class.
     :param training_y: Column vector (np array) of regression targets corresponding to each row of training_x. Either this or fun should be specified, but not both.
-    :param fun: Function to evaluate training_x on to obtain regression targets automatically. Either this or fun should be specified, but not both.
+    :param fun: Function to evaluate training_inputs on to obtain regression targets automatically. Either this or fun should be specified, but not both.
     
     """
     # Constructor
-    def __init__(self, parameters, basis, training_x=None, sampling=None, no_of_points=None, fun=None, training_y=None):
+    def __init__(self, parameters, basis, training_inputs=None, sampling=None, no_of_points=None, fun=None, training_outputs=None, quadrature_rule = None):
         super(Polycs, self).__init__(parameters, basis)
-        if not(training_x is None):
-            self.x = training_x
+        if not(training_inputs is None):
+            self.x = training_inputs
             assert self.x.shape[1] == len(parameters) # Check that x is in the correct shape
-            w = np.eye(self.x.shape[0])
+            self.w = np.eye(self.x.shape[0])
         else:
             self.x, self.w = self.samplingMethod(self.parameters, self.basis, sampling, no_of_points)
-        if not((training_y is None) ^ (fun is None)):
+        if not((training_outputs is None) ^ (fun is None)):
             raise ValueError("Specify only one of fun or training_y.")
         if not(fun is None):
             try:
@@ -36,16 +36,18 @@ class Polycs(Poly):
             except:
                 raise ValueError("Fun must be callable.")
         else:
-            self.y = np.dot(self.w, training_y)
+            self.y = np.dot(self.w, training_outputs)
         if self.dimensions != self.basis.elements.shape[1]:
             raise(ValueError, 'Polycs:__init__:: The number of parameters and the number of dimensions in the index set must be the same.')
         self.setDesignMatrix()
         self.cond = np.linalg.cond(self.A)
         self.y = np.reshape(self.y, (len(self.y), 1)) 
         self.computeCoefficients()
+        self.quadrature_rule = quadrature_rule
+        self.getQuadraturePointsWeights()
 
     def setDesignMatrix(self):
-        self.A = self.getPolynomial(self.scaleInputs(self.x)).T
+        self.A = self.getPolynomial(self.x).T
         self.A = np.dot(self.w, self.A)
         super(Polycs, self).__setDesignMatrix__(self.A)
 
@@ -137,6 +139,10 @@ class Polycs(Poly):
         x = p.copy()
         w = v.copy()
         return x, w
+    def getQuadraturePointsWeights(self):
+        p, w = self.getQuadratureRule(options = self.quadrature_rule, number_of_points = 2000)
+        super(Polycs, self).__setQuadrature__(p,w)
+
 
 
 # Compute coherence of matrix A

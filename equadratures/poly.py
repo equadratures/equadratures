@@ -202,7 +202,7 @@ class Poly(object):
         """
         evals = self.getPolynomial(self.quadraturePoints)
         return Statistics(self.coefficients, self.basis, self.parameters, self.quadraturePoints, self.quadratureWeights, evals)
-    def getQuadratureRule(self, options=None):
+    def getQuadratureRule(self, options=None, number_of_points = None):
         """
         Generates quadrature points and weights.
 
@@ -210,6 +210,8 @@ class Poly(object):
             An instance of the Poly class.
         :param string options:
             Two options exist for this string. The user can use 'qmc' for a distribution specific Monte Carlo (QMC) or they can use 'tensor grid' for standard tensor product grid. Typically, if the number of dimensions is less than 8, the tensor grid is the default option selected.
+        :param int number_of_points:
+            If QMC is chosen, specifies the number of quadrature points in each direction. Otherwise, this is ignored.
         :return:
             A numpy array of quadrature points.
         :return:
@@ -221,11 +223,14 @@ class Poly(object):
             elif self.dimensions < 8 :
                 options = 'tensor grid'
         if options.lower() == 'qmc':
-            default_number_of_points = 20000
+            if number_of_points is None:
+                default_number_of_points = 20000
+            else:
+                default_number_of_points = number_of_points
             p = np.zeros((default_number_of_points, self.dimensions))
             w = 1.0/float(default_number_of_points) * np.ones((default_number_of_points))
             for i in range(0, self.dimensions):
-                p[:,i] = self.parameters[i].getSamples(m=default_number_of_points).reshape((default_number_of_points,))
+                p[:,i] = np.array(self.parameters[i].getSamples(m=default_number_of_points)).reshape((default_number_of_points,))
             return p, w
 
         if options.lower() == 'tensor grid':

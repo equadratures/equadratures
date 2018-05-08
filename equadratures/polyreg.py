@@ -23,7 +23,7 @@ class Polyreg(Poly):
         Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.
     """
     # Constructor
-    def __init__(self, parameters, basis, training_inputs, fun=None, training_outputs=None):
+    def __init__(self, parameters, basis, training_inputs, fun=None, training_outputs=None, quadrature_rule = None):
         super(Polyreg, self).__init__(parameters, basis)
         if not(training_inputs is None):
             self.x = training_inputs
@@ -44,6 +44,8 @@ class Polyreg(Poly):
         self.cond = np.linalg.cond(self.A)
         self.y = np.reshape(self.y, (len(self.y), 1))
         self.computeCoefficients()
+        self.quadrature_rule = quadrature_rule
+        self.getQuadraturePointsWeights()
 
     # Solve for coefficients using ordinary least squares
     def computeCoefficients(self):
@@ -53,7 +55,7 @@ class Polyreg(Poly):
         :param Polyreg self:
             An instance of the Polyreg class.
         """
-        alpha = np.linalg.lstsq(self.A, self.y, rcond=None) # Opted for numpy's standard version because of speed!
+        alpha = np.linalg.lstsq(self.A, self.y) # Opted for numpy's standard version because of speed!
         self.coefficients = alpha[0]
         super(Polyreg, self).__setCoefficients__(self.coefficients)
 
@@ -85,6 +87,10 @@ class Polyreg(Poly):
         t_stat = get_t_value(self.coefficients, self.A, self.y)
         r_sq = get_R_squared(self.coefficients, self.A, self.y)
         return t_stat, r_sq
+    
+    def getQuadraturePointsWeights(self):
+        p, w = self.getQuadratureRule(options = self.quadrature_rule)
+        super(Polyreg, self).__setQuadrature__(p,w)
 
 @staticmethod
 def get_F_stat(coefficients_0, A_0, coefficients_1, A_1, y):

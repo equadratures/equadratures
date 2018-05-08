@@ -204,7 +204,7 @@ class Polylsq(Poly):
             else:
                 y = func
             self.bz = np.dot( self.Wz ,  np.reshape(y, (p,1)) )
-            alpha = np.linalg.lstsq(self.Az, self.bz, rcond=None) 
+            alpha = np.linalg.lstsq(self.Az, self.bz) 
             self.coefficients = alpha[0]
         # If there are gradients then use a constrained least squares approach!
         elif self.gradients is True and gradfunc is not None:

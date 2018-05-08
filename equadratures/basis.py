@@ -24,7 +24,6 @@ class Basis(object):
     Note that all index sets are sorted in the constructor automatically, by their total orders. We will be adding non-isotropic index sets in a future release. Stay tuned!
 
     """
-
     def __init__(self, basis_type, orders=None, level=None, growth_rule=None, q=None):
 
         # Required

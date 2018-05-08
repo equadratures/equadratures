@@ -508,4 +508,3 @@ def piechart(labels, sizes, title):
     plt.legend(patches, labels, loc='best')
     plt.title(title)
     plt.show()
-

@@ -32,9 +32,10 @@ class Statistics(object):
         else:
             nn = len(quadrature_weights)
             weighted_evals = np.zeros((mm, nn))
-            for i in range(0, mm):
-                for j in range(0, nn):
-                    weighted_evals[i, j] = polynomial_evals[i, j] * coefficients[i]
+#            for i in range(0, mm):
+#                for j in range(0, nn):
+#                    weighted_evals[i, j] = polynomial_evals[i, j] * coefficients[i]
+            weighted_evals = polynomial_evals * coefficients
             self.weighted_evals = weighted_evals
             self.quad_wts = quadrature_weights
         self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
@@ -228,7 +229,7 @@ def getAllSobol(coefficients, basis):
                 non_zero_entries = np.nonzero(row)[0]
                 non_zero_entries.sort()    #just in case
                 if len(non_zero_entries) == order: #neglect entries that should actually be zero (what constitutes as zero?)
-                    combo_index[tuple(non_zero_entries)] = combo_index[tuple(non_zero_entries)] + coefficients[i]**2 / variance
+                    combo_index[tuple(non_zero_entries)] = float(combo_index[tuple(non_zero_entries)] + coefficients[i]**2 / variance)
         
         check_sum = sum(combo_index.values())
         if (abs(check_sum - 1.0) >= 1e-2):

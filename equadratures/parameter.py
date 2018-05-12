@@ -124,25 +124,25 @@ class Parameter(object):
             A 1-by-N matrix that contains the values of the x-axis along the support of the parameter.
 
         """
-        if self.param_type is "Gaussian":
+        if self.param_type.lower() == "gaussian":
             x, y = analytical.PDF_GaussianDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
-        elif self.param_type is "Beta":
+        elif self.param_type.lower() ==  "beta":
             x, y = analytical.PDF_BetaDistribution(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
-        elif self.param_type is "Gamma":
+        elif self.param_type.lower() ==  "gamma":
             x, y = analytical.PDF_GammaDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
-        elif self.param_type is "Weibull":
+        elif self.param_type.lower() ==  "weibull":
             x, y = analytical.PDF_WeibullDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
-        elif self.param_type is "Cauchy":
+        elif self.param_type.lower() == "cauchy":
             x, y = analytical.PDF_CauchyDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
-        elif self.param_type is "Uniform":
+        elif self.param_type.lower() == "uniform":
             x, y = analytical.PDF_UniformDistribution(N, self.lower, self.upper)
-        elif self.param_type is "TruncatedGaussian":
+        elif self.param_type.lower() == "truncatedGaussian":
             x, y = analytical.PDF_TruncatedGaussianDistribution(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
-        elif self.param_type is "Exponential":
+        elif self.param_type.lower() ==  "exponential":
             x, y = analytical.PDF_ExponentialDistribution(N, self.shape_parameter_A)
-        elif self.param_type is "Custom":
+        elif self.param_type.lower() ==  "custom":
             x, y = analytical.PDF_CustomDistribution(N, self.data)
-        elif self.param_type is "Chebyshev":
+        elif self.param_type.lower() ==  "chebyshev":
             x, y = analytical.PDF_ChebyshevDistribution(N, self.lower, self.upper)
         else:
             raise(ValueError, 'parameter getPDF(): invalid parameter type!')
@@ -179,23 +179,23 @@ class Parameter(object):
             A 1-by-N matrix that contains the values of the PDF of the parameter.
 
         """
-        if self.param_type is "Gaussian":
+        if self.param_type.lower() ==  "gaussian":
             x, y = analytical.CDF_GaussianDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
-        elif self.param_type is "Beta":
+        elif self.param_type.lower() == "beta":
             x, y = analytical.CDF_BetaDistribution(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
-        elif self.param_type is "Gamma":
+        elif self.param_type.lower() == "gamma":
             x, y = analytical.CDF_GammaDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
-        elif self.param_type is "Weibull":
+        elif self.param_type.lower() ==  "weibull":
             x, y = analytical.CDF_WeibullDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
-        elif self.param_type is "Cauchy":
+        elif self.param_type.lower() == "cauchy":
             x, y = analytical.CDF_CauchyDistribution(N, self.shape_parameter_A, self.shape_parameter_B)
-        elif self.param_type is "Uniform":
+        elif self.param_type.lower() ==  "uniform":
             x, y = analytical.CDF_UniformDistribution(N, self.lower, self.upper)
-        elif self.param_type is "TruncatedGaussian":
+        elif self.param_type.lower() == "truncatedGaussian":
             x, y = analytical.CDF_TruncatedGaussianDistribution(N, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
-        elif self.param_type is "Exponential":
+        elif self.param_type.lower() ==  "exponential":
             x, y = analytical.CDF_ExponentialDistribution(N, self.shape_parameter_A)
-        elif self.param_type is "Chebyshev":
+        elif self.param_type.lower() ==  "chebyshev":
             x, y = analytical.CDF_ChebyshevDistribution(N, self.lower, self.upper)
         else:
             raise(ValueError, 'parameter getCDF(): invalid parameter type!')
@@ -212,25 +212,25 @@ class Parameter(object):
             A 1-by-N array where each entry is the inverse CDF of input x.
 
         """
-        if self.param_type is "Gaussian":
+        if self.param_type.lower() ==  "gaussian":
             y = analytical.iCDF_Gaussian(x, self.shape_parameter_A, self.shape_parameter_B)
-        elif self.param_type is "Beta":
+        elif self.param_type.lower() ==  "beta":
             y = analytical.iCDF_BetaDistribution(x, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
-        elif self.param_type is "Gamma":
+        elif self.param_type.lower() ==  "gamma":
             y = analytical.iCDF_GammaDistribution(x, self.shape_parameter_A, self.shape_parameter_B)
-        elif self.param_type is "Weibull":
+        elif self.param_type.lower() ==  "weibull":
             y = analytical.iCDF_WeibullDistribution(x, self.shape_parameter_A, self.shape_parameter_B)
-        elif self.param_type is "Cauchy":
+        elif self.param_type.lower() ==  "cauchy":
             y = analytical.iCDF_CauchyDistribution(x, self.shape_parameter_A, self.shape_parameter_B)
-        elif self.param_type is "Uniform":
+        elif self.param_type.lower() ==  "uniform":
             y = (x - .5) * (self.upper - self.lower) + (self.upper + self.lower)/2.0
-        elif self.param_type is "TruncatedGaussian":
+        elif self.param_type.lower() ==  "truncatedGaussian":
             y = analytical.iCDF_TruncatedGaussianDistribution(x, self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
-        elif self.param_type is "Exponential":
+        elif self.param_type.lower() == "exponential":
             y = analytical.iCDF_ExponentialDistribution(x, self.shape_parameter_A)
-        elif self.param_type is "Custom":
+        elif self.param_type.lower() == "custom":
             y = analytical.iCDF_CustomDistribution(x, self.data)
-        elif self.param_type is "Chebyshev":
+        elif self.param_type.lower() ==  "chebyshev":
             y = analytical.iCDF_ChebyshevDistribution(x, self.lower, self.upper)
         else:
             raise(ValueError, 'parameter getiCDF(): invalid parameter type!')

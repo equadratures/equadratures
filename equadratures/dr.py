@@ -48,7 +48,7 @@ def computeActiveSubspaces(poly, samples=None):
     eigVecs = W[:, idx]
     return eigs, eigVecs
 
-def linearModel(Xtrain, ytrain,bounds):
+def linearModel(Xtrain, ytrain):
     """
     Computes the coefficients for a linear model between inputs and outputs
 
@@ -62,9 +62,9 @@ def linearModel(Xtrain, ytrain,bounds):
     N,D=Xtrain.shape
     A=np.concatenate((Xtrain,np.ones((N,1))),axis=1)
     x=np.linalg.lstsq(A,ytrain)[0]
-    u=x[0:D-1]
-    c=x[D]
-    return u,c
+    u=x[0:D]
+    w = u * 1.0/np.linalg.norm(u, 2)
+    return w
 
 def standard(X,bounds):
     """

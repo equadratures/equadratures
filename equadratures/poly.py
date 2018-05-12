@@ -32,6 +32,11 @@ class Poly(object):
 
         """
         self.coefficients = coefficients
+    def __setBasis__(self, basisNew):
+        """
+        Sets the basis
+        """
+        self.basis = basisNew 
     def __setQuadrature__(self, quadraturePoints, quadratureWeights):
         """
         Sets the quadrature points and weights
@@ -189,7 +194,7 @@ class Poly(object):
 
         # Return tensor grid quad-points and weights
         return points, weights
-    def getStatistics(self, quadratureRule=None):
+    def getStatistics(self):
         """
         Creates an instance of the Statistics class.
 

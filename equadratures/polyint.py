@@ -72,6 +72,8 @@ class Polyint(Poly):
         self.quadraturePoints = evaled_pts
         self.quadratureWeights = weights
         super(Polyint, self).__setCoefficients__(self.coefficients)
+        super(Polyint, self).__setQuadrature__(self.quadraturePoints, self.quadratureWeights)
+        super(Polyint, self).__setBasis__(self.basis)
 
 
 #--------------------------------------------------------------------------------------------------------------

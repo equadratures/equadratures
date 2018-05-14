@@ -11,7 +11,7 @@
 figs/
 
 # private data
-data/
+###data/
 
 # test data
 

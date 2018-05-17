@@ -16,7 +16,7 @@ class Statistics(object):
     """
 
     # constructor
-    def __init__(self, coefficients, basis, parameters, quadrature_points=None, quadrature_weights=None, polynomial_evals=None):
+    def __init__(self, coefficients, basis, parameters,  quadrature_points=None, quadrature_weights=None, polynomial_evals=None,max_sobol_order = None,):
         mm = len(coefficients)
         self.coefficients = np.reshape(coefficients, (mm, 1))
         self.basis = basis
@@ -24,7 +24,7 @@ class Statistics(object):
         
         self.mean = getMean(self.coefficients)
         self.variance = getVariance(self.coefficients)
-        self.sobol = getAllSobol(self.coefficients, self.basis)
+        self.sobol = getAllSobol(self.coefficients, self.basis, max_sobol_order)
         
         #Prepare evals of polynomials for skewness and kurtosis
         if (quadrature_points is None) and (quadrature_weights is None) and (polynomial_evals is None):
@@ -38,6 +38,7 @@ class Statistics(object):
             weighted_evals = polynomial_evals * coefficients
             self.weighted_evals = weighted_evals
             self.quad_wts = quadrature_weights
+        print "ok"
         self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
         self.kurtosis = getKurtosis(self.quad_wts, self.weighted_evals, self.basis, self.variance)
         
@@ -209,7 +210,7 @@ def getVariance(coefficients):
 
 
 # Function that computes the Sobol' indices of all orders up to dimension of i/p
-def getAllSobol(coefficients, basis):
+def getAllSobol(coefficients, basis, max_order):
     variance = getVariance(coefficients)
     if not(isinstance(basis, np.ndarray)):
         basis = basis.elements
@@ -219,7 +220,9 @@ def getAllSobol(coefficients, basis):
     else:
         basis_entries = m
         combo_index = {}
-        for order in range(1,dimensions+1): #loop over order            
+        if max_order is None:
+            max_order = dimensions+1
+        for order in range(1,max_order+1): #loop over order            
             for i in combinations(range(dimensions),order):
                 #initialize each index to be 0                
                 combo_index[i] = 0
@@ -265,12 +268,16 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
     norm_ind = map(tuple,(norm_ind > 0).astype(int))
     
     combo_index = {}
-    for tot_order in range(1,dimensions+1): #loop over order            
-        for i in product([0,1], repeat = dimensions):
-            #initialize each index of the specified order to be 0                
-            if sum(i) != order:
-                continue
-            combo_index[i] = 0.0   
+#    for tot_order in range(1,dimensions+1): #loop over order
+    print dimensions, order            
+    for i in combinations(range(dimensions), order):
+        #initialize each index of the specified order to be 0                
+#        if sum(i) != order:
+#            continue
+#        combo_index[i] = 0.0   
+        index = np.zeros(dimensions)
+        index[i] = 1
+        combo_index[tuple(index)] = 0.0
     
     #1st term
     cubed_evals = weighted_evals**3
@@ -351,12 +358,15 @@ def CondKurtosis(order, quad_wts, weighted_evals, basis, variance, kurtosis):
     norm_ind = map(tuple,(norm_ind > 0).astype(int))
     
     combo_index = {}
-    for tot_order in range(1,dimensions+1): #loop over order            
-        for i in product([0,1], repeat = dimensions):
-            #initialize each index to be 0                
-            if sum(i) != order:
-                continue
-            combo_index[i] = 0.0   
+#    for tot_order in range(1,dimensions+1): #loop over order            
+    for i in combinations(range(dimensions), order):
+        #initialize each index to be 0                
+#            if sum(i) != order:
+#                continue
+#            combo_index[i] = 0.0
+        index = np.zeros(dimensions)
+        index[i] = 1
+        combo_index[tuple(index)] = 0.0
     #1st term
     fourth_evals = weighted_evals**4
     integral1 = np.dot(fourth_evals, quad_wts)

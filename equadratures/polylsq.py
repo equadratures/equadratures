@@ -203,6 +203,7 @@ class Polylsq(Poly):
                 y = evalfunction(self.quadraturePoints, func)
             else:
                 y = func
+            self.functionEvaluations = y
             self.bz = np.dot( self.Wz ,  np.reshape(y, (p,1)) )
             alpha = np.linalg.lstsq(self.Az, self.bz) 
             self.coefficients = alpha[0]

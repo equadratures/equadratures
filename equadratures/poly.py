@@ -194,7 +194,7 @@ class Poly(object):
 
         # Return tensor grid quad-points and weights
         return points, weights
-    def getStatistics(self):
+    def getStatistics(self, max_sobol_order = None):
         """
         Creates an instance of the Statistics class.
 
@@ -206,7 +206,7 @@ class Poly(object):
             A Statistics object.
         """
         evals = self.getPolynomial(self.quadraturePoints)
-        return Statistics(self.coefficients, self.basis, self.parameters, self.quadraturePoints, self.quadratureWeights, evals)
+        return Statistics(self.coefficients, self.basis, self.parameters, self.quadraturePoints, self.quadratureWeights, evals, max_sobol_order)
     def getQuadratureRule(self, options=None, number_of_points = None):
         """
         Generates quadrature points and weights.

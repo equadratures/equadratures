@@ -13,6 +13,7 @@ from parameter import Parameter
 from poly import Poly
 import scipy.io
 from basis import Basis
+from scipy.linalg import orth
 
 def computeActiveSubspaces(poly, samples=None):
     """
@@ -48,7 +49,7 @@ def computeActiveSubspaces(poly, samples=None):
     eigVecs = W[:, idx]
     return eigs, eigVecs
 
-def linearModel(Xtrain, ytrain):
+def linearModel(Xtrain, ytrain,bounds):
     """
     Computes the coefficients for a linear model between inputs and outputs
 
@@ -62,9 +63,9 @@ def linearModel(Xtrain, ytrain):
     N,D=Xtrain.shape
     A=np.concatenate((Xtrain,np.ones((N,1))),axis=1)
     x=np.linalg.lstsq(A,ytrain)[0]
-    u=x[0:D]
-    w = u * 1.0/np.linalg.norm(u, 2)
-    return w
+    u=x[0:D-1]
+    c=x[D]
+    return u,c
 
 def standard(X,bounds):
     """
@@ -100,7 +101,7 @@ def vandermonde(eta,p):
     Object=Basis('Total order',listing)
     #Establish n Parameter objects
     params=[]
-    P=Parameter(order=p,lower=-1,upper=1,param_type='Uniform')
+    P=Parameter(order=p,lower=-1,upper=1)#,param_type='Uniform')
     for i in range(0,n):
         params.append(P)
     #Use the params list to establish the Poly object
@@ -129,8 +130,8 @@ def jacobian(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
     M,N=V.shape
     m,n=U.shape
     Gradient=Polybasis.getPolynomialGradient(eta)
-    sub=minmax[:,1]-minmax[:,0]# n*1 array
-    vectord=np.reshape(2.0/sub,(2,1))
+    sub=(minmax[1,:]-minmax[0,:]).T# n*1 array
+    vectord=np.reshape(2.0/sub,(n,1))
     #Initialize the tensor
     J=np.zeros((M,m,n))
     #Obtain the derivative of this tensor
@@ -140,7 +141,7 @@ def jacobian(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
             for i in range(0,M):
                 for j in range(0,N):
                     current=Gradient[l].T
-                    dV[k,l,i,j]=np.asscalar(vectord[l])*np.asscalar(X[i,k])*np.asscalar(current[i,j])
+                    dV[k,l,i,j]=np.asscalar(vectord[l])*np.asscalar(X[i,k])*np.asscalar(current[i,j])#Eqn 16 17
     #Get the P matrix
     P=np.identity(M)-np.matmul(V,V_plus)
     V_minus=scipy.linalg.pinv(V)
@@ -148,9 +149,8 @@ def jacobian(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
     for j in range(0,m):
         for k in range(0,n):
             temp1=np.linalg.multi_dot([P,dV[j,k,:,:],V_minus])
-            J[:,j,k]=(-np.matmul((temp1+temp1.T),f)).reshape((M,))
+            J[:,j,k]=(-np.matmul((temp1+temp1.T),f)).reshape((M,))# Eqn 15
     return J
-
 
 def variable_projection(X,f,n,p,gamma=None,beta=None):
     """
@@ -164,39 +164,34 @@ def variable_projection(X,f,n,p,gamma=None,beta=None):
     :param beta: double, Armijo tolerance for backtracking line search (0,1)
     :return:
         * **U (ndarray)**: The active subspace found
+        * **R (double)**: Cost of deviation in fitting
     """
-    if beta is None:
-        beta = 0.1
-    if gamma is None:
-        gamma = 0.1
-
-    #Assumed uniform sampling
     M,m=X.shape
-    Z=np.random.rand(m,n)*2-1
-    U,R=np.linalg.qr(Z)
-    #Convergence flag
-    convflag=0
+    Z=np.random.randn(m,n)
+    U,_=np.linalg.qr(Z)
 
-    while convflag==0:
-        y=np.dot(X,U)
-        minmax=np.zeros((n,2))
-        for i in range(0,n):
-            minmax[0,i]=min(y[:,i])
-            minmax[1,i]=max(y[:,i])
-        #Construct the affine transformation
-        eta=np.zeros((M,n))
-        for i in range(0,M):
-            for j in range(0,n):
-                eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
-        convflag=1
-        #Construct the Vandermonde matrix
-        V,Polybasis=vandermonde(eta,p)
-        V_plus=np.linalg.pinv(V)
-        coeff=np.dot(V_plus,f)
-        res=f-np.dot(V,coeff)
-        #Construct the Jacobian
+    y=np.dot(X,U)
+    minmax=np.zeros((2,n))
+    for i in range(0,n):
+        minmax[0,i]=min(y[:,i])
+        minmax[1,i]=max(y[:,i])
+    #Construct the affine transformation
+    eta=np.zeros((M,n))
+    for i in range(0,M):
+        for j in range(0,n):
+            eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
+
+    #Construct the Vandermonde matrix step 6
+    V,Polybasis=vandermonde(eta,p)   
+    V_plus=np.linalg.pinv(V)
+    coeff=np.dot(V_plus,f)
+    res=f-np.dot(V,coeff)
+    R=np.linalg.norm(res)
+    
+    for iteration in range(0,100):
+        #Construct the Jacobian step 9
         J=jacobian(V,V_plus,U,y,f,Polybasis,eta,minmax,X)
-        #Calculate the gradient of Jacobian
+        #Calculate the gradient of Jacobian #step 10
         G=np.zeros((m,n))
         for i in range(0,M):
             G=G+res[i]*J[i,:,:]
@@ -206,38 +201,32 @@ def variable_projection(X,f,n,p,gamma=None,beta=None):
             for j in range(0,m):
                 for k in range(0,n):
                     vec_J[i,j*n+k]=J[i,j,k]
-        Y,S,Z=np.linalg.svd(vec_J,full_matrices=False)
+        Y,S,Z=np.linalg.svd(vec_J,full_matrices=False)#step 11
+        #obtain delta
+        delta = np.dot(Y[:,:-n**2].T, res)
+        delta = np.dot(np.diag(1/S[:-n**2]), delta)
+        delta = -np.dot(Z[:-n**2,:].T, delta).reshape(U.shape)
         #carry out Gauss-Newton step
-        vec_delta=np.zeros(((m*n),1))
-        temp=np.dot(Y.T,res)
-        for i in range(0,(m*n-n*n)):
-            vec_delta+=temp[i]*np.reshape(Z[:,i],(m*n,1))/S[i]
-        delta=np.zeros((m,n))
-        delta=np.reshape(vec_delta,(m,n),'C')
-        #vectorize G
-        vec_G=np.reshape(G,((m*n),1),'C')
-        alpha=np.matmul(vec_G.T,vec_delta)[0,0]
-        #check alphd
+        vec_delta=delta.flatten()# step 12
+        #vectorize G step 13
+        vec_G=G.flatten()
+        alpha=np.dot(vec_G.T,vec_delta)
+        norm_G=np.dot(vec_G.T,vec_G)
+        #check alpha step 14
         if alpha>=0:
-            delta=G
-            vec_delta=np.zeros(((m*n),1))
-            for i in range(0,m):
-                for j in range(0,n):
-                    vec_delta[i*n+j]=delta[i,j]
-            alpha=np.matmul(vec_G.T,vec_delta)[0,0]
-
-        #SVD on delta
+            delta=-G
+            alpha=-norm_G
+        
+        #SVD on delta step 17
         Y,S,Z=np.linalg.svd(delta,full_matrices=False)
-        t=1/gamma
-        #flag to break the bakctracking line search
-        breakflag=0
-        while breakflag==0:
-            t=t*gamma
-            print t
-            U_plus=np.linalg.multi_dot([U,Z,np.cos(np.diag(S)*t),Z.T])+np.linalg.multi_dot([Y,np.sin(np.diag(S)*t),Z.T])
+        UZ=np.dot(U,Z.T)
+        t=1
+        for iter2 in range(0,50):
+            U_new=np.dot(UZ, np.diag(np.cos(S*t))) + np.dot(Y, np.diag(np.sin(S*t)))#step 19
+            U_new=orth(U_new)
             #Update the values with the new U matrix
-            y=np.dot(X,U_plus)
-            minmax=np.zeros((n,2))
+            y=np.dot(X,U_new)
+            minmax=np.zeros((2,n))
             for i in range(0,n):
                 minmax[0,i]=min(y[:,i])
                 minmax[1,i]=max(y[:,i])
@@ -245,13 +234,17 @@ def variable_projection(X,f,n,p,gamma=None,beta=None):
             for i in range(0,M):
                 for j in range(0,n):
                     eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
-            V,Polybasis=vandermonde(eta,p)
-            res_plus=f-np.linalg.multi_dot([V,np.linalg.pinv(V),f])
-            if np.linalg.norm(res_plus)<=np.linalg.norm(res)+alpha*beta*t or t<1e-10:
-                breakflag=1
-        #U convergence check
-        diff=np.absolute(U-U_plus)
-        if diff.max()<0.002:
-            convflag=1
-        U=U_plus
-    return U
+            V_new,Polybasis=vandermonde(eta,p)
+            V_plus_new=np.linalg.pinv(V_new)
+            coeff_new=np.dot(V_plus_new,f)
+            res_new=f-np.dot(V_new,coeff_new)
+            R_new=np.linalg.norm(res_new)
+            if np.linalg.norm(res_new)<=np.linalg.norm(res)+alpha*beta*t or t<1e-10:#step 21
+                break
+            t=t*gamma
+        U = U_new
+        V = V_new
+        coeff = coeff_new
+        res = res_new
+        R = R_new
+    return U,R

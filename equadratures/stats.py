@@ -220,8 +220,8 @@ def getAllSobol(coefficients, basis, max_order):
     else:
         basis_entries = m
         combo_index = {}
-        if max_order is None:
-            max_order = dimensions+1
+        if max_order is None or max_order > dimensions:
+            max_order = dimensions
         for order in range(1,max_order+1): #loop over order            
             for i in combinations(range(dimensions),order):
                 #initialize each index to be 0                

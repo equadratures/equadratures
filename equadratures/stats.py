@@ -18,14 +18,14 @@ class Statistics(object):
     # constructor
     def __init__(self, coefficients, basis, parameters,  quadrature_points=None, quadrature_weights=None, polynomial_evals=None,max_sobol_order = None,):
         mm = len(coefficients)
-        self.coefficients = np.reshape(coefficients, (mm, 1))
+        self.coefficients = np.reshape(np.asarray(coefficients), (mm, 1))
         self.basis = basis
         self.parameters = parameters #should be a list containing instances of Parameter
         
         self.mean = getMean(self.coefficients)
         self.variance = getVariance(self.coefficients)
         self.sobol = getAllSobol(self.coefficients, self.basis, max_sobol_order)
-        
+
         #Prepare evals of polynomials for skewness and kurtosis
         if (quadrature_points is None) and (quadrature_weights is None) and (polynomial_evals is None):
             pass
@@ -35,10 +35,9 @@ class Statistics(object):
 #            for i in range(0, mm):
 #                for j in range(0, nn):
 #                    weighted_evals[i, j] = polynomial_evals[i, j] * coefficients[i]
-            weighted_evals = polynomial_evals * coefficients
+            weighted_evals = polynomial_evals * self.coefficients
             self.weighted_evals = weighted_evals
             self.quad_wts = quadrature_weights
-        print "ok"
         self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
         self.kurtosis = getKurtosis(self.quad_wts, self.weighted_evals, self.basis, self.variance)
         
@@ -245,10 +244,9 @@ def getSkewness(quad_wts, weighted_evals, basis, variance):
     total_evals = np.sum(weighted_evals[1:],0)
 #    print weighted_evals[0]
     third_total_evals = total_evals**3
-    #print weighted_evals.shape
-    #print third_total_evals.shape 
-    #print quad_wts.shape 
-
+#    print third_total_evals.shape 
+#    print quad_wts.shape 
+    
     return np.dot(third_total_evals,quad_wts)/(variance**1.5)
 
 # Return global kurtosis

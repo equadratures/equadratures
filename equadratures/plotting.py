@@ -9,7 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
-from cycler import cycler
+#from cycler import cycler
 
 def errorplot2D(errors, x_label=None, y_label=None, xlim=None, ylim=None, filename=None):
     """
@@ -358,6 +358,7 @@ def scatterplot(x, y, x_label, y_label, errorbars=None, filename=None, marker_ty
         plt.show()
     else:
         plt.savefig(filename, dpi=300, bbox_inches='tight')
+"""
 def scatterplot2(x, y, x_label, y_label, filename=None, marker_type=None, cycle_colors=None):
     # x is m by n where m is the number of points for each series and n is number of series. (each col constitutes a series)
     # y is also m by n
@@ -387,6 +388,7 @@ def scatterplot2(x, y, x_label, y_label, filename=None, marker_type=None, cycle_
         plt.show()
     else:
         plt.savefig(filename, dpi=300, bbox_inches='tight')
+"""
 def histogram(samples, x_label, y_label, filename=None):
     opacity = 1.0
     error_config = {'ecolor': '0.3'}
@@ -496,15 +498,16 @@ def triplebarplot(x, y1, y2, y3, x_label, y_label, x_ticks, filename=None):
         plt.savefig(filename,  dpi=300, bbox_inches='tight')
     else:
         plt.show()
-
+"""
 def piechart(labels, sizes, title):
     fig1, ax1 = plt.subplots()
     cm = plt.get_cmap('tab20')
-    ax1.set_prop_cycle(cycler('color', [cm(i) for i in np.linspace(0, 1,len(labels))]))
-    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    #ax1.set_prop_cycle(cycler('color', [cm(i) for i in np.linspace(0, 1,len(labels))]))
+    #ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
     patches, texts = ax1.pie(sizes, shadow=True, startangle=90)
 
     ax1.axis([0,1.2,-1,1])
     plt.legend(patches, labels, loc='best')
     plt.title(title)
     plt.show()
+"""

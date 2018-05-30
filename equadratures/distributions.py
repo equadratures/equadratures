@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 import scipy.stats as stats
-def iCDF_Gaussian(xx, mu, sigma):
+def iCDF_Gaussian(xx, mu, sigma_squared):
     """
     An inverse Gaussian cumulative density function.
 
@@ -15,7 +15,7 @@ def iCDF_Gaussian(xx, mu, sigma):
     :return:
         Inverse CDF samples associated with the Gaussian distribution.
     """
-    return mu + sigma * np.sqrt(2.0) * erfinv(2.0*xx - 1.0)
+    return mu + np.sqrt(sigma_squared) * np.sqrt(2.0) * erfinv(2.0*xx - 1.0)
 def iCDF_CauchyDistribution(xx, x0, gammavalue):
     """
     An inverse Cauchy cumulative density function.
@@ -194,7 +194,7 @@ def CDF_GaussianDistribution(N, mu, sigma):
     x = x + mu # scaling it by the mean!
     w = 0.5*(1 + erf((x - mu)/(sigma * np.sqrt(2) ) ) )
     return x, w
-def CDF_TruncatedGaussianDistribution(N, mu, sigma, a, b):
+def CDF_TruncatedGaussianDistribution(N, mu, sigma_squared, a, b):
     """
     A truncated Gaussian cumulative density function.
 
@@ -216,9 +216,9 @@ def CDF_TruncatedGaussianDistribution(N, mu, sigma, a, b):
     def cumulative(x):
         return 0.5 * (1 + erf(x/np.sqrt(2)))
     x = np.linspace(a, b, N)
-    zeta = (x - mu)/(sigma)
-    alpha = (a - mu)/(sigma)
-    beta = (b - mu)/(sigma)
+    zeta = (x - mu)/( np.sqrt(sigma_squared) )
+    alpha = (a - mu)/( np.sqrt(sigma_squared) )
+    beta = (b - mu)/( np.sqrt(sigma_squared) )
     Z = cumulative(beta) - cumulative(alpha)
     w = (cumulative(zeta) - cumulative(alpha))/(Z)
     return x, w
@@ -444,7 +444,7 @@ def PDF_BetaDistribution(N, a, b, lower, upper):
     xreal = np.linspace(lower, upper, N)
     wreal = w * (1.0)/(upper - lower)
     return xreal, wreal
-def PDF_GaussianDistribution(N, mu, sigma):
+def PDF_GaussianDistribution(N, mu, sigma_squared):
     """
     A Gaussian probability distribution.
 
@@ -459,9 +459,9 @@ def PDF_GaussianDistribution(N, mu, sigma):
     :return:
         Probability density values along the support of the Gaussian distribution.
     """
-    x = np.linspace(-15*sigma, 15*sigma, N)
+    x = np.linspace(-15*sigma_squared, 15*sigma_squared, N)
     x = x + mu # scaling it by the mean!
-    w = 1.0/( np.sqrt(2 * sigma**2 * np.pi) ) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma**2) )
+    w = 1.0/( np.sqrt(2 * sigma_squared * np.pi) ) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma_squared) )
     return x, w
 def PDF_WeibullDistribution(N, lambda_value, k):
     """
@@ -552,7 +552,7 @@ def PDF_ChebyshevDistribution(N, lower, upper):
     xreal = np.linspace(lower, upper, N)
     wreal = 1.0 / (np.pi * np.sqrt( (xreal - lower) * (upper - xreal) )  )
     return xreal, wreal
-def PDF_TruncatedGaussianDistribution(N, mu, sigma, a, b):
+def PDF_TruncatedGaussianDistribution(N, mu, sigma_squared, a, b):
     """
     A truncated Gaussian probability density function.
 
@@ -572,12 +572,12 @@ def PDF_TruncatedGaussianDistribution(N, mu, sigma, a, b):
         Probability density values along the support of the truncated Gaussian distribution.
     """
     x = np.linspace(a, b, N)
-    w = 1.0/( np.sqrt(2 * sigma**2 * np.pi)) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma**2) )
-    w = 1.0/sigma * w
-    first_term = GaussianCDF(b, mu, sigma)
-    second_term = GaussianCDF(a, mu, sigma)
+    w = 1.0/( np.sqrt(2 * sigma_squared * np.pi)) * np.exp(-(x - mu)**2 * 1.0/(2 * sigma_squared) )
+    w = 1.0/( np.sqrt(sigma_squared) ) * w
+    first_term = GaussianCDF(b, mu,  np.sqrt(sigma_squared) )
+    second_term = GaussianCDF(a, mu,  np.sqrt(sigma_squared) )
     w = w / (first_term - second_term)
     return x, w
-def GaussianCDF(constant, mu, sigma):
-    w = 1.0/2 * (1 + erf((constant - mu)/(sigma * np.sqrt(2))) )
+def GaussianCDF(constant, mu, sigma_squared):
+    w = 1.0/2 * (1 + erf((constant - mu)/( np.sqrt(sigma_squared) * np.sqrt(2))) )
     return w

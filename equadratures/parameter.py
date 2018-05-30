@@ -698,7 +698,7 @@ def recurrence_coefficients(self, order=None):
 
     # 1. Beta distribution
     if self.param_type.lower() == "beta":
-        ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, order)
+        ab =  jacobi_recurrence_coefficients(self.shape_parameter_B - 1.0, self.shape_parameter_A - 1.0, self.lower, self.upper, order)
         self.bounds = [0.0,1.0]
 
     # 2. Uniform distribution
@@ -718,8 +718,8 @@ def recurrence_coefficients(self, order=None):
     # 3. Analytical Gaussian defined on [-inf, inf]
     elif (self.param_type.lower() == "gaussian") or (self.param_type.lower() == 'normal'):
         mu = self.shape_parameter_A
-        sigma = np.sqrt(self.shape_parameter_B)
-        x, w  = analytical.PDF_GaussianDistribution(N, mu, sigma)
+        sigma_squared =  self.shape_parameter_B
+        x, w  = analytical.PDF_GaussianDistribution(N, mu, sigma_squared)
         ab = custom_recurrence_coefficients(order, x, w)
         self.bounds = [-np.inf, np.inf]
 

@@ -1,6 +1,6 @@
 """Computing Statistics from Polynomial Expansions"""
 import numpy as np
-from .plotting import barplot, triplebarplot, piechart, scatterplot2
+from .plotting import barplot, triplebarplot
 from .basis import Basis
 from itertools import *
 class Statistics(object):
@@ -124,6 +124,7 @@ class Statistics(object):
     
     #Pie chart of variance, skewness and kurtosis indices
     #Var names in list form
+    """
     @staticmethod
     def pie_chart( list_of_indices_dicts, highest_order = 1, var_names = None, title = "Sobol' indices"):
         v = list_of_indices_dicts[0]
@@ -164,7 +165,8 @@ class Statistics(object):
         values, labels = zip(*vl)
         
         piechart(labels, values, title)
-        
+    """
+
     @staticmethod
     def scatter_plot(list_of_indices_dicts, highest_order = 2, var_names = None, title = "Sobol' indices"):
         # Assume all dicts have the same keys!

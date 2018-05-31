@@ -141,6 +141,8 @@ def jacobian(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
             for i in range(0,M):
                 for j in range(0,N):
                     current=Gradient[l].T
+                    if n==1:
+                        current=Gradient.T
                     dV[k,l,i,j]=np.asscalar(vectord[l])*np.asscalar(X[i,k])*np.asscalar(current[i,j])#Eqn 16 17
     #Get the P matrix
     P=np.identity(M)-np.matmul(V,V_plus)
@@ -166,6 +168,10 @@ def variable_projection(X,f,n,p,gamma=None,beta=None):
         * **U (ndarray)**: The active subspace found
         * **R (double)**: Cost of deviation in fitting
     """
+    if gamma is None:
+        gamma=0.1
+    if beta is None:
+        beta=0.1
     M,m=X.shape
     Z=np.random.randn(m,n)
     U,_=np.linalg.qr(Z)

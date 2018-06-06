@@ -44,8 +44,8 @@ class Polyreg(Poly):
         self.cond = np.linalg.cond(self.A)
         self.y = np.reshape(self.y, (len(self.y), 1))
         self.computeCoefficients()
-        self.quadrature_rule = quadrature_rule
-        self.getQuadraturePointsWeights()
+        #self.quadrature_rule = quadrature_rule
+        #self.getQuadraturePointsWeights()
 
     # Solve for coefficients using ordinary least squares
     def computeCoefficients(self):
@@ -55,7 +55,9 @@ class Polyreg(Poly):
         :param Polyreg self:
             An instance of the Polyreg class.
         """
-        alpha = np.linalg.lstsq(self.A, self.y) # Opted for numpy's standard version because of speed!
+        p = len(self.y)
+        self.bz = np.dot( self.Wz ,  np.reshape(self.y, (p,1)) )
+        alpha = np.linalg.lstsq(self.A, self.bz) # Opted for numpy's standard version because of speed!
         self.coefficients = alpha[0]
         super(Polyreg, self).__setCoefficients__(self.coefficients)
 
@@ -66,7 +68,15 @@ class Polyreg(Poly):
         :param Polyreg self:
             An instance of the Polyreg class.
         """
-        self.A = self.getPolynomial(self.x).T
+        Pz = super(Polyreg, self).getPolynomial(self.x)
+        wts =  1.0/(np.sum( Pz**2 , 0)**2)
+        wts = wts * 1.0/np.sum(wts)
+        
+
+        #wts =  1.0/(np.sum( super(Polyreg, self).getPolynomial(self.x)**2 , 0) )**2
+        #wts = wts * 1.0/np.sum(wts)
+        self.Wz = np.mat(np.diag( np.sqrt(wts) ) )
+        self.A =  self.Wz * Pz.T
         rows, cols = self.A.shape
         if rows <= cols:
             raise(ValueError, 'Polyreg:setDesignMatrix:: Number of columns have to be less than (or equal to) the number of rows!')

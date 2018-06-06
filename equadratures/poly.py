@@ -194,7 +194,7 @@ class Poly(object):
 
         # Return tensor grid quad-points and weights
         return points, weights
-    def getStatistics(self, max_sobol_order = None):
+    def getStatistics(self, light=None, max_sobol_order=None):
         """
         Creates an instance of the Statistics class.
 
@@ -205,8 +205,13 @@ class Poly(object):
         :return:
             A Statistics object.
         """
-        evals = self.getPolynomial(self.quadraturePoints)
-        return Statistics(self.coefficients, self.basis, self.parameters, self.quadraturePoints, self.quadratureWeights, evals, max_sobol_order)
+        if light is None:
+            evals = self.getPolynomial(self.quadraturePoints)
+            return Statistics(self.coefficients, self.basis, self.parameters, self.quadraturePoints, self.quadratureWeights, evals, max_sobol_order)
+        else:
+            return Statistics(self.coefficients, self.basis, self.parameters, max_sobol_order=max_sobol_order)
+
+            
     def getQuadratureRule(self, options=None, number_of_points = None):
         """
         Generates quadrature points and weights.
@@ -223,9 +228,9 @@ class Poly(object):
             A numpy array of quadrature weights.
         """
         if options is None:
-            if self.dimensions > 8:
+            if self.dimensions > 35:
                 options = 'qmc'
-            elif self.dimensions < 8 :
+            elif self.dimensions < 35 :
                 options = 'tensor grid'
         if options.lower() == 'qmc':
             if number_of_points is None:

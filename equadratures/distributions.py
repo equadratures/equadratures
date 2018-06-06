@@ -396,8 +396,8 @@ def PDF_CustomDistribution(N, data):
     """
     mean = np.mean(data)
     std = np.std(data)
-    lower = mean - (np.sqrt(std) * 5.0)
-    upper = mean + (np.sqrt(std) * 5.0)
+    lower = np.min(data) 
+    upper = np.max(data) 
     xo = np.linspace(lower, upper, N)
     kernel = stats.gaussian_kde(data)
     wts = kernel(xo)

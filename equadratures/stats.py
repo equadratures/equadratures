@@ -1,43 +1,37 @@
 """Computing Statistics from Polynomial Expansions"""
 import numpy as np
-from .plotting import barplot, triplebarplot
+from .plotting import barplot, triplebarplot, piechart, scatterplot2
 from .basis import Basis
 from itertools import *
 class Statistics(object):
     """
     :param numpy-matrix coefficients: Coefficients from a polynomial expansion. Can be computed using any technique.
     :param Basis basis: Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.
+    :param ndarray quadrature_weights: Length N array. Contains the quadrature weights.
+    :param ndarray polynomial_evals: N by d array, where N is the number of quadrature points; d is the number of dimensions (input parameters). Contains the polynomial basis functions evaluated at the corresponding quadrature points.
+    :param int max_sobol_order: Indicates the maximum order of Sobol' indices to pre-calculate. In high dimensional problems (e.g. >7D) it is advised to use this option to reduce the computational load upon initialization.
     Attributes:
         * **self.mean**: (double) Mean of the polynomial expansion.
         * **self.variance**: (double) Variance of the polynomial expansion.
         * **self.sobol**:(dict) Sobol' indices of order up to number of dimensions.
-    **Notes:** 
-    In a future release we will be incorporating second order Sobol indices, skewness and kurtosis based indices. Stay tuned!
     """
 
     # constructor
-    def __init__(self, coefficients, basis, parameters,  quadrature_points=None, quadrature_weights=None, polynomial_evals=None,max_sobol_order = None,):
+    def __init__(self, coefficients, basis, quadrature_weights, polynomial_evals,max_sobol_order = None):
         mm = len(coefficients)
         self.coefficients = np.reshape(np.asarray(coefficients), (mm, 1))
         self.basis = basis
-        self.parameters = parameters #should be a list containing instances of Parameter
         
         self.mean = getMean(self.coefficients)
         self.variance = getVariance(self.coefficients)
         self.sobol = getAllSobol(self.coefficients, self.basis, max_sobol_order)
 
         #Prepare evals of polynomials for skewness and kurtosis
-        if (quadrature_points is None) and (quadrature_weights is None) and (polynomial_evals is None):
-            pass
-        else:
-            nn = len(quadrature_weights)
-            weighted_evals = np.zeros((mm, nn))
-#            for i in range(0, mm):
-#                for j in range(0, nn):
-#                    weighted_evals[i, j] = polynomial_evals[i, j] * coefficients[i]
-            weighted_evals = polynomial_evals * self.coefficients
-            self.weighted_evals = weighted_evals
-            self.quad_wts = quadrature_weights
+        nn = len(quadrature_weights)
+        weighted_evals = np.zeros((mm, nn))
+        weighted_evals = polynomial_evals * self.coefficients
+        self.weighted_evals = weighted_evals
+        self.quad_wts = quadrature_weights
         self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
         self.kurtosis = getKurtosis(self.quad_wts, self.weighted_evals, self.basis, self.variance)
         
@@ -48,7 +42,7 @@ class Statistics(object):
         :param Statistics object: An instance of the Statistics class.
         :param string filename: A file name in case the user wishes to save the bar graph. The default output is an eps file.
         **Sample usage:** 
-        For useage please see the ipython-notebooks at www.effective-quadratures.org
+        For usage please see the ipython-notebooks at www.effective-quadratures.org
         """
         # A bar graph plot of the first order Sobol indices!
         x = range(len(self.getSobol(1).keys()))
@@ -124,7 +118,6 @@ class Statistics(object):
     
     #Pie chart of variance, skewness and kurtosis indices
     #Var names in list form
-    """
     @staticmethod
     def pie_chart( list_of_indices_dicts, highest_order = 1, var_names = None, title = "Sobol' indices"):
         v = list_of_indices_dicts[0]
@@ -146,18 +139,6 @@ class Statistics(object):
                     except KeyError:
                         labels_and_values[key] = v[i]
                     
-#        for i in s.keys():
-#            if len(i) == 1:
-#                labels_and_values[i[0]] = s.values[i]
-#            else:
-#                key = "order " + str(len(i))
-#                labels_and_values[key] += s.values[i]
-#        for i in k.keys():
-#            if len(i) == 1:
-#                labels_and_values[i[0]] = k.values[i]
-#            else:
-#                key = "order " + str(len(i))
-#                labels_and_values[key] += k.values[i]
         
         labels = labels_and_values.keys()
         values = labels_and_values.values()
@@ -165,8 +146,7 @@ class Statistics(object):
         values, labels = zip(*vl)
         
         piechart(labels, values, title)
-    """
-
+        
     @staticmethod
     def scatter_plot(list_of_indices_dicts, highest_order = 2, var_names = None, title = "Sobol' indices"):
         # Assume all dicts have the same keys!
@@ -269,14 +249,11 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
     
     combo_index = {}
 #    for tot_order in range(1,dimensions+1): #loop over order
-    print dimensions, order            
+#    print dimensions, order            
     for i in combinations(range(dimensions), order):
-        #initialize each index of the specified order to be 0                
-#        if sum(i) != order:
-#            continue
-#        combo_index[i] = 0.0   
+        #initialize each index of the specified order to be 0                 
         index = np.zeros(dimensions)
-        index[i] = 1
+        index[np.array(i)] = 1
         combo_index[tuple(index)] = 0.0
     
     #1st term
@@ -360,12 +337,12 @@ def CondKurtosis(order, quad_wts, weighted_evals, basis, variance, kurtosis):
     combo_index = {}
 #    for tot_order in range(1,dimensions+1): #loop over order            
     for i in combinations(range(dimensions), order):
-        #initialize each index to be 0                
-#            if sum(i) != order:
-#                continue
-#            combo_index[i] = 0.0
+        #initialize each index of the specified order to be 0                
+#        if sum(i) != order:
+#            continue
+#        combo_index[i] = 0.0   
         index = np.zeros(dimensions)
-        index[i] = 1
+        index[np.array(i)] = 1
         combo_index[tuple(index)] = 0.0
     #1st term
     fourth_evals = weighted_evals**4

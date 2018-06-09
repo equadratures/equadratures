@@ -17,7 +17,7 @@ class Statistics(object):
     """
 
     # constructor
-    def __init__(self, coefficients, basis, quadrature_weights, polynomial_evals,max_sobol_order = None):
+    def __init__(self, coefficients, basis, quadrature_weights = None, polynomial_evals = None,max_sobol_order = None):
         mm = len(coefficients)
         self.coefficients = np.reshape(np.asarray(coefficients), (mm, 1))
         self.basis = basis
@@ -27,13 +27,17 @@ class Statistics(object):
         self.sobol = getAllSobol(self.coefficients, self.basis, max_sobol_order)
 
         #Prepare evals of polynomials for skewness and kurtosis
-        nn = len(quadrature_weights)
-        weighted_evals = np.zeros((mm, nn))
-        weighted_evals = polynomial_evals * self.coefficients
-        self.weighted_evals = weighted_evals
-        self.quad_wts = quadrature_weights
-        self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
-        self.kurtosis = getKurtosis(self.quad_wts, self.weighted_evals, self.basis, self.variance)
+        if not(quadrature_weights is None) and not(polynomial_evals is None):
+            self.light = False
+            nn = len(quadrature_weights)
+            weighted_evals = np.zeros((mm, nn))
+            weighted_evals = polynomial_evals * self.coefficients
+            self.weighted_evals = weighted_evals
+            self.quad_wts = quadrature_weights
+            self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
+            self.kurtosis = getKurtosis(self.quad_wts, self.weighted_evals, self.basis, self.variance)
+        else:
+            self.light = True
         
     
     def plot(self, filename=None):
@@ -73,7 +77,10 @@ class Statistics(object):
         first_order_skewness = stats.getCondSkewness(1)        
         
         """
-        return CondSkewness(order, self.quad_wts, self.weighted_evals, self.basis, self.variance, self.skewness)
+        if self.light:
+            raise ValueError("Use non-light version to calculate skewness indices.")
+        else:
+            return CondSkewness(order, self.quad_wts, self.weighted_evals, self.basis, self.variance, self.skewness)
     def getCondKurtosis(self, order = 1):
         """
         Get conditional kurtosis indices at specified order. 
@@ -85,7 +92,10 @@ class Statistics(object):
         first_order_kurtosis = stats.getCondKurtosis(1)        
         
         """
-        return CondKurtosis(order, self.quad_wts, self.weighted_evals, self.basis, self.variance, self.kurtosis)
+        if self.light:
+            raise ValueError("Use non-light version to calculate kurtosis indices.")
+        else:
+            return CondKurtosis(order, self.quad_wts, self.weighted_evals, self.basis, self.variance, self.kurtosis)
     
     #Calculates the total sensitivity based on list of input dicts
     #Assumes they are ordered so that the first element is the first order indices!

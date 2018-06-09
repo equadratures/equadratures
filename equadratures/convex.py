@@ -272,9 +272,10 @@ def bp(A, b, x0 = None, cgtol = None, cgmaxiter = None, pdtol = None, pdmaxiter 
             s = beta*s;
             backiter = backiter + 1;
             if backiter > 32:
-              print 'Stuck backtracking, returning last iterate.'
-              xp = x.copy()
-              return xp
+                if verbose:
+                    print 'Stuck backtracking, returning last iterate.'
+                xp = x.copy()
+                return xp
 
         # next iteration
         x = xp.copy();
@@ -317,7 +318,8 @@ def bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cg
     # starting point --- make sure that it is feasible
     if not(x0 is None):
         if (np.linalg.norm(np.dot(A,x0) - b) > epsilon):
-            print 'Starting point infeasible; using x0 = At*inv(AAt)*y.'
+            if verbose:
+                print 'Starting point infeasible; using x0 = At*inv(AAt)*y.'
             if use_CG:
                 w, cgres, cgiter = CG_solve(np.dot(A,A.T),b,cgmaxiter,cgtol)
             else:
@@ -325,8 +327,9 @@ def bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cg
                 cgres = np.linalg.norm(np.dot(np.dot(A,A.T), w).flatten() - b.flatten()) / np.linalg.norm(b)
                 cgiter = -1
             if cgres > .5:
-              print "cgres = " + str(cgres)
-              print 'A*At is ill-conditioned: cannot find starting point'
+              if verbose:
+                    print "cgres = " + str(cgres)
+                    print 'A*At is ill-conditioned: cannot find starting point'
               xp = x0.copy();
               return xp
             x0 = np.dot(A.T, w);
@@ -340,8 +343,9 @@ def bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cg
             cgres = np.linalg.norm(np.dot(np.dot(A,A.T), w).flatten() - b.flatten()) / np.linalg.norm(b)
             cgiter = -1
         if cgres > .5:
-              print "cgres = " + str(cgres)
-              print 'A*At is ill-conditioned: cannot find starting point'
+              if verbose:
+                    print "cgres = " + str(cgres)
+                    print 'A*At is ill-conditioned: cannot find starting point'
         x0 = np.dot(A.T, w);
 
     x = x0.copy();
@@ -446,7 +450,8 @@ def l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgm
         s = beta * s;
         backiter = backiter + 1;
         if (backiter > 32):
-          print 'Stuck on backtracking line search, returning previous iterate.';
+          if verbose:  
+              print 'Stuck on backtracking line search, returning previous iterate.';
           xp = x.copy();
           up = u.copy();
           return xp,up,niter

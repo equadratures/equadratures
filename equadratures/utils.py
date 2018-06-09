@@ -55,6 +55,17 @@ def rowNormalize(A):
     A_normalized = np.dot(Normalization, A)
     return A_normalized, Normalization
 
+# Normalize each column of A
+def columnNormalize(A):
+    G = np.dot(A.T, A)
+    col_norms = np.sqrt(np.diag(G))
+    if np.any(col_norms <= 0):
+        print "Warning: A singular at columnNormalize"
+        col_norms[col_norms == 0] = 1
+    return A/col_norms
+
+
+
 def cell2matrix(G):
     dimensions = len(G)
     G0 = G[0] # Which by default has to exist!

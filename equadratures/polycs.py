@@ -50,7 +50,7 @@ class Polycs(Poly):
         self.y = np.reshape(self.y, (len(self.y), 1)) 
         self.computeCoefficients()
         self.quadrature_rule = quadrature_rule
-        self.getQuadraturePointsWeights(self, no_of_quad_points)
+        self.getQuadraturePointsWeights(no_of_quad_points)
 
     def setDesignMatrix(self):
         """
@@ -109,7 +109,6 @@ class Polycs(Poly):
 #        print "-----"
         self.coefficients = np.reshape(x, (len(x),1))
     
-    @staticmethod
     def getQuadraturePointsWeights(self, points):
         if points is None:
             points = 10000

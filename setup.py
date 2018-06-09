@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='equadratures',
-      version='6.0',
+      version='5.1',
       description='Set of codes for polynomial approximation',
       long_description=readme(),
       classifiers=[

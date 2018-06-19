@@ -228,9 +228,9 @@ class Poly(object):
             A numpy array of quadrature weights.
         """
         if options is None:
-            if self.dimensions > 35:
+            if self.dimensions > 5 or np.max(self.orders) > 4:
                 options = 'qmc'
-            elif self.dimensions < 35 :
+            else:
                 options = 'tensor grid'
         if options.lower() == 'qmc':
             if number_of_points is None:

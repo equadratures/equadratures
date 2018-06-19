@@ -7,9 +7,6 @@ class Statistics(object):
     """
     :param numpy-matrix coefficients: Coefficients from a polynomial expansion. Can be computed using any technique.
     :param Basis basis: Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.
-    :param ndarray quadrature_weights: Length N array. Contains the quadrature weights.
-    :param ndarray polynomial_evals: N by d array, where N is the number of quadrature points; d is the number of dimensions (input parameters). Contains the polynomial basis functions evaluated at the corresponding quadrature points.
-    :param int max_sobol_order: Indicates the maximum order of Sobol' indices to pre-calculate. In high dimensional problems (e.g. >7D) it is advised to use this option to reduce the computational load upon initialization.
     Attributes:
         * **self.mean**: (double) Mean of the polynomial expansion.
         * **self.variance**: (double) Variance of the polynomial expansion.
@@ -17,18 +14,20 @@ class Statistics(object):
     """
 
     # constructor
-    def __init__(self, coefficients, basis, quadrature_weights = None, polynomial_evals = None,max_sobol_order = None):
+    def __init__(self, coefficients, basis, parameters,  quadrature_points=None, quadrature_weights=None, polynomial_evals=None,max_sobol_order = None,):
         mm = len(coefficients)
         self.coefficients = np.reshape(np.asarray(coefficients), (mm, 1))
         self.basis = basis
+        self.parameters = parameters #should be a list containing instances of Parameter
         
         self.mean = getMean(self.coefficients)
         self.variance = getVariance(self.coefficients)
         self.sobol = getAllSobol(self.coefficients, self.basis, max_sobol_order)
 
         #Prepare evals of polynomials for skewness and kurtosis
-        if not(quadrature_weights is None) and not(polynomial_evals is None):
-            self.light = False
+        if (quadrature_points is None) and (quadrature_weights is None) and (polynomial_evals is None):
+            pass
+        else:
             nn = len(quadrature_weights)
             weighted_evals = np.zeros((mm, nn))
             weighted_evals = polynomial_evals * self.coefficients
@@ -36,21 +35,6 @@ class Statistics(object):
             self.quad_wts = quadrature_weights
             self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
             self.kurtosis = getKurtosis(self.quad_wts, self.weighted_evals, self.basis, self.variance)
-        else:
-            self.light = True
-        
-    
-    def plot(self, filename=None):
-        """
-        Produces a bar graph of the first order Sobol indices
-        :param Statistics object: An instance of the Statistics class.
-        :param string filename: A file name in case the user wishes to save the bar graph. The default output is an eps file.
-        **Sample usage:** 
-        For usage please see the ipython-notebooks at www.effective-quadratures.org
-        """
-        # A bar graph plot of the first order Sobol indices!
-        x = range(len(self.getSobol(1).keys()))
-        barplot(x, self.getSobol(1).values(), 'Parameters', 'Sobol indices', self.getSobol(1).keys())
     
     def getSobol(self, order = 1):
         """
@@ -77,10 +61,7 @@ class Statistics(object):
         first_order_skewness = stats.getCondSkewness(1)        
         
         """
-        if self.light:
-            raise ValueError("Use non-light version to calculate skewness indices.")
-        else:
-            return CondSkewness(order, self.quad_wts, self.weighted_evals, self.basis, self.variance, self.skewness)
+        return CondSkewness(order, self.quad_wts, self.weighted_evals, self.basis, self.variance, self.skewness)
     def getCondKurtosis(self, order = 1):
         """
         Get conditional kurtosis indices at specified order. 
@@ -92,10 +73,7 @@ class Statistics(object):
         first_order_kurtosis = stats.getCondKurtosis(1)        
         
         """
-        if self.light:
-            raise ValueError("Use non-light version to calculate kurtosis indices.")
-        else:
-            return CondKurtosis(order, self.quad_wts, self.weighted_evals, self.basis, self.variance, self.kurtosis)
+        return CondKurtosis(order, self.quad_wts, self.weighted_evals, self.basis, self.variance, self.kurtosis)
     
     #Calculates the total sensitivity based on list of input dicts
     #Assumes they are ordered so that the first element is the first order indices!
@@ -128,59 +106,73 @@ class Statistics(object):
     
     #Pie chart of variance, skewness and kurtosis indices
     #Var names in list form
-#    @staticmethod
-#    def pie_chart( list_of_indices_dicts, highest_order = 1, var_names = None, title = "Sobol' indices"):
-#        v = list_of_indices_dicts[0]
-#        if len(list_of_indices_dicts) > 1:
-#            s = list_of_indices_dicts[1]
-#        if len(list_of_indices_dicts) > 2:
-#            k = list_of_indices_dicts[2]
-#        labels_and_values = {}
-#        if not(var_names is None):
-#            v = dict((tuple([var_names[i] for i in key]), val) for key, val in v.iteritems())
-#        for i in v.keys():
-#            if v[i] > 1e-6:
-#                if len(i) <= highest_order:
-#                    labels_and_values[i] = v[i]
-#                else:
-#                    key = "order " + str(len(i))
-#                    try:
-#                        labels_and_values[key] += v[i]
-#                    except KeyError:
-#                        labels_and_values[key] = v[i]
-#                    
-#        
-#        labels = labels_and_values.keys()
-#        values = labels_and_values.values()
-#        vl = sorted(zip(values, labels), reverse = True)
-#        values, labels = zip(*vl)
-#        
-#        piechart(labels, values, title)
+    """
+    @staticmethod
+    def pie_chart( list_of_indices_dicts, highest_order = 1, var_names = None, title = "Sobol' indices"):
+        v = list_of_indices_dicts[0]
+        if len(list_of_indices_dicts) > 1:
+            s = list_of_indices_dicts[1]
+        if len(list_of_indices_dicts) > 2:
+            k = list_of_indices_dicts[2]
+        labels_and_values = {}
+        if not(var_names is None):
+            v = dict((tuple([var_names[i] for i in key]), val) for key, val in v.iteritems())
+        for i in v.keys():
+            if v[i] > 1e-6:
+                if len(i) <= highest_order:
+                    labels_and_values[i] = v[i]
+                else:
+                    key = "order " + str(len(i))
+                    try:
+                        labels_and_values[key] += v[i]
+                    except KeyError:
+                        labels_and_values[key] = v[i]
+                    
+#        for i in s.keys():
+#            if len(i) == 1:
+#                labels_and_values[i[0]] = s.values[i]
+#            else:
+#                key = "order " + str(len(i))
+#                labels_and_values[key] += s.values[i]
+#        for i in k.keys():
+#            if len(i) == 1:
+#                labels_and_values[i[0]] = k.values[i]
+#            else:
+#                key = "order " + str(len(i))
+#                labels_and_values[key] += k.values[i]
         
-#    @staticmethod
-#    def scatter_plot(list_of_indices_dicts, highest_order = 2, var_names = None, title = "Sobol' indices"):
-#        # Assume all dicts have the same keys!
-#        list_of_dicts = list_of_indices_dicts[:]
-#        if not(var_names is None):
-#            for j in range(len(list_of_indices_dicts)):
-#                list_of_dicts[j] = dict((tuple([var_names[i] for i in key]), val) for key, val in list_of_indices_dicts[j].iteritems())
-#        
-#        valid_keys = [i for i in list_of_dicts[0].keys() if len(i) <= highest_order]
-#        
-#        labels = sorted(valid_keys, key = len)
-#
-#        col = np.reshape(np.arange(len(valid_keys), dtype = 'float'), (len(valid_keys),1))
-#        list_of_cols = []
-#        for i in range(len(list_of_dicts)):
-#            list_of_cols.append(col.copy())
-#        x = np.hstack(list_of_cols)
-#        y = x.copy()
-#        for i in range(len(list_of_dicts)):
-#            for j in range(y.shape[0]):
-#                y[j,i] = list_of_dicts[i][labels[j]]
-#        
-#        
-#        scatterplot2(x,y,labels)
+        labels = labels_and_values.keys()
+        values = labels_and_values.values()
+        vl = sorted(zip(values, labels), reverse = True)
+        values, labels = zip(*vl)
+        
+        piechart(labels, values, title)
+    """
+
+    @staticmethod
+    def scatter_plot(list_of_indices_dicts, highest_order = 2, var_names = None, title = "Sobol' indices"):
+        # Assume all dicts have the same keys!
+        list_of_dicts = list_of_indices_dicts[:]
+        if not(var_names is None):
+            for j in range(len(list_of_indices_dicts)):
+                list_of_dicts[j] = dict((tuple([var_names[i] for i in key]), val) for key, val in list_of_indices_dicts[j].iteritems())
+        
+        valid_keys = [i for i in list_of_dicts[0].keys() if len(i) <= highest_order]
+        
+        labels = sorted(valid_keys, key = len)
+
+        col = np.reshape(np.arange(len(valid_keys), dtype = 'float'), (len(valid_keys),1))
+        list_of_cols = []
+        for i in range(len(list_of_dicts)):
+            list_of_cols.append(col.copy())
+        x = np.hstack(list_of_cols)
+        y = x.copy()
+        for i in range(len(list_of_dicts)):
+            for j in range(y.shape[0]):
+                y[j,i] = list_of_dicts[i][labels[j]]
+        
+        
+        scatterplot2(x,y,labels)
                 
             
         
@@ -213,10 +205,11 @@ def getAllSobol(coefficients, basis, max_order):
         combo_index = {}
         if max_order is None or max_order > dimensions:
             max_order = dimensions
-        for order in range(1,max_order+1): #loop over order            
+        for order in range(1,max_order+1): #loop over order           
             for i in combinations(range(dimensions),order):
                 #initialize each index to be 0                
                 combo_index[i] = 0
+                
                 
             for i in range(0,basis_entries): #loop over rows
                 row = basis[i,:]
@@ -224,7 +217,6 @@ def getAllSobol(coefficients, basis, max_order):
                 non_zero_entries.sort()    #just in case
                 if len(non_zero_entries) == order: #neglect entries that should actually be zero (what constitutes as zero?)
                     combo_index[tuple(non_zero_entries)] = float(combo_index[tuple(non_zero_entries)] + coefficients[i]**2 / variance)
-        
         check_sum = sum(combo_index.values())
         if (abs(check_sum - 1.0) >= 1e-2):
             print "Possible discrepancy in calculation, sum of indices = " + str(check_sum) 
@@ -258,12 +250,14 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
     norm_ind = map(tuple,(norm_ind > 0).astype(int))
     
     combo_index = {}
-#    for tot_order in range(1,dimensions+1): #loop over order
-#    print dimensions, order            
+#    for tot_order in range(1,dimensions+1): #loop over order          
     for i in combinations(range(dimensions), order):
-        #initialize each index of the specified order to be 0                 
+        #initialize each index of the specified order to be 0                
+#        if sum(i) != order:
+#            continue
+#        combo_index[i] = 0.0   
         index = np.zeros(dimensions)
-        index[np.array(i)] = 1
+        index[i] = 1
         combo_index[tuple(index)] = 0.0
     
     #1st term
@@ -347,12 +341,12 @@ def CondKurtosis(order, quad_wts, weighted_evals, basis, variance, kurtosis):
     combo_index = {}
 #    for tot_order in range(1,dimensions+1): #loop over order            
     for i in combinations(range(dimensions), order):
-        #initialize each index of the specified order to be 0                
-#        if sum(i) != order:
-#            continue
-#        combo_index[i] = 0.0   
+        #initialize each index to be 0                
+#            if sum(i) != order:
+#                continue
+#            combo_index[i] = 0.0
         index = np.zeros(dimensions)
-        index[np.array(i)] = 1
+        index[i] = 1
         combo_index[tuple(index)] = 0.0
     #1st term
     fourth_evals = weighted_evals**4

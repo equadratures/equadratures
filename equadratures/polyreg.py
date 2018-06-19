@@ -1,146 +1,330 @@
-"""Finding coefficients via regression."""
-from parameter import Parameter
-from basis import Basis
-from poly import Poly
+"""The polynomial parent class."""
 import numpy as np
-from stats import Statistics, getAllSobol
-import scipy
+from .stats import Statistics
 
-
-class Polyreg(Poly):
+class Poly(object):
     """
-    The class defines a Polyreg object. It is the child of Poly.
+    The class defines a Poly object. It is the parent class to Polyreg, Polyint and Polycs; the only difference between its children are the way in which the coefficients are computed. This class is defined by a list of Parameter objects and a Basis.
 
     :param Parameter parameters:
         A list of parameters.
     :param Basis basis:
         A basis selected for the multivariate polynomial.
-    :param matrix training_inputs:
-        A N-by-d matrix of input training points.
-    :param matrix training_outputs:
-        A N-by-1 matrix of output training points.
-    :param callable fun:
-        Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.
+
     """
-    # Constructor
-    def __init__(self, parameters, basis, training_inputs = None, fun=None, training_outputs=None, quadrature_rule = None, no_of_quad_points = None):
-        super(Polyreg, self).__init__(parameters, basis)
-        if not(training_inputs is None):
-            self.x = training_inputs
-            assert self.x.shape[1] == len(self.parameters) # Check that x is in the correct shape
+    def __init__(self, parameters, basis):
+        self.parameters = parameters
+        self.basis = basis
+        self.dimensions = len(parameters)
+        self.orders = []
+        for i in range(0, self.dimensions):
+            self.orders.append(self.parameters[i].order)
+        if not self.basis.orders :
+            self.basis.setOrders(self.orders)
+    def __setCoefficients__(self, coefficients):
+        """
+        Sets the coefficients for polynomial. This function will be called by the children of Poly
 
-        if not((training_outputs is None) ^ (fun is None)):
-            raise ValueError("Specify atleast one of fun or training_outputs.")
-        if not(fun is None):
-            try:
-                self.y = np.apply_along_axis(fun, 1, self.x)
-            except:
-                raise ValueError("Fun must be callable.")
+        :param Poly self:
+            An instance of the Poly class.
+        :param array coefficients:
+            An array of the coefficients computed using either integration, least squares or compressive sensing routines.
+
+        """
+        self.coefficients = coefficients
+    def __setBasis__(self, basisNew):
+        """
+        Sets the basis
+        """
+        self.basis = basisNew 
+    def __setQuadrature__(self, quadraturePoints, quadratureWeights):
+        """
+        Sets the quadrature points and weights
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param matrix quadraturePoints:
+            A numpy matrix filled with the quadrature points.
+        :param matrix quadratureWeights:
+            A numpy matrix filled with the quadrature weights.
+        """
+        self.quadraturePoints = quadraturePoints
+        self.quadratureWeights = quadratureWeights
+    def __setDesignMatrix__(self, designMatrix):
+        """
+        Sets the design matrix assocaited with the quadrature (depending on the technique) points and the polynomial basis.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param matrix designMatrix:
+            A numpy matrix filled with the multivariate polynomial evaluated at the quadrature points.
+
+        """
+        self.designMatrix = designMatrix
+    def clone(self):
+        """
+        Clones a Poly object.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :return:
+            A clone of the Poly object.
+        """
+        return type(self)(self.parameters, self.basis)
+    def getPolynomial(self, stackOfPoints, customBases=None):
+        """
+        Evaluates the multivariate polynomial at a set of points.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param matrix stackOfPoints:
+            A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.
+        :return:
+            A N-by-1 matrix of polynomial evaluations at the stackOfPoints.
+        """
+        if customBases is None:
+            basis = self.basis.elements
         else:
-            self.y = training_outputs
-        if self.dimensions != self.basis.elements.shape[1]:
-            raise(ValueError, 'Polyreg:__init__:: The number of parameters and the number of dimensions in the index set must be the same.')
-        self.setDesignMatrix()
-        self.cond = np.linalg.cond(self.A)
-        self.y = np.reshape(self.y, (len(self.y), 1))
-        self.computeCoefficients()
-        self.quadrature_rule = quadrature_rule
-        self.getQuadraturePointsWeights(no_of_quad_points)
+            basis = customBases
+        basis_entries, dimensions = basis.shape
+        no_of_points, _ = stackOfPoints.shape
+        polynomial = np.zeros((basis_entries, no_of_points))
+        p = {}
 
-    # Solve for coefficients using ordinary least squares
-    def computeCoefficients(self):
+        # Save time by returning if univariate!
+        if dimensions == 1:
+            poly , _ =  self.parameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis)))
+            return poly
+        else:
+            for i in range(0, dimensions):
+                if len(stackOfPoints.shape) == 1:
+                    stackOfPoints = np.array([stackOfPoints])
+                p[i] , _ = self.parameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i])) )
+
+        # One loop for polynomials
+        for i in range(0, basis_entries):
+            temp = np.ones((1, no_of_points))
+            for k in range(0, dimensions):
+                polynomial[i,:] = p[k][int(basis[i,k])] * temp
+                temp = polynomial[i,:]
+
+        return polynomial
+    def getPolynomialGradient(self, stackOfPoints):
         """
-        This function computes the coefficients using least squares. To access the coefficients simply use the class's attribute self.coefficients.
+        Evaluates the gradient of the multivariate polynomial at a set of points.
 
-        :param Polyreg self:
-            An instance of the Polyreg class.
-        """
-        p = len(self.y)
-        self.bz = np.dot( self.Wz ,  np.reshape(self.y, (p,1)) )
-        alpha = np.linalg.lstsq(self.A, self.bz) # Opted for numpy's standard version because of speed!
-        self.coefficients = alpha[0]
-        super(Polyreg, self).__setCoefficients__(self.coefficients)
-
-    def setDesignMatrix(self):
-        """
-        Sets the design matrix using the polynomials defined in the basis.
-
-        :param Polyreg self:
-            An instance of the Polyreg class.
-        """
-        Pz = super(Polyreg, self).getPolynomial(self.x)
-        wts =  1.0/(np.sum( Pz**2 , 0)**2)
-        wts = wts * 1.0/np.sum(wts)
-        
-
-        #wts =  1.0/(np.sum( super(Polyreg, self).getPolynomial(self.x)**2 , 0) )**2
-        #wts = wts * 1.0/np.sum(wts)
-        self.Wz = np.mat(np.diag( np.sqrt(wts) ) )
-        self.A =  self.Wz * Pz.T
-        rows, cols = self.A.shape
-        if rows <= cols:
-            raise(ValueError, 'Polyreg:setDesignMatrix:: Number of columns have to be less than (or equal to) the number of rows!')
-        super(Polyreg, self).__setDesignMatrix__(self.A)
-
-    def getfitStatistics(self):
-        """
-        Computes statistics based on the quality of the fit
-
-        :param Polyreg self:
-            An instance of the Polyreg class.
+        :param Poly self:
+            An instance of the Poly class.
+        :param matrix stackOfPoints:
+            A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.
         :return:
-            `T statistic <https://en.wikipedia.org/wiki/T-statistic>`_.
+            A list with d elements, each with a N-by-1 matrix of polynomial evaluations at the stackOfPoints.
+        """
+        # "Unpack" parameters from "self"
+        basis = self.basis.elements
+        basis_entries, dimensions = basis.shape
+        no_of_points, _ = stackOfPoints.shape
+        p = {}
+        dp = {}
+
+        # Save time by returning if univariate!
+        if dimensions == 1:
+            poly , _ =  self.parameters[0]._getOrthoPoly(stackOfPoints)
+            return poly
+        else:
+            for i in range(0, dimensions):
+                if len(stackOfPoints.shape) == 1:
+                    stackOfPoints = np.array([stackOfPoints])
+                p[i] , dp[i] = self.parameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i]) + 1 ) )
+
+        # One loop for polynomials
+        R = []
+        for v in range(0, dimensions):
+            gradDirection = v
+            polynomialgradient = np.zeros((basis_entries, no_of_points))
+            for i in range(0, basis_entries):
+                temp = np.ones((1, no_of_points))
+                for k in range(0, dimensions):
+                    if k == gradDirection:
+                        polynomialgradient[i,:] = dp[k][int(basis[i,k])] * temp
+                    else:
+                        polynomialgradient[i,:] = p[k][int(basis[i,k])] * temp
+                    temp = polynomialgradient[i,:]
+            R.append(polynomialgradient)
+
+        return R
+    def getTensorQuadratureRule(self, orders=None):
+        """
+        Generates a tensor grid quadrature rule based on the parameters in Poly.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param list orders:
+            A list of the highest polynomial orders along each dimension.
         :return:
-            `Coefficient of determination / R-squared value <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_.
+            A numpy array of quadrature points.
+        :return:
+            A numpy array of quadrature weights.
+        """
+        # Initialize points and weights
+        pp = [1.0]
+        ww = [1.0]
+
+        if orders is None:
+            orders = self.orders
+
+        # number of parameters
+        # For loop across each dimension
+        for u in range(0, self.dimensions):
+
+            # Call to get local quadrature method (for dimension 'u')
+            local_points, local_weights = self.parameters[u]._getLocalQuadrature(orders[u])
+            ww = np.kron(ww, local_weights)
+
+            # Tensor product of the points
+            dummy_vec = np.ones((len(local_points), 1))
+            dummy_vec2 = np.ones((len(pp), 1))
+            left_side = np.array(np.kron(pp, dummy_vec))
+            right_side = np.array( np.kron(dummy_vec2, local_points) )
+            pp = np.concatenate((left_side, right_side), axis = 1)
+
+        # Ignore the first column of pp
+        points = pp[:,1::]
+        weights = ww
+
+        # Return tensor grid quad-points and weights
+        return points, weights
+    def getStatistics(self, light=None, max_sobol_order=None):
+        """
+        Creates an instance of the Statistics class.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param string quadratureRule:
+            Two options exist for this string. The user can use 'qmc' for a distribution specific Monte Carlo (QMC) or they can use 'tensor grid' for standard tensor product grid. Typically, if the number of dimensions is less than 8, the tensor grid is the default option selected.
+        :return:
+            A Statistics object.
+        """
+        if light is None:
+            evals = self.getPolynomial(self.quadraturePoints)
+            return Statistics(self.coefficients, self.basis, self.parameters, self.quadraturePoints, self.quadratureWeights, evals, max_sobol_order)
+        else:
+            return Statistics(self.coefficients, self.basis, self.parameters, max_sobol_order=max_sobol_order)
+
+            
+    def getQuadratureRule(self, options=None, number_of_points = None):
+        """
+        Generates quadrature points and weights.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param string options:
+            Two options exist for this string. The user can use 'qmc' for a distribution specific Monte Carlo (QMC) or they can use 'tensor grid' for standard tensor product grid. Typically, if the number of dimensions is less than 8, the tensor grid is the default option selected.
+        :param int number_of_points:
+            If QMC is chosen, specifies the number of quadrature points in each direction. Otherwise, this is ignored.
+        :return:
+            A numpy array of quadrature points.
+        :return:
+            A numpy array of quadrature weights.
+        """
+        if options is None:
+            if self.dimensions > 5 or np.max(self.orders) > 4:
+                options = 'qmc'
+            else:
+                options = 'tensor grid'
+        if options.lower() == 'qmc':
+            if number_of_points is None:
+                default_number_of_points = 20000
+            else:
+                default_number_of_points = number_of_points
+            p = np.zeros((default_number_of_points, self.dimensions))
+            w = 1.0/float(default_number_of_points) * np.ones((default_number_of_points))
+            for i in range(0, self.dimensions):
+                p[:,i] = np.array(self.parameters[i].getSamples(m=default_number_of_points)).reshape((default_number_of_points,))
+            return p, w
+
+        if options.lower() == 'tensor grid':
+            p,w = self.getTensorQuadratureRule([i for i in self.basis.orders])
+            return p,w
+    def evaluatePolyFit(self, stackOfPoints):
+        """
+        Evaluates the the polynomial approximation of a function (or model data) at prescribed points.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param matrix stackOfPoints:
+            A N-by-d matrix of points (can be unscaled) at which the polynomial gradient must be evaluated at.
+        :return:
+            A 1-by-N matrix of the polynomial approximation.
+        """
+        return self.getPolynomial(stackOfPoints).T *  np.mat(self.coefficients)
+
+    def evaluatePolyGradFit(self, stackOfPoints):
+        """
+        Evaluates the gradient of the polynomial approximation of a function (or model data) at prescribed points.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param matrix stackOfPoints:
+            A N-by-d matrix of points (can be unscaled) at which the polynomial gradient must be evaluated at.
+        :return:
+            A d-by-N matrix of the gradients of the polynomial approximation.
+
+        **Notes:**
+
+        This function should not be confused with getPolynomialGradient(). The latter is only concerned with approximating what the multivariate polynomials
+        gradient values are at prescribed points.
+        """
+        H = self.getPolynomialGradient(stackOfPoints)
+        grads = np.zeros((self.dimensions, len(stackOfPoints) ) )
+        for i in range(0, self.dimensions):
+            grads[i,:] = np.mat(self.coefficients).T * H[i]
+        return grads
+    def getPolyFitFunction(self):
+        """
+        Returns a callable polynomial approximation of a function (or model data).
+
+        :param Poly self:
+            An instance of the Poly class.
+        :return:
+            A callable function.
 
         """
-        t_stat = get_t_value(self.coefficients, self.A, self.y)
-        r_sq = get_R_squared(self.coefficients, self.A, self.y)
-        return t_stat, r_sq
-    
-    def getQuadraturePointsWeights(self, points):
-        if points is None:
-            points = 10000
-        p, w = self.getQuadratureRule(options = self.quadrature_rule, number_of_points = points)
-        super(Polyreg, self).__setQuadrature__(p,w)
+        return lambda (x): self.getPolynomial(x).T *  np.mat(self.coefficients)
+    def getPolyGradFitFunction(self):
+        """
+        Returns a callable for the gradients of the polynomial approximation of a function (or model data).
 
-@staticmethod
-def get_F_stat(coefficients_0, A_0, coefficients_1, A_1, y):
-    assert len(coefficients_0) != len(coefficients_1)
-    assert A_0.shape[0] == A_1.shape[0]
-    # Set 0 to be reduced model, 1 to be "full" model
-    if len(coefficients_0) > len(coefficients_1):
-        temp = coefficients_0.copy()
-        coefficients_0 = coefficients_1.copy()
-        coefficients_1 = temp
-    assert len(coefficients_0) < len(coefficients_1)
+        :param Poly self:
+            An instance of the Poly class.
+        :return:
+            A callable function.
 
-    RSS_0 = np.linalg.norm(y - np.dot(A_0,coefficients_0))**2
-    RSS_1 = np.linalg.norm(y - np.dot(A_1,coefficients_1))**2
+        """
+        return lambda (x) : self.evaluatePolyGradFit(x)
+    def getFunctionSamples(self, number_of_samples):
+        """
+        Returns a set of function samples; useful for computing probabilities.
 
-    n = A_0.shape[0]
-    p_1 = A_1.shape[1]
-    p_0 = A_0.shape[1]
-    F = (RSS_0 - RSS_1) * (n-p_1)/(RSS_1 * (p_1 - p_0))
-    # p-value is scipy.stats.f.cdf(F, n - p_1, p_1 - p_0)
-    return F
+        :param Poly self:
+            An instance of the Poly class.
+        :param callable function:
+            A callable function (or evaluations of the function at the prerequisite quadrature points).
+        :param array coefficients:
+            A numpy array of the coefficients
+        :param matrix indexset:
+            A K-by-d matrix of the index set.
+        :return:
+            A 50000-by-1 array of function evaluations.
 
-
-def get_t_value(coefficients, A, y):
-    RSS = np.linalg.norm(y - np.dot(A,coefficients))**2
-    n,p = A.shape
-    if n == p:
-        return "exact"
-    RSE = RSS/(n-p)
-    Q, R = np.linalg.qr(A)
-    inv_ATA = np.linalg.inv(np.dot(R.T, R))
-    se = np.array([np.sqrt(RSE * inv_ATA[j,j]) for j in range(p)])
-    t_stat = coefficients / np.reshape(se, (len(se), 1))
-    # p-value is scipy.stats.t.cdf(t_stat, n - p)
-    return t_stat
-
-def get_R_squared(alpha, A, y):
-    y_bar = scipy.mean(y) * np.ones(len(y))
-    TSS = np.linalg.norm(y - y_bar)**2
-    RSS = np.linalg.norm(np.dot(A,alpha) - y)**2
-    return 1 - RSS/TSS
+        """
+        dimensions = self.dimensions
+        if number_of_samples is None:
+            number_of_samples = 50000 # default value!
+        plotting_pts = np.zeros((number_of_samples, dimensions))
+        for i in range(0, dimensions):
+                univariate_samples = self.parameters[i].getSamples(number_of_samples)
+                for j in range(0, number_of_samples):
+                    plotting_pts[j, i] = univariate_samples[j]
+        samples = self.evaluatePolyFit(plotting_pts)
+        return plotting_pts, samples

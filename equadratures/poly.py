@@ -194,24 +194,24 @@ class Poly(object):
 
         # Return tensor grid quad-points and weights
         return points, weights
-    def getStatistics(self, light=False, max_sobol_order = None):
+    def getStatistics(self, light=None, max_sobol_order=None):
         """
         Creates an instance of the Statistics class.
 
         :param Poly self:
             An instance of the Poly class.
-        :param int max_sobol_order:
-            Indicate the maximum order of Sobol' indices to pre-calculate. In high dimensional problems (e.g. >7D) it is advised to use this option to reduce the computational load upon initialization.
-        :param bool light:
-            Set to use a "light" version of Statistics, where skewness and kurtosis (and associated indices) are not calculated.
+        :param string quadratureRule:
+            Two options exist for this string. The user can use 'qmc' for a distribution specific Monte Carlo (QMC) or they can use 'tensor grid' for standard tensor product grid. Typically, if the number of dimensions is less than 8, the tensor grid is the default option selected.
         :return:
             A Statistics object.
         """
-        if not(light):
+        if light is None:
             evals = self.getPolynomial(self.quadraturePoints)
-            return Statistics(self.coefficients, self.basis, self.quadratureWeights, evals, max_sobol_order)
-        if light:
-            return Statistics(self.coefficients, self.basis,  max_sobol_order)
+            return Statistics(self.coefficients, self.basis, self.parameters, self.quadraturePoints, self.quadratureWeights, evals, max_sobol_order)
+        else:
+            return Statistics(self.coefficients, self.basis, self.parameters, max_sobol_order=max_sobol_order)
+
+            
     def getQuadratureRule(self, options=None, number_of_points = None):
         """
         Generates quadrature points and weights.
@@ -228,9 +228,9 @@ class Poly(object):
             A numpy array of quadrature weights.
         """
         if options is None:
-            if self.dimensions >= 15:
+            if self.dimensions > 35:
                 options = 'qmc'
-            elif self.dimensions < 15 :
+            elif self.dimensions < 35 :
                 options = 'tensor grid'
         if options.lower() == 'qmc':
             if number_of_points is None:

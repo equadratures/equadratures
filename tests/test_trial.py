@@ -2,6 +2,8 @@ from unittest import TestCase
 import unittest
 from equadratures import *
 import numpy as np
+import matplotlib.pyplot as plt
+from math import exp
 
 class TestQR(TestCase):
 

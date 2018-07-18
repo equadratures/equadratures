@@ -5,6 +5,7 @@ from poly import Poly
 import numpy as np
 from stats import Statistics, getAllSobol
 import scipy
+from scipy.stats import linregress
 
 
 class Polyreg(Poly):
@@ -103,6 +104,34 @@ class Polyreg(Poly):
             points = 10000
         p, w = self.getQuadratureRule(options = self.quadrature_rule, number_of_points = points)
         super(Polyreg, self).__setQuadrature__(p,w)
+        
+    def cross_validation(self, folds = 5):
+        """
+        Cross validation using data already given. Consider adapting to poly super-class.
+        """
+        x = self.x
+        N = x.shape[0]
+        y = self.y
+        R_sq = np.zeros(folds)
+        
+        for n in range(folds):
+            indices = [int(i) for i in n * np.ceil(N/5.0) + range(int(np.ceil(N/5.0))) if i < N]
+            x_ver = x[indices]
+            x_train = np.delete(x, indices, 0)
+            y_ver = y[indices].flatten()
+            y_train = np.squeeze(np.delete(y, indices))
+            
+            poly_trained = Polyreg(self.parameters, self.basis, training_inputs = x_train, training_outputs = y_train,no_of_quad_points = 0)
+            y_trained = np.squeeze(np.asarray(poly_trained.evaluatePolyFit(x_ver)))
+            
+            _,_,r,_,_ = linregress(y_ver, y_trained)
+            
+            R_sq[n] = r**2.0
+        
+        return np.mean(R_sq)
+            
+            
+            
 
 @staticmethod
 def get_F_stat(coefficients_0, A_0, coefficients_1, A_1, y):

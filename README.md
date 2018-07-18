@@ -1,8 +1,7 @@
 ![EFFECTIVE-QUADRATURES](https://static.wixstatic.com/media/dad873_3938470ea83849db8b53716c94dd20e8~mv2.png/v1/fill/w_269,h_66,al_c,usm_0.66_1.00_0.01/dad873_3938470ea83849db8b53716c94dd20e8~mv2.png)
 
 # Effective Quadratures
-[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Effective-Quadratures/Effective-Quadratures/main/LICENSE.rst)
-NOTE: For downloading the code, please use the last stable release (v5.2). Active development for v6.0 is underway, so some of the routines may not work. 
+NOTE: For downloading the code, please fork the code.
 
 **What is Effective Quadratures?**
 Effective Quadratures is a suite of tools for generating polynomials for approximation, uncertainty quantification (UQ), optimization and integration.  
@@ -33,42 +32,6 @@ For installation on Windows, you will need [Anaconda](https://www.continuum.io/d
 ```
 This should build the code. Just make sure you include the location of effective_quadratures folder to your python file and you should be good to go. To run this code you will require python 2.7, numpy, scipy and matplotlib. 
 
-# Simple example of use
-Below we a simple example that shows some of the functionality in Effective Quadratures. Here we demonstrate how to construct a bi-variate quadrature rule (using a tensor grid) from two different distriutions. 
-```python
-from equadratures import *
-
-x = Parameter(param_type='Gaussian', shape_parameter_A=3.0, shape_parameter_B=2.0, points=6)
-y = Parameter(param_type='Weibull', shape_parameter_A=1.0, shape_parameter_B=2.2, points=4)
-
-p = Polyint([x,y])
-points, weights = p.getPointsAndWeights()
-print points
-[[-1.70120995  0.28565256]
-[-1.70120995  0.79778656]
-[-1.70120995  1.44042885]
-[-1.70120995  2.21498268]
-[ 0.32830185  0.28565256]
-[ 0.32830185  0.79778656]
-[ 0.32830185  1.44042885]
-[ 0.32830185  2.21498268]
-[ 2.12784518  0.28565256]
-[ 2.12784518  0.79778656]
-[ 2.12784518  1.44042885]
-[ 2.12784518  2.21498268]
-[ 3.87215482  0.28565256]
-[ 3.87215482  0.79778656]
-[ 3.87215482  1.44042885]
-[ 3.87215482  2.21498268]
-[ 5.67169815  0.28565256]
-[ 5.67169815  0.79778656]
-[ 5.67169815  1.44042885]
-[ 5.67169815  2.21498268]
-[ 7.70120995  0.28565256]
-[ 7.70120995  0.79778656]
-[ 7.70120995  1.44042885]
-[ 7.70120995  2.21498268]]
-```
 For more examples, do checkout the notebooks here: www.effective-quadratures.org.
 # Documentation
 We use Sphinx for code documentation. See [Read the Docs](http://www-edc.eng.cam.ac.uk/~ps583/docs/) for more information. 
@@ -78,6 +41,3 @@ If you have contributions, questions, or feedback use either the Github reposito
 <br>
 Pranay Seshadri <br>
 *University of Cambridge* <br>
-
-# Funding
-This tool has been supported by funding from the Air Force Office of Scientific Research (AFOSR) under grant number FA9550-15-1-0018 and from the Engineering Physical Sciences Research Council (EPSRC) U.K.

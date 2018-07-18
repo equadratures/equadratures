@@ -11,7 +11,6 @@ from scipy.stats import linregress
 class Polyreg(Poly):
     """
     The class defines a Polyreg object. It is the child of Poly.
-
     :param Parameter parameters:
         A list of parameters.
     :param Basis basis:
@@ -52,7 +51,6 @@ class Polyreg(Poly):
     def computeCoefficients(self):
         """
         This function computes the coefficients using least squares. To access the coefficients simply use the class's attribute self.coefficients.
-
         :param Polyreg self:
             An instance of the Polyreg class.
         """
@@ -65,7 +63,6 @@ class Polyreg(Poly):
     def setDesignMatrix(self):
         """
         Sets the design matrix using the polynomials defined in the basis.
-
         :param Polyreg self:
             An instance of the Polyreg class.
         """
@@ -86,14 +83,12 @@ class Polyreg(Poly):
     def getfitStatistics(self):
         """
         Computes statistics based on the quality of the fit
-
         :param Polyreg self:
             An instance of the Polyreg class.
         :return:
             `T statistic <https://en.wikipedia.org/wiki/T-statistic>`_.
         :return:
             `Coefficient of determination / R-squared value <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_.
-
         """
         t_stat = get_t_value(self.coefficients, self.A, self.y)
         r_sq = get_R_squared(self.coefficients, self.A, self.y)

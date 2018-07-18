@@ -478,7 +478,8 @@ def PDF_WeibullDistribution(N, lambda_value, k):
     :return:
         Probability density values along the support of the Weibull distribution.
     """
-    x = np.linspace(0, 15/k, N)
+    #x = np.linspace(0, 15/k, N)
+    x = np.linspace(0.0000001, 15.0/k, N)
     w = k/lambda_value * (x/lambda_value)**(k-1) * np.exp(-1.0 * (x/lambda_value)**k )
     return x, w
 def PDF_GammaDistribution(N, k, theta):
@@ -550,7 +551,7 @@ def PDF_ChebyshevDistribution(N, lower, upper):
         Probability density values along the support of the Chebyshev (arcsine) distribution.
     """
     xreal = np.linspace(lower, upper, N)
-    wreal = 1.0 / (np.pi * np.sqrt( (xreal - lower) * (upper - xreal) )  )
+    wreal = 1.0 / (np.pi * np.sqrt( ((xreal+0.0000001) - lower) * (upper - (xreal-0.0000001)) )  )
     return xreal, wreal
 def PDF_TruncatedGaussianDistribution(N, mu, sigma_squared, a, b):
     """

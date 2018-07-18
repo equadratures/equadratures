@@ -116,7 +116,7 @@ class Polyreg(Poly):
             y_ver = y[indices].flatten()
             y_train = np.squeeze(np.delete(y, indices))
             
-            poly_trained = Polyreg(self.parameters, self.basis, training_inputs = x_train, training_outputs = y_train,no_of_quad_points = 0)
+            poly_trained = Polyreg(self.parameters, self.basis, training_inputs = x_train, training_outputs = y_train,no_of_quad_points = 1)
             y_trained = np.squeeze(np.asarray(poly_trained.evaluatePolyFit(x_ver)))
             
             _,_,r,_,_ = linregress(y_ver, y_trained)

@@ -18,7 +18,7 @@ setup(name='equadratures',
       author='Pranay Seshadri',
       author_email='ps583@cam.ac.uk',
       license='MIT',
-      packages=['equadratures'],
+      packages=['equadratures', 'equadratures.distributions'],
       install_requires=[
           'numpy',
           'scipy >= 0.15.0',

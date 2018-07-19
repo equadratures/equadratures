@@ -1,6 +1,5 @@
 """Computing Statistics from Polynomial Expansions"""
 import numpy as np
-from .plotting import barplot, triplebarplot
 from .basis import Basis
 from itertools import *
 class Statistics(object):
@@ -88,96 +87,6 @@ class Statistics(object):
                         TSI[j] = TSI[j] + list_of_indices_dicts[i][k]
                         
         return TSI
-    
-    #plots variance, skewness and kurtosis. Users can "update" the input dictionaries first to 
-    #plot multiple orders at once
-    @staticmethod
-    def plot_all_indices(list_of_indices_dicts):       
-        assert(len(list_of_indices_dicts) == 3) #v + s + k 
-        v = list_of_indices_dicts[0]
-        s = list_of_indices_dicts[1]
-        k = list_of_indices_dicts[2]
-        a = range(len(v))
-        b = [x for _,x in sorted(zip(v.keys(),a),key = lambda pair:len(pair[0]))]
-        vvals = [x for _,x in sorted(zip(v.keys(),v.values()), key = lambda pair:(len(pair[0]), pair[0][0]))]
-        svals = [x for _,x in sorted(zip(v.keys(), s.values()), key = lambda pair:(len(pair[0]), pair[0][0]))]
-        kvals = [x for _,x in sorted(zip(v.keys(), k.values()), key = lambda pair:(len(pair[0]), pair[0][0]))]
-        triplebarplot(a, vvals, svals, kvals, "Dimensions", "Index Value", sorted(v.keys(), key = len))
-    
-    #Pie chart of variance, skewness and kurtosis indices
-    #Var names in list form
-    """
-    @staticmethod
-    def pie_chart( list_of_indices_dicts, highest_order = 1, var_names = None, title = "Sobol' indices"):
-        v = list_of_indices_dicts[0]
-        if len(list_of_indices_dicts) > 1:
-            s = list_of_indices_dicts[1]
-        if len(list_of_indices_dicts) > 2:
-            k = list_of_indices_dicts[2]
-        labels_and_values = {}
-        if not(var_names is None):
-            v = dict((tuple([var_names[i] for i in key]), val) for key, val in v.iteritems())
-        for i in v.keys():
-            if v[i] > 1e-6:
-                if len(i) <= highest_order:
-                    labels_and_values[i] = v[i]
-                else:
-                    key = "order " + str(len(i))
-                    try:
-                        labels_and_values[key] += v[i]
-                    except KeyError:
-                        labels_and_values[key] = v[i]
-                    
-#        for i in s.keys():
-#            if len(i) == 1:
-#                labels_and_values[i[0]] = s.values[i]
-#            else:
-#                key = "order " + str(len(i))
-#                labels_and_values[key] += s.values[i]
-#        for i in k.keys():
-#            if len(i) == 1:
-#                labels_and_values[i[0]] = k.values[i]
-#            else:
-#                key = "order " + str(len(i))
-#                labels_and_values[key] += k.values[i]
-        
-        labels = labels_and_values.keys()
-        values = labels_and_values.values()
-        vl = sorted(zip(values, labels), reverse = True)
-        values, labels = zip(*vl)
-        
-        piechart(labels, values, title)
-    """
-
-    @staticmethod
-    def scatter_plot(list_of_indices_dicts, highest_order = 2, var_names = None, title = "Sobol' indices"):
-        # Assume all dicts have the same keys!
-        list_of_dicts = list_of_indices_dicts[:]
-        if not(var_names is None):
-            for j in range(len(list_of_indices_dicts)):
-                list_of_dicts[j] = dict((tuple([var_names[i] for i in key]), val) for key, val in list_of_indices_dicts[j].iteritems())
-        
-        valid_keys = [i for i in list_of_dicts[0].keys() if len(i) <= highest_order]
-        
-        labels = sorted(valid_keys, key = len)
-
-        col = np.reshape(np.arange(len(valid_keys), dtype = 'float'), (len(valid_keys),1))
-        list_of_cols = []
-        for i in range(len(list_of_dicts)):
-            list_of_cols.append(col.copy())
-        x = np.hstack(list_of_cols)
-        y = x.copy()
-        for i in range(len(list_of_dicts)):
-            for j in range(y.shape[0]):
-                y[j,i] = list_of_dicts[i][labels[j]]
-        
-        
-        scatterplot2(x,y,labels)
-                
-            
-        
-            
-            
         
 # Private functions!
 def getMean(coefficients):
@@ -189,8 +98,6 @@ def getVariance(coefficients):
         variance = result + float(coefficients[i]**2)
         result = variance
     return variance
-
-
 
 # Function that computes the Sobol' indices of all orders up to dimension of i/p
 def getAllSobol(coefficients, basis, max_order):

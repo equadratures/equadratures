@@ -39,7 +39,7 @@ class Polyint(Poly):
         method = self.basis.basis_type
         if method.lower() == 'sparse grid':
             __ , indexset, evaled_pts, weights = getSparsePseudospectralCoefficients(self, dummy_function)
-        elif (method.lower() == 'tensor grid') or (method.lower() == 'tensor'):
+        elif (method.lower() == 'tensor grid') or (method.lower() == 'tensor') or (method.lower() == 'univariate'):
             __ , indexset, evaled_pts, weights = getPseudospectralCoefficients(self, dummy_function)
             self.basis.elements = indexset
         self.multi_index = indexset

@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 """Utilities with QR factorization."""
 import numpy as np
+from numpy.linalg import qr
+import scipy.linalg as sc
 from scipy.optimize import minimize
+from scipy.linalg import sqrtm
 
 def implicitSymmetricQR(T):
     # Preliminary parameters
@@ -26,7 +29,37 @@ def implicitSymmetricQR(T):
 
     return T
 
+def gsvd(a, m, w):
+	"""
+	:param a: Matrix to GSVD
+	:param m: 1st Constraint, (u.T * m * u) = I
+	:param w: 2nd Constraint, (v.T * w * v) = I
+	:return: (u ,s, v)
+	"""
 
+	(aHeight, aWidth) = a.shape
+	(mHeight, mWidth) = m.shape
+	(wHeight, mWidth) = w.shape
+
+	assert(aHeight == mHeight)
+	assert(aWidth == mWidth)
+
+	mSqrt = sqrtm(m)
+	wSqrt = sqrtm(w)
+
+
+	mSqrtInv = np.linalg.inv(mSqrt)
+	wSqrtInv = np.linalg.inv(wSqrt)
+
+	_a = np.dot(np.dot(mSqrt, a), wSqrt)
+
+	(_u, _s, _v) = np.linalg.svd(_a)
+
+	u = np.dot(mSqrtInv, _u)
+	v = np.dot(wSqrtInv, _v.T).T
+	s = _s
+
+	return (u, s, v)
 
 def qr_Givens(A):
     """
@@ -134,7 +167,6 @@ def bidiag(A):
     # Remove trailing zeros from A
     A = A[0:n, 0:n]
     return U, A, V
-
 def solveCLSQ(A,b,C,d, technique=None):
     """
     Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d.
@@ -186,22 +218,23 @@ def nullSpaceMethod(A, b, C, d):
     """
     m, n = A.shape
     p, n = C.shape
-
-    Q, R = qr_Householder(C.T)
+    Q, R = qr(C.T, 'complete')
+    #Q, R = qr_Householder(C.T)
     Q1 = Q[0:n, 0:p]
     Q2 = Q[0:n, p:n]
-
     # Lower triangular matrix!
     L = R.T
     L = L[0:p, 0:p]
     y1, not_required = solveLSQ(L, d)
     c = b - (A * Q1) * y1
     AQ2 = A * Q2
-    y2, not_required = solveLSQ(AQ2 , c)
+    y2, not_required = solveLSQ(AQ2 , np.mat(c) )
     x = (Q1 * y1) + (Q2 * y2)
     cond = np.linalg.cond(AQ2)
     return x, cond
 
+def gsvdMethod(A, b, C, d):
+    
 def directElimination(A, b, C, d):
     """
     Solves the constrained least squares problem min ||Ax-b||_2 subject to Cx=d via the direct elimination method.
@@ -213,25 +246,27 @@ def directElimination(A, b, C, d):
     :return: cond, the condition number of the final matrix on which least squares is performed
     :rtype: float
     """
-    Q, R, pvec = qr_MGS(C, pivoting=True)
+    #Q, R, pvec = qr(C, pivoting=True)
+    Q, R, P2 = sc.qr(C, pivoting=True)
     m1, n1 = R.shape
-    P = permvec2mat(pvec)
+    P = permvec2mat(P2)
     r = np.linalg.matrix_rank(C)
     R_11 = R[0:r, 0:r]
     R_12 = R[0:r, r:n1]
     d_tilde = Q.T * d
     d1_tilde = d_tilde[0 : r]
-    d2_tilde = d_tilde[r: m1]
+    #d2_tilde = d_tilde[r: m1]
     A_tilde = A * P
     A1_tilde = A_tilde[:, 0 : r]
-    A2_tilde = A_tilde[:, r : m1]
+    A2_tilde = A_tilde[:, r : n1]
     A2_hat = A2_tilde - A1_tilde * np.linalg.inv(R_11) * R_12
     b_hat = b - A1_tilde * np.linalg.inv(R_11) * d1_tilde
     x2_tilde , cond_not_used = solveLSQ(A2_hat, b_hat)
     x1_tilde = np.linalg.inv(R_11) * (d1_tilde - R_12 * x2_tilde)
     x_tilde = np.mat( np.vstack([x1_tilde, x2_tilde]) , dtype='float64')
     cond = np.linalg.cond(A2_hat)
-    return P * x_tilde, cond
+    x = P * x_tilde
+    return x, cond
 
 def solveLSQ(A, b):
     """
@@ -249,10 +284,8 @@ def solveLSQ(A, b):
     # Direct methods!
     A = np.mat(A)
     b = np.mat(b)
-    Q, R = qr_MGS(A)
-    x = np.linalg.inv(R) * Q.T * b
-    x = np.array(x)
-    return x, np.linalg.cond(A)
+    alpha = np.linalg.lstsq(A, b)
+    return alpha[0], np.linalg.cond(A)
 
 
 def house(vec):

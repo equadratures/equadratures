@@ -1,0 +1,21 @@
+Sitemap
+==========================
+
+.. toctree::
+   :maxdepth: 5
+
+   introduction
+   corecode 
+   utilities
+   contact
+   license
+
+
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

@@ -1,0 +1,9 @@
+Polynomials
+==================
+
+
+.. toctree::
+   :maxdepth: 2
+
+   polyparent
+   polychildren

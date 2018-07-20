@@ -13,12 +13,6 @@ figs/
 # private data
 data/
 
-# documentation folders
-#_docsstatic/
-#_docstemplates/
-_build/
-_documentation/
-
 # test data
 
 # *.npz

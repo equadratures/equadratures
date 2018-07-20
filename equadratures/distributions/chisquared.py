@@ -16,10 +16,11 @@ class Chisquared(Distribution):
             self.bounds = np.array([1e-15, np.inf])
         else:
             self.bounds = np.array([0.0, np.inf])
-        self.mean = float(self.dofs)
-        self.variance = 2 * self.mean
-        self.skewness = np.sqrt(8.0 / self.mean)
-        self.kurtosis = 12.0/self.mean + 3.0 
+        if self.dofs >= 1:
+            self.mean = float(self.dofs)
+            self.variance = 2 * self.mean
+            self.skewness = np.sqrt(8.0 / self.mean)
+            self.kurtosis = 12.0/self.mean + 3.0 
     
     def getDescription(self):
         """

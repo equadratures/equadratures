@@ -16,10 +16,11 @@ class Gamma(Distribution):
         self.shape = shape
         self.scale = scale
         self.bounds = np.array([0.0, np.inf])
-        self.mean = self.shape * self.scale
-        self.variance = self.shape * self.scale**2
-        self.skewness = 2.0 / np.sqrt(self.shape)
-        self.kurtosis = 6.0 / self.shape # double-check!
+        if (self.shape is not None) and (self.scale is not None) and (self.shape > 0.0) : 
+            self.mean = self.shape * self.scale
+            self.variance = self.shape * self.scale**2
+            self.skewness = 2.0 / np.sqrt(self.shape)
+            self.kurtosis = 6.0 / self.shape # double-check!
     
     def getDescription(self):
         """

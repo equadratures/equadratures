@@ -41,6 +41,7 @@ class Parameter(object):
 		self.endpoints = endpoints
 		self.setDistribution()
 		self.setBounds()
+		self.setMoments()
 
 	def setDistribution(self):
 		choices = {'gaussian': Gaussian(self.shape_parameter_A, self.shape_parameter_B),
@@ -60,6 +61,10 @@ class Parameter(object):
 		distribution = choices.get(self.name.lower(), distributionError)
 		self.distribution = distribution
 
+	def setMoments(self):
+		self.mean = self.distribution.mean 
+		self.variance = self.distribution.variance
+		
 	def setBounds(self):
 		self.bounds = self.distribution.bounds
 

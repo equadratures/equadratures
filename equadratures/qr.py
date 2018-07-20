@@ -232,9 +232,7 @@ def nullSpaceMethod(A, b, C, d):
     x = (Q1 * y1) + (Q2 * y2)
     cond = np.linalg.cond(AQ2)
     return x, cond
-
-def gsvdMethod(A, b, C, d):
-    
+ 
 def directElimination(A, b, C, d):
     """
     Solves the constrained least squares problem min ||Ax-b||_2 subject to Cx=d via the direct elimination method.

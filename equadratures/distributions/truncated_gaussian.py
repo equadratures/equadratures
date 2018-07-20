@@ -18,7 +18,10 @@ class TruncatedGaussian(Distribution):
     def __init__(self, mean=None, variance=None, lower=None, upper=None):
         self.mean = mean
         self.variance = variance
-        self.sigma = np.sqrt(self.variance)
+        self.lower = lower 
+        self.upper = upper
+        if self.variance is not None:   
+            self.sigma = np.sqrt(self.variance)
         self.skewness = 0.0
         self.kurtosis = 0.0
         self.bounds = np.array([-np.inf, np.inf])

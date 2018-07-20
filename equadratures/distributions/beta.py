@@ -22,10 +22,11 @@ class Beta(Distribution):
         self.shape_B = shape_B
         self.lower = lower
         self.upper = upper
-        self.mean = (self.shape_A) / (self.shape_A + self.shape_B)
-        self.variance = (self.shape_A * self.shape_B) / ( (self.shape_A + self.shape_B)**2 * (self.shape_A + self.shape_B + 1.0) )
-        self.skewness = 2.0 * (self.shape_B - self.shape_A) * np.sqrt(self.shape_A + self.shape_B + 1.0) / ( (self.shape_A + self.shape_B + 2.0) * np.sqrt(self.shape_A * self.shape_B) ) 
-        self.kurtosis = 6.0 * ((self.shape_A - self.shape_B)**2 * (self.shape_A + self.shape_B + 1.0) - self.shape_A * self.shape_B * (self.shape_A + self.shape_B + 2.0)  ) /( (self.shape_A * self.shape_B) * (self.shape_A + self.shape_B + 2.0) * (self.shape_A + self.shape_B + 3.0)) + 3.0   
+        if self.shape_A >= 1. and self.shape_B >= 1.0:
+            self.mean = (self.shape_A) / (self.shape_A + self.shape_B)
+            self.variance = (self.shape_A * self.shape_B) / ( (self.shape_A + self.shape_B)**2 * (self.shape_A + self.shape_B + 1.0) )
+            self.skewness = 2.0 * (self.shape_B - self.shape_A) * np.sqrt(self.shape_A + self.shape_B + 1.0) / ( (self.shape_A + self.shape_B + 2.0) * np.sqrt(self.shape_A * self.shape_B) ) 
+            self.kurtosis = 6.0 * ((self.shape_A - self.shape_B)**2 * (self.shape_A + self.shape_B + 1.0) - self.shape_A * self.shape_B * (self.shape_A + self.shape_B + 2.0)  ) /( (self.shape_A * self.shape_B) * (self.shape_A + self.shape_B + 2.0) * (self.shape_A + self.shape_B + 3.0)) + 3.0   
         self.bounds = np.array([0, 1])
     
     def getDescription(self):

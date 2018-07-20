@@ -2,7 +2,7 @@ from unittest import TestCase
 import unittest
 from equadratures import *
 import numpy as np
-
+import matplotlib.pyplot as plt
 from scipy.special import erf, gamma
 
 class Test_Distributions(TestCase): 
@@ -282,7 +282,7 @@ class Test_Distributions(TestCase):
       shape_A = mu
       shape_B = sigma**2
       xo = Parameter(order=7, distribution='truncated-gaussian',lower =a, upper=b, shape_parameter_A = shape_A, shape_parameter_B = shape_B )
-      print xo.computeMean()
+      print xo.mean
       myBasis = Basis('Tensor')
       myPoly = Polyint([xo], myBasis)
       myPoly.computeCoefficients(blackbox)

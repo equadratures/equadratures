@@ -16,12 +16,11 @@ class Weibull(Distribution):
     def __init__(self, shape=None, scale=None):
         self.shape = shape
         self.scale = scale
-        if ( self.shape < 0.0 ) or (self.scale < 0.0):
-            raise(ValueError, 'For a Weibull distribution, the shape and scale parameters must be greater than or equal to 0.')
-        self.mean = self.scale * gamma(1.0 + 1.0/self.shape)
-        self.variance = self.scale**2 * ( gamma(1.0 + 2.0/self.shape) - (gamma(1.0 + 1.0/self.shape))**2  )
-        self.skewness = (gamma(1.0 + 3.0/self.shape) * self.scale**3 - 3 * self.mean * self.variance - self.mean**3  )/( np.sqrt(self.variance)**3 )
-        self.bounds = np.array([0, np.inf])
+        if ( self.shape > 0.0 ) and (self.scale > 0.0):
+            self.mean = self.scale * gamma(1.0 + 1.0/self.shape)
+            self.variance = self.scale**2 * ( gamma(1.0 + 2.0/self.shape) - (gamma(1.0 + 1.0/self.shape))**2  )
+            self.skewness = (gamma(1.0 + 3.0/self.shape) * self.scale**3 - 3 * self.mean * self.variance - self.mean**3  )/( np.sqrt(self.variance)**3 )
+            self.bounds = np.array([0, np.inf])
 
     def getDescription(self):
         """

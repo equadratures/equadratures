@@ -15,7 +15,8 @@ class Gaussian(Distribution):
     def __init__(self, mean, variance):
         self.mean = mean
         self.variance = variance
-        self.sigma = np.sqrt(self.variance)
+        if self.variance is not None:
+            self.sigma = np.sqrt(self.variance)
         self.skewness = 0.0
         self.kurtosis = 0.0
         self.bounds = np.array([-np.inf, np.inf])
@@ -66,7 +67,7 @@ class Gaussian(Distribution):
         w = 1.0/( np.sqrt(2 * self.variance * np.pi) ) * np.exp(-(x - self.mean)**2 * 1.0/(2 * self.variance) )
         return x, w
 
-    def getCDF(self, N):
+    def getCDF(self, N=None, points=None):
         """
         A Gaussian cumulative density function.
 
@@ -74,25 +75,33 @@ class Gaussian(Distribution):
             An instance of the Gaussian class.
         :param integer N:
             Number of points for defining the cumulative density function; default value is 500.
+        :param array points 
+            Points for which the cumulative density function is required.
         :return:
             An array of N equidistant values over the support of the Gaussian.
         :return:
             Gaussian cumulative density values.
         """
-        x = np.linspace(-15*self.sigma, 15*self.sigma, N)
-        x = x + self.mean # scaling it by the mean!
-        w = 0.5*(1 + erf((x - self.mean)/(self.sigma * np.sqrt(2) ) ) )
-        return x, w
+        if N is not None:
+            x = np.linspace(-15*self.sigma, 15*self.sigma, N)
+            x = x + self.mean # scaling it by the mean!
+            w = 0.5*(1 + erf((x - self.mean)/(self.sigma * np.sqrt(2) ) ) )
+            return x, w
+        elif points is not None:
+            w = 0.5*(1+erf((points-self.mean)/(self.sigma*np.sqrt(2))))
+            return w
+        else:
+            raise(ValueError, 'getCDF(): Please check your input arguments!')
 
-    def getiCDF(self, xx):
+    def getiCDF(self, points=None):
         """
         An inverse Gaussian cumulative density function.
 
         :param Gaussian self:
             An instance of the Gaussian class.
-        :param array xx:
+        :param array points:
             A numpy array of uniformly distributed samples between [0,1].
         :return:
             Inverse CDF samples associated with the Gaussian distribution.
         """
-        return self.mean + np.sqrt(self.variance) * np.sqrt(2.0) * erfinv(2.0*xx - 1.0)
+        return self.mean + np.sqrt(self.variance) * np.sqrt(2.0) * erfinv(2.0*points - 1.0)

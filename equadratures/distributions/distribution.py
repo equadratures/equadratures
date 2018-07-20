@@ -64,7 +64,7 @@ class Distribution(object):
             Recurrence coefficients associated with the distribution.
         """
         x, w  = self.getPDF(RECURRENCE_PDF_SAMPLES)
-        ab = custom_recurrence_coefficients(order, x, w)
+        ab = custom_recurrence_coefficients(x, w, order)
         return ab
 
     def getSamples(self, m=None):

@@ -12,13 +12,12 @@ class Exponential(Distribution):
     """
     def __init__(self, rate=None):
         self.rate = rate
-        if self.rate <= 0.0:
-            raise(ValueError, 'For an exponential distribution, the rate parameter must be greater than zero')
-        self.mean = 1.0/self.rate
-        self.variance = 1.0/(self.rate)**2
-        self.skewness = 2.0
-        self.kurtosis = 6.0
-        self.bounds = np.array([0.0, np.inf])
+        if (self.rate is not None) and (self.rate > 0.0):
+            self.mean = 1.0/self.rate
+            self.variance = 1.0/(self.rate)**2
+            self.skewness = 2.0
+            self.kurtosis = 6.0
+            self.bounds = np.array([0.0, np.inf])
         
     def getDescription(self):
         """

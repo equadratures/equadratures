@@ -1,5 +1,0 @@
-Basis
-===========
-
-.. automodule:: equadratures.basis
-    :members:

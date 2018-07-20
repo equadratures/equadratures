@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Introduction" href="introduction.html" /> 
+    <link rel="next" title="Core code" href="corecode.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -56,6 +56,10 @@
           
             
             
+              <div class="version">
+                7.0
+              </div>
+            
           
 
           
@@ -78,7 +82,6 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="corecode.html">Core code</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
 </ul>
@@ -147,17 +150,50 @@
             
   <div class="section" id="effective-quadratures">
 <h1>Effective Quadratures<a class="headerlink" href="#effective-quadratures" title="Permalink to this headline">¶</a></h1>
+<p>Effective Quadratures is a Python-based library that supports a wide range of utilities in <em>uncertainty quantification</em>, <em>dimension reduction</em>, <em>sensitivity analysis</em> and <em>optimisation</em>—all using polynomials. The project was initially born out of a need to replicate the results of various works within the field of polynomial chaos. It has subsequently morphed into a dedicated effort to use polynomials for a range of objectives under the broad umbrella of <strong>supervised machine learning</strong>.</p>
+<p>The project is under active development with new techniques within the fields indicated above. The primary developers are academics at the <a class="reference external" href="http://www.cam.ac.uk">University of Cambridge</a>.</p>
+</div>
+<div class="section" id="download-links">
+<h1>Download Links<a class="headerlink" href="#download-links" title="Permalink to this headline">¶</a></h1>
+<p>To download the code, please visit <a class="reference external" href="http://www.effective-quadratures.org">www.effective-quadratures.org</a>. You will find useful resources and several quick start guides.</p>
+</div>
+<div class="section" id="license-and-copyright">
+<h1>License and copyright<a class="headerlink" href="#license-and-copyright" title="Permalink to this headline">¶</a></h1>
+<p>As of version 7.0, Effective Quadratures is under an end-user license agreement (<span class="guilabel">EULA</span>). Details of this agreement can be found <a class="reference external" href="https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/LICENCE.pdf">here</a>. There are two types of licenses that may be used:</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last"><strong>For-profit license</strong>.
+The Licensee shall not modify, adapt, disassemble, reverse engineer, decompile, translate or otherwise attempt to discover the source code of the Software or permit any of these things to happen except as allowed by applicable law. The for-profit Licensee shall sign, date and return a copy of this licence to <a class="reference external" href="mailto:contact&#37;&#52;&#48;effective-quadratures&#46;org">contact<span>&#64;</span>effective-quadratures<span>&#46;</span>org</a>.</p>
+</div>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last"><strong>Not-for-profit license</strong>.
+The Licensee may correct errors, modify the Software and create derivative works.  The Licensee shall copy all error corrections promptly to the Licensor and hereby assigns copyright in them to the Licensor.  The Licensee shall own modifications and derivative works it makes of the Software but not any Software incorporated in them.  The restrictions in clause 3 shall also apply to any modification or derivative work, to the extent that it is based on or utilises the Software, unless the Licensor’s prior written consent to vary the restrictions has been obtained.  Such consent shall be subject to payment and to such other terms as may be fair and reasonable in the circumstances.</p>
+</div>
+<p>This implies that for strictly not-for-profit purposes (e.g., largely academic and research institutions), the software is free. For for-profit entities, use of the code may be subject to a license.</p>
+</div>
+<div class="section" id="references">
+<h1>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h1>
+<table class="docutils citation" frame="void" id="seshadri2018quadrature" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[seshadri2018quadrature]</td><td>Seshadri, P., Iaccarino, G., Ghisu, T. Quadrature Strategies for Constructing Polynomial Approximations. [To appear in Springer shortly]. Preprint available: <a class="reference external" href="https://arxiv.org/abs/1805.07296">https://arxiv.org/abs/1805.07296</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="seshadri2017effectively" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[seshadri2017effectively]</td><td>Seshadri, P., Narayan, A., Sankaran M. Effectively Subsampled Quadratures for Least Squares Polynomial Approximations.” SIAM/ASA Journal on Uncertainty Quantification 5.1 (2017): 1003-1023. <a class="reference external" href="https://epubs.siam.org/doi/abs/10.1137/16M1057668">https://epubs.siam.org/doi/abs/10.1137/16M1057668</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="seshadri2017effective" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[seshadri2017effective]</td><td>Seshadri, P., Parks, G. T., Effective-Quadratures (EQ): Polynomials for Computational Engineering Studies, Journal of Open Source Software, 2(11), 166, <a class="reference external" href="http://joss.theoj.org/papers/ba651f2b3608a5d2b085af06b1108747">doi:10.21105/joss.00166</a></td></tr>
+</tbody>
+</table>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="introduction.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="introduction.html#quick-start">Quick start</a></li>
-<li class="toctree-l2"><a class="reference internal" href="introduction.html#math">Math</a></li>
-<li class="toctree-l2"><a class="reference internal" href="introduction.html#download-links">Download Links</a></li>
-<li class="toctree-l2"><a class="reference internal" href="introduction.html#license-and-copyright">License and copyright</a></li>
-<li class="toctree-l2"><a class="reference internal" href="introduction.html#references">References</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="corecode.html">Core code</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="basis.html">Basis</a></li>
@@ -204,7 +240,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="introduction.html" class="btn btn-neutral float-right" title="Introduction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="corecode.html" class="btn btn-neutral float-right" title="Core code" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>

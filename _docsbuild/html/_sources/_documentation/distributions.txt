@@ -9,3 +9,14 @@ Distributions for characterizing the parameters.
    :maxdepth: 2
 
    gaussian
+   truncated_gaussian
+   cauchy 
+   beta
+   chebyshev
+   gamma
+   uniform
+   weibull
+   rayleigh
+   exponential 
+   chisquared
+          

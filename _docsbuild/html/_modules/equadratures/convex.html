@@ -1,0 +1,724 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>equadratures.convex &mdash; Effective Quadratures v7.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../_documentation/index.html" class="icon icon-home"> Effective Quadratures
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                7.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/introduction.html">Effective Quadratures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/introduction.html#download-links">Download Links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/introduction.html#license-and-copyright">License and copyright</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/introduction.html#references">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/corecode.html">Core code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/utilities.html">Utilities</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../_documentation/index.html">Effective Quadratures</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../_documentation/index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>equadratures.convex</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for equadratures.convex</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;A library of convex optimizers&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="k">import</span> <span class="n">det</span><span class="p">,</span> <span class="n">cholesky</span><span class="p">,</span> <span class="n">lstsq</span>
+
+
+<div class="viewcode-block" id="maxdet"><a class="viewcode-back" href="../../_documentation/convex.html#equadratures.convex.maxdet">[docs]</a><span class="k">def</span> <span class="nf">maxdet</span><span class="p">(</span><span class="n">Amatrix</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Formulation of the determinant maximization as a convex program</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">maxiter</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="n">n_tol</span> <span class="o">=</span> <span class="mf">1e-12</span>
+    <span class="n">gap</span> <span class="o">=</span> <span class="mf">1.005</span>
+
+    <span class="c1"># For backtracking line search parameters</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.01</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+    <span class="c1"># Amatrixssuming the input matrix is an np.matrix()</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">Amatrix</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">if</span> <span class="n">m</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;maxdet(): requires the number of columns to be greater than the number of rows!&#39;</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">ones_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">ones_m_transpose</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">gap</span><span class="p">)</span> <span class="o">*</span> <span class="n">n</span><span class="o">/</span><span class="n">m</span>
+
+    <span class="c1"># Objective function</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">diag</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+    <span class="n">fz</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">Amatrix</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">Z</span> <span class="o">*</span> <span class="n">Amatrix</span><span class="p">))</span> <span class="o">-</span> <span class="n">kappa</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">z</span><span class="p">))</span>
+
+    <span class="c1"># Optimization loop!</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">maxiter</span><span class="p">)</span> <span class="p">:</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">diag</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">Amatrix</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">Z</span> <span class="o">*</span> <span class="n">Amatrix</span><span class="p">)</span>
+        <span class="n">V</span> <span class="o">=</span> <span class="n">Amatrix</span> <span class="o">*</span> <span class="n">W</span> <span class="o">*</span> <span class="n">Amatrix</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">vo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">V</span><span class="p">))</span>
+        <span class="n">vo</span> <span class="o">=</span> <span class="n">vo</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="c1"># define some z operations</span>
+        <span class="n">one_by_z</span> <span class="o">=</span> <span class="n">ones_m</span> <span class="o">/</span> <span class="n">z</span>
+        <span class="n">one_by_one_minus_z</span> <span class="o">=</span> <span class="n">ones_m</span> <span class="o">/</span> <span class="p">(</span><span class="n">ones_m</span> <span class="o">-</span> <span class="n">z</span><span class="p">)</span>
+        <span class="n">one_by_z2</span> <span class="o">=</span> <span class="n">ones_m</span> <span class="o">/</span> <span class="n">z</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">one_by_one_minus_z2</span> <span class="o">=</span> <span class="n">ones_m</span> <span class="o">/</span> <span class="p">(</span><span class="n">ones_m</span> <span class="o">-</span> <span class="n">z</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="o">-</span><span class="n">vo</span><span class="o">-</span> <span class="n">kappa</span> <span class="o">*</span> <span class="p">(</span><span class="n">one_by_z</span> <span class="o">-</span> <span class="n">one_by_one_minus_z</span><span class="p">)</span>
+        <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span> <span class="o">+</span> <span class="n">kappa</span> <span class="o">*</span> <span class="n">diag</span><span class="p">(</span> <span class="n">one_by_z2</span> <span class="o">+</span> <span class="n">one_by_one_minus_z2</span><span class="p">)</span>
+
+        <span class="c1"># Textbook Newton&#39;s method -- compute inverse of Hessian</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">cholesky</span><span class="p">(</span><span class="n">H</span><span class="p">)</span> <span class="p">)</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">lstsq</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span>
+        <span class="n">Hinvg</span> <span class="o">=</span> <span class="n">lstsq</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">Hinvg</span> <span class="o">=</span> <span class="n">Hinvg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">lstsq</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">ones_m</span><span class="p">)</span>
+        <span class="n">Hinv1</span> <span class="o">=</span> <span class="n">lstsq</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">Hinv1</span> <span class="o">=</span> <span class="n">Hinv1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="o">-</span><span class="n">Hinvg</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">ones_m_transpose</span> <span class="p">,</span> <span class="n">Hinvg</span> <span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ones_m_transpose</span> <span class="p">,</span> <span class="n">Hinv1</span><span class="p">))</span> <span class="o">*</span> <span class="n">Hinv1</span>
+
+
+        <span class="n">deczi</span> <span class="o">=</span> <span class="n">indices</span><span class="p">(</span><span class="n">dz</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">inczi</span> <span class="o">=</span> <span class="n">indices</span><span class="p">(</span><span class="n">dz</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">a1</span> <span class="o">=</span> <span class="mf">0.99</span><span class="o">*</span> <span class="o">-</span><span class="n">z</span><span class="p">[</span><span class="n">deczi</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">dz</span><span class="p">[</span><span class="n">deczi</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">a2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">z</span><span class="p">[</span><span class="n">inczi</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="p">)</span><span class="o">/</span><span class="n">dz</span><span class="p">[</span><span class="n">inczi</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">a1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">a2</span><span class="p">)</span> <span class="p">]</span> <span class="p">)</span>  <span class="p">)</span>
+        <span class="n">flag</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">while</span> <span class="n">flag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">zp</span> <span class="o">=</span> <span class="n">z</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="n">dz</span>
+            <span class="n">Zp</span> <span class="o">=</span> <span class="n">diag</span><span class="p">(</span><span class="n">zp</span><span class="p">)</span>
+            <span class="n">fzp</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">Amatrix</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">Zp</span> <span class="o">*</span> <span class="n">Amatrix</span><span class="p">)</span> <span class="p">)</span> <span class="o">-</span> <span class="n">kappa</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">zp</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">zp</span><span class="p">)</span>  <span class="p">)</span>
+            <span class="n">const</span> <span class="o">=</span> <span class="n">fz</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">s</span> <span class="o">*</span> <span class="n">g</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">dz</span>
+            <span class="k">if</span> <span class="n">fzp</span> <span class="o">&lt;=</span> <span class="n">const</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">flag</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="k">if</span> <span class="n">flag</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">s</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">zp</span>
+        <span class="n">fz</span> <span class="o">=</span> <span class="n">fzp</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="o">-</span><span class="n">g</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">dz</span> <span class="o">*</span> <span class="mf">0.5</span>
+        <span class="k">if</span><span class="p">(</span> <span class="n">sig</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">n_tol</span><span class="p">):</span>
+            <span class="k">break</span>
+        <span class="n">zsort</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">thres</span> <span class="o">=</span> <span class="n">zsort</span><span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">zhat</span><span class="p">,</span> <span class="n">not_used</span> <span class="o">=</span> <span class="n">find</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">thres</span><span class="p">)</span>
+
+    <span class="n">zsort</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">thres</span> <span class="o">=</span> <span class="n">zsort</span><span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">zhat</span><span class="p">,</span> <span class="n">not_used</span> <span class="o">=</span> <span class="n">find</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">thres</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">zhat</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">Zhat</span> <span class="o">=</span> <span class="n">diag</span><span class="p">(</span><span class="n">zhat</span><span class="p">)</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">Amatrix</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">Zhat</span>  <span class="o">*</span> <span class="n">Amatrix</span><span class="p">))</span>
+    <span class="n">ztilde</span>  <span class="o">=</span> <span class="n">z</span>
+    <span class="n">Utilde</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">Amatrix</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">diag</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">*</span> <span class="n">Amatrix</span><span class="p">))</span>  <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">m</span> <span class="o">*</span> <span class="n">kappa</span>
+</div>
+    <span class="k">return</span> <span class="n">zhat</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">ztilde</span><span class="p">,</span> <span class="n">Utilde</span>
+<div class="viewcode-block" id="CG_solve"><a class="viewcode-back" href="../../_documentation/convex.html#equadratures.convex.CG_solve">[docs]</a><span class="k">def</span> <span class="nf">CG_solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">max_iters</span><span class="p">,</span> <span class="n">tol</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solves Ax = b iteratively using conjugate gradient.</span>
+<span class="sd">    A must be a SPD matrix</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;A is not symmetric positive definite.&#39;</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">),</span><span class="mi">1</span><span class="p">))</span>
+
+
+    <span class="c1">#Initialization</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">iterations</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">delta_0</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">b</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">bestx</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+    <span class="n">bestres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">delta</span><span class="o">/</span><span class="n">delta_0</span><span class="p">);</span>
+    <span class="n">residual</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">delta</span> <span class="o">/</span> <span class="n">delta_0</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="n">iterations</span> <span class="o">&lt;</span> <span class="n">max_iters</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">delta</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">tol</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">delta_0</span><span class="p">):</span>
+
+        <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">d</span><span class="p">)</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">delta</span> <span class="o">/</span> <span class="nb">sum</span><span class="p">(</span><span class="n">d</span> <span class="o">*</span> <span class="n">q</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">+=</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">d</span>
+        <span class="n">r</span> <span class="o">-=</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">q</span>
+        <span class="n">new_delta</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="n">new_delta</span> <span class="o">/</span> <span class="n">delta</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">r</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">d</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">delta</span><span class="o">/</span><span class="n">delta_0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">bestres</span><span class="p">:</span>
+            <span class="n">bestx</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+            <span class="n">bestres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">delta</span><span class="o">/</span><span class="n">delta_0</span><span class="p">);</span>
+
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">new_delta</span>
+        <span class="n">residual</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">delta</span> <span class="o">/</span> <span class="n">delta_0</span><span class="p">)</span>
+        <span class="n">iterations</span> <span class="o">+=</span> <span class="mi">1</span>
+</div>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">residual</span><span class="p">,</span> <span class="n">iterations</span>
+<div class="viewcode-block" id="bp"><a class="viewcode-back" href="../../_documentation/convex.html#equadratures.convex.bp">[docs]</a><span class="k">def</span> <span class="nf">bp</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x0</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cgtol</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cgmaxiter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">pdtol</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">pdmaxiter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">use_CG</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    l1 minimization with equality constraint Ax = b.</span>
+<span class="sd">    (Noiseless basis pursuit)</span>
+<span class="sd">    Adapted from l1-magic, l1eq_pd.m (Candes and Romberg)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Free parameters</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="o">.</span><span class="mi">01</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="o">.</span><span class="mi">5</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="mi">10</span>
+
+    <span class="k">if</span> <span class="n">cgtol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cgtol</span> <span class="o">=</span> <span class="mf">1e-5</span>
+    <span class="k">if</span> <span class="n">cgmaxiter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cgmaxiter</span> <span class="o">=</span> <span class="mi">200</span>
+    <span class="k">if</span> <span class="n">pdtol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pdtol</span> <span class="o">=</span> <span class="mf">1e-3</span>
+    <span class="k">if</span> <span class="n">pdmaxiter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pdmaxiter</span> <span class="o">=</span> <span class="mi">50</span>
+
+    <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+    <span class="c1"># Find initial solution, if none provided or provided but infeasible</span>
+    <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">x0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">x0</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">cgtol</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">use_CG</span><span class="p">:</span>
+                <span class="n">q</span><span class="p">,</span> <span class="n">cgres</span><span class="p">,</span> <span class="n">cgiter</span> <span class="o">=</span> <span class="n">CG_solve</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">b</span><span class="p">,</span> <span class="n">cgmaxiter</span><span class="p">,</span> <span class="n">cgtol</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">b</span><span class="p">)</span>
+                <span class="n">cgres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">q</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">-</span> <span class="n">b</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+                <span class="n">cgiter</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="n">cgres</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>
+
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;AA^T is too ill conditioned. Cannot find starting point.&#39;</span><span class="p">)</span>
+                <span class="n">xp</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">xp</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="n">use_CG</span><span class="p">:</span>
+            <span class="n">q</span><span class="p">,</span> <span class="n">cgres</span><span class="p">,</span> <span class="n">cgiter</span> <span class="o">=</span> <span class="n">CG_solve</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">b</span><span class="p">,</span> <span class="n">cgmaxiter</span><span class="p">,</span> <span class="n">cgtol</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">b</span><span class="p">)</span>
+            <span class="n">cgres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">q</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">-</span> <span class="n">b</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+            <span class="n">cgiter</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="n">cgres</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;AA^T is too ill conditioned. Cannot find starting point.&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+    <span class="n">gradf0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)])</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="mf">0.95</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.10</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x0</span><span class="p">));</span>
+
+    <span class="c1"># First iteration</span>
+    <span class="n">fu1</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="n">u</span>
+    <span class="n">fu2</span> <span class="o">=</span> <span class="o">-</span><span class="n">x</span> <span class="o">-</span> <span class="n">u</span>
+    <span class="n">lam_u1</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">fu1</span>
+    <span class="n">lam_u2</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">fu2</span>
+    <span class="c1">#initialize nu (v) to be -A*(lam_u1 - lam_u2)</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="o">-</span><span class="n">A</span><span class="p">,</span> <span class="p">(</span><span class="n">lam_u1</span><span class="o">-</span><span class="n">lam_u2</span><span class="p">))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+    <span class="n">sdg</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">fu1</span><span class="o">*</span><span class="n">lam_u1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">fu2</span><span class="o">*</span><span class="n">lam_u2</span><span class="p">))</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">N</span> <span class="o">/</span> <span class="n">sdg</span>
+
+    <span class="c1">#Calculate the residuals</span>
+    <span class="n">Atv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="n">r_pri</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">-</span> <span class="n">b</span>
+    <span class="n">r_cent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="o">-</span><span class="n">lam_u1</span> <span class="o">*</span> <span class="n">fu1</span><span class="p">,</span> <span class="o">-</span><span class="n">lam_u2</span> <span class="o">*</span> <span class="n">fu2</span><span class="p">])</span> <span class="o">-</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">tau</span>
+    <span class="n">r_dual</span> <span class="o">=</span> <span class="n">gradf0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">lam_u1</span> <span class="o">-</span> <span class="n">lam_u2</span><span class="p">,</span> <span class="o">-</span><span class="n">lam_u1</span> <span class="o">-</span> <span class="n">lam_u2</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">Atv</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)])</span>
+    <span class="n">resnorm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">r_pri</span><span class="p">,</span> <span class="n">r_cent</span><span class="p">,</span> <span class="n">r_dual</span><span class="p">]))</span>
+
+    <span class="n">pditer</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">done</span> <span class="o">=</span> <span class="p">(</span><span class="n">sdg</span> <span class="o">&lt;</span> <span class="n">pdtol</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">pditer</span> <span class="o">&gt;=</span> <span class="n">pdmaxiter</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="ow">not</span><span class="p">(</span><span class="n">done</span><span class="p">):</span>
+        <span class="n">pditer</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">w1</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="n">tau</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="n">fu1</span> <span class="o">+</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">fu2</span><span class="p">)</span> <span class="o">-</span> <span class="n">Atv</span><span class="p">;</span>
+        <span class="n">w2</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">-</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">tau</span><span class="o">*</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">fu1</span> <span class="o">+</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">fu2</span><span class="p">);</span>
+        <span class="n">w3</span> <span class="o">=</span> <span class="o">-</span><span class="n">r_pri</span><span class="p">;</span>
+        <span class="n">sig1</span> <span class="o">=</span> <span class="o">-</span><span class="n">lam_u1</span><span class="o">/</span><span class="n">fu1</span> <span class="o">-</span> <span class="n">lam_u2</span><span class="o">/</span><span class="n">fu2</span><span class="p">;</span>
+        <span class="n">sig2</span> <span class="o">=</span> <span class="n">lam_u1</span><span class="o">/</span><span class="n">fu1</span> <span class="o">-</span> <span class="n">lam_u2</span><span class="o">/</span><span class="n">fu2</span><span class="p">;</span>
+        <span class="n">sigx</span> <span class="o">=</span> <span class="n">sig1</span> <span class="o">-</span> <span class="n">sig2</span><span class="o">**</span><span class="mf">2.0</span><span class="o">/</span><span class="n">sig1</span><span class="p">;</span>
+
+        <span class="n">w1p</span> <span class="o">=</span> <span class="o">-</span><span class="n">w3</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,(</span><span class="n">w1</span><span class="o">/</span><span class="n">sigx</span> <span class="o">-</span> <span class="n">w2</span><span class="o">*</span><span class="n">sig2</span><span class="o">/</span><span class="p">(</span><span class="n">sigx</span><span class="o">*</span><span class="n">sig1</span><span class="p">)))</span><span class="o">.</span><span class="n">flatten</span><span class="p">();</span>
+        <span class="n">inv_sigx</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">sigx</span>
+        <span class="n">H11p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">inv_sigx</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">inv_sigx</span><span class="p">))))),</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">);</span>
+        <span class="k">if</span> <span class="n">use_CG</span><span class="p">:</span>
+            <span class="n">dv</span><span class="p">,</span> <span class="n">cgres</span><span class="p">,</span> <span class="n">cgiter</span> <span class="o">=</span> <span class="n">CG_solve</span><span class="p">(</span><span class="n">H11p</span><span class="p">,</span> <span class="n">w1p</span><span class="p">,</span> <span class="n">cgmaxiter</span><span class="p">,</span> <span class="n">cgtol</span><span class="p">);</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">H11p</span><span class="p">,</span> <span class="n">w1p</span><span class="p">)</span>
+            <span class="n">cgres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">H11p</span><span class="p">,</span> <span class="n">dv</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">-</span> <span class="n">w1p</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">w1p</span><span class="p">)</span>
+            <span class="n">cgiter</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="n">cgres</span> <span class="o">&gt;</span> <span class="o">.</span><span class="mi">5</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="n">cgres</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Matrix ill-conditioned.  Returning previous iterate.&#39;</span><span class="p">);</span>
+            <span class="n">xp</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">xp</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="p">(</span><span class="n">w1</span> <span class="o">-</span> <span class="n">w2</span><span class="o">*</span><span class="n">sig2</span><span class="o">/</span><span class="n">sig1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">dv</span><span class="p">))</span><span class="o">/</span><span class="n">sigx</span>
+        <span class="n">Adx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">dx</span><span class="p">)</span>
+        <span class="n">Atdv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">dv</span><span class="p">)</span>
+
+
+        <span class="n">du</span> <span class="o">=</span> <span class="p">(</span><span class="n">w2</span> <span class="o">-</span> <span class="n">sig2</span><span class="o">*</span><span class="n">dx</span><span class="p">)</span><span class="o">/</span><span class="n">sig1</span><span class="p">;</span>
+
+        <span class="n">dlamu1</span> <span class="o">=</span> <span class="p">(</span><span class="n">lam_u1</span><span class="o">/</span><span class="n">fu1</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="n">dx</span><span class="o">+</span><span class="n">du</span><span class="p">)</span> <span class="o">-</span> <span class="n">lam_u1</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">tau</span><span class="p">)</span><span class="o">*</span><span class="mf">1.0</span><span class="o">/</span><span class="n">fu1</span><span class="p">;</span>
+        <span class="n">dlamu2</span> <span class="o">=</span> <span class="p">(</span><span class="n">lam_u2</span><span class="o">/</span><span class="n">fu2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">dx</span><span class="o">+</span><span class="n">du</span><span class="p">)</span> <span class="o">-</span> <span class="n">lam_u2</span> <span class="o">-</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">tau</span><span class="o">*</span><span class="mf">1.0</span><span class="o">/</span><span class="n">fu2</span><span class="p">;</span>
+
+        <span class="c1"># make sure that the step is feasible: keeps lam_u1,lam_u2 &gt; 0, fu1,fu2 &lt; 0</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="n">lam_u1</span><span class="p">[</span><span class="n">dlamu1</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">dlamu1</span><span class="p">[</span><span class="n">dlamu1</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="n">lam_u2</span><span class="p">[</span><span class="n">dlamu2</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">dlamu2</span><span class="p">[</span><span class="n">dlamu2</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]]));</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.99</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">s</span><span class="p">,</span> <span class="o">-</span><span class="n">fu1</span><span class="p">[(</span><span class="n">dx</span><span class="o">-</span><span class="n">du</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">dx</span><span class="p">[(</span><span class="n">dx</span><span class="o">-</span><span class="n">du</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">du</span><span class="p">[(</span><span class="n">dx</span><span class="o">-</span><span class="n">du</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">])</span> <span class="p">,</span> <span class="o">-</span><span class="n">fu2</span><span class="p">[(</span><span class="o">-</span><span class="n">dx</span><span class="o">-</span><span class="n">du</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="o">-</span><span class="n">dx</span><span class="p">[(</span><span class="o">-</span><span class="n">dx</span><span class="o">-</span><span class="n">du</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">du</span><span class="p">[(</span><span class="o">-</span><span class="n">dx</span><span class="o">-</span><span class="n">du</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">])</span> <span class="p">]</span> <span class="p">))</span>
+
+        <span class="c1"># backtracking line search</span>
+        <span class="n">suffdec</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">backiter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">while</span> <span class="ow">not</span><span class="p">(</span><span class="n">suffdec</span><span class="p">):</span>
+            <span class="n">xp</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="n">dx</span><span class="p">;</span>
+            <span class="n">up</span> <span class="o">=</span> <span class="n">u</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="n">du</span><span class="p">;</span>
+            <span class="n">vp</span> <span class="o">=</span> <span class="n">v</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="n">dv</span><span class="p">;</span>
+            <span class="n">Atvp</span> <span class="o">=</span> <span class="n">Atv</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="n">Atdv</span><span class="p">;</span>
+            <span class="n">lamu1p</span> <span class="o">=</span> <span class="n">lam_u1</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="n">dlamu1</span><span class="p">;</span>
+            <span class="n">lamu2p</span> <span class="o">=</span> <span class="n">lam_u2</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="n">dlamu2</span><span class="p">;</span>
+            <span class="n">fu1p</span> <span class="o">=</span> <span class="n">xp</span> <span class="o">-</span> <span class="n">up</span><span class="p">;</span>
+            <span class="n">fu2p</span> <span class="o">=</span> <span class="o">-</span><span class="n">xp</span> <span class="o">-</span> <span class="n">up</span><span class="p">;</span>
+
+            <span class="n">rdp</span> <span class="o">=</span> <span class="n">gradf0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">lamu1p</span><span class="o">-</span><span class="n">lamu2p</span><span class="p">,</span> <span class="o">-</span><span class="n">lamu1p</span><span class="o">-</span><span class="n">lamu2p</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">Atvp</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)]);</span>
+            <span class="n">rcp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="o">-</span><span class="n">lamu1p</span><span class="o">*</span><span class="n">fu1p</span><span class="p">,</span> <span class="o">-</span><span class="n">lamu2p</span><span class="o">*</span><span class="n">fu2p</span><span class="p">])</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">tau</span><span class="p">);</span>
+            <span class="n">rpp</span> <span class="o">=</span> <span class="n">r_pri</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="n">Adx</span><span class="p">;</span>
+            <span class="n">suffdec</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">rdp</span><span class="p">,</span> <span class="n">rcp</span><span class="p">,</span> <span class="n">rpp</span><span class="p">]))</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="n">alpha</span><span class="o">*</span><span class="n">s</span><span class="p">)</span><span class="o">*</span><span class="n">resnorm</span><span class="p">);</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">beta</span><span class="o">*</span><span class="n">s</span><span class="p">;</span>
+            <span class="n">backiter</span> <span class="o">=</span> <span class="n">backiter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="k">if</span> <span class="n">backiter</span> <span class="o">&gt;</span> <span class="mi">32</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span> <span class="s1">&#39;Stuck backtracking, returning last iterate.&#39;</span>
+                <span class="n">xp</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">xp</span>
+
+        <span class="c1"># next iteration</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">up</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+        <span class="n">Atv</span> <span class="o">=</span> <span class="n">Atvp</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+        <span class="n">lam_u1</span> <span class="o">=</span> <span class="n">lamu1p</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+        <span class="n">lam_u2</span> <span class="o">=</span> <span class="n">lamu2p</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+        <span class="n">fu1</span> <span class="o">=</span> <span class="n">fu1p</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+        <span class="n">fu2</span> <span class="o">=</span> <span class="n">fu2p</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+
+        <span class="c1"># surrogate duality gap</span>
+        <span class="n">sdg</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">fu1</span><span class="o">*</span><span class="n">lam_u1</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">fu2</span><span class="o">*</span><span class="n">lam_u2</span><span class="p">));</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="n">mu</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">N</span><span class="o">/</span><span class="n">sdg</span><span class="p">;</span>
+        <span class="n">r_pri</span> <span class="o">=</span> <span class="n">rpp</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+        <span class="n">r_cent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="o">-</span><span class="n">lam_u1</span><span class="o">*</span><span class="n">fu1</span><span class="p">,</span> <span class="o">-</span><span class="n">lam_u2</span><span class="o">*</span><span class="n">fu2</span><span class="p">])</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">tau</span><span class="p">);</span>
+        <span class="n">r_dual</span> <span class="o">=</span> <span class="n">gradf0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">lam_u1</span><span class="o">-</span><span class="n">lam_u2</span><span class="p">,</span> <span class="o">-</span><span class="n">lam_u1</span><span class="o">-</span><span class="n">lam_u2</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">Atv</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)]);</span>
+        <span class="n">resnorm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">r_dual</span><span class="p">,</span> <span class="n">r_cent</span><span class="p">,</span> <span class="n">r_pri</span><span class="p">]));</span>
+
+        <span class="n">done</span> <span class="o">=</span> <span class="p">(</span><span class="n">sdg</span> <span class="o">&lt;</span> <span class="n">pdtol</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">pditer</span> <span class="o">&gt;=</span> <span class="n">pdmaxiter</span><span class="p">);</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s2">&quot;Iteration = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">pditer</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;, tau = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">tau</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;, Primal = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">u</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;, PDGap = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">sdg</span><span class="p">)</span> \
+                <span class="o">+</span> <span class="s2">&quot;, Dual res = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r_dual</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;, Primal res = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r_pri</span><span class="p">))</span>
+
+            <span class="nb">print</span> <span class="s2">&quot;CG Res = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cgres</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;CG Iter&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cgiter</span><span class="p">)</span>
+</div>
+    <span class="k">return</span> <span class="n">xp</span>
+<div class="viewcode-block" id="bp_denoise"><a class="viewcode-back" href="../../_documentation/convex.html#equadratures.convex.bp_denoise">[docs]</a><span class="k">def</span> <span class="nf">bp_denoise</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">x0</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">lbtol</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="n">mu</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">cgtol</span> <span class="o">=</span> <span class="mf">1e-8</span><span class="p">,</span> <span class="n">cgmaxiter</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">use_CG</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    l1 minimization with inequality constraint ||Ax - b||_2 &lt;= epsilon.</span>
+<span class="sd">    (Basis pursuit denoising)</span>
+<span class="sd">    Adapted from l1-magic, l1qc_logbarrier.m (Candes and Romberg)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">newtontol</span> <span class="o">=</span> <span class="n">lbtol</span><span class="p">;</span>
+    <span class="n">newtonmaxiter</span> <span class="o">=</span> <span class="mi">50</span><span class="p">;</span>
+
+    <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+    <span class="c1"># starting point --- make sure that it is feasible</span>
+    <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">x0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">x0</span><span class="p">)</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">epsilon</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span> <span class="s1">&#39;Starting point infeasible; using x0 = At*inv(AAt)*y.&#39;</span>
+            <span class="k">if</span> <span class="n">use_CG</span><span class="p">:</span>
+                <span class="n">w</span><span class="p">,</span> <span class="n">cgres</span><span class="p">,</span> <span class="n">cgiter</span> <span class="o">=</span> <span class="n">CG_solve</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">),</span><span class="n">b</span><span class="p">,</span><span class="n">cgmaxiter</span><span class="p">,</span><span class="n">cgtol</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">),</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+                <span class="n">cgres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">w</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">-</span> <span class="n">b</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+                <span class="n">cgiter</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="n">cgres</span> <span class="o">&gt;</span> <span class="o">.</span><span class="mi">5</span><span class="p">:</span>
+              <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span> <span class="s2">&quot;cgres = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cgres</span><span class="p">)</span>
+                    <span class="nb">print</span> <span class="s1">&#39;A*At is ill-conditioned: cannot find starting point&#39;</span>
+              <span class="n">xp</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+              <span class="k">return</span> <span class="n">xp</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">w</span><span class="p">);</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s1">&#39;No x0. Using x0 = At*inv(AAt)*y.&#39;</span>
+        <span class="k">if</span> <span class="n">use_CG</span><span class="p">:</span>
+            <span class="n">w</span><span class="p">,</span> <span class="n">cgres</span><span class="p">,</span> <span class="n">cgiter</span> <span class="o">=</span> <span class="n">CG_solve</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">),</span><span class="n">b</span><span class="p">,</span><span class="n">cgmaxiter</span><span class="p">,</span><span class="n">cgtol</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">),</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+            <span class="n">cgres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">w</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">-</span> <span class="n">b</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+            <span class="n">cgiter</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="n">cgres</span> <span class="o">&gt;</span> <span class="o">.</span><span class="mi">5</span><span class="p">:</span>
+              <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span> <span class="s2">&quot;cgres = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cgres</span><span class="p">)</span>
+                    <span class="nb">print</span> <span class="s1">&#39;A*At is ill-conditioned: cannot find starting point&#39;</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">w</span><span class="p">);</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">))</span> <span class="o">-</span> <span class="n">b</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">);</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.95</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mf">0.10</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x0</span><span class="p">));</span>    <span class="c1">#arbitrary u starting point?</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span> <span class="s1">&#39;Original l1 norm = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x0</span><span class="p">)))</span> <span class="o">+</span> <span class="s1">&#39;, original functional = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">u</span><span class="p">))</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x0</span><span class="p">)),</span> <span class="mf">1.0</span><span class="p">])</span>
+
+    <span class="n">lbiter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">lbtol</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">tau</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">mu</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span> <span class="s1">&#39;Number of log barrier iterations = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lbiter</span><span class="p">)</span>
+    <span class="n">totaliter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lbiter</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+      <span class="n">xp</span><span class="p">,</span> <span class="n">up</span><span class="p">,</span> <span class="n">ntiter</span> <span class="o">=</span> <span class="n">l1qc_newton</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">newtontol</span><span class="p">,</span> <span class="n">newtonmaxiter</span><span class="p">,</span> <span class="n">cgtol</span><span class="p">,</span> <span class="n">cgmaxiter</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span> <span class="n">use_CG</span><span class="p">);</span>
+      <span class="n">totaliter</span> <span class="o">+=</span> <span class="n">ntiter</span><span class="p">;</span>
+      <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+          <span class="nb">print</span> <span class="s1">&#39;Log barrier iter = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, l1 = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">xp</span><span class="p">)))</span> <span class="o">+</span> <span class="s1">&#39;, functional = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">up</span><span class="p">))</span> <span class="o">+</span> \
+          <span class="s1">&#39;, tau = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">tau</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, total newton iter = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">totaliter</span><span class="p">)</span>
+
+      <span class="n">x</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+      <span class="n">u</span> <span class="o">=</span> <span class="n">up</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+      <span class="n">tau</span> <span class="o">*=</span> <span class="n">mu</span>
+</div>
+    <span class="k">return</span> <span class="n">xp</span>
+<span class="k">def</span> <span class="nf">l1qc_newton</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">u0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">newtontol</span><span class="p">,</span> <span class="n">newtonmaxiter</span><span class="p">,</span> <span class="n">cgtol</span><span class="p">,</span> <span class="n">cgmaxiter</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span> <span class="n">use_CG</span><span class="p">):</span>
+    <span class="c1"># line search parameters</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">;</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">;</span>
+    <span class="n">AtA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">flatten</span><span class="p">();</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">u0</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">-</span> <span class="n">b</span><span class="o">.</span><span class="n">flatten</span><span class="p">();</span>
+    <span class="n">fu1</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="n">u</span><span class="p">;</span>
+    <span class="n">fu2</span> <span class="o">=</span> <span class="o">-</span><span class="n">x</span> <span class="o">-</span> <span class="n">u</span><span class="p">;</span>
+    <span class="n">fe</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asscalar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">r</span><span class="p">))</span> <span class="o">-</span> <span class="n">epsilon</span><span class="o">**</span><span class="mi">2</span><span class="p">);</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">-</span><span class="n">fu1</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">-</span><span class="n">fu2</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">-</span><span class="n">fe</span><span class="p">));</span>
+
+    <span class="n">niter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">done</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="ow">not</span><span class="p">(</span><span class="n">done</span><span class="p">)):</span>
+
+      <span class="n">atr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+
+      <span class="n">ntgz</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">fu1</span> <span class="o">-</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">fu2</span> <span class="o">+</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">fe</span> <span class="o">*</span> <span class="n">atr</span><span class="p">;</span>
+      <span class="n">ntgu</span> <span class="o">=</span> <span class="o">-</span><span class="n">tau</span> <span class="o">-</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">fu1</span> <span class="o">-</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">fu2</span><span class="p">;</span>
+      <span class="n">gradf</span> <span class="o">=</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">ntgz</span><span class="p">,</span> <span class="n">ntgu</span><span class="p">]);</span>
+
+      <span class="n">sig11</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">fu1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">fu2</span><span class="o">**</span><span class="mi">2</span><span class="p">;</span>
+      <span class="n">sig12</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="n">fu1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">fu2</span><span class="o">**</span><span class="mi">2</span><span class="p">;</span>
+      <span class="n">sigx</span> <span class="o">=</span> <span class="n">sig11</span> <span class="o">-</span> <span class="n">sig12</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">sig11</span><span class="p">;</span>
+
+      <span class="n">w1p</span> <span class="o">=</span> <span class="n">ntgz</span> <span class="o">-</span> <span class="n">sig12</span><span class="o">/</span><span class="n">sig11</span> <span class="o">*</span><span class="n">ntgu</span><span class="p">;</span>
+
+      <span class="n">H11p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">sigx</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sigx</span><span class="p">)))</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">fe</span><span class="p">)</span> <span class="o">*</span> <span class="n">AtA</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">fe</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">atr</span><span class="p">,</span><span class="n">atr</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">use_CG</span><span class="p">:</span>
+          <span class="n">dx</span><span class="p">,</span> <span class="n">cgres</span><span class="p">,</span> <span class="n">cgiter</span> <span class="o">=</span> <span class="n">CG_solve</span><span class="p">(</span><span class="n">H11p</span><span class="p">,</span> <span class="n">w1p</span><span class="p">,</span> <span class="n">cgmaxiter</span><span class="p">,</span> <span class="n">cgtol</span><span class="p">);</span>
+      <span class="k">else</span><span class="p">:</span>
+          <span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">H11p</span><span class="p">,</span> <span class="n">w1p</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+          <span class="n">cgres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">H11p</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">-</span> <span class="n">w1p</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">w1p</span><span class="p">)</span>
+          <span class="n">cgiter</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">cgres</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">):</span>
+          <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+              <span class="nb">print</span> <span class="s2">&quot;cgres = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cgres</span><span class="p">)</span>
+              <span class="nb">print</span> <span class="s1">&#39;Cannot solve system.  Returning previous iterate.&#39;</span>
+          <span class="n">xp</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+          <span class="n">up</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+          <span class="k">return</span> <span class="n">xp</span><span class="p">,</span> <span class="n">up</span><span class="p">,</span> <span class="mi">0</span>
+      <span class="n">Adx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">dx</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+
+      <span class="n">du</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">sig11</span><span class="p">)</span> <span class="o">*</span> <span class="n">ntgu</span> <span class="o">-</span> <span class="p">(</span><span class="n">sig12</span><span class="o">/</span><span class="n">sig11</span><span class="p">)</span><span class="o">*</span><span class="n">dx</span><span class="p">;</span>
+
+<span class="c1">#     minimum step size that stays in the interior</span>
+      <span class="n">aqe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Adx</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">Adx</span><span class="p">)</span>
+      <span class="n">bqe</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">Adx</span><span class="p">)</span>
+      <span class="n">cqe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asscalar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">r</span><span class="p">))</span> <span class="o">-</span> <span class="n">epsilon</span><span class="o">**</span><span class="mi">2</span>
+
+      <span class="n">smax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span> <span class="mf">1.0</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="o">-</span><span class="n">fu1</span><span class="p">[(</span><span class="n">dx</span><span class="o">-</span><span class="n">du</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">dx</span><span class="p">[(</span><span class="n">dx</span><span class="o">-</span><span class="n">du</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">du</span><span class="p">[(</span><span class="n">dx</span><span class="o">-</span><span class="n">du</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]),</span>\
+        <span class="o">-</span><span class="n">fu2</span><span class="p">[(</span><span class="o">-</span><span class="n">dx</span><span class="o">-</span><span class="n">du</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="o">-</span><span class="n">dx</span><span class="p">[(</span><span class="o">-</span><span class="n">dx</span><span class="o">-</span><span class="n">du</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">du</span><span class="p">[(</span><span class="o">-</span><span class="n">dx</span><span class="o">-</span><span class="n">du</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]),</span> \
+        <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="n">bqe</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">bqe</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">aqe</span> <span class="o">*</span> <span class="n">cqe</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">aqe</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,))</span> <span class="p">]</span> <span class="p">))]))</span>
+      <span class="n">s</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.99</span><span class="p">)</span> <span class="o">*</span> <span class="n">smax</span>
+
+      <span class="c1"># backtracking line search</span>
+      <span class="n">suffdec</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+      <span class="n">backiter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+      <span class="k">while</span> <span class="ow">not</span><span class="p">(</span><span class="n">suffdec</span><span class="p">):</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="n">dx</span><span class="p">;</span>
+        <span class="n">up</span> <span class="o">=</span> <span class="n">u</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="n">du</span><span class="p">;</span>
+        <span class="n">rp</span> <span class="o">=</span> <span class="n">r</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="n">Adx</span><span class="p">;</span>
+
+        <span class="n">fu1p</span> <span class="o">=</span> <span class="n">xp</span> <span class="o">-</span> <span class="n">up</span><span class="p">;</span>
+        <span class="n">fu2p</span> <span class="o">=</span> <span class="o">-</span><span class="n">xp</span> <span class="o">-</span> <span class="n">up</span><span class="p">;</span>
+
+        <span class="n">fep</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">rp</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">epsilon</span><span class="o">**</span><span class="mi">2</span><span class="p">);</span>
+        <span class="n">fp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">up</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">-</span><span class="n">fu1p</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">-</span><span class="n">fu2p</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">-</span><span class="n">fep</span><span class="p">));</span>
+
+        <span class="n">flin</span> <span class="o">=</span> <span class="n">f</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">s</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">gradf</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">dx</span><span class="p">,</span> <span class="n">du</span><span class="p">])));</span>
+
+        <span class="n">suffdec</span> <span class="o">=</span> <span class="p">(</span><span class="n">fp</span> <span class="o">&lt;=</span> <span class="n">flin</span><span class="p">);</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">s</span><span class="p">;</span>
+        <span class="n">backiter</span> <span class="o">=</span> <span class="n">backiter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">backiter</span> <span class="o">&gt;</span> <span class="mi">32</span><span class="p">):</span>
+          <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>  
+              <span class="nb">print</span> <span class="s1">&#39;Stuck on backtracking line search, returning previous iterate.&#39;</span><span class="p">;</span>
+          <span class="n">xp</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+          <span class="n">up</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+          <span class="k">return</span> <span class="n">xp</span><span class="p">,</span><span class="n">up</span><span class="p">,</span><span class="n">niter</span>
+
+      <span class="c1"># set up for next iteration</span>
+      <span class="n">x</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+      <span class="n">u</span> <span class="o">=</span> <span class="n">up</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+      <span class="n">r</span> <span class="o">=</span> <span class="n">rp</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+      <span class="n">fu1</span> <span class="o">=</span> <span class="n">fu1p</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+      <span class="n">fu2</span> <span class="o">=</span> <span class="n">fu2p</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+      <span class="n">fe</span> <span class="o">=</span> <span class="n">fep</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+      <span class="n">f</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
+
+      <span class="n">lambda2</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">gradf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">dx</span><span class="p">,</span> <span class="n">du</span><span class="p">])));</span>
+<span class="c1">#      print &quot;lambda2&quot;</span>
+<span class="c1">#      print lambda2</span>
+<span class="c1">#      print &quot;f&quot;</span>
+<span class="c1">#      print f</span>
+      <span class="n">stepsize</span> <span class="o">=</span> <span class="n">s</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">dx</span><span class="p">,</span> <span class="n">du</span><span class="p">]));</span>
+      <span class="n">niter</span> <span class="o">=</span> <span class="n">niter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+      <span class="n">done</span> <span class="o">=</span> <span class="p">(</span><span class="n">lambda2</span><span class="o">/</span><span class="mi">2</span> <span class="o">&lt;</span> <span class="n">newtontol</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">niter</span> <span class="o">&gt;=</span> <span class="n">newtonmaxiter</span><span class="p">);</span>
+      <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+          <span class="nb">print</span> <span class="s1">&#39;Newton iter = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">niter</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, Functional = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, Newton decrement = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lambda2</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, Stepsize = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">stepsize</span><span class="p">);</span>
+          <span class="nb">print</span> <span class="s1">&#39;                CG Res = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cgres</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, CG Iter = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cgiter</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">xp</span><span class="p">,</span> <span class="n">up</span><span class="p">,</span> <span class="n">niter</span>
+
+<div class="viewcode-block" id="binary2indices"><a class="viewcode-back" href="../../_documentation/convex.html#equadratures.convex.binary2indices">[docs]</a><span class="k">def</span> <span class="nf">binary2indices</span><span class="p">(</span><span class="n">zhat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple utility that converts a binary array into one with indices!</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pvec</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">zhat</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">zhat</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">pvec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">pvec</span>
+
+<span class="k">def</span> <span class="nf">indices</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">if</span> <span class="n">func</span><span class="p">(</span><span class="n">val</span><span class="p">)]</span>
+
+<span class="k">def</span> <span class="nf">diag</span><span class="p">(</span><span class="n">vec</span><span class="p">):</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+        <span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">vec</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">D</span>
+
+<span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">thres</span><span class="p">):</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">vec_new</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">vec</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">vec</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">thres</span><span class="p">:</span>
+            <span class="n">t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">vec_new</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">vec_new</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">vec_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">vec_new</span><span class="p">)</span>
+    <span class="n">vec_new</span> <span class="o">=</span> <span class="n">vec_new</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">return</span> <span class="n">vec_new</span><span class="p">,</span> <span class="n">t</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Pranay Seshadri et al..
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'v7.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

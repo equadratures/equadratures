@@ -8,7 +8,6 @@ Utilities
    dr
    convex
    stats
-   plotting
    qr
 
 

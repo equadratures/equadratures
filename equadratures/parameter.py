@@ -1,3 +1,4 @@
+"Definition of a univariate parameter."
 from distributions.gaussian import Gaussian
 from distributions.uniform import Uniform
 from distributions.chebyshev import Chebyshev
@@ -14,6 +15,7 @@ import numpy as np
 class Parameter(object):
 	"""
     This class defines a univariate parameter. Below are details of its constructor.
+
     :param double lower:
         Lower bound for the parameter.
     :param double upper:
@@ -21,7 +23,17 @@ class Parameter(object):
     :param integer order:
         Order of the parameter.
     :param string param_type:
-        The type of distribution that characterizes the parameter. Options include: `Chebyshev (arcsine) <https://en.wikipedia.org/wiki/Arcsine_distribution>`_, `Gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_, `Truncated-Gaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_, `Beta <https://en.wikipedia.org/wiki/Beta_distribution>`_, `Cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_, `Exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_, `Uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_, `Gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_, `Weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_. If no string is provided, a `Uniform` distribution is assumed. If the user provides data, and would like to generate orthogonal polynomials (and quadrature rules) based on the data, they can set this option to be Custom.
+        The type of distribution that characterizes the parameter. Options include: 
+		`Chebyshev (arcsine) <https://en.wikipedia.org/wiki/Arcsine_distribution>`_, 
+		`Gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_, 
+		`Truncated-Gaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_, 
+		`Beta <https://en.wikipedia.org/wiki/Beta_distribution>`_, 
+		`Cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_, 
+		`Exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_, 
+		`Uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_, 
+		`Gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_, 
+		`Weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_. 
+		If no string is provided, a `Uniform` distribution is assumed. If the user provides data, and would like to generate orthogonal polynomials (and quadrature rules) based on the data, they can set this option to be Custom.
     :param double shape_parameter_A:
         Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a `Gaussian` (or `TruncatedGaussian`), this represents the mean. In the case of a Beta distribution this represents the alpha value. For a uniform distribution this input is not required.
     :param double shape_parameter_B:

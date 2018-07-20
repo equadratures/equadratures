@@ -82,9 +82,6 @@
             
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../_documentation/introduction.html">Effective Quadratures</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../_documentation/introduction.html#download-links">Download Links</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../_documentation/introduction.html#license-and-copyright">License and copyright</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../_documentation/introduction.html#references">References</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../_documentation/corecode.html">Core code</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../_documentation/utilities.html">Utilities</a></li>
 </ul>
@@ -150,7 +147,8 @@
            <div itemprop="articleBody">
             
   <h1>Source code for equadratures.parameter</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">distributions.gaussian</span> <span class="k">import</span> <span class="n">Gaussian</span>
+<span></span><span class="s2">&quot;Definition of a univariate parameter.&quot;</span>
+<span class="kn">from</span> <span class="nn">distributions.gaussian</span> <span class="k">import</span> <span class="n">Gaussian</span>
 <span class="kn">from</span> <span class="nn">distributions.uniform</span> <span class="k">import</span> <span class="n">Uniform</span>
 <span class="kn">from</span> <span class="nn">distributions.chebyshev</span> <span class="k">import</span> <span class="n">Chebyshev</span>
 <span class="kn">from</span> <span class="nn">distributions.beta</span> <span class="k">import</span> <span class="n">Beta</span>
@@ -166,6 +164,7 @@
 <div class="viewcode-block" id="Parameter"><a class="viewcode-back" href="../../_documentation/parameter.html#equadratures.parameter.Parameter">[docs]</a><span class="k">class</span> <span class="nc">Parameter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 	<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class defines a univariate parameter. Below are details of its constructor.</span>
+
 <span class="sd">    :param double lower:</span>
 <span class="sd">        Lower bound for the parameter.</span>
 <span class="sd">    :param double upper:</span>
@@ -173,7 +172,17 @@
 <span class="sd">    :param integer order:</span>
 <span class="sd">        Order of the parameter.</span>
 <span class="sd">    :param string param_type:</span>
-<span class="sd">        The type of distribution that characterizes the parameter. Options include: `Chebyshev (arcsine) &lt;https://en.wikipedia.org/wiki/Arcsine_distribution&gt;`_, `Gaussian &lt;https://en.wikipedia.org/wiki/Normal_distribution&gt;`_, `Truncated-Gaussian &lt;https://en.wikipedia.org/wiki/Truncated_normal_distribution&gt;`_, `Beta &lt;https://en.wikipedia.org/wiki/Beta_distribution&gt;`_, `Cauchy &lt;https://en.wikipedia.org/wiki/Cauchy_distribution&gt;`_, `Exponential &lt;https://en.wikipedia.org/wiki/Exponential_distribution&gt;`_, `Uniform &lt;https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)&gt;`_, `Gamma &lt;https://en.wikipedia.org/wiki/Gamma_distribution&gt;`_, `Weibull &lt;https://en.wikipedia.org/wiki/Weibull_distribution&gt;`_. If no string is provided, a `Uniform` distribution is assumed. If the user provides data, and would like to generate orthogonal polynomials (and quadrature rules) based on the data, they can set this option to be Custom.</span>
+<span class="sd">        The type of distribution that characterizes the parameter. Options include: </span>
+<span class="sd">		`Chebyshev (arcsine) &lt;https://en.wikipedia.org/wiki/Arcsine_distribution&gt;`_, </span>
+<span class="sd">		`Gaussian &lt;https://en.wikipedia.org/wiki/Normal_distribution&gt;`_, </span>
+<span class="sd">		`Truncated-Gaussian &lt;https://en.wikipedia.org/wiki/Truncated_normal_distribution&gt;`_, </span>
+<span class="sd">		`Beta &lt;https://en.wikipedia.org/wiki/Beta_distribution&gt;`_, </span>
+<span class="sd">		`Cauchy &lt;https://en.wikipedia.org/wiki/Cauchy_distribution&gt;`_, </span>
+<span class="sd">		`Exponential &lt;https://en.wikipedia.org/wiki/Exponential_distribution&gt;`_, </span>
+<span class="sd">		`Uniform &lt;https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)&gt;`_, </span>
+<span class="sd">		`Gamma &lt;https://en.wikipedia.org/wiki/Gamma_distribution&gt;`_, </span>
+<span class="sd">		`Weibull &lt;https://en.wikipedia.org/wiki/Weibull_distribution&gt;`_. </span>
+<span class="sd">		If no string is provided, a `Uniform` distribution is assumed. If the user provides data, and would like to generate orthogonal polynomials (and quadrature rules) based on the data, they can set this option to be Custom.</span>
 <span class="sd">    :param double shape_parameter_A:</span>
 <span class="sd">        Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a `Gaussian` (or `TruncatedGaussian`), this represents the mean. In the case of a Beta distribution this represents the alpha value. For a uniform distribution this input is not required.</span>
 <span class="sd">    :param double shape_parameter_B:</span>
@@ -426,7 +435,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Pranay Seshadri et al..
+        &copy; Copyright 2018 by Effective Quadratures Team.
 
     </p>
   </div>

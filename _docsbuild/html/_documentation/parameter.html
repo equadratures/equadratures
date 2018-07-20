@@ -83,6 +83,7 @@
             
             
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Effective Quadratures</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="corecode.html">Core code</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Parameter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="basis.html">Basis</a></li>
@@ -159,21 +160,33 @@
             
   <div class="section" id="module-equadratures.parameter">
 <span id="parameter"></span><h1>Parameter<a class="headerlink" href="#module-equadratures.parameter" title="Permalink to this headline">¶</a></h1>
+<p>Definition of a univariate parameter.</p>
 <dl class="class">
 <dt id="equadratures.parameter.Parameter">
 <em class="property">class </em><code class="descclassname">equadratures.parameter.</code><code class="descname">Parameter</code><span class="sig-paren">(</span><em>order</em>, <em>distribution</em>, <em>endpoints=False</em>, <em>shape_parameter_A=None</em>, <em>shape_parameter_B=None</em>, <em>lower=None</em>, <em>upper=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#Parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.Parameter" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class defines a univariate parameter. Below are details of its constructor.
-:param double lower:</p>
-<blockquote>
-<div>Lower bound for the parameter.</div></blockquote>
+<dd><p>This class defines a univariate parameter. Below are details of its constructor.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>lower</strong> (<em>double</em>) – Lower bound for the parameter.</li>
 <li><strong>upper</strong> (<em>double</em>) – Upper bound for the parameter.</li>
 <li><strong>order</strong> (<em>integer</em>) – Order of the parameter.</li>
-<li><strong>param_type</strong> (<em>string</em>) – The type of distribution that characterizes the parameter. Options include: <a class="reference external" href="https://en.wikipedia.org/wiki/Arcsine_distribution">Chebyshev (arcsine)</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Truncated_normal_distribution">Truncated-Gaussian</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Beta_distribution">Beta</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Cauchy_distribution">Cauchy</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Exponential_distribution">Exponential</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)">Uniform</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Gamma_distribution">Gamma</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Weibull_distribution">Weibull</a>. If no string is provided, a <cite>Uniform</cite> distribution is assumed. If the user provides data, and would like to generate orthogonal polynomials (and quadrature rules) based on the data, they can set this option to be Custom.</li>
+<li><strong>param_type</strong> (<em>string</em>) – <dl class="docutils">
+<dt>The type of distribution that characterizes the parameter. Options include: </dt>
+<dd><a class="reference external" href="https://en.wikipedia.org/wiki/Arcsine_distribution">Chebyshev (arcsine)</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Truncated_normal_distribution">Truncated-Gaussian</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Beta_distribution">Beta</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Cauchy_distribution">Cauchy</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Exponential_distribution">Exponential</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)">Uniform</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Gamma_distribution">Gamma</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Weibull_distribution">Weibull</a>. 
+If no string is provided, a <cite>Uniform</cite> distribution is assumed. If the user provides data, and would like to generate orthogonal polynomials (and quadrature rules) based on the data, they can set this option to be Custom.</dd>
+</dl>
+</li>
 <li><strong>shape_parameter_A</strong> (<em>double</em>) – Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a <cite>Gaussian</cite> (or <cite>TruncatedGaussian</cite>), this represents the mean. In the case of a Beta distribution this represents the alpha value. For a uniform distribution this input is not required.</li>
 <li><strong>shape_parameter_B</strong> (<em>double</em>) – This is the second shape parameter that characterizes the distribution selected. In the case of a <cite>Gaussian</cite> or <cite>TruncatedGaussian</cite>, this is the variance.</li>
 <li><strong>data</strong> – A numpy array with data values (x-y column format). Note this option is only invoked if the user uses the Custom param_type.</li>
@@ -207,7 +220,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Pranay Seshadri et al..
+        &copy; Copyright 2018 by Effective Quadratures Team.
 
     </p>
   </div>

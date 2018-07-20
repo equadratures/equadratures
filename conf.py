@@ -20,8 +20,8 @@
 # -- Project information -----------------------------------------------------
 
 project = u'Effective Quadratures'
-copyright = u'2018, Pranay Seshadri et al.'
-author = u'Pranay Seshadri et al.'
+copyright = u'2018 by Effective Quadratures Team'
+author = u'Pranay Seshadri, Nicholas Wong, Henry Yuchi, Irene Vidris'
 
 # The short X.Y version
 version = u'7.0'

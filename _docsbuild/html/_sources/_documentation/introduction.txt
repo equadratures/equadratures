@@ -1,19 +1,20 @@
-.. Effective Quadratures documentation
-
 Effective Quadratures
 =================================================
+
+Overview
+--------------
 Effective Quadratures is a Python-based library that supports a wide range of utilities in *uncertainty quantification*, *dimension reduction*, *sensitivity analysis* and *optimisation*---all using polynomials. The project was initially born out of a need to replicate the results of various works within the field of polynomial chaos. It has subsequently morphed into a dedicated effort to use polynomials for a range of objectives under the broad umbrella of **supervised machine learning**. 
 
 The project is under active development with new techniques within the fields indicated above. The primary developers are academics at the `University of Cambridge <http://www.cam.ac.uk>`__.
 
 Download Links
-==============
+---------------
 
 To download the code, please visit `www.effective-quadratures.org <http://www.effective-quadratures.org>`__. You will find useful resources and several quick start guides.
 
 
 License and copyright
-=====================
+-----------------------
 As of version 7.0, Effective Quadratures is under an end-user license agreement (:guilabel:`EULA`). Details of this agreement can be found `here <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/LICENCE.pdf>`__. There are two types of licenses that may be used:
  
 .. Important:: **For-profit license**.
@@ -25,7 +26,7 @@ As of version 7.0, Effective Quadratures is under an end-user license agreement 
 This implies that for strictly not-for-profit purposes (e.g., largely academic and research institutions), the software is free. For for-profit entities, use of the code may be subject to a license. 
 
 References
-==========
+-----------
 
 .. [seshadri2018quadrature] Seshadri, P., Iaccarino, G., Ghisu, T. Quadrature Strategies for Constructing Polynomial Approximations. [To appear in Springer shortly]. Preprint available: `https://arxiv.org/abs/1805.07296 <https://arxiv.org/abs/1805.07296>`__
 

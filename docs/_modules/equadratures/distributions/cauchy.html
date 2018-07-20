@@ -1,0 +1,290 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>equadratures.distributions.cauchy &mdash; Effective Quadratures v7.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../_documentation/index.html" class="icon icon-home"> Effective Quadratures
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                7.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../_documentation/introduction.html">Effective Quadratures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_documentation/corecode.html">Core code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_documentation/utilities.html">Utilities</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../_documentation/index.html">Effective Quadratures</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../_documentation/index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>equadratures.distributions.cauchy</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for equadratures.distributions.cauchy</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;The Cauchy distribution.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">distribution</span> <span class="k">import</span> <span class="n">Distribution</span>
+<span class="kn">from</span> <span class="nn">recurrence_utils</span> <span class="k">import</span> <span class="n">custom_recurrence_coefficients</span>
+
+<div class="viewcode-block" id="Cauchy"><a class="viewcode-back" href="../../../_documentation/cauchy.html#equadratures.distributions.cauchy.Cauchy">[docs]</a><span class="k">class</span> <span class="nc">Cauchy</span><span class="p">(</span><span class="n">Distribution</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The class defines a Cauchy object. It is the child of Distribution.</span>
+<span class="sd">    </span>
+<span class="sd">    :param double location:</span>
+<span class="sd">		Location parameter of the Cauchy distribution.</span>
+<span class="sd">    :param double scale:</span>
+<span class="sd">		Scale parameter of the Cauchy distribution.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">location</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skewness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kurtosis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    
+<div class="viewcode-block" id="Cauchy.getDescription"><a class="viewcode-back" href="../../../_documentation/cauchy.html#equadratures.distributions.cauchy.Cauchy.getDescription">[docs]</a>    <span class="k">def</span> <span class="nf">getDescription</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A description of the Cauchy distribution.</span>
+<span class="sd">        </span>
+<span class="sd">        :param Cauchy self:</span>
+<span class="sd">            An instance of the Cauchy class.</span>
+<span class="sd">        :return:</span>
+<span class="sd">            A string describing the Cauchy distribution.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;A Cauchy distribution has an undefined mean and variance; its location parameter is &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;, and its scale parameter is &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.&quot;</span>
+        <span class="k">return</span> <span class="n">text</span></div>
+    
+<div class="viewcode-block" id="Cauchy.getPDF"><a class="viewcode-back" href="../../../_documentation/cauchy.html#equadratures.distributions.cauchy.Cauchy.getPDF">[docs]</a>    <span class="k">def</span> <span class="nf">getPDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A Cauchy probability density function.</span>
+<span class="sd">        </span>
+<span class="sd">        :param Cauchy self:</span>
+<span class="sd">            An instance of the Cauchy class.</span>
+<span class="sd">        :param int N:</span>
+<span class="sd">            Number of points for defining the probability density function.</span>
+<span class="sd">        :return:</span>
+<span class="sd">            An array of N equidistant values over the support of the distribution.</span>
+<span class="sd">        :return:</span>
+<span class="sd">            Probability density values along the support of the Cauchy distribution.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">15</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="mi">15</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">location</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">w</span></div>
+
+<div class="viewcode-block" id="Cauchy.getCDF"><a class="viewcode-back" href="../../../_documentation/cauchy.html#equadratures.distributions.cauchy.Cauchy.getCDF">[docs]</a>    <span class="k">def</span> <span class="nf">getCDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A Cauchy cumulative density function.</span>
+<span class="sd">        </span>
+<span class="sd">        :param Cauchy self:</span>
+<span class="sd">            An instance of the Cauchy class.</span>
+<span class="sd">        :param integer N:</span>
+<span class="sd">            Number of points for defining the cumulative density function.</span>
+<span class="sd">        :return:</span>
+<span class="sd">            An array of N equidistant values over the support of the distribution.</span>
+<span class="sd">        :return:</span>
+<span class="sd">            Cumulative density values along the support of the Cauchy distribution.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">15</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="mi">15</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">location</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">w</span></div>
+
+<div class="viewcode-block" id="Cauchy.getiCDF"><a class="viewcode-back" href="../../../_documentation/cauchy.html#equadratures.distributions.cauchy.Cauchy.getiCDF">[docs]</a>    <span class="k">def</span> <span class="nf">getiCDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        An inverse Cauchy cumulative density function.</span>
+<span class="sd">        </span>
+<span class="sd">        :param Cauchy self:</span>
+<span class="sd">            An instance of the Cauchy class.</span>
+<span class="sd">        :param array xx:</span>
+<span class="sd">            A numpy array of uniformly distributed samples between [0, 1].</span>
+<span class="sd">        :return:</span>
+<span class="sd">            Inverse CDF samples associated with the Cauchy distribution.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">xx</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">))</span></div></div>
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018 by The Effective Quadratures Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'v7.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

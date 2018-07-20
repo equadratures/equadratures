@@ -1,5 +1,0 @@
-Base polynomial
-==================
-
-.. automodule:: equadratures.poly
-    :members:

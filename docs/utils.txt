@@ -1,5 +1,0 @@
-Utilities
-===========
-
-.. automodule:: effective_quadratures.utils
-    :members:

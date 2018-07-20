@@ -1,5 +1,0 @@
-Rayleigh
-====================
-
-.. automodule:: equadratures.distributions.rayleigh
-    :members:

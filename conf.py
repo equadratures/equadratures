@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = u'Effective Quadratures'
-copyright = u'2018 by Effective Quadratures Team'
+copyright = u'2018 by The Effective Quadratures Team'
 author = u'Pranay Seshadri, Nicholas Wong, Henry Yuchi, Irene Vidris'
 
 # The short X.Y version
@@ -115,11 +115,11 @@ htmlhelp_basename = 'EffectiveQuadraturesdoc'
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
-    # 'papersize': 'letterpaper',
+    'papersize': 'a4paper',
 
     # The font size ('10pt', '11pt' or '12pt').
     #
-    # 'pointsize': '10pt',
+    'pointsize': '10pt',
 
     # Additional stuff for the LaTeX preamble.
     #
@@ -135,7 +135,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'EffectiveQuadratures.tex', u'Effective Quadratures Documentation',
-     u'Pranay Seshadri et al.', 'manual'),
+     u'Pranay Seshadri, Nicholas Wong, Henry Yuchi, Irene Virdis', 'manual'),
 ]
 
 

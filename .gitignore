@@ -17,7 +17,7 @@ data/
 _docsstatic/
 _docstemplates/
 build/
-_documentation/
+#_documentation/
 
 # test data
 

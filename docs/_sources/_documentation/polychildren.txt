@@ -1,0 +1,11 @@
+Coefficient computation
+========================
+The files below are used for coefficient computation.
+
+.. toctree::
+   :maxdepth: 2
+
+   polyreg
+   polyint
+   polycs
+   polylsq

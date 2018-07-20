@@ -1,0 +1,5 @@
+Least Squares
+===============================
+
+.. automodule:: equadratures.polylsq
+    :members:

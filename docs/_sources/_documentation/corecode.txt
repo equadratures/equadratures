@@ -1,0 +1,16 @@
+Core code 
+==================
+
+
+.. toctree::
+   :maxdepth: 2
+
+   parameter
+   basis
+   poly
+   distributions
+   
+
+
+.. automodule:: equadratures
+    :members:

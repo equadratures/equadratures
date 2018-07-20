@@ -1,0 +1,462 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>equadratures.polylsq &mdash; Effective Quadratures v7.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../_documentation/index.html" class="icon icon-home"> Effective Quadratures
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/corecode.html">Core code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/utilities.html">Utilities</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../_documentation/index.html">Effective Quadratures</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../_documentation/index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>equadratures.polylsq</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for equadratures.polylsq</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Finding coefficients via least squares&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">parameter</span> <span class="k">import</span> <span class="n">Parameter</span>
+<span class="kn">from</span> <span class="nn">basis</span> <span class="k">import</span> <span class="n">Basis</span>
+<span class="kn">from</span> <span class="nn">poly</span> <span class="k">import</span> <span class="n">Poly</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="k">import</span> <span class="n">evalfunction</span><span class="p">,</span> <span class="n">evalgradients</span><span class="p">,</span> <span class="n">cell2matrix</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="k">import</span> <span class="n">qr</span><span class="p">,</span> <span class="n">svd</span><span class="p">,</span> <span class="n">lu</span>
+<span class="kn">from</span> <span class="nn">qr</span> <span class="k">import</span> <span class="n">solveCLSQ</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">convex</span> <span class="k">import</span> <span class="n">maxdet</span><span class="p">,</span> <span class="n">binary2indices</span>
+<div class="viewcode-block" id="Polylsq"><a class="viewcode-back" href="../../_documentation/polylsq.html#equadratures.polylsq.Polylsq">[docs]</a><span class="k">class</span> <span class="nc">Polylsq</span><span class="p">(</span><span class="n">Poly</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class defines a Polylsq (polynomial via least squares) object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">oversampling</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradients</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span> <span class="o">=</span> <span class="n">optimization</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span>
+        <span class="k">if</span> <span class="n">oversampling</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oversampling</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oversampling</span> <span class="o">=</span> <span class="n">oversampling</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradients</span> <span class="o">=</span> <span class="n">gradients</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">cardinality</span>
+        <span class="n">m_refined</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">oversampling</span> <span class="o">*</span> <span class="n">n</span><span class="p">))</span>
+        <span class="n">m_big</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">):</span>
+            <span class="n">m_big</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">order</span>  <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">m_big</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;tensor&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;random&#39;</span><span class="p">:</span>
+                <span class="n">pts</span><span class="p">,</span> <span class="n">wts</span> <span class="o">=</span> <span class="p">[]</span> <span class="p">,</span> <span class="p">[]</span> <span class="c1"># empty points and weights to save memory!</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pts</span><span class="p">,</span> <span class="n">wts</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getTensorQuadratureRule</span><span class="p">()</span> <span class="c1"># original weights sum up to 1</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;chebyshev&#39;</span><span class="p">:</span>
+            <span class="n">pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">m_big</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span> <span class="p">))</span>
+            <span class="n">wts</span> <span class="o">=</span>  <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="n">pts</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">wts</span> <span class="o">=</span> <span class="n">wts</span> <span class="o">*</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">wts</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;tensorcheck&#39;</span><span class="p">:</span>
+            <span class="n">pts</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getTensorQuadratureRule</span><span class="p">()</span>
+            <span class="n">wts</span> <span class="o">=</span>  <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="n">pts</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">wts</span> <span class="o">=</span> <span class="n">wts</span> <span class="o">*</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">wts</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;uniform&#39;</span><span class="p">:</span>
+            <span class="n">pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m_big</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">):</span>
+                <span class="n">univariate_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">,</span> <span class="n">m_big</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">m_big</span><span class="p">):</span>
+                    <span class="n">pts</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">univariate_samples</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">wts</span> <span class="o">=</span>  <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="n">pts</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">wts</span> <span class="o">=</span> <span class="n">wts</span> <span class="o">*</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">wts</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;random&#39;</span><span class="p">:</span>
+            <span class="n">pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m_big</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">):</span>
+                <span class="n">univariate_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">getSamples</span><span class="p">(</span><span class="n">m_big</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">m_big</span><span class="p">):</span>
+                    <span class="n">pts</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">univariate_samples</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="c1">#wts = float(n * 1.0)/float(m_big * 1.0) * 1.0/np.sum( (super(Polylsq, self).getPolynomial(pts))**2 , 0)</span>
+            <span class="n">wts</span> <span class="o">=</span>  <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="n">pts</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+            <span class="n">wts</span> <span class="o">=</span> <span class="n">wts</span> <span class="o">*</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">wts</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Polylsq:__init___:: Unknown mesh! Choose between tensor, chebyshev, random or induced please.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradients</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__gradientsFalse</span><span class="p">(</span><span class="n">pts</span><span class="p">,</span> <span class="n">wts</span><span class="p">,</span> <span class="n">m_refined</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradients</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__gradientsTrue</span><span class="p">(</span><span class="n">pts</span><span class="p">,</span> <span class="n">wts</span><span class="p">,</span> <span class="n">m_refined</span><span class="p">)</span>  
+    <span class="k">def</span> <span class="nf">__gradientsTrue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pts</span><span class="p">,</span> <span class="n">wts</span><span class="p">,</span> <span class="n">m_refined</span><span class="p">):</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="n">pts</span><span class="p">)</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">wts</span><span class="p">))</span> <span class="p">)</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">W</span> <span class="o">*</span> <span class="n">P</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;greedy-qr&#39;</span><span class="p">:</span>    
+            <span class="n">__</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">pvec</span> <span class="o">=</span> <span class="n">qr</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">pivoting</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">pvec</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m_refined</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;greedy-svd&#39;</span><span class="p">:</span>   
+            <span class="n">__</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">svd</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">__</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">pvec</span> <span class="o">=</span> <span class="n">qr</span><span class="p">(</span><span class="n">V</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="n">m_refined</span><span class="p">]</span><span class="o">.</span><span class="n">T</span> <span class="p">,</span> <span class="n">pivoting</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">pvec</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m_refined</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;newton&#39;</span><span class="p">:</span>
+            <span class="n">zhat</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">ztilde</span><span class="p">,</span> <span class="n">Utilde</span> <span class="o">=</span> <span class="n">maxdet</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">m_refined</span><span class="p">)</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">binary2indices</span><span class="p">(</span><span class="n">zhat</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Polylsq:__init___:: Unknown optimization technique! Choose between greedy or newton please.&#39;</span><span class="p">)</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="mf">1e15</span>
+        <span class="n">rank</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># While loop trick to get the least number of rows in Az subject to some oversampling!</span>
+        <span class="k">while</span>  <span class="n">rank</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">cardinality</span><span class="p">:</span>
+            <span class="n">z_chosen</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">index</span><span class="p">]</span>
+            <span class="n">refined_pts</span> <span class="o">=</span> <span class="n">pts</span><span class="p">[</span><span class="n">z_chosen</span><span class="p">]</span>
+            <span class="n">Pz</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="n">refined_pts</span><span class="p">)</span>
+            <span class="n">wts_orig_normalized</span> <span class="o">=</span>  <span class="n">wts</span><span class="p">[</span><span class="n">z_chosen</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">wts</span><span class="p">[</span><span class="n">z_chosen</span><span class="p">])</span>
+            <span class="n">Wz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">wts_orig_normalized</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
+            <span class="n">Az</span> <span class="o">=</span>  <span class="n">Wz</span> <span class="o">*</span> <span class="n">Pz</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">dPcell</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomialGradient</span><span class="p">(</span><span class="n">refined_pts</span><span class="p">)</span>
+            <span class="n">dP</span> <span class="o">=</span> <span class="n">cell2matrix</span><span class="p">(</span><span class="n">dPcell</span><span class="p">,</span> <span class="n">Wz</span><span class="p">)</span>
+            <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">Az</span><span class="p">,</span> <span class="n">dP</span><span class="p">])</span>
+            <span class="n">rank</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+            <span class="nb">print</span> <span class="s1">&#39;Iterating...system rank: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, and the # of rows in Az: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">del</span> <span class="n">dPcell</span><span class="p">,</span> <span class="n">dP</span> 
+        <span class="n">index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">oversampling</span> <span class="o">*</span> <span class="p">(</span><span class="n">index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
+        <span class="n">z_chosen</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">refined_pts</span> <span class="o">=</span> <span class="n">pts</span><span class="p">[</span><span class="n">z_chosen</span><span class="p">]</span>
+        <span class="n">Pz</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="n">refined_pts</span><span class="p">)</span>
+        <span class="n">wts_orig_normalized</span> <span class="o">=</span>  <span class="n">wts</span><span class="p">[</span><span class="n">z_chosen</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">wts</span><span class="p">[</span><span class="n">z_chosen</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">wts_orig_normalized</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Az</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span> <span class="o">*</span> <span class="n">Pz</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">dPcell</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomialGradient</span><span class="p">(</span><span class="n">refined_pts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Cz</span> <span class="o">=</span> <span class="n">cell2matrix</span><span class="p">(</span><span class="n">dPcell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span><span class="p">)</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span> <span class="o">=</span> <span class="n">refined_pts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quadratureWeights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">wts_orig_normalized</span><span class="p">)</span> 
+    <span class="k">def</span> <span class="nf">__gradientsFalse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pts</span><span class="p">,</span> <span class="n">wts</span><span class="p">,</span> <span class="n">m_refined</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;random&#39;</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">cardinality</span>
+            <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">):</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">m</span> <span class="o">*</span> <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">g</span><span class="p">]</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">random_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="p">),</span> <span class="n">m_refined</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">orders_plus_one</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">orders</span><span class="p">]</span>
+            <span class="n">selected_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m_refined</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">m_refined</span><span class="p">):</span>
+                <span class="n">ff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">random_samples</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">dims</span><span class="o">=</span><span class="n">orders_plus_one</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">):</span>
+                    <span class="n">selected_indices</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">points_subsampled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m_refined</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">))</span>
+            <span class="n">wts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">m_refined</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">):</span>
+                <span class="n">P_j</span><span class="p">,</span> <span class="n">W_j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">_getLocalQuadrature</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">m_refined</span><span class="p">):</span>
+                    <span class="n">points_subsampled</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">P_j</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span> <span class="n">selected_indices</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="p">)</span> <span class="p">]</span>
+                    <span class="n">wts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">wts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">W_j</span><span class="p">[</span> <span class="nb">int</span><span class="p">(</span> <span class="n">selected_indices</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="p">)]</span>
+            <span class="n">wts_orig_normalized</span> <span class="o">=</span> <span class="n">wts</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">wts</span><span class="p">)</span>
+            <span class="c1">#nondimensional_points_subsampled = super(Polylsq, self).scaleInputs(quadraturePoints_subsampled)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#nondimensional_points = super(Polylsq, self).scaleInputs(pts)</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="n">pts</span><span class="p">)</span>
+            <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">wts</span><span class="p">)))</span>
+            <span class="n">A</span> <span class="o">=</span> <span class="n">W</span> <span class="o">*</span> <span class="n">P</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">mmm</span><span class="p">,</span> <span class="n">nnn</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;greedy-qr&#39;</span><span class="p">:</span>    
+                <span class="n">__</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">pvec</span> <span class="o">=</span> <span class="n">qr</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">pivoting</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="n">pvec</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m_refined</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;greedy-lu&#39;</span><span class="p">:</span>    
+                <span class="n">__</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">pvec</span> <span class="o">=</span> <span class="n">qr</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">pivoting</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="n">pvec</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m_refined</span><span class="p">]</span>
+                
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;greedy-svd&#39;</span><span class="p">:</span>   
+                <span class="n">__</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">svd</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+                <span class="n">__</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">pvec</span> <span class="o">=</span> <span class="n">qr</span><span class="p">(</span><span class="n">V</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="n">m_refined</span><span class="p">]</span><span class="o">.</span><span class="n">T</span> <span class="p">,</span> <span class="n">pivoting</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="n">pvec</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m_refined</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;newton&#39;</span><span class="p">:</span>
+                <span class="n">zhat</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">ztilde</span><span class="p">,</span> <span class="n">Utilde</span> <span class="o">=</span> <span class="n">maxdet</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">m_refined</span><span class="p">)</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="n">binary2indices</span><span class="p">(</span><span class="n">zhat</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;padua&#39;</span><span class="p">:</span>
+                <span class="n">last_index</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">flag</span> <span class="o">=</span> <span class="s1">&#39;ascending&#39;</span>
+                <span class="n">organize_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">mmm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+                <span class="k">while</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="n">mmm</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">flag</span> <span class="o">==</span> <span class="s1">&#39;ascending&#39;</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">counter</span><span class="p">,</span> <span class="n">counter</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                            <span class="n">organize_indices</span><span class="p">[</span><span class="n">counter</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+                            <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                            <span class="n">last_index</span> <span class="o">=</span> <span class="n">k</span>
+                        <span class="n">flag</span> <span class="o">=</span> <span class="s1">&#39;descending&#39;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">last_index</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">last_index</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                            <span class="n">organize_indices</span><span class="p">[</span><span class="n">counter</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+                            <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                            <span class="n">last_index</span> <span class="o">=</span> <span class="n">k</span>
+                        <span class="n">flag</span> <span class="o">=</span> <span class="s1">&#39;ascending&#39;</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="n">organize_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+                
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">mmm</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Polylsq:__init___:: Unknown optimization technique! Choose between greedy or newton please.&#39;</span><span class="p">)</span>
+
+            <span class="n">points_subsampled</span> <span class="o">=</span> <span class="n">pts</span><span class="p">[</span><span class="n">z</span><span class="p">,:]</span>
+            <span class="c1">#quadraturePoints_subsampled = pts[z,:]</span>
+            <span class="n">wts_orig_normalized</span> <span class="o">=</span>  <span class="n">wts</span><span class="p">[</span><span class="n">z</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">wts</span><span class="p">[</span><span class="n">z</span><span class="p">])</span> <span class="c1"># if we pick a subset of the weights, they should add up to 1.!</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">A</span>
+        <span class="n">Pz</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="n">points_subsampled</span><span class="p">)</span>
+        <span class="n">Wz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">wts_orig_normalized</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Az</span> <span class="o">=</span>  <span class="n">Wz</span> <span class="o">*</span> <span class="n">Pz</span><span class="o">.</span><span class="n">T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span> <span class="o">=</span> <span class="n">Wz</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span> <span class="o">=</span> <span class="n">points_subsampled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quadratureWeights</span> <span class="o">=</span> <span class="n">wts_orig_normalized</span>
+    <span class="k">def</span> <span class="nf">quadraturePointsWeights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quadratureWeights</span>
+    <span class="k">def</span> <span class="nf">computeCoefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">gradfunc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradientmethod</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># If there are no gradients, solve via standard least squares!</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradients</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span><span class="o">.</span><span class="n">shape</span>
+            <span class="c1"># Get function values!</span>
+            <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+                <span class="c1">#scaled_points = super(Polylsq, self).scaleInputs(self.quadraturePoints)</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">evalfunction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">func</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">functionEvaluations</span> <span class="o">=</span> <span class="n">y</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span> <span class="p">,</span>  <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="p">)</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Az</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bz</span><span class="p">)</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># If there are gradients then use a constrained least squares approach!</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradients</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">gradfunc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span><span class="o">.</span><span class="n">shape</span>
+            <span class="c1"># Get function values!</span>
+            <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">evalfunction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">func</span>
+            <span class="c1"># Get gradient values!</span>
+            <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+                <span class="n">grad_values</span> <span class="o">=</span> <span class="n">evalgradients</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="n">gradfunc</span><span class="p">,</span> <span class="s1">&#39;matrix&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">grad_values</span> <span class="o">=</span> <span class="n">gradfunc</span>
+            <span class="c1"># Assemble gradients into a single long vector called dy!     </span>
+            <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">grad_values</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">p</span><span class="o">*</span><span class="n">q</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">q</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
+                    <span class="n">d</span><span class="p">[</span><span class="n">counter</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">grad_values</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
+                    <span class="n">counter</span> <span class="o">=</span> <span class="n">counter</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dy</span> <span class="o">=</span> <span class="n">d</span>
+            <span class="k">del</span> <span class="n">d</span><span class="p">,</span> <span class="n">grad_values</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span> <span class="p">,</span>  <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="p">)</span>
+            <span class="n">coefficients</span><span class="p">,</span> <span class="n">cond</span> <span class="o">=</span> <span class="n">solveCLSQ</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Az</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Cz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dy</span><span class="p">,</span> <span class="n">gradientmethod</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">=</span> <span class="n">coefficients</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradients</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">gradfunc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Polylsq:computeCoefficients:: Gradient function evaluations must be provided, either a callable function or as vectors.&#39;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setCoefficients__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setQuadrature__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quadratureWeights</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">getDesignMatrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setDesignMatrix__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Az</span><span class="p">)</span>
+
+<span class="c1">################################</span>
+<span class="c1"># Private functions!</span>
+<span class="c1">################################</span>
+<span class="k">def</span> <span class="nf">rowNormalize</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">row_norms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="n">Normalization</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cols</span><span class="p">):</span>
+            <span class="n">row_norms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span> <span class="o">+</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="n">row_norms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">row_norms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">row_norms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">cols</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Normalization</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">row_norms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">A_normalized</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Normalization</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">A_normalized</span><span class="p">,</span> <span class="n">Normalization</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Pranay Seshadri et al..
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'v7.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

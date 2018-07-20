@@ -1,0 +1,5 @@
+Quadrature rules
+=================
+
+.. automodule:: equadratures.polyint
+    :members:

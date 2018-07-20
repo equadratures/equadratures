@@ -1,0 +1,403 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Dimension reduction utilities &mdash; Effective Quadratures v7.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Statistics utilities" href="stats.html" />
+    <link rel="prev" title="Utilities" href="utilities.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Effective Quadratures
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="corecode.html">Core code</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="utilities.html">Utilities</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Dimension reduction utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stats.html">Statistics utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qr.html">Matrix factorization utilities</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Effective Quadratures</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="utilities.html">Utilities</a> &raquo;</li>
+        
+      <li>Dimension reduction utilities</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/_documentation/dr.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-equadratures.dr">
+<span id="dimension-reduction-utilities"></span><h1>Dimension reduction utilities<a class="headerlink" href="#module-equadratures.dr" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>The functionalities of this script includes:</dt>
+<dd><ol class="first last arabic simple">
+<li>A polynomial-based active subspaces recipe;</li>
+<li>An ordinary least squares linear technique;</li>
+<li>The variable projection subroutine.</li>
+</ol>
+</dd>
+<dt>References:</dt>
+<dd><ul class="first last simple">
+<li>Honkason, J. and Constantine, P. (2018). Data-driven polynomial ridge approximation using variable projection. [online] Arxiv.org. <a class="reference external" href="https://arxiv.org/abs/1702.05859">Paper</a>.</li>
+<li>Constantine, P. G. (2015). Active subspaces: Emerging ideas for dimension reduction in parameter studies. SIAM.</li>
+</ul>
+</dd>
+</dl>
+<dl class="function">
+<dt id="equadratures.dr.computeActiveSubspaces">
+<code class="descclassname">equadratures.dr.</code><code class="descname">computeActiveSubspaces</code><span class="sig-paren">(</span><em>poly</em>, <em>samples=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/dr.html#computeActiveSubspaces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.dr.computeActiveSubspaces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the eigenvalues and corresponding eigenvectors for the high dimensional kernel matrix</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>PolynomialObject</strong> – an instance of PolynomialObject class</li>
+<li><strong>samples</strong> – ndarray, sample vector points, default to None</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>eigs (numpy array)</strong>: Eigenvalues obtained</li>
+<li><strong>eigVecs (numpy array)</strong>: Eigenvectors obtained</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="equadratures.dr.jacobian">
+<code class="descclassname">equadratures.dr.</code><code class="descname">jacobian</code><span class="sig-paren">(</span><em>V</em>, <em>V_plus</em>, <em>U</em>, <em>y</em>, <em>f</em>, <em>Polybasis</em>, <em>eta</em>, <em>minmax</em>, <em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/dr.html#jacobian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.dr.jacobian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal function to variable_projection
+Calculates the Jacobian tensor using polynomial basis functions</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>V</strong> – ndarray, the affine transfored outputs</li>
+<li><strong>V_plus</strong> – ndarray, psuedoinverse matrix</li>
+<li><strong>U</strong> – ndarray, the active subspace directions</li>
+<li><strong>y</strong> – array, the untransformed projected values of inputs in active subspace</li>
+<li><strong>f</strong> – array, the untransfored outputs</li>
+<li><strong>Polybasis</strong> – Poly object, an instance of Poly class</li>
+<li><strong>eta</strong> – ndarray, the affine transformed projected values of inputs in active subspace</li>
+<li><strong>minmax</strong> – ndarray, the upper and lower bounds of input projections in each dimension</li>
+<li><strong>X</strong> – ndarray, the input</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>J (ndarray)</strong>: The Jacobian tensor</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="equadratures.dr.linearModel">
+<code class="descclassname">equadratures.dr.</code><code class="descname">linearModel</code><span class="sig-paren">(</span><em>Xtrain</em>, <em>ytrain</em>, <em>bounds</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/dr.html#linearModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.dr.linearModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the coefficients for a linear model between inputs and outputs</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>Xtrain</strong> – ndarray, the input values</li>
+<li><strong>ytrain</strong> – array, the output values</li>
+<li><strong>bounds</strong> – ndarray, the upper and lower bounds for input values in each dimension</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>u (numpy array)</strong>: Coefficients correspond to each dimension</li>
+<li><strong>c (double)</strong>: Constant bias</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="equadratures.dr.standard">
+<code class="descclassname">equadratures.dr.</code><code class="descname">standard</code><span class="sig-paren">(</span><em>X</em>, <em>bounds</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/dr.html#standard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.dr.standard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standardize the inputs before Dimension Reduction</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> – ndarray, the undimensioned input values</li>
+<li><strong>bounds</strong> – ndarray, the upper and lower bounds for input values in each dimension</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>X_stnd (numpy array)</strong>: Standardized input values</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="equadratures.dr.vandermonde">
+<code class="descclassname">equadratures.dr.</code><code class="descname">vandermonde</code><span class="sig-paren">(</span><em>eta</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/dr.html#vandermonde"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.dr.vandermonde" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal function to variable_projection
+Calculates the Vandermonde matrix using polynomial basis functions</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>eta</strong> – ndarray, the affine transformed projected values of inputs in active subspace</li>
+<li><strong>p</strong> – int, the maximum degree of polynomials</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>V (numpy array)</strong>: The resulting Vandermode matrix</li>
+<li><strong>Polybasis (Poly object)</strong>: An instance of Poly object containing the polynomial basis derived</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="equadratures.dr.variable_projection">
+<code class="descclassname">equadratures.dr.</code><code class="descname">variable_projection</code><span class="sig-paren">(</span><em>X</em>, <em>f</em>, <em>n</em>, <em>p</em>, <em>gamma=None</em>, <em>beta=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/dr.html#variable_projection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.dr.variable_projection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variable Projection function to obtain an active subspace in inputs design space</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> – ndarray, the input</li>
+<li><strong>f</strong> – array, the output</li>
+<li><strong>n</strong> – int, degree of active subspace</li>
+<li><strong>p</strong> – int, degree of polynomials</li>
+<li><strong>gamma</strong> – double, step length reduction factor (0,1)</li>
+<li><strong>beta</strong> – double, Armijo tolerance for backtracking line search (0,1)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>U (ndarray)</strong>: The active subspace found</li>
+<li><strong>R (double)</strong>: Cost of deviation in fitting</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="stats.html" class="btn btn-neutral float-right" title="Statistics utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="utilities.html" class="btn btn-neutral" title="Utilities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Pranay Seshadri et al..
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'v7.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

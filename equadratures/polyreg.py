@@ -7,6 +7,7 @@ from stats import Statistics, getAllSobol
 import scipy
 from qr import solveCLSQ
 from utils import cell2matrix
+from scipy.stats import linregress
 
 class Polyreg(Poly):
     """
@@ -78,7 +79,40 @@ class Polyreg(Poly):
             coefficients, cond = solveCLSQ(self.A, self.bz, self.C, self.dy, self.gradmethod)
             self.coefficients = coefficients
             super(Polyreg, self).__setCoefficients__(self.coefficients)
+            
+            
+    def cross_validation(self, folds = 5):
+        """
+        This function carries out a cross validation procedure on the polynomial.
 
+        :param Polyreg self:
+            An instance of the Polyreg class.
+        :param int folds:
+            The number of cross validation folds; default value is 5.
+
+        """
+        x = self.x
+        N = x.shape[0]
+        y = self.y
+        R_sq = np.zeros(folds)
+         
+        for n in range(folds):
+            indices = [int(i) for i in n * np.ceil(N/5.0) + range(int(np.ceil(N/5.0))) if i < N]
+            x_ver = x[indices]
+            x_train = np.delete(x, indices, 0)
+            y_ver = y[indices].flatten()
+            y_train = np.squeeze(np.delete(y, indices))
+             
+            poly_trained = Polyreg(self.parameters, self.basis, training_inputs = x_train, training_outputs = y_train,no_of_quad_points = 1)
+            y_trained = np.squeeze(np.asarray(poly_trained.evaluatePolyFit(x_ver)))
+             
+            _,_,r,_,_ = linregress(y_ver, y_trained)
+             
+            R_sq[n] = r**2.0
+        
+        return np.mean(R_sq)
+             
+             
     def setDesignMatrix(self):
         """
         Sets the design matrix using the polynomials defined in the basis.

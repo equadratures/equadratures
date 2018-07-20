@@ -1,5 +1,0 @@
-Probability distributions
-=========================
-
-.. automodule:: equadratures.distributions
-    :members:

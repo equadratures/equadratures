@@ -1,0 +1,11 @@
+Distributions
+=========================
+Distributions for characterizing the parameters.
+
+.. automodule:: equadratures.distributions.distribution
+    :members:
+
+.. toctree::
+   :maxdepth: 2
+
+   gaussian

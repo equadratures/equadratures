@@ -1,163 +1,179 @@
+
+
 <!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Base polynomial &mdash; Effective Quadratures v7.0 documentation</title>
+  
 
+  
+  
+  
+  
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  
+
+  
+  
     
-    <title>Base polynomial &#8212;   v6.0 documentation</title>
-    
-    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootswatch-3.3.6/cosmo/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     'v6.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="  v6.0 documentation" href="index.html" />
-    <link rel="up" title="Polynomials" href="poly.html" />
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Coefficient computation" href="polychildren.html" />
-    <link rel="prev" title="Polynomials" href="poly.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="prev" title="Polynomials" href="poly.html" /> 
 
-  </head>
-  <body role="document">
+  
+  <script src="../_static/js/modernizr.min.js"></script>
 
-  <div id="navbar" class="navbar navbar-inverse navbar-default ">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="index.html"><span><img src="_static/logo.png"></span>
-           </a>
-        <span class="navbar-text navbar-version pull-left"><b>v6.0</b></span>
-      </div>
+</head>
 
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Effective Quadratures
+          
+
+          
+          </a>
+
+          
             
             
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="index.html">  <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul class="current">
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="corecode.html">Core code</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="basis.html">Basis</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="poly.html">Polynomials</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="poly.html">Polynomials</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Base polynomial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="polychildren.html">Coefficient computation</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="distributions.html">Probability distributions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="dr.html">Dimension reduction utilities</a></li>
-<li class="toctree-l2"><a class="reference internal" href="convex.html">Convex optimization utilities</a></li>
-<li class="toctree-l2"><a class="reference internal" href="stats.html">Statistics utilities</a></li>
-<li class="toctree-l2"><a class="reference internal" href="plotting.html">Plotting utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
-<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
-</ul>
-</ul>
-</li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Page <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">Base polynomial</a></li>
-</ul>
-</ul>
-</li>
-              
-            
-            
-              
-                
-  <li>
-    <a href="poly.html" title="Previous Chapter: Polynomials"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Polynomials</span>
-    </a>
-  </li>
-  <li>
-    <a href="polychildren.html" title="Next Chapter: Coefficient computation"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Coefficient c... &raquo;</span>
-    </a>
-  </li>
-              
-            
-            
-            
-            
-              <li class="hidden-sm">
-<div id="sourcelink">
-  <a href="_sources/polyparent.txt"
-     rel="nofollow">Source</a>
-</div></li>
-            
-          </ul>
 
-          
             
-<form class="navbar-form navbar-right" action="search.html" method="get">
- <div class="form-group">
-  <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
           
         </div>
-    </div>
-  </div>
+      </div>
+    </nav>
 
-<div class="container">
-  <div class="row">
-    <div class="col-md-12 content">
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
       
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Effective Quadratures</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="corecode.html">Core code</a> &raquo;</li>
+        
+          <li><a href="poly.html">Polynomials</a> &raquo;</li>
+        
+      <li>Base polynomial</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/_documentation/polyparent.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
   <div class="section" id="module-equadratures.poly">
 <span id="base-polynomial"></span><h1>Base polynomial<a class="headerlink" href="#module-equadratures.poly" title="Permalink to this headline">¶</a></h1>
 <p>The polynomial parent class.</p>
 <dl class="class">
 <dt id="equadratures.poly.Poly">
-<em class="property">class </em><code class="descclassname">equadratures.poly.</code><code class="descname">Poly</code><span class="sig-paren">(</span><em>parameters</em>, <em>basis</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.poly.Poly" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">equadratures.poly.</code><code class="descname">Poly</code><span class="sig-paren">(</span><em>parameters</em>, <em>basis</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly" title="Permalink to this definition">¶</a></dt>
 <dd><p>The class defines a Poly object. It is the parent class to Polyreg, Polyint and Polycs; the only difference between its children are the way in which the coefficients are computed. This class is defined by a list of Parameter objects and a Basis.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>parameters</strong> (<a class="reference internal" href="parameter.html#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; A list of parameters.</li>
-<li><strong>basis</strong> (<a class="reference internal" href="basis.html#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) &#8211; A basis selected for the multivariate polynomial.</li>
+<li><strong>parameters</strong> (<a class="reference internal" href="parameter.html#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) – A list of parameters.</li>
+<li><strong>basis</strong> (<a class="reference internal" href="basis.html#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) – A basis selected for the multivariate polynomial.</li>
 </ul>
 </td>
 </tr>
@@ -165,13 +181,13 @@
 </table>
 <dl class="method">
 <dt id="equadratures.poly.Poly.clone">
-<code class="descname">clone</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.poly.Poly.clone" title="Permalink to this definition">¶</a></dt>
+<code class="descname">clone</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.clone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.clone" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clones a Poly object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A clone of the Poly object.</td>
 </tr>
@@ -180,16 +196,37 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="equadratures.poly.Poly.evaluatePolyFit">
+<code class="descname">evaluatePolyFit</code><span class="sig-paren">(</span><em>stackOfPoints</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.evaluatePolyFit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.evaluatePolyFit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the the polynomial approximation of a function (or model data) at prescribed points.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>stackOfPoints</strong> (<em>matrix</em>) – A N-by-d matrix of points (can be unscaled) at which the polynomial gradient must be evaluated at.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A 1-by-N matrix of the polynomial approximation.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="equadratures.poly.Poly.evaluatePolyGradFit">
-<code class="descname">evaluatePolyGradFit</code><span class="sig-paren">(</span><em>stackOfPoints</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.poly.Poly.evaluatePolyGradFit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">evaluatePolyGradFit</code><span class="sig-paren">(</span><em>stackOfPoints</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.evaluatePolyGradFit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.evaluatePolyGradFit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluates the gradient of the polynomial approximation of a function (or model data) at prescribed points.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>stackOfPoints</strong> (<em>matrix</em>) &#8211; A N-by-d matrix of points (can be unscaled) at which the polynomial gradient must be evaluated at.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>stackOfPoints</strong> (<em>matrix</em>) – A N-by-d matrix of points (can be unscaled) at which the polynomial gradient must be evaluated at.</li>
 </ul>
 </td>
 </tr>
@@ -205,17 +242,17 @@ gradient values are at prescribed points.</p>
 
 <dl class="method">
 <dt id="equadratures.poly.Poly.getFunctionSamples">
-<code class="descname">getFunctionSamples</code><span class="sig-paren">(</span><em>function</em>, <em>coefficients=None</em>, <em>indexset=None</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.poly.Poly.getFunctionSamples" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getFunctionSamples</code><span class="sig-paren">(</span><em>number_of_samples</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.getFunctionSamples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.getFunctionSamples" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a set of function samples; useful for computing probabilities.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>function</strong> (<em>callable</em>) &#8211; A callable function (or evaluations of the function at the prerequisite quadrature points).</li>
-<li><strong>coefficients</strong> (<em>array</em>) &#8211; A numpy array of the coefficients</li>
-<li><strong>indexset</strong> (<em>matrix</em>) &#8211; A K-by-d matrix of the index set.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>function</strong> (<em>callable</em>) – A callable function (or evaluations of the function at the prerequisite quadrature points).</li>
+<li><strong>coefficients</strong> (<em>array</em>) – A numpy array of the coefficients</li>
+<li><strong>indexset</strong> (<em>matrix</em>) – A K-by-d matrix of the index set.</li>
 </ul>
 </td>
 </tr>
@@ -228,13 +265,13 @@ gradient values are at prescribed points.</p>
 
 <dl class="method">
 <dt id="equadratures.poly.Poly.getPolyFitFunction">
-<code class="descname">getPolyFitFunction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.poly.Poly.getPolyFitFunction" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getPolyFitFunction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.getPolyFitFunction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.getPolyFitFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a callable polynomial approximation of a function (or model data).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A callable function.</td>
 </tr>
@@ -244,13 +281,13 @@ gradient values are at prescribed points.</p>
 
 <dl class="method">
 <dt id="equadratures.poly.Poly.getPolyGradFitFunction">
-<code class="descname">getPolyGradFitFunction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.poly.Poly.getPolyGradFitFunction" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getPolyGradFitFunction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.getPolyGradFitFunction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.getPolyGradFitFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a callable for the gradients of the polynomial approximation of a function (or model data).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A callable function.</td>
 </tr>
@@ -260,15 +297,15 @@ gradient values are at prescribed points.</p>
 
 <dl class="method">
 <dt id="equadratures.poly.Poly.getPolynomial">
-<code class="descname">getPolynomial</code><span class="sig-paren">(</span><em>stackOfPoints</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.poly.Poly.getPolynomial" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getPolynomial</code><span class="sig-paren">(</span><em>stackOfPoints</em>, <em>customBases=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.getPolynomial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.getPolynomial" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluates the multivariate polynomial at a set of points.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>stackOfPoints</strong> (<em>matrix</em>) &#8211; A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>stackOfPoints</strong> (<em>matrix</em>) – A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.</li>
 </ul>
 </td>
 </tr>
@@ -281,15 +318,15 @@ gradient values are at prescribed points.</p>
 
 <dl class="method">
 <dt id="equadratures.poly.Poly.getPolynomialGradient">
-<code class="descname">getPolynomialGradient</code><span class="sig-paren">(</span><em>stackOfPoints</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.poly.Poly.getPolynomialGradient" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getPolynomialGradient</code><span class="sig-paren">(</span><em>stackOfPoints</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.getPolynomialGradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.getPolynomialGradient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluates the gradient of the multivariate polynomial at a set of points.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>stackOfPoints</strong> (<em>matrix</em>) &#8211; A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>stackOfPoints</strong> (<em>matrix</em>) – A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.</li>
 </ul>
 </td>
 </tr>
@@ -302,15 +339,16 @@ gradient values are at prescribed points.</p>
 
 <dl class="method">
 <dt id="equadratures.poly.Poly.getQuadratureRule">
-<code class="descname">getQuadratureRule</code><span class="sig-paren">(</span><em>options=None</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.poly.Poly.getQuadratureRule" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getQuadratureRule</code><span class="sig-paren">(</span><em>options=None</em>, <em>number_of_points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.getQuadratureRule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.getQuadratureRule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates quadrature points and weights.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>options</strong> (<em>string</em>) &#8211; Two options exist for this string. The user can use &#8216;qmc&#8217; for a distribution specific Monte Carlo (QMC) or they can use &#8216;tensor grid&#8217; for standard tensor product grid. Typically, if the number of dimensions is less than 8, the tensor grid is the default option selected.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>options</strong> (<em>string</em>) – Two options exist for this string. The user can use ‘qmc’ for a distribution specific Monte Carlo (QMC) or they can use ‘tensor grid’ for standard tensor product grid. Typically, if the number of dimensions is less than 8, the tensor grid is the default option selected.</li>
+<li><strong>number_of_points</strong> (<em>int</em>) – If QMC is chosen, specifies the number of quadrature points in each direction. Otherwise, this is ignored.</li>
 </ul>
 </td>
 </tr>
@@ -326,15 +364,15 @@ gradient values are at prescribed points.</p>
 
 <dl class="method">
 <dt id="equadratures.poly.Poly.getStatistics">
-<code class="descname">getStatistics</code><span class="sig-paren">(</span><em>quadratureRule=None</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.poly.Poly.getStatistics" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getStatistics</code><span class="sig-paren">(</span><em>light=None</em>, <em>max_sobol_order=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.getStatistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.getStatistics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates an instance of the Statistics class.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>quadratureRule</strong> (<em>string</em>) &#8211; Two options exist for this string. The user can use &#8216;qmc&#8217; for a distribution specific Monte Carlo (QMC) or they can use &#8216;tensor grid&#8217; for standard tensor product grid. Typically, if the number of dimensions is less than 8, the tensor grid is the default option selected.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>quadratureRule</strong> (<em>string</em>) – Two options exist for this string. The user can use ‘qmc’ for a distribution specific Monte Carlo (QMC) or they can use ‘tensor grid’ for standard tensor product grid. Typically, if the number of dimensions is less than 8, the tensor grid is the default option selected.</li>
 </ul>
 </td>
 </tr>
@@ -347,15 +385,15 @@ gradient values are at prescribed points.</p>
 
 <dl class="method">
 <dt id="equadratures.poly.Poly.getTensorQuadratureRule">
-<code class="descname">getTensorQuadratureRule</code><span class="sig-paren">(</span><em>orders=None</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.poly.Poly.getTensorQuadratureRule" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getTensorQuadratureRule</code><span class="sig-paren">(</span><em>orders=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.getTensorQuadratureRule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.getTensorQuadratureRule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a tensor grid quadrature rule based on the parameters in Poly.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>orders</strong> (<em>list</em>) &#8211; A list of the highest polynomial orders along each dimension.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>orders</strong> (<em>list</em>) – A list of the highest polynomial orders along each dimension.</li>
 </ul>
 </td>
 </tr>
@@ -369,47 +407,74 @@ gradient values are at prescribed points.</p>
 </table>
 </dd></dl>
 
-<dl class="method">
-<dt id="equadratures.poly.Poly.scaleInputs">
-<code class="descname">scaleInputs</code><span class="sig-paren">(</span><em>x_points_scaled</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.poly.Poly.scaleInputs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Scales the inputs points for Uniform and Beta distributions.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>x_points_scaled</strong> (<em>matrix</em>) &#8211; A matrix of points that need to be scaled depending on the distribution associated with each dimension.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A matrix of scaled points.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 </dd></dl>
 
 </div>
 
 
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="polychildren.html" class="btn btn-neutral float-right" title="Coefficient computation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="poly.html" class="btn btn-neutral" title="Polynomials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-      
-  </div>
-</div>
-<footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-    </p>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2018 by Effective Quadratures.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.<br/>
+        &copy; Copyright 2018, Pranay Seshadri et al..
+
     </p>
   </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
 </footer>
-  </body>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'v7.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

@@ -1,0 +1,17 @@
+Utilities
+==================
+
+
+.. toctree::
+   :maxdepth: 2
+
+   dr
+   convex
+   stats
+   plotting
+   qr
+
+
+
+.. automodule:: equadratures
+    :members:

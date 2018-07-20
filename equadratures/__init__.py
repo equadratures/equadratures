@@ -1,17 +1,14 @@
-'Initialization file'
-from .parameter import Parameter
-from .polyreg import Polyreg
-from .polycs import Polycs
-from .polyint import Polyint
-from .polylsq import Polylsq
-from .stats import Statistics
-from .basis import Basis
+import distributions, parameter, poly, polycs, polyint, polyreg, polylsq, basis, stats
+from parameter import Parameter 
+from polyreg import Polyreg 
+from polylsq import Polylsq
+from polyint import Polyint 
+from poly import Poly 
+from stats import Statistics
+from basis import Basis 
 import numpy as np
-import equadratures.qr as qr
-from .plotting import *
-from .utils import evalfunction, evalgradients, meshgrid
-from .dr import *
-from .distributions import *
+from utils import evalfunction, evalgradients, meshgrid
+from dr import *
 import matplotlib
 params = {'legend.fontsize': 11,
           'font.size' : 10.0,
@@ -39,3 +36,26 @@ params = {'legend.fontsize': 11,
           #'grid.linewidth': 0.5,
          }
 matplotlib.rcParams.update(params)
+def adjust_spines(ax, spines):
+    for loc, spine in ax.spines.items():
+        if loc in spines:
+            spine.set_position(('outward', 10))  # outward by 10 points
+            #spine.set_smart_bounds(True)
+        else:
+            spine.set_color('none')  # don't draw spine
+    # turn off ticks where there is no spine
+    if 'left' in spines:
+        ax.yaxis.set_ticks_position('left')
+        ax.spines['left'].set_color('black')
+        ax.tick_params(axis='y', colors='black', width=2)
+    else:
+        # no yaxis ticks
+        ax.yaxis.set_ticks([])
+
+    if 'bottom' in spines:
+        ax.xaxis.set_ticks_position('bottom')
+        ax.spines['left'].set_color('black')
+        ax.tick_params(axis='x', colors='black', width=2)
+    else:
+        # no xaxis ticks
+        ax.xaxis.set_ticks([])

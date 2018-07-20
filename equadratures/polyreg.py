@@ -5,7 +5,9 @@ from poly import Poly
 import numpy as np
 from stats import Statistics, getAllSobol
 import scipy
-
+from qr import solveCLSQ
+from utils import cell2matrix
+from scipy.stats import linregress
 
 class Polyreg(Poly):
     """
@@ -18,11 +20,13 @@ class Polyreg(Poly):
         A N-by-d matrix of input training points.
     :param matrix training_outputs:
         A N-by-1 matrix of output training points.
+    :param matrix training_grads:
+        A N-by-d matrix of gradient evaluations.
     :param callable fun:
         Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.
     """
     # Constructor
-    def __init__(self, parameters, basis, training_inputs = None, fun=None, training_outputs=None, quadrature_rule = None, no_of_quad_points = None):
+    def __init__(self, parameters, basis, training_inputs = None, fun=None, training_outputs=None, training_grads=None, quadrature_rule = None, no_of_quad_points = None, gradmethod=None):
         super(Polyreg, self).__init__(parameters, basis)
         if not(training_inputs is None):
             self.x = training_inputs
@@ -39,6 +43,8 @@ class Polyreg(Poly):
             self.y = training_outputs
         if self.dimensions != self.basis.elements.shape[1]:
             raise(ValueError, 'Polyreg:__init__:: The number of parameters and the number of dimensions in the index set must be the same.')
+        self.training_grads = training_grads
+        self.gradmethod = gradmethod
         self.setDesignMatrix()
         self.cond = np.linalg.cond(self.A)
         self.y = np.reshape(self.y, (len(self.y), 1))
@@ -54,11 +60,59 @@ class Polyreg(Poly):
             An instance of the Polyreg class.
         """
         p = len(self.y)
-        self.bz = np.dot( self.Wz ,  np.reshape(self.y, (p,1)) )
-        alpha = np.linalg.lstsq(self.A, self.bz) # Opted for numpy's standard version because of speed!
-        self.coefficients = alpha[0]
-        super(Polyreg, self).__setCoefficients__(self.coefficients)
+        if self.training_grads is None:
+            self.bz = np.dot( self.Wz ,  np.reshape(self.y, (p,1)) )
+            alpha = np.linalg.lstsq(self.A, self.bz) # Opted for numpy's standard version because of speed!
+            self.coefficients = alpha[0]
+            super(Polyreg, self).__setCoefficients__(self.coefficients)
+        else:
+            self.bz = np.dot( self.Wz ,  np.reshape(self.y, (p,1)) )
+            p, q = self.training_grads.shape
+            d = np.zeros((p*q,1))
+            counter = 0
+            for j in range(0,q):
+                for i in range(0,p):
+                    d[counter] = self.Wz[i,i] * self.training_grads[i,j]
+                    counter = counter + 1
+            self.dy = d
+            del d
+            coefficients, cond = solveCLSQ(self.A, self.bz, self.C, self.dy, self.gradmethod)
+            self.coefficients = coefficients
+            super(Polyreg, self).__setCoefficients__(self.coefficients)
+            
+            
+    def cross_validation(self, folds = 5):
+        """
+        This function carries out a cross validation procedure on the polynomial.
 
+        :param Polyreg self:
+            An instance of the Polyreg class.
+        :param int folds:
+            The number of cross validation folds; default value is 5.
+
+        """
+        x = self.x
+        N = x.shape[0]
+        y = self.y
+        R_sq = np.zeros(folds)
+         
+        for n in range(folds):
+            indices = [int(i) for i in n * np.ceil(N/5.0) + range(int(np.ceil(N/5.0))) if i < N]
+            x_ver = x[indices]
+            x_train = np.delete(x, indices, 0)
+            y_ver = y[indices].flatten()
+            y_train = np.squeeze(np.delete(y, indices))
+             
+            poly_trained = Polyreg(self.parameters, self.basis, training_inputs = x_train, training_outputs = y_train,no_of_quad_points = 1)
+            y_trained = np.squeeze(np.asarray(poly_trained.evaluatePolyFit(x_ver)))
+             
+            _,_,r,_,_ = linregress(y_ver, y_trained)
+             
+            R_sq[n] = r**2.0
+        
+        return np.mean(R_sq)
+             
+             
     def setDesignMatrix(self):
         """
         Sets the design matrix using the polynomials defined in the basis.
@@ -66,16 +120,15 @@ class Polyreg(Poly):
             An instance of the Polyreg class.
         """
         Pz = super(Polyreg, self).getPolynomial(self.x)
-        wts =  1.0/(np.sum( Pz**2 , 0)**2)
-        wts = wts * 1.0/np.sum(wts)
-        
-
-        #wts =  1.0/(np.sum( super(Polyreg, self).getPolynomial(self.x)**2 , 0) )**2
-        #wts = wts * 1.0/np.sum(wts)
-        self.Wz = np.mat(np.diag( np.sqrt(wts) ) )
+        wts =  1.0/np.sum( Pz**2 , 0)
+        wts_normalized = wts * 1.0/np.sum(wts)
+        self.Wz = np.mat(np.diag( np.sqrt(wts_normalized) ) )
         self.A =  self.Wz * Pz.T
+        if self.training_grads is not None:
+            dPcell = super(Polyreg, self).getPolynomialGradient(self.x)
+            self.C = cell2matrix(dPcell, self.Wz)  
         rows, cols = self.A.shape
-        if rows <= cols:
+        if (rows <= cols) and (self.training_grads is None):
             raise(ValueError, 'Polyreg:setDesignMatrix:: Number of columns have to be less than (or equal to) the number of rows!')
         super(Polyreg, self).__setDesignMatrix__(self.A)
 

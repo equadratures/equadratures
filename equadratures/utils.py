@@ -8,6 +8,16 @@ def nchoosek(n, k):
     denominator = factorial(k) * factorial(n - k)
     return (1.0 * numerator) / (1.0 * denominator)
 
+def twoDgrid(coefficients, index_set):
+    max_order = int(np.max(index_set)) + 1
+    x, y = np.mgrid[0:max_order, 0:max_order]
+    z = np.full(x.shape, float('NaN'))
+    indices = index_set.astype(int)
+    l = len(coefficients)
+    coefficients = np.reshape(coefficients, (1, l))
+    z[indices[:,0], indices[:,1]] = coefficients
+    return x, y, z, max_order
+    
 def efficient_kron_mult(Q, Uc):
     # Adapted from Gleich and Constantine's kronmult.m
     N = len(Q)
@@ -64,9 +74,7 @@ def columnNormalize(A):
         col_norms[col_norms == 0] = 1
     return A/col_norms
 
-
-
-def cell2matrix(G):
+def cell2matrix(G, W):
     dimensions = len(G)
     G0 = G[0] # Which by default has to exist!
     C0 = G0.T
@@ -74,7 +82,7 @@ def cell2matrix(G):
     BigC = np.zeros((dimensions*rows, cols))
     counter = 0
     for i in range(0, dimensions):
-        K = G[i].T
+        K = np.dot(W, G[i].T)
         for j in range(0, rows):
             for k in range(0,cols):
                 BigC[counter,k] = K[j,k]

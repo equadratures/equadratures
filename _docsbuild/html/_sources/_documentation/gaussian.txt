@@ -1,0 +1,5 @@
+Gaussian
+====================
+
+.. automodule:: equadratures.distributions.gaussian
+    :members:

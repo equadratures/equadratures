@@ -1,708 +1,235 @@
+
+
 <!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Distributions &mdash; Effective Quadratures v7.0 documentation</title>
+  
 
+  
+  
+  
+  
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  
+
+  
+  
     
-    <title>Probability distributions &#8212;   v6.0 documentation</title>
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Gaussian" href="gaussian.html" />
+    <link rel="prev" title="Least Squares" href="polylsq.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
     
-    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootswatch-3.3.6/cosmo/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     'v6.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="  v6.0 documentation" href="index.html" />
-    <link rel="up" title="Core code" href="corecode.html" />
-    <link rel="next" title="Utilities" href="utilities.html" />
-    <link rel="prev" title="Compressive sensing" href="polycs.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
 
-  </head>
-  <body role="document">
+          
+            <a href="index.html" class="icon icon-home"> Effective Quadratures
+          
 
-  <div id="navbar" class="navbar navbar-inverse navbar-default ">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="index.html"><span><img src="_static/logo.png"></span>
-           </a>
-        <span class="navbar-text navbar-version pull-left"><b>v6.0</b></span>
-      </div>
+          
+          </a>
 
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
+          
             
             
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="index.html">  <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul class="current">
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="corecode.html">Core code</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="basis.html">Basis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="poly.html">Polynomials</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Probability distributions</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Distributions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gaussian.html">Gaussian</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="dr.html">Dimension reduction utilities</a></li>
-<li class="toctree-l2"><a class="reference internal" href="convex.html">Convex optimization utilities</a></li>
-<li class="toctree-l2"><a class="reference internal" href="stats.html">Statistics utilities</a></li>
-<li class="toctree-l2"><a class="reference internal" href="plotting.html">Plotting utilities</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
-<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
 </ul>
-</ul>
-</li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Page <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">Probability distributions</a></li>
-</ul>
-</ul>
-</li>
-              
-            
-            
-              
-                
-  <li>
-    <a href="polycs.html" title="Previous Chapter: Compressive sensing"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Compressive s...</span>
-    </a>
-  </li>
-  <li>
-    <a href="utilities.html" title="Next Chapter: Utilities"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Utilities &raquo;</span>
-    </a>
-  </li>
-              
-            
-            
-            
-            
-              <li class="hidden-sm">
-<div id="sourcelink">
-  <a href="_sources/distributions.txt"
-     rel="nofollow">Source</a>
-</div></li>
-            
-          </ul>
 
-          
             
-<form class="navbar-form navbar-right" action="search.html" method="get">
- <div class="form-group">
-  <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
           
         </div>
-    </div>
-  </div>
+      </div>
+    </nav>
 
-<div class="container">
-  <div class="row">
-    <div class="col-md-12 content">
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
       
-  <div class="section" id="module-equadratures.distributions">
-<span id="probability-distributions"></span><h1>Probability distributions<a class="headerlink" href="#module-equadratures.distributions" title="Permalink to this headline">¶</a></h1>
-<p>A set of utilities for cmputing probability and cumulative density functions</p>
-<dl class="function">
-<dt id="equadratures.distributions.CDF_BetaDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">CDF_BetaDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>a</em>, <em>b</em>, <em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.CDF_BetaDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A beta cumulative density function.</p>
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Effective Quadratures</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="corecode.html">Core code</a> &raquo;</li>
+        
+      <li>Distributions</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/_documentation/distributions.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="distributions">
+<h1>Distributions<a class="headerlink" href="#distributions" title="Permalink to this headline">¶</a></h1>
+<p>Distributions for characterizing the parameters.</p>
+<span class="target" id="module-equadratures.distributions.distribution"></span><p>The Distribution template.</p>
+<dl class="class">
+<dt id="equadratures.distributions.distribution.Distribution">
+<em class="property">class </em><code class="descclassname">equadratures.distributions.distribution.</code><code class="descname">Distribution</code><span class="sig-paren">(</span><em>mean=None</em>, <em>variance=None</em>, <em>lower=None</em>, <em>upper=None</em>, <em>shape=None</em>, <em>scale=None</em>, <em>rate=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/distribution.html#Distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.distribution.Distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>The class defines a Distribution object. It serves as a template for all distributions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>lower</strong> (<em>double</em>) – Lower bound of the support of the Chebyshev (arcsine) distribution.</li>
+<li><strong>upper</strong> (<em>double</em>) – Upper bound of the support of the Chebyshev (arcsine) distribution.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="equadratures.distributions.distribution.Distribution.getRecurrenceCoefficients">
+<code class="descname">getRecurrenceCoefficients</code><span class="sig-paren">(</span><em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/distribution.html#Distribution.getRecurrenceCoefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.distribution.Distribution.getRecurrenceCoefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recurrence coefficients for the distribution</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the cumulative density function.</li>
-<li><strong>a</strong> (<em>double</em>) &#8211; First shape parameter of the beta distribution. This value has to be greater than 0.</li>
-<li><strong>b</strong> (<em>double</em>) &#8211; Second shape parameter of the beta distribution. This value has to be greater than 0.</li>
-<li><strong>lower</strong> (<em>double</em>) &#8211; Lower bound of the support of the beta distribution.</li>
-<li><strong>upper</strong> (<em>double</em>) &#8211; Upper bound of the support of the beta distribution.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.distribution.Distribution" title="equadratures.distributions.distribution.Distribution"><em>Distribution</em></a>) – An instance of the distribution class.</li>
+<li><strong>order</strong> (<em>array</em>) – The order of the recurrence coefficients desired.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Cumulative density values along the support of the beta distribution.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Recurrence coefficients associated with the distribution.</p>
 </td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
-<dl class="function">
-<dt id="equadratures.distributions.CDF_CauchyDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">CDF_CauchyDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>x0</em>, <em>gammavalue</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.CDF_CauchyDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A Cauchy cumulative density function.</p>
+<dl class="method">
+<dt id="equadratures.distributions.distribution.Distribution.getSamples">
+<code class="descname">getSamples</code><span class="sig-paren">(</span><em>m=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/distribution.html#Distribution.getSamples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.distribution.Distribution.getSamples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates samples from the distribution.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the cumulative density function.</li>
-<li><strong>x0</strong> (<em>double</em>) &#8211; Location parameter of the Cauchy distribution.</li>
-<li><strong>gammavalue</strong> (<em>double</em>) &#8211; Scale parameter associated with the Cauchy distribution.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.distribution.Distribution" title="equadratures.distributions.distribution.Distribution"><em>Distribution</em></a>) – An instance of the distribution class.</li>
+<li><strong>m</strong> (<em>integer</em>) – Number of random samples. If no value is provided, a default of 5e5 is assumed.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Cumulative density values along the support of the Cauchy distribution.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A N-by-1 vector that contains the samples.</p>
 </td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
-<dl class="function">
-<dt id="equadratures.distributions.CDF_CustomDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">CDF_CustomDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.CDF_CustomDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A cumulative density function associated with a given data set.</p>
+<dl class="method">
+<dt id="equadratures.distributions.distribution.Distribution.getiCDF">
+<code class="descname">getiCDF</code><span class="sig-paren">(</span><em>xx</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/distribution.html#Distribution.getiCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.distribution.Distribution.getiCDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>An inverse cumulative density function.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the cumulative density function.</li>
-<li><strong>data</strong> (<em>array</em>) &#8211; An array of data samples from which a custom distribution is generated.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Cumulative density values along the support of the custom distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.CDF_ExponentialDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">CDF_ExponentialDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>lambda_value</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.CDF_ExponentialDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>An exponential cumulative density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the cumulative density function.</li>
-<li><strong>lambda_value</strong> (<em>double</em>) &#8211; Rate parameter of the exponential distribution. This parameter must be greater than 0.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Cumulative density values along the support of the exponential distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.CDF_GammaDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">CDF_GammaDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>k</em>, <em>theta</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.CDF_GammaDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A gamma cumulative density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the cumulative density function.</li>
-<li><strong>k</strong> (<em>double</em>) &#8211; Shape parameter of the gamma distribution. This value has to be greater than 0.</li>
-<li><strong>theta</strong> (<em>double</em>) &#8211; Scale parameter of the gamma distribution. This value has to be greater than 0.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Cumulative density values along the support of the Gamma distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.CDF_GaussianDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">CDF_GaussianDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>mu</em>, <em>sigma</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.CDF_GaussianDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A Gaussian cumulative density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the cumulative density function.</li>
-<li><strong>mu</strong> (<em>double</em>) &#8211; Mean of the Gaussian distribution.</li>
-<li><strong>sigma</strong> &#8211; Standard deviation of the Gaussian distribution.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Cumulative density values along the support of the distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.CDF_TruncatedGaussianDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">CDF_TruncatedGaussianDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>mu</em>, <em>sigma</em>, <em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.CDF_TruncatedGaussianDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A truncated Gaussian cumulative density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the cumulative density function.</li>
-<li><strong>mu</strong> (<em>double</em>) &#8211; Mean of the truncated Gaussian distribution.</li>
-<li><strong>doublesigma</strong> &#8211; Standard deviation of the truncated Gaussian distribution.</li>
-<li><strong>lower</strong> (<em>double</em>) &#8211; Lower bound of the support of the truncated Gaussian distribution.</li>
-<li><strong>upper</strong> (<em>double</em>) &#8211; Upper bound of the support of the truncated Gaussian distribution.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Cumulative density values along the support of the truncated Gaussian distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.CDF_UniformDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">CDF_UniformDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.CDF_UniformDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A uniform cumulative density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the cumulative density function.</li>
-<li><strong>lower</strong> (<em>double</em>) &#8211; Lower bound of the support of the uniform distribution.</li>
-<li><strong>upper</strong> (<em>double</em>) &#8211; Upper bound of the support of the uniform distribution.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Cumulative density values along the support of the uniform distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.CDF_WeibullDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">CDF_WeibullDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>lambda_value</em>, <em>k</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.CDF_WeibullDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A Weibull cumulative density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the cumulative density function.</li>
-<li><strong>lambda_value</strong> (<em>double</em>) &#8211; Scale parameter of the Weibull distribution. This parameter must be greater than 0.</li>
-<li><strong>k</strong> (<em>double</em>) &#8211; Shape parameter of the Weibull distribution. This parameter must be greater than 0.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Cumulative density values along the support of the Weibull distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.PDF_BetaDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">PDF_BetaDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>a</em>, <em>b</em>, <em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.PDF_BetaDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A beta probability distribution.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the probability density function.</li>
-<li><strong>a</strong> (<em>double</em>) &#8211; First shape parameter of the beta distribution. This value has to be greater than 0.</li>
-<li><strong>b</strong> (<em>double</em>) &#8211; Second shape parameter of the beta distribution. This value has to be greater than 0.</li>
-<li><strong>lower</strong> (<em>double</em>) &#8211; Lower bound of the support of the uniform distribution.</li>
-<li><strong>upper</strong> (<em>double</em>) &#8211; Upper bound of the support of the uniform distribution.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Probability density values along the support of the beta distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.PDF_CauchyDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">PDF_CauchyDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>x0</em>, <em>gammavalue</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.PDF_CauchyDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A Cauchy probability density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the probability density function.</li>
-<li><strong>x0</strong> (<em>double</em>) &#8211; Location parameter of the Cauchy distribution.</li>
-<li><strong>gammavalue</strong> (<em>double</em>) &#8211; Scale parameter associated with the Cauchy distribution.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Probability density values along the support of the Cauchy distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.PDF_CustomDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">PDF_CustomDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.PDF_CustomDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A probability density function associated with a given data set.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the probability density function.</li>
-<li><strong>data</strong> (<em>array</em>) &#8211; An array of data samples from which a custom distribution is generated.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Probability density values along the support of the custom distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Notes:</strong></p>
-<p>To obtain a probability density function from finite samples, this function uses kernel density estimation (with a Gaussian kernel).</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.PDF_ExponentialDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">PDF_ExponentialDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>lambda_value</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.PDF_ExponentialDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>An exponential probability density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the probability density function.</li>
-<li><strong>lambda_value</strong> (<em>double</em>) &#8211; Rate parameter of the exponential distribution. This parameter must be greater than 0.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Probability density values along the support of the exponential distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.PDF_GammaDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">PDF_GammaDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>k</em>, <em>theta</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.PDF_GammaDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A gamma probability density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the probability density function.</li>
-<li><strong>k</strong> (<em>double</em>) &#8211; Shape parameter of the gamma distribution. This value has to be greater than 0.</li>
-<li><strong>theta</strong> (<em>double</em>) &#8211; Scale parameter of the gamma distribution. This value has to be greater than 0.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Probability density values along the support of the Gamma distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.PDF_GaussianDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">PDF_GaussianDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>mu</em>, <em>sigma</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.PDF_GaussianDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A Gaussian probability distribution.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the probability density function.</li>
-<li><strong>mu</strong> (<em>double</em>) &#8211; Mean of the Gaussian distribution.</li>
-<li><strong>sigma</strong> &#8211; Standard deviation of the Gaussian distribution.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Probability density values along the support of the Gaussian distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.PDF_TruncatedGaussianDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">PDF_TruncatedGaussianDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>mu</em>, <em>sigma</em>, <em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.PDF_TruncatedGaussianDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A truncated Gaussian probability density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the probability density function.</li>
-<li><strong>mu</strong> (<em>double</em>) &#8211; Mean of the truncated Gaussian distribution.</li>
-<li><strong>doublesigma</strong> &#8211; Standard deviation of the truncated Gaussian distribution.</li>
-<li><strong>lower</strong> (<em>double</em>) &#8211; Lower bound of the support of the truncated Gaussian distribution.</li>
-<li><strong>upper</strong> (<em>double</em>) &#8211; Upper bound of the support of the truncated Gaussian distribution.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Probability density values along the support of the truncated Gaussian distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.PDF_UniformDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">PDF_UniformDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.PDF_UniformDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A uniform probability distribution.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the probability density function.</li>
-<li><strong>lower</strong> (<em>double</em>) &#8211; Lower bound of the support of the uniform distribution.</li>
-<li><strong>upper</strong> (<em>double</em>) &#8211; Upper bound of the support of the uniform distribution.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Probability density values along the support of the uniform distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.PDF_WeibullDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">PDF_WeibullDistribution</code><span class="sig-paren">(</span><em>N</em>, <em>lambda_value</em>, <em>k</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.PDF_WeibullDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A Weibull probability density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the probability density function.</li>
-<li><strong>lambda_value</strong> (<em>double</em>) &#8211; Scale parameter of the Weibull distribution. This parameter must be greater than 0.</li>
-<li><strong>k</strong> (<em>double</em>) &#8211; Shape parameter of the Weibull distribution. This parameter must be greater than 0.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Probability density values along the support of the Weibull distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.iCDF_BetaDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">iCDF_BetaDistribution</code><span class="sig-paren">(</span><em>xx</em>, <em>a</em>, <em>b</em>, <em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.iCDF_BetaDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>An inverse beta cumulative density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>xx</strong> &#8211; A numpy array of uniformly distributed samples between [0,1].</li>
-<li><strong>a</strong> (<em>double</em>) &#8211; First shape parameter of the beta distribution. This value has to be greater than 0.</li>
-<li><strong>b</strong> (<em>double</em>) &#8211; Second shape parameter of the beta distribution. This value has to be greater than 0.</li>
-<li><strong>lower</strong> (<em>double</em>) &#8211; Lower bound of the support of the beta distribution.</li>
-<li><strong>upper</strong> (<em>double</em>) &#8211; Upper bound of the support of the beta distribution.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Inverse CDF samples associated with the beta distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.iCDF_CauchyDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">iCDF_CauchyDistribution</code><span class="sig-paren">(</span><em>xx</em>, <em>x0</em>, <em>gammavalue</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.iCDF_CauchyDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>An inverse Cauchy cumulative density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>xx</strong> (<em>array</em>) &#8211; A numpy array of uniformly distributed samples between [0,1].</li>
-<li><strong>x0</strong> (<em>double</em>) &#8211; Location parameter of the Cauchy distribution.</li>
-<li><strong>gammavalue</strong> (<em>double</em>) &#8211; Scale parameter associated with the Cauchy distribution.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Inverse CDF samples associated with the Cauchy distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.iCDF_CustomDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">iCDF_CustomDistribution</code><span class="sig-paren">(</span><em>xx</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.iCDF_CustomDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>An inverse custom cumulative density function. Here the custom distriution is based on the input data.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>xx</strong> &#8211; A numpy array of uniformly distributed samples between [0,1].</li>
-<li><strong>data</strong> (<em>array</em>) &#8211; An array of data samples from which a custom distribution is generated.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Inverse CDF samples associated with the custom distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.iCDF_ExponentialDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">iCDF_ExponentialDistribution</code><span class="sig-paren">(</span><em>xx</em>, <em>lambda_value</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.iCDF_ExponentialDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>An inverse exponential cumulative density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>xx</strong> (<em>array</em>) &#8211; A numpy array of uniformly distributed samples between [0,1].</li>
-<li><strong>lambda_value</strong> (<em>double</em>) &#8211; Rate parameter of the exponential distribution. This parameter must be greater than 0.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Inverse CDF samples associated with the exponential distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.iCDF_GammaDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">iCDF_GammaDistribution</code><span class="sig-paren">(</span><em>xx</em>, <em>k</em>, <em>theta</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.iCDF_GammaDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>An inverse gamma cumulative density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>xx</strong> &#8211; A numpy array of uniformly distributed samples between [0,1].</li>
-<li><strong>k</strong> (<em>double</em>) &#8211; Shape parameter of the gamma distribution. This value has to be greater than 0.</li>
-<li><strong>theta</strong> (<em>double</em>) &#8211; Scale parameter of the gamma distribution. This value has to be greater than 0.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.distribution.Distribution" title="equadratures.distributions.distribution.Distribution"><em>Distribution</em></a>) – An instance of the distribution class.</li>
+<li><strong>xx</strong> – A numpy array of uniformly distributed samples between [0,1].</li>
 </ul>
 </td>
 </tr>
@@ -713,92 +240,79 @@
 </table>
 </dd></dl>
 
-<dl class="function">
-<dt id="equadratures.distributions.iCDF_Gaussian">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">iCDF_Gaussian</code><span class="sig-paren">(</span><em>xx</em>, <em>mu</em>, <em>sigma</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.iCDF_Gaussian" title="Permalink to this definition">¶</a></dt>
-<dd><p>An inverse Gaussian cumulative density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>xx</strong> (<em>array</em>) &#8211; A numpy array of uniformly distributed samples between [0,1].</li>
-<li><strong>mu</strong> (<em>double</em>) &#8211; Mean of the Gaussian distribution.</li>
-<li><strong>doublesigma</strong> &#8211; Standard deviation of the Gaussian distribution.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Inverse CDF samples associated with the Gaussian distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="function">
-<dt id="equadratures.distributions.iCDF_TruncatedGaussianDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">iCDF_TruncatedGaussianDistribution</code><span class="sig-paren">(</span><em>xx</em>, <em>mu</em>, <em>sigma</em>, <em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.iCDF_TruncatedGaussianDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>An inverse truncated Gaussian cumulative density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>xx</strong> &#8211; A numpy array of uniformly distributed samples between [0,1].</li>
-<li><strong>mu</strong> (<em>double</em>) &#8211; Mean of the Gaussian distribution.</li>
-<li><strong>doublesigma</strong> &#8211; Standard deviation of the Gaussian distribution.</li>
-<li><strong>lower</strong> (<em>double</em>) &#8211; Lower bound of the support of the truncated Gaussian distribution.</li>
-<li><strong>upper</strong> (<em>double</em>) &#8211; Upper bound of the support of the truncated Gaussian distribution.</li>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="gaussian.html">Gaussian</a></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Inverse CDF samples associated with the truncated Gaussian distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.distributions.iCDF_WeibullDistribution">
-<code class="descclassname">equadratures.distributions.</code><code class="descname">iCDF_WeibullDistribution</code><span class="sig-paren">(</span><em>xx</em>, <em>lambda_value</em>, <em>k</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.distributions.iCDF_WeibullDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>An inverse Weibull cumulative density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>xx</strong> (<em>array</em>) &#8211; A numpy array of uniformly distributed samples between [0,1].</li>
-<li><strong>lambda_value</strong> (<em>double</em>) &#8211; Scale parameter of the Weibull distribution. This parameter must be greater than 0.</li>
-<li><strong>k</strong> (<em>double</em>) &#8211; Shape parameter of the Weibull distribution. This parameter must be greater than 0.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Inverse CDF samples associated with the Weibull distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
+</div>
 </div>
 
 
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="gaussian.html" class="btn btn-neutral float-right" title="Gaussian" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="polylsq.html" class="btn btn-neutral" title="Least Squares" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-      
-  </div>
-</div>
-<footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-    </p>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2018 by Effective Quadratures.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.<br/>
+        &copy; Copyright 2018, Pranay Seshadri et al..
+
     </p>
   </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
 </footer>
-  </body>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'v7.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

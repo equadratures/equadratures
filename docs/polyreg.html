@@ -1,166 +1,193 @@
+
+
 <!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Regression &mdash; Effective Quadratures v7.0 documentation</title>
+  
 
+  
+  
+  
+  
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  
+
+  
+  
     
-    <title>Regression &#8212;   v6.0 documentation</title>
-    
-    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootswatch-3.3.6/cosmo/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     'v6.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="  v6.0 documentation" href="index.html" />
-    <link rel="up" title="Coefficient computation" href="polychildren.html" />
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Quadrature rules" href="polyint.html" />
-    <link rel="prev" title="Coefficient computation" href="polychildren.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="prev" title="Coefficient computation" href="polychildren.html" /> 
 
-  </head>
-  <body role="document">
+  
+  <script src="../_static/js/modernizr.min.js"></script>
 
-  <div id="navbar" class="navbar navbar-inverse navbar-default ">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="index.html"><span><img src="_static/logo.png"></span>
-           </a>
-        <span class="navbar-text navbar-version pull-left"><b>v6.0</b></span>
-      </div>
+</head>
 
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Effective Quadratures
+          
+
+          
+          </a>
+
+          
             
             
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="index.html">  <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul class="current">
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="corecode.html">Core code</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="basis.html">Basis</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="poly.html">Polynomials</a></li>
-<li class="toctree-l2"><a class="reference internal" href="distributions.html">Probability distributions</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="poly.html">Polynomials</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="polyparent.html">Base polynomial</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="polychildren.html">Coefficient computation</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Regression</a></li>
+<li class="toctree-l4"><a class="reference internal" href="polyint.html">Quadrature rules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="polycs.html">Compressive sensing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="polylsq.html">Least Squares</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="dr.html">Dimension reduction utilities</a></li>
-<li class="toctree-l2"><a class="reference internal" href="convex.html">Convex optimization utilities</a></li>
-<li class="toctree-l2"><a class="reference internal" href="stats.html">Statistics utilities</a></li>
-<li class="toctree-l2"><a class="reference internal" href="plotting.html">Plotting utilities</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
-<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
-</ul>
+<li class="toctree-l2"><a class="reference internal" href="distributions.html">Distributions</a></li>
 </ul>
 </li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Page <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
 </ul>
-</ul>
-</li>
-              
-            
-            
-              
-                
-  <li>
-    <a href="polychildren.html" title="Previous Chapter: Coefficient computation"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Coefficient c...</span>
-    </a>
-  </li>
-  <li>
-    <a href="polyint.html" title="Next Chapter: Quadrature rules"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Quadrature rules &raquo;</span>
-    </a>
-  </li>
-              
-            
-            
-            
-            
-              <li class="hidden-sm">
-<div id="sourcelink">
-  <a href="_sources/polyreg.txt"
-     rel="nofollow">Source</a>
-</div></li>
-            
-          </ul>
 
-          
             
-<form class="navbar-form navbar-right" action="search.html" method="get">
- <div class="form-group">
-  <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
           
         </div>
-    </div>
-  </div>
+      </div>
+    </nav>
 
-<div class="container">
-  <div class="row">
-    <div class="col-md-12 content">
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
       
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Effective Quadratures</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="corecode.html">Core code</a> &raquo;</li>
+        
+          <li><a href="poly.html">Polynomials</a> &raquo;</li>
+        
+          <li><a href="polychildren.html">Coefficient computation</a> &raquo;</li>
+        
+      <li>Regression</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/_documentation/polyreg.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
   <div class="section" id="module-equadratures.polyreg">
 <span id="regression"></span><h1>Regression<a class="headerlink" href="#module-equadratures.polyreg" title="Permalink to this headline">¶</a></h1>
 <p>Finding coefficients via regression.</p>
 <dl class="class">
 <dt id="equadratures.polyreg.Polyreg">
-<em class="property">class </em><code class="descclassname">equadratures.polyreg.</code><code class="descname">Polyreg</code><span class="sig-paren">(</span><em>parameters</em>, <em>basis</em>, <em>training_inputs</em>, <em>fun=None</em>, <em>training_outputs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.polyreg.Polyreg" title="Permalink to this definition">¶</a></dt>
-<dd><p>The class defines a Polyreg object. It is the child of Poly.</p>
+<em class="property">class </em><code class="descclassname">equadratures.polyreg.</code><code class="descname">Polyreg</code><span class="sig-paren">(</span><em>parameters</em>, <em>basis</em>, <em>training_inputs=None</em>, <em>fun=None</em>, <em>training_outputs=None</em>, <em>training_grads=None</em>, <em>quadrature_rule=None</em>, <em>no_of_quad_points=None</em>, <em>gradmethod=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/polyreg.html#Polyreg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.polyreg.Polyreg" title="Permalink to this definition">¶</a></dt>
+<dd><p>The class defines a Polyreg object. It is the child of Poly.
+:param Parameter parameters:</p>
+<blockquote>
+<div>A list of parameters.</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>parameters</strong> (<a class="reference internal" href="parameter.html#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; A list of parameters.</li>
-<li><strong>basis</strong> (<a class="reference internal" href="basis.html#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) &#8211; A basis selected for the multivariate polynomial.</li>
-<li><strong>training_inputs</strong> (<em>matrix</em>) &#8211; A N-by-d matrix of input training points.</li>
-<li><strong>training_outputs</strong> (<em>matrix</em>) &#8211; A N-by-1 matrix of output training points.</li>
-<li><strong>fun</strong> (<em>callable</em>) &#8211; Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.</li>
+<li><strong>basis</strong> (<a class="reference internal" href="basis.html#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) – A basis selected for the multivariate polynomial.</li>
+<li><strong>training_inputs</strong> (<em>matrix</em>) – A N-by-d matrix of input training points.</li>
+<li><strong>training_outputs</strong> (<em>matrix</em>) – A N-by-1 matrix of output training points.</li>
+<li><strong>training_grads</strong> (<em>matrix</em>) – A N-by-d matrix of gradient evaluations.</li>
+<li><strong>fun</strong> (<em>callable</em>) – Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.</li>
 </ul>
 </td>
 </tr>
@@ -168,13 +195,26 @@
 </table>
 <dl class="method">
 <dt id="equadratures.polyreg.Polyreg.computeCoefficients">
-<code class="descname">computeCoefficients</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.polyreg.Polyreg.computeCoefficients" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function computes the coefficients using least squares. To access the coefficients simply use the class&#8217;s attribute self.coefficients.</p>
+<code class="descname">computeCoefficients</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/polyreg.html#Polyreg.computeCoefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.polyreg.Polyreg.computeCoefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function computes the coefficients using least squares. To access the coefficients simply use the class’s attribute self.coefficients.
+:param Polyreg self:</p>
+<blockquote>
+<div>An instance of the Polyreg class.</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.polyreg.Polyreg.cross_validation">
+<code class="descname">cross_validation</code><span class="sig-paren">(</span><em>folds=5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/polyreg.html#Polyreg.cross_validation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.polyreg.Polyreg.cross_validation" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function carries out a cross validation procedure on the polynomial.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.polyreg.Polyreg" title="equadratures.polyreg.Polyreg"><em>Polyreg</em></a>) &#8211; An instance of the Polyreg class.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.polyreg.Polyreg" title="equadratures.polyreg.Polyreg"><em>Polyreg</em></a>) – An instance of the Polyreg class.</li>
+<li><strong>folds</strong> (<em>int</em>) – The number of cross validation folds; default value is 5.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -182,17 +222,18 @@
 
 <dl class="method">
 <dt id="equadratures.polyreg.Polyreg.getfitStatistics">
-<code class="descname">getfitStatistics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.polyreg.Polyreg.getfitStatistics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes statistics based on the quality of the fit</p>
+<code class="descname">getfitStatistics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/polyreg.html#Polyreg.getfitStatistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.polyreg.Polyreg.getfitStatistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes statistics based on the quality of the fit
+:param Polyreg self:</p>
+<blockquote>
+<div>An instance of the Polyreg class.</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.polyreg.Polyreg" title="equadratures.polyreg.Polyreg"><em>Polyreg</em></a>) &#8211; An instance of the Polyreg class.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference external" href="https://en.wikipedia.org/wiki/T-statistic">T statistic</a>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference external" href="https://en.wikipedia.org/wiki/T-statistic">T statistic</a>.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference external" href="https://en.wikipedia.org/wiki/Coefficient_of_determination">Coefficient of determination / R-squared value</a>.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference external" href="https://en.wikipedia.org/wiki/Coefficient_of_determination">Coefficient of determination / R-squared value</a>.</td>
 </tr>
 </tbody>
 </table>
@@ -200,16 +241,11 @@
 
 <dl class="method">
 <dt id="equadratures.polyreg.Polyreg.setDesignMatrix">
-<code class="descname">setDesignMatrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#equadratures.polyreg.Polyreg.setDesignMatrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the design matrix using the polynomials defined in the basis.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.polyreg.Polyreg" title="equadratures.polyreg.Polyreg"><em>Polyreg</em></a>) &#8211; An instance of the Polyreg class.</td>
-</tr>
-</tbody>
-</table>
+<code class="descname">setDesignMatrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/polyreg.html#Polyreg.setDesignMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.polyreg.Polyreg.setDesignMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the design matrix using the polynomials defined in the basis.
+:param Polyreg self:</p>
+<blockquote>
+<div>An instance of the Polyreg class.</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -217,21 +253,69 @@
 </div>
 
 
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="polyint.html" class="btn btn-neutral float-right" title="Quadrature rules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="polychildren.html" class="btn btn-neutral" title="Coefficient computation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-      
-  </div>
-</div>
-<footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-    </p>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2018 by Effective Quadratures.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.<br/>
+        &copy; Copyright 2018, Pranay Seshadri et al..
+
     </p>
   </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
 </footer>
-  </body>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'v7.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

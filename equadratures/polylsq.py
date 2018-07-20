@@ -89,10 +89,10 @@ class Polylsq(Poly):
             refined_pts = pts[z_chosen]
             Pz = super(Polylsq, self).getPolynomial(refined_pts)
             wts_orig_normalized =  wts[z_chosen] / np.sum(wts[z_chosen])
-            Wz = np.mat(np.diag(wts_orig_normalized ) )
+            Wz = np.mat(np.diag( np.sqrt(wts_orig_normalized) ) )
             Az =  Wz * Pz.T
             dPcell = super(Polylsq, self).getPolynomialGradient(refined_pts)
-            dP = cell2matrix(dPcell)
+            dP = cell2matrix(dPcell, Wz)
             M = np.vstack([Az, dP])
             rank = np.linalg.matrix_rank(M)
             print 'Iterating...system rank: '+str(rank)+', and the # of rows in Az: '+str(index)
@@ -106,7 +106,7 @@ class Polylsq(Poly):
         self.Wz = np.mat(np.diag( np.sqrt(wts_orig_normalized) ) )
         self.Az =  self.Wz * Pz.T
         dPcell = super(Polylsq, self).getPolynomialGradient(refined_pts)
-        self.Cz = cell2matrix(dPcell)  
+        self.Cz = cell2matrix(dPcell, self.Wz)  
         self.quadraturePoints = refined_pts
         self.quadratureWeights = np.sqrt(wts_orig_normalized) 
     def __gradientsFalse(self, pts, wts, m_refined):
@@ -226,7 +226,7 @@ class Polylsq(Poly):
             counter = 0
             for j in range(0,q):
                 for i in range(0,p):
-                    d[counter] = grad_values[i,j]
+                    d[counter] = self.Wz[i,i] * grad_values[i,j]
                     counter = counter + 1
             self.dy = d
             del d, grad_values

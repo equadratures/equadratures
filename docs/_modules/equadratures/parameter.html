@@ -1,0 +1,468 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>equadratures.parameter &mdash; Effective Quadratures v7.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../_documentation/index.html" class="icon icon-home"> Effective Quadratures
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/corecode.html">Core code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/utilities.html">Utilities</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../_documentation/index.html">Effective Quadratures</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../_documentation/index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>equadratures.parameter</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for equadratures.parameter</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">distributions.gaussian</span> <span class="k">import</span> <span class="n">Gaussian</span>
+<span class="kn">from</span> <span class="nn">distributions.uniform</span> <span class="k">import</span> <span class="n">Uniform</span>
+<span class="kn">from</span> <span class="nn">distributions.chebyshev</span> <span class="k">import</span> <span class="n">Chebyshev</span>
+<span class="kn">from</span> <span class="nn">distributions.beta</span> <span class="k">import</span> <span class="n">Beta</span>
+<span class="kn">from</span> <span class="nn">distributions.cauchy</span> <span class="k">import</span> <span class="n">Cauchy</span>
+<span class="kn">from</span> <span class="nn">distributions.exponential</span> <span class="k">import</span> <span class="n">Exponential</span>
+<span class="kn">from</span> <span class="nn">distributions.gamma</span> <span class="k">import</span> <span class="n">Gamma</span>
+<span class="kn">from</span> <span class="nn">distributions.weibull</span> <span class="k">import</span> <span class="n">Weibull</span>
+<span class="kn">from</span> <span class="nn">distributions.rayleigh</span> <span class="k">import</span> <span class="n">Rayleigh</span>
+<span class="kn">from</span> <span class="nn">distributions.chisquared</span> <span class="k">import</span> <span class="n">Chisquared</span>
+<span class="kn">from</span> <span class="nn">distributions.truncated_gaussian</span> <span class="k">import</span> <span class="n">TruncatedGaussian</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<div class="viewcode-block" id="Parameter"><a class="viewcode-back" href="../../_documentation/parameter.html#equadratures.parameter.Parameter">[docs]</a><span class="k">class</span> <span class="nc">Parameter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class defines a univariate parameter. Below are details of its constructor.</span>
+<span class="sd">    :param double lower:</span>
+<span class="sd">        Lower bound for the parameter.</span>
+<span class="sd">    :param double upper:</span>
+<span class="sd">        Upper bound for the parameter.</span>
+<span class="sd">    :param integer order:</span>
+<span class="sd">        Order of the parameter.</span>
+<span class="sd">    :param string param_type:</span>
+<span class="sd">        The type of distribution that characterizes the parameter. Options include: `Chebyshev (arcsine) &lt;https://en.wikipedia.org/wiki/Arcsine_distribution&gt;`_, `Gaussian &lt;https://en.wikipedia.org/wiki/Normal_distribution&gt;`_, `Truncated-Gaussian &lt;https://en.wikipedia.org/wiki/Truncated_normal_distribution&gt;`_, `Beta &lt;https://en.wikipedia.org/wiki/Beta_distribution&gt;`_, `Cauchy &lt;https://en.wikipedia.org/wiki/Cauchy_distribution&gt;`_, `Exponential &lt;https://en.wikipedia.org/wiki/Exponential_distribution&gt;`_, `Uniform &lt;https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)&gt;`_, `Gamma &lt;https://en.wikipedia.org/wiki/Gamma_distribution&gt;`_, `Weibull &lt;https://en.wikipedia.org/wiki/Weibull_distribution&gt;`_. If no string is provided, a `Uniform` distribution is assumed. If the user provides data, and would like to generate orthogonal polynomials (and quadrature rules) based on the data, they can set this option to be Custom.</span>
+<span class="sd">    :param double shape_parameter_A:</span>
+<span class="sd">        Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a `Gaussian` (or `TruncatedGaussian`), this represents the mean. In the case of a Beta distribution this represents the alpha value. For a uniform distribution this input is not required.</span>
+<span class="sd">    :param double shape_parameter_B:</span>
+<span class="sd">        This is the second shape parameter that characterizes the distribution selected. In the case of a `Gaussian` or `TruncatedGaussian`, this is the variance.</span>
+<span class="sd">    :param data:</span>
+<span class="sd">        A numpy array with data values (x-y column format). Note this option is only invoked if the user uses the Custom param_type.</span>
+<span class="sd">    :param Endpoints:</span>
+<span class="sd">        A boolean entry. If set to True, then the quadrature points and weights will have end-points.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">distribution</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shape_parameter_B</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">distribution</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span> 
+		<span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_A</span> <span class="o">=</span> <span class="n">shape_parameter_A</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_B</span> <span class="o">=</span> <span class="n">shape_parameter_B</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">lower</span> <span class="o">=</span> <span class="n">lower</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">upper</span> <span class="o">=</span> <span class="n">upper</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span> <span class="o">=</span> <span class="n">endpoints</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">setDistribution</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">setBounds</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">setMoments</span><span class="p">()</span>
+
+	<span class="k">def</span> <span class="nf">setDistribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="n">choices</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;gaussian&#39;</span><span class="p">:</span> <span class="n">Gaussian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_B</span><span class="p">),</span>
+			       <span class="s1">&#39;normal&#39;</span><span class="p">:</span> <span class="n">Gaussian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_B</span><span class="p">),</span>
+			       <span class="s1">&#39;uniform&#39;</span> <span class="p">:</span> <span class="n">Uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">),</span>
+				   <span class="s1">&#39;beta&#39;</span><span class="p">:</span> <span class="n">Beta</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_B</span><span class="p">),</span>
+				   <span class="s1">&#39;cauchy&#39;</span> <span class="p">:</span> <span class="n">Cauchy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_B</span><span class="p">),</span> 
+				   <span class="s1">&#39;exponential&#39;</span><span class="p">:</span> <span class="n">Exponential</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_A</span><span class="p">),</span>
+				   <span class="s1">&#39;gamma&#39;</span><span class="p">:</span> <span class="n">Gamma</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_B</span><span class="p">),</span>
+				   <span class="s1">&#39;weibull&#39;</span><span class="p">:</span> <span class="n">Weibull</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_B</span><span class="p">),</span>
+				   <span class="s1">&#39;arcsine&#39;</span><span class="p">:</span> <span class="n">Chebyshev</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">),</span>
+				   <span class="s1">&#39;chebyshev&#39;</span><span class="p">:</span> <span class="n">Chebyshev</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">),</span>
+				   <span class="s1">&#39;rayleigh&#39;</span> <span class="p">:</span> <span class="n">Rayleigh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_A</span><span class="p">),</span>
+				   <span class="s1">&#39;chisquared&#39;</span> <span class="p">:</span> <span class="n">Chisquared</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_A</span><span class="p">),</span>
+				   <span class="s1">&#39;truncated-gaussian&#39;</span><span class="p">:</span> <span class="n">TruncatedGaussian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_B</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span>
+				   <span class="p">}</span>
+		<span class="n">distribution</span> <span class="o">=</span> <span class="n">choices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">distributionError</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">=</span> <span class="n">distribution</span>
+
+	<span class="k">def</span> <span class="nf">setMoments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">mean</span> 
+		<span class="bp">self</span><span class="o">.</span><span class="n">variance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">variance</span>
+		
+	<span class="k">def</span> <span class="nf">setBounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">bounds</span>
+
+	<span class="k">def</span> <span class="nf">getPDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">getPDF</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+
+	<span class="k">def</span> <span class="nf">getCDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">getCDF</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+
+	<span class="k">def</span> <span class="nf">getiCDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xx</span><span class="p">):</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">getiCDF</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span>
+
+	<span class="k">def</span> <span class="nf">getSamples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">getSamples</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+	
+	<span class="k">def</span> <span class="nf">getDescription</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">getDescription</span><span class="p">()</span>
+	
+	<span class="k">def</span> <span class="nf">getRecurrenceCoefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">getRecurrenceCoefficients</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+		
+	<span class="k">def</span> <span class="nf">getJacobiEigenVectors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="n">order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span>
+			<span class="n">JacobiMat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jacobiMatrix</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+			<span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+				<span class="n">V</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">]</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">D</span><span class="p">,</span><span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">JacobiMat</span><span class="p">)</span>
+			<span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">V</span><span class="p">)</span> <span class="c1"># convert to matrix</span>
+			<span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">D</span><span class="p">)</span> <span class="c1"># get the sorted indices</span>
+			<span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="c1"># convert to array</span>
+			<span class="n">V</span> <span class="o">=</span> <span class="n">V</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span>
+		<span class="k">return</span> <span class="n">V</span>
+
+	<span class="k">def</span> <span class="nf">jacobiMatrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="n">ab</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getRecurrenceCoefficients</span><span class="p">()</span>
+			<span class="n">order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">ab</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getRecurrenceCoefficients</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+
+		<span class="n">order</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+
+		<span class="c1"># The case of order 1~</span>
+		<span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">order</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+			<span class="n">JacobiMatrix</span> <span class="o">=</span> <span class="n">ab</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+		<span class="c1"># For everything else~</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">JacobiMatrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">order</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">order</span><span class="p">)))</span> <span class="c1"># allocate space</span>
+			<span class="n">JacobiMatrix</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">ab</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+			<span class="n">JacobiMatrix</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ab</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+
+			<span class="n">k</span> <span class="o">=</span> <span class="n">order</span> <span class="o">-</span> <span class="mi">1</span>
+			<span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">)):</span>
+				<span class="n">JacobiMatrix</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">ab</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+				<span class="n">JacobiMatrix</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="n">u</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ab</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+				<span class="n">JacobiMatrix</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="n">u</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ab</span><span class="p">[</span><span class="n">u</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+
+			<span class="n">JacobiMatrix</span><span class="p">[</span><span class="n">order</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">ab</span><span class="p">[</span><span class="n">order</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+			<span class="n">JacobiMatrix</span><span class="p">[</span><span class="n">order</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ab</span><span class="p">[</span><span class="n">order</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+
+		<span class="k">return</span> <span class="n">JacobiMatrix</span>
+
+	<span class="k">def</span> <span class="nf">_getOrthoPoly</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+		<span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-15</span>
+		<span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="n">order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">order</span> <span class="o">=</span> <span class="n">order</span> <span class="o">+</span> <span class="mi">1</span>
+		<span class="n">gridPoints</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">points</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+		<span class="n">ab</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getRecurrenceCoefficients</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+		<span class="k">if</span> <span class="p">(</span> <span class="nb">any</span><span class="p">(</span><span class="n">gridPoints</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="n">gridPoints</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">)</span> <span class="p">:</span>
+			<span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">gridPoints</span><span class="p">)):</span>
+				<span class="n">gridPoints</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">gridPoints</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+		<span class="n">orthopoly</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">order</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">gridPoints</span><span class="p">)))</span> <span class="c1"># create a matrix full of zeros</span>
+		<span class="n">derivative_orthopoly</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">order</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">gridPoints</span><span class="p">)))</span>
+
+		<span class="c1"># Convert the grid points to a numpy array -- simplfy life!</span>
+		<span class="n">gridPointsII</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">gridPoints</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+		<span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">gridPoints</span><span class="p">)):</span>
+			<span class="n">gridPointsII</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">gridPoints</span><span class="p">[</span><span class="n">u</span><span class="p">]</span>
+		<span class="n">orthopoly</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+		<span class="c1"># Cases</span>
+		<span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="c1">#CHANGED 2/2/18</span>
+			<span class="k">return</span> <span class="n">orthopoly</span><span class="p">,</span> <span class="n">derivative_orthopoly</span>
+		<span class="n">orthopoly</span><span class="p">[</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">=</span> <span class="p">((</span><span class="n">gridPointsII</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">ab</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">orthopoly</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ab</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="p">)</span>
+		<span class="n">derivative_orthopoly</span><span class="p">[</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">orthopoly</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ab</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+		<span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span> <span class="c1">#CHANGED 2/2/18</span>
+			<span class="k">return</span> <span class="n">orthopoly</span><span class="p">,</span> <span class="n">derivative_orthopoly</span>
+
+		<span class="k">if</span> <span class="n">order</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span> <span class="c1">#CHANGED 2/2/18</span>
+			<span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">order</span><span class="p">):</span> <span class="c1">#CHANGED 2/2/18</span>
+				<span class="c1"># Three-term recurrence rule in action!</span>
+				<span class="n">orthopoly</span><span class="p">[</span><span class="n">u</span><span class="p">,:]</span> <span class="o">=</span> <span class="p">(</span> <span class="p">((</span><span class="n">gridPointsII</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">ab</span><span class="p">[</span><span class="n">u</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="n">orthopoly</span><span class="p">[</span><span class="n">u</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ab</span><span class="p">[</span><span class="n">u</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">*</span><span class="n">orthopoly</span><span class="p">[</span><span class="n">u</span><span class="o">-</span><span class="mi">2</span><span class="p">,:]</span> <span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ab</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+			<span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span> <span class="c1">#CHANGED 2/2/18</span>
+				<span class="c1"># Four-term recurrence formula for derivatives of orthogonal polynomials!</span>
+				<span class="n">derivative_orthopoly</span><span class="p">[</span><span class="n">u</span><span class="p">,:]</span> <span class="o">=</span> <span class="p">(</span> <span class="p">((</span><span class="n">gridPointsII</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">ab</span><span class="p">[</span><span class="n">u</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">derivative_orthopoly</span><span class="p">[</span><span class="n">u</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span> <span class="o">-</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ab</span><span class="p">[</span><span class="n">u</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">derivative_orthopoly</span><span class="p">[</span><span class="n">u</span><span class="o">-</span><span class="mi">2</span><span class="p">,:]</span> <span class="p">)</span> <span class="o">+</span>  <span class="n">orthopoly</span><span class="p">[</span><span class="n">u</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span>   <span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ab</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+		
+		<span class="k">return</span> <span class="n">orthopoly</span><span class="p">,</span> <span class="n">derivative_orthopoly</span>
+		
+	<span class="k">def</span> <span class="nf">_getLocalQuadrature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Returns the 1D quadrature points and weights for the parameter. WARNING: Should not be called under normal circumstances.</span>
+<span class="sd">		:param Parameter self:</span>
+<span class="sd">			An instance of the Parameter class</span>
+<span class="sd">		:param int N:</span>
+<span class="sd">			Number of quadrature points and weights required. If order is not specified, then by default the method will return the number of points defined in the parameter itself.</span>
+<span class="sd">		:return:</span>
+<span class="sd">			A N-by-1 matrix that contains the quadrature points</span>
+<span class="sd">		:return:</span>
+<span class="sd">			A 1-by-N matrix that contains the quadrature weights</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+			<span class="k">return</span> <span class="n">getlocalquadrature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+			<span class="k">return</span> <span class="n">getlocalquadraturelobatto</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span></div>
+			<span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;_getLocalQuadrature:: Error with Endpoints entry!&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">getlocalquadrature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1"># Check for extra input argument!</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">order</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c1"># Get the recurrence coefficients &amp; the jacobi matrix</span>
+    <span class="n">JacobiMat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jacobiMatrix</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+    <span class="n">ab</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getRecurrenceCoefficients</span><span class="p">(</span><span class="n">order</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># If statement to handle the case where order = 1</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># Check to see whether upper and lower bound are defined:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">mean</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">]</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Compute eigenvalues &amp; eigenvectors of Jacobi matrix</span>
+        <span class="n">D</span><span class="p">,</span><span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">JacobiMat</span><span class="p">)</span>
+        <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">V</span><span class="p">)</span> <span class="c1"># convert to matrix</span>
+        <span class="n">local_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">D</span><span class="p">)</span> <span class="c1"># sort by the eigenvalues</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">D</span><span class="p">)</span> <span class="c1"># get the sorted indices</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="c1"># convert to array</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">order</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">order</span><span class="p">)</span> <span class="c1"># create space for weights</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">order</span><span class="p">),</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">):</span>
+            <span class="n">w</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">ab</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">i</span><span class="p">[</span><span class="n">u</span><span class="p">]]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># replace weights with right value</span>
+            <span class="n">p</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">local_points</span><span class="p">[</span><span class="n">u</span><span class="p">]</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">1e-16</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="o">-</span><span class="mf">1e-16</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">p</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">p</span><span class="p">,</span> <span class="n">w</span>   
+
+<span class="k">def</span> <span class="nf">getlocalquadraturelobatto</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1"># Check for extra input argument!</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">-</span> <span class="mi">2</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">order</span> <span class="o">-</span> <span class="mi">2</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_A</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_parameter_B</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">order</span>
+    <span class="c1"># Get the recurrence coefficients &amp; the jacobi matrix</span>
+    <span class="n">ab</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getRecurrenceCoefficients</span><span class="p">(</span><span class="n">order</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">ab</span><span class="p">[</span><span class="n">N</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">ab</span><span class="p">[</span><span class="n">N</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">a</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">b</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> 
+    <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">2</span>
+    <span class="n">n0</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="n">ab</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">if</span> <span class="n">n0</span> <span class="o">&lt;</span> <span class="n">K</span><span class="p">:</span>
+        <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;getlocalquadraturelobatto: Recurrence coefficients size misalignment!&#39;</span><span class="p">)</span>
+    <span class="n">J</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">K</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">K</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">K</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">J</span><span class="p">[</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">ab</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">K</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">J</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ab</span><span class="p">[</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">J</span><span class="p">[</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">J</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">D</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">J</span><span class="p">)</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">V</span><span class="p">)</span> <span class="c1"># convert to matrix</span>
+    <span class="n">local_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">D</span><span class="p">)</span> <span class="c1"># sort by the eigenvalues</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">D</span><span class="p">)</span> <span class="c1"># get the sorted indices</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="c1"># convert to array</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">K</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">K</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># create space for weights</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">K</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="mi">1</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">):</span>
+        <span class="n">w</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">ab</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">i</span><span class="p">[</span><span class="n">u</span><span class="p">]]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># replace weights with right value</span>
+        <span class="n">p</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">local_points</span><span class="p">[</span><span class="n">u</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">p</span><span class="p">,</span> <span class="n">w</span>
+
+<span class="k">def</span> <span class="nf">distributionError</span><span class="p">():</span>
+	<span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Please select a valid distribution for your parameter; documentation can be found at www.effective-quadratures.org&#39;</span><span class="p">)</span> 
+	
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Pranay Seshadri et al..
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'v7.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

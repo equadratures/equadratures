@@ -14,6 +14,10 @@ class Uniform(Distribution):
     def __init__(self, lower, upper):
         self.lower = lower
         self.upper = upper
+        self.bounds = np.array([self.lower, self.upper])
+        self.mean = 0.5 * (self.upper + self.lower)
+        self.variance = 1.0/12.0 * (self.upper - self.lower)**2
+        self.skewness = 0.0
 	
     def getCDF(self, N):
         """

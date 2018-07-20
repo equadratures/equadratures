@@ -33,4 +33,4 @@ We use an EULA license; please refer to the documentation for license particular
 If you have contributions, questions, or feedback use either the Github repository, or contact:<br>
 <br>
 The Effective Quadratures Team <br>
-contact <at> effective-quadratures.org <br>
+contact -at- effective-quadratures.org <br>

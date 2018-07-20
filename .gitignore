@@ -16,7 +16,6 @@ data/
 # documentation folders
 _docsstatic/
 _docstemplates/
-_documentation/
 build/
 
 # test data

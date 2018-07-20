@@ -1,0 +1,5 @@
+Analytical Distributions
+=========================
+
+.. automodule:: effective_quadratures.analyticaldistributions
+    :members:

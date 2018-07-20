@@ -24,7 +24,7 @@ copyright = u'2018, Pranay Seshadri et al.'
 author = u'Pranay Seshadri et al.'
 
 # The short X.Y version
-version = u''
+version = u'7.0'
 # The full version, including alpha/beta/rc tags
 release = u'v7.0'
 

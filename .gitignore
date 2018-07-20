@@ -14,10 +14,10 @@ figs/
 data/
 
 # documentation folders
-_docsstatic/
-_docstemplates/
-build/
-#_documentation/
+#_docsstatic/
+#_docstemplates/
+#build/
+_documentation/
 
 # test data
 

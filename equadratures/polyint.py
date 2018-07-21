@@ -50,13 +50,18 @@ class Polyint(Poly):
         """
         Returns multivariate orthonormal polynomial coefficients.
 
-        :param Polyint self: An instance of the Polyint class
-        :param: callable function: The function that needs to be approximated (or interpolated)
-        :return: coefficients: The pseudospectral coefficients
+        :param Polyint self: 
+            An instance of the Polyint class
+        :param: callable function:
+            The function that needs to be approximated (or interpolated)
+        :return: coefficients: 
+            The pseudospectral coefficients
         :rtype: ndarray
-        :return: indexset: The indices used for the pseudospectral computation
+        :return: indexset: 
+            The indices used for the pseudospectral computation
         :rtype: ndarray
-        :return: evaled_pts: The points at which the function was evaluated
+        :return: evaled_pts: 
+            The points at which the function was evaluated
         :rtype: ndarray
 
         """

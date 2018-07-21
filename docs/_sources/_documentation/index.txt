@@ -8,7 +8,6 @@ Sitemap
    corecode 
    utilities
    contact
-   license
 
 
 

@@ -28,8 +28,8 @@ This implies that for strictly not-for-profit purposes (e.g., largely academic a
 References
 -----------
 
-.. [seshadri2018quadrature] Seshadri, P., Iaccarino, G., Ghisu, T. Quadrature Strategies for Constructing Polynomial Approximations. [To appear in Springer shortly]. Preprint available: `https://arxiv.org/abs/1805.07296 <https://arxiv.org/abs/1805.07296>`__
+.. [1] Seshadri, P., Iaccarino, G., Ghisu, T. Quadrature Strategies for Constructing Polynomial Approximations. [To appear in Springer shortly]. Preprint available: `https://arxiv.org/abs/1805.07296 <https://arxiv.org/abs/1805.07296>`__
 
-.. [seshadri2017effectively] Seshadri, P., Narayan, A., Sankaran M. Effectively Subsampled Quadratures for Least Squares Polynomial Approximations." SIAM/ASA Journal on Uncertainty Quantification 5.1 (2017): 1003-1023. `https://epubs.siam.org/doi/abs/10.1137/16M1057668 <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
+.. [2] Seshadri, P., Narayan, A., Sankaran M. Effectively Subsampled Quadratures for Least Squares Polynomial Approximations." SIAM/ASA Journal on Uncertainty Quantification 5.1 (2017): 1003-1023. `https://epubs.siam.org/doi/abs/10.1137/16M1057668 <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
 
-.. [seshadri2017effective] Seshadri, P., Parks, G. T., Effective-Quadratures (EQ): Polynomials for Computational Engineering Studies, Journal of Open Source Software, 2(11), 166, `doi:10.21105/joss.00166 <http://joss.theoj.org/papers/ba651f2b3608a5d2b085af06b1108747>`__
+.. [3] Seshadri, P., Parks, G. T., Effective-Quadratures (EQ): Polynomials for Computational Engineering Studies, Journal of Open Source Software, 2(11), 166, `doi:10.21105/joss.00166 <http://joss.theoj.org/papers/ba651f2b3608a5d2b085af06b1108747>`__

@@ -22,8 +22,8 @@ class Distribution(object):
         self.scale = scale
         
     
-def getDescription(self):
-    pass
+    def getDescription(self):
+                pass
         
     def getPDF(self, N=None, points=None):
 		pass

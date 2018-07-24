@@ -101,7 +101,7 @@ def vandermonde(eta,p):
     Object=Basis('Total order',listing)
     #Establish n Parameter objects
     params=[]
-    P=Parameter(order=p,lower=-1,upper=1)#,param_type='Uniform')
+    P=Parameter(order=p,lower=-1,upper=1,distribution='uniform')
     for i in range(0,n):
         params.append(P)
     #Use the params list to establish the Poly object

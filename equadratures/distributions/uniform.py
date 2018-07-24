@@ -19,7 +19,7 @@ class Uniform(Distribution):
         self.variance = 1.0/12.0 * (self.upper - self.lower)**2
         self.skewness = 0.0
 	
-    def getCDF(self, N):
+    def getCDF(self, N=None, points=None):
         """
         A uniform cumulative density function.
         :param integer N:
@@ -33,13 +33,24 @@ class Uniform(Distribution):
         :return:
             Cumulative density values along the support of the uniform distribution.
         """
-        x = np.linspace(self.lower, self.upper, N)
-        w = np.zeros((N, 1))
-        for i in range(0, N):
-            w[i] = (x[i] - self.lower)/(self.upper - self.lower)
-        return x, w
+        if N is not None:
+            x = np.linspace(self.lower, self.upper, N)
+            w = np.zeros((N, 1))
+            for i in range(0, N):
+                w[i] = (x[i] - self.lower)/(self.upper - self.lower)
+            return x, w
+        elif points is not None:
+            m = len(points)
+            n = points.T
+            o = len(n)
+            for i in range(m):
+                for j in range(n):
+                    w[i,j] = (points[i,j] - self.lower)/(self.upper - self.lower)
+            return w
+        else:
+            raise(ValueError, 'Please digit an input for getCDF method')
 
-    def getPDF(self, N):
+    def getPDF(self, N=None, points=None):
         """
         A uniform probability distribution.
         :param integer N:
@@ -53,9 +64,16 @@ class Uniform(Distribution):
         :return:
             Probability density values along the support of the uniform distribution.
         """
-        x = np.linspace(self.lower, self.upper, N)
-        w = 0*x + (1.0)/(self.upper - self.lower)
-        return x, w
+        if N is not None:
+            x = np.linspace(self.lower, self.upper, N)
+            w = 0*x + (1.0)/(self.upper - self.lower)
+            return x, w
+        elif points is not None:
+            w = 0*x + (1.0)/(self.upper - self.lower)
+            return w
+        else:
+            raise(ValueError, 'Please digit an input for getPDF method')
+
 
     def getRecurrenceCoefficients(self, order):
         """

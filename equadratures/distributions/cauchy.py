@@ -33,7 +33,7 @@ class Cauchy(Distribution):
         text = "A Cauchy distribution has an undefined mean and variance; its location parameter is "+str(self.location)+", and its scale parameter is "+str(self.scale)+"."
         return text
     
-    def getPDF(self, N):
+    def getPDF(self, N=None, points=None):
         """
         A Cauchy probability density function.
         
@@ -46,12 +46,19 @@ class Cauchy(Distribution):
         :return:
             Probability density values along the support of the Cauchy distribution.
         """
-        x = np.linspace(-15*self.scale, 15*self.scale, N)
-        x = x + self.location
-        w = 1.0/(np.pi * self.scale * (1 + ((x - self.location)/(self.scale))**2) )
-        return x, w
+        if N is not None:
+            x = np.linspace(-15*self.scale, 15*self.scale, N)
+            x = x + self.location
+            w = 1.0/(np.pi * self.scale * (1 + ((x - self.location)/(self.scale))**2) )
+            return x, w
+        elif points is not None:
+            w = 1.0/(np.pi * self.scale * (1 + ((points - self.location)/(self.scale))**2) )
+            return w
+        else:
+            raise(ValueError, 'Please digit an input for getPDF method')
 
-    def getCDF(self, N):
+
+    def getCDF(self, N=None, points=None):
         """
         A Cauchy cumulative density function.
         
@@ -64,10 +71,16 @@ class Cauchy(Distribution):
         :return:
             Cumulative density values along the support of the Cauchy distribution.
         """
-        x = np.linspace(-15*self.scale, 15*self.scale, N)
-        x = x + self.location
-        w = 1.0/np.pi * np.arctan((x - self.location) / self.scale) + 0.5
-        return x, w
+        if N is not None:
+            x = np.linspace(-15*self.scale, 15*self.scale, N)
+            x = x + self.location
+            w = 1.0/np.pi * np.arctan((x - self.location) / self.scale) + 0.5
+            return x, w
+        elif points is not None:
+            w = 1.0/np.pi * np.arctan((points - self.location) / self.scale) + 0.5
+            return w
+        else:
+            raise(ValueError, 'Please digit an input for getCDF method')
 
     def getiCDF(self, xx):
         """

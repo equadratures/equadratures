@@ -27,7 +27,9 @@ class Beta(Distribution):
             self.variance = (self.shape_A * self.shape_B) / ( (self.shape_A + self.shape_B)**2 * (self.shape_A + self.shape_B + 1.0) )
             self.skewness = 2.0 * (self.shape_B - self.shape_A) * np.sqrt(self.shape_A + self.shape_B + 1.0) / ( (self.shape_A + self.shape_B + 2.0) * np.sqrt(self.shape_A * self.shape_B) ) 
             self.kurtosis = 6.0 * ((self.shape_A - self.shape_B)**2 * (self.shape_A + self.shape_B + 1.0) - self.shape_A * self.shape_B * (self.shape_A + self.shape_B + 2.0)  ) /( (self.shape_A * self.shape_B) * (self.shape_A + self.shape_B + 2.0) * (self.shape_A + self.shape_B + 3.0)) + 3.0   
+
         self.bounds = np.array([0, 1])
+
     
     def getDescription(self):
         """
@@ -41,7 +43,7 @@ class Beta(Distribution):
         text = "A beta distribution is defined over a support; given here as "+str(self.lower)+", to "+str(self.upper)+". It has two shape parameters, given here to be "+str(self.shape_A)+" and "+str(self.shape_B)+"."
         return text
 
-    def getPDF(self, N):
+    def getPDF(self, N=None, points=None):
         """
         A beta probability density function.
         
@@ -52,13 +54,20 @@ class Beta(Distribution):
         :return:
             Probability density values along the support of the Beta distribution.
         """
-        x = np.linspace(0, 1, N)
-        w = (x**(self.shape_A - 1) * (1 - x)**(self.shape_B - 1))/(beta(self.shape_A, self.shape_B) )
-        xreal = np.linspace(self.lower, self.upper, N)
-        wreal = w * (1.0)/(self.upper - self.lower)
-        return xreal, wreal
+        if N is not None:
+            x = np.linspace(0, 1, N)
+            w = (x**(self.shape_A - 1) * (1 - x)**(self.shape_B - 1))/(beta(self.shape_A, self.shape_B) )
+            xreal = np.linspace(self.lower, self.upper, N)
+            wreal = w * (1.0)/(self.upper - self.lower)
+            return xreal, wreal
+        elif points is not None:
+            w = (points**(self.shape_A - 1) * (1 - points)**(self.shape_B - 1))/(beta(self.shape_A, self.shape_B) )
+            wreal = w * (1.0)/(self.upper - self.lower)
+            return wreal
+        else:
+            raise(ValueError, 'Please specify an input for getPDF method')
 
-    def getCDF(self, N):
+    def getCDF(self, N=None, points=None):
         """
         A beta cumulative density function.
         
@@ -71,12 +80,19 @@ class Beta(Distribution):
         :return:
             Cumulative density values along the support of the Gamma distribution.
         """
-        xreal = np.linspace(self.lower, self.upper, N)
-        x = np.linspace(0, 1, N)
-        w = np.zeros((N,1))
-        for i in range(0, N):
-            w[i] = betainc(a, b, x[i])
-        return xreal, w
+        if N is not None:
+            xreal = np.linspace(self.lower, self.upper, N)
+            x = np.linspace(0, 1, N)
+            w = np.zeros((N,1))
+            for i in range(0, N):
+                w[i] = betainc(a, b, x[i])
+            return xreal, w
+        elif points is not None:
+            t = points.T
+            for i in range(len(points)):
+                for j in range(len(t)):
+                    w[i,j] = betainc(a,b, points[i,j])
+            return w
 
     def getRecurrenceCoefficients(self, order):
         """

@@ -25,10 +25,10 @@ class Distribution(object):
     def getDescription(self):
         pass
         
-	def getPDF(self, N):
+	def getPDF(self, N=None, points=None):
 		pass
 
-	def getCDF(self, N):
+	def getCDF(self, N=None, points=None):
 		pass
 
     def getiCDF(self, xx):

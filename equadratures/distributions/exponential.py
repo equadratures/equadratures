@@ -31,7 +31,7 @@ class Exponential(Distribution):
         text = "An exponential distribution with a rate parameter of"+str(self.rate)+"."
         return text
 
-    def getPDF(self, N):
+    def getPDF(self, N=None, points=None):
         """
         An exponential probability density function.
         
@@ -44,9 +44,15 @@ class Exponential(Distribution):
         :return:
             Probability density values along the support of the exponential distribution.
         """
-        x = np.linspace(0, 20*self.rate, N)
-        w = self.rate * np.exp(-self.rate * x)
-        return x, w
+        if N is not None:
+            x = np.linspace(0, 20*self.rate, N)
+            w = self.rate * np.exp(-self.rate * x)
+            return x, w
+        elif points is not None:
+            w = self.rate * np.exp(-self.rate * points)
+            return w
+        else: 
+            raise(ValueError, 'Please digit an input for getPDF method')
 
     def getiCDF(self, xx):
         """
@@ -61,7 +67,7 @@ class Exponential(Distribution):
         """
         return (-np.log(1.0 - xx))/(self.rate)
 
-    def getCDF(self, N):
+    def getCDF(self, N=None, points=None):
         """
         An exponential cumulative density function.
         
@@ -74,6 +80,13 @@ class Exponential(Distribution):
         :return:
             Cumulative density values along the support of the exponential distribution.
         """
-        x = np.linspace(0, 20*self.rate, N)
-        w = 1 - np.exp(-self.rate * x)
-        return x, w
+        if N is not None:
+            x = np.linspace(0, 20*self.rate, N)
+            w = 1 - np.exp(-self.rate * x)
+            return x, w
+        elif points is not None:
+            w = 1 - np.exp(-self.rate * points)
+            return w
+        else: 
+            raise(ValueError, 'Please digit an input for getCDF method')
+

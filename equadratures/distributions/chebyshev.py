@@ -16,8 +16,7 @@ class Chebyshev(Distribution):
         self.lower = lower
         self.upper = upper
         self.bounds = np.array([0.0, 1.0])
-        if (self.lower is not None ) and (self.upper is not None): 
-            self.mean = 1.0 / (self.upper - self.lower)
+        self.mean = 1.0 / (self.upper - self.lower)
         self.variance = 1.0/8.0
         self.skewness = 0.0
     
@@ -33,7 +32,7 @@ class Chebyshev(Distribution):
         text = "A Chebyshev (arcsine) distribution is characterised by its lower bound, which is"+str(self.lower)+" and its upper bound, which is"+str(self.upper)+"."
         return text
 
-    def getPDF(self, N):
+    def getPDF(self, N=None, points=None):
         """
         A Chebyshev probability density function.
         
@@ -46,11 +45,17 @@ class Chebyshev(Distribution):
         :return:
             Probability density values along the support of the Chebyshev (arcsine) distribution.
         """
-        xreal = np.linspace(self.lower, self.upper, N)
-        wreal = 1.0 / (np.pi * np.sqrt( ((xreal+0.0000001) - self.lower) * (self.upper - (xreal-0.0000001)) )  )
-        return xreal, wreal
+        if N is not None:
+            xreal = np.linspace(self.lower, self.upper, N)
+            wreal = 1.0 / (np.pi * np.sqrt( ((xreal+0.0000001) - self.lower) * (self.upper - (xreal-0.0000001)) )  )
+            return xreal, wreal
+        elif points is not None:
+            wreal = 1.0 / (np.pi * np.sqrt( ((points+0.0000001) - self.lower) * (self.upper - (points-0.0000001)) )  )
+            return wreal
+        else:
+            raise(ValueError, 'Please digit an input for getPDF method')
 
-    def getCDF(self, N):
+    def getCDF(self, N=None, points=None):
         """
         A Chebyshev cumulative density function.
         
@@ -63,9 +68,15 @@ class Chebyshev(Distribution):
         :return:
             Cumulative density values along the support of the Chebyshev (arcsine) distribution.
         """
-        xreal = np.linspace(self.lower, self.upper, N)
-        wreal = 2.0 / (np.pi) * np.arcsin( np.sqrt( (xreal - self.lower)/(self.upper - self.lower) ) )
-        return xreal, wreal
+        if N is not None:
+            xreal = np.linspace(self.lower, self.upper, N)
+            wreal = 2.0 / (np.pi) * np.arcsin( np.sqrt( (xreal - self.lower)/(self.upper - self.lower) ) )
+            return xreal, wreal
+        elif points is not None:
+            wreal = 2.0 / (np.pi) * np.arcsin( np.sqrt( (points - self.lower)/(self.upper - self.lower) ) )
+            return wreal
+        else:
+            raise(ValueError, 'Please digit an input for getCDF method')
 
     def getRecurrenceCoefficients(self, order):
         """

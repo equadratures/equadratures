@@ -30,7 +30,7 @@ class Rayleigh(Distribution):
         text = "A Rayleigh distribution is characterised by its scale parameter, which is"+str(self.scale)+"."
         return text
 
-    def getPDF(self, N):
+    def getPDF(self, N=None, points=None):
         """
         A Rayleigh probability density function.
         
@@ -43,11 +43,17 @@ class Rayleigh(Distribution):
         :return:
             Probability density values along the support of the Rayleigh distribution.
         """
-        xreal = np.linspace(0.0, 3.5*self.scale)
-        wreal = xreal / (self.scale**2) * np.exp( - xreal**2 * 1.0/(2.0 * self.scale**2 ))
-        return xreal, wreal
+        if N is not None:
+            xreal = np.linspace(0.0, 3.5*self.scale)
+            wreal = xreal / (self.scale**2) * np.exp( - xreal**2 * 1.0/(2.0 * self.scale**2 ))
+            return xreal, wreal
+        elif points is not None:
+            wreal = points / (self.scale**2) * np.exp( - points**2 * 1.0/(2.0 * self.scale**2 ))
+            return wreal
+        else:
+            raise(ValueError, 'Please Digit an input for getPDF method')
 
-    def getCDF(self, N):
+    def getCDF(self, N=None, points=None):
         """
         A Rayleigh cumulative density function.
         
@@ -60,6 +66,12 @@ class Rayleigh(Distribution):
         :return:
             Cumulative density values along the support of the Rayleigh distribution.
         """
-        xreal = np.linspace(0.0, 3.5*self.scale)
-        wreal = 1.0 - np.exp(-xreal**2 * 1.0/(2.0 * self.scale**2))
-        return xreal, wreal
+        if N is not None:
+            xreal = np.linspace(0.0, 3.5*self.scale)
+            wreal = 1.0 - np.exp(-xreal**2 * 1.0/(2.0 * self.scale**2))
+            return xreal, wreal
+        elif point is not None:
+            wreal = 1.0 - np.exp(-points**2 * 1.0/(2.0 * self.scale**2))
+            return wreal
+        else:
+            raise(ValueError, 'Please digit an input for getCDF method')

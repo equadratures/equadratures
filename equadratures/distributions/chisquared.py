@@ -34,7 +34,7 @@ class Chisquared(Distribution):
         text = "A Chi-squared distribution is characterised by its degrees of freedom, which here is"+str(self.dofs)+"."
         return text
 
-    def getPDF(self, N):
+    def getPDF(self, N=None, points=None):
         """
         A Chi-squared  probability density function.
         
@@ -47,11 +47,17 @@ class Chisquared(Distribution):
         :return:
             Probability density values along the support of the Chi-squared distribution.
         """
-        xreal = np.linspace(0.0, 10.0*self.mean, N)
-        wreal = 1.0 / (2.0** (self.mean / 2.0) * gamma(self.mean / 2.0)) * xreal**(self.mean/2.0  - 1.0) * np.exp(-xreal / 2.0)
-        return xreal, wreal
+        if N is not None:
+            xreal = np.linspace(0.0, 10.0*self.mean, N)
+            wreal = 1.0 / (2.0** (self.mean / 2.0) * gamma(self.mean / 2.0)) * xreal**(self.mean/2.0  - 1.0) * np.exp(-xreal / 2.0)
+            return xreal, wreal
+        elif points is not None:
+            wreal = 1.0 / (2.0** (self.mean / 2.0) * gamma(self.mean / 2.0)) * points**(self.mean/2.0  - 1.0) * np.exp(-points / 2.0)
+            return wreal
+        else: 
+            raise(ValueError, 'Please digit an input for getPDF method')
 
-    def getCDF(self, N):
+    def getCDF(self, N=None, points=None):
         """
         A Chi-squared cumulative density function.
         
@@ -64,6 +70,12 @@ class Chisquared(Distribution):
         :return:
             Cumulative density values along the support of the Chi-squared distribution.
         """
-        xreal = np.linspace(0.0, 10.0*self.mean, N)
-        wreal = 1.0 / (gamma(self.mean / 2.0)) * gammainc(self.mean / 2.0 , xreal / 2.0)
-        return xreal, wreal
+        if N is not None:
+            xreal = np.linspace(0.0, 10.0*self.mean, N)
+            wreal = 1.0 / (gamma(self.mean / 2.0)) * gammainc(self.mean / 2.0 , xreal / 2.0)
+            return xreal, wreal
+        elif points is not None:
+             wreal = 1.0 / (gamma(self.mean / 2.0)) * gammainc(self.mean / 2.0 , points / 2.0)
+             return wreal
+        else:
+            raise(ValueError, 'Please digit an input for getCDF method')

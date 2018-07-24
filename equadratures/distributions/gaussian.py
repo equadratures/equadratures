@@ -47,9 +47,9 @@ class Gaussian(Distribution):
             number_of_random_samples = PDF_SAMPLES
         else:
             number_of_random_samples = m
-        return np.random.rand((number_of_random_samples, 1))*self.sigma + self.mean
+        return np.random.randn(number_of_random_samples, 1)*self.sigma + self.mean
 
-    def getPDF(self, N):
+    def getPDF(self, N=None, points=None):
         """
         A Gaussian probability distribution.
 
@@ -62,10 +62,16 @@ class Gaussian(Distribution):
         :return:
             Probability density values along the support of the Gaussian distribution.
         """
-        x = np.linspace(-15*self.sigma, 15*self.sigma, N)
-        x = x + self.mean 
-        w = 1.0/( np.sqrt(2 * self.variance * np.pi) ) * np.exp(-(x - self.mean)**2 * 1.0/(2 * self.variance) )
-        return x, w
+        if N is not None:
+            x = np.linspace(-15*self.sigma, 15*self.sigma, N)
+            x = x + self.mean 
+            w = 1.0/( np.sqrt(2 * self.variance * np.pi) ) * np.exp(-(x - self.mean)**2 * 1.0/(2 * self.variance) )
+            return x, w
+        elif points is not None:
+             w = 1.0/( np.sqrt(2 * self.variance * np.pi) ) * np.exp(-(points - self.mean)**2 * 1.0/(2 * self.variance) )
+             return w
+        else:
+             raise(ValueError, 'Please digit an input for getPDF method')
 
     def getCDF(self, N=None, points=None):
         """
@@ -93,7 +99,7 @@ class Gaussian(Distribution):
         else:
             raise(ValueError, 'getCDF(): Please check your input arguments!')
 
-    def getiCDF(self, points=None):
+    def getiCDF(self, xx):
         """
         An inverse Gaussian cumulative density function.
 
@@ -104,4 +110,4 @@ class Gaussian(Distribution):
         :return:
             Inverse CDF samples associated with the Gaussian distribution.
         """
-        return self.mean + np.sqrt(self.variance) * np.sqrt(2.0) * erfinv(2.0*points - 1.0)
+        return self.mean + np.sqrt(self.variance) * np.sqrt(2.0) * erfinv(2.0*xx - 1.0)

@@ -44,7 +44,7 @@ class Test_Distributions(TestCase):
        print 'Effective quadrature mean: ', myStats.mean#, myStats.variance
        print 'Effective quadrature variance:' , myStats.variance
      
-       a,b = xo.getPDF(150)
+       a,b = xo.getPDF(N=150)
        fig = plt.figure(5)
        ax = fig.add_subplot(1,1,1)
        #count, bins, ignored = plt.hist(x, 30, normed = True)
@@ -121,7 +121,7 @@ class Test_Distributions(TestCase):
        print 'Effective quadrature variance:' , myStats.variance
     
      
-       a,b = xo.getPDF(80)
+       a,b = xo.getPDF(N=80)
        fig = plt.figure(3)
        ax = fig.add_subplot(1,1,1)
        #count, bins, ignored = plt.hist(x, 30, normed = True)
@@ -169,7 +169,7 @@ class Test_Distributions(TestCase):
        def blackbox(x):
            return x
 
-       x = np.linspace(0.00001,50,100)
+       x = np.linspace(10**(-10),30,100)
        # parameters : scale lambda (0, \infty); shape k (0, \infty)
      
        lambdaa = 9.0 # SCALE OF DISTRIBUTION
@@ -195,7 +195,7 @@ class Test_Distributions(TestCase):
        #plt.legend(loc='center ')
        #plt.show()
        
-       xo = Parameter(order=5, distribution='Weibull',lower =0.00001, upper=150.0, shape_parameter_A =lambdaa , shape_parameter_B = k  )
+       xo = Parameter(order=5, distribution='Weibull', shape_parameter_A =lambdaa , shape_parameter_B = k, lower = 10**(-10), upper = 30.0)
        myBasis = Basis('Tensor')
        myPoly = Polyint([xo], myBasis)
        myPoly.computeCoefficients(blackbox)
@@ -203,7 +203,7 @@ class Test_Distributions(TestCase):
        print 'Effective quadrature mean: ', myStats.mean #, myStats.variance
        print 'Effective quadrature variance:' , myStats.variance
     
-       a,b = xo.getPDF(1000)
+       a,b = xo.getPDF(N=1000)
        fig = plt.figure(6)
        ax = fig.add_subplot(1,1,1)
        #count, bins, ignored = plt.hist(x, 30, normed = True)
@@ -322,7 +322,9 @@ class Test_Distributions(TestCase):
 
       #----------- effective quadrature -----------------#
 
-      xo = Parameter(order=5, distribution='Chebyshev',lower =0.001, upper=0.99)
+      xo = Parameter(order=5, distribution='Chebyshev',lower =0.001, upper=0.99, shape_parameter_A = 0.0, shape_parameter_B = 1.0)
+      #xo = Parameter(order=5, distribution='Chebyshev',lower =0.001, upper=0.99)
+
       myBasis = Basis('Tensor')
       myPoly = Polyint([xo], myBasis)
       myPoly.computeCoefficients(blackbox)
@@ -330,7 +332,7 @@ class Test_Distributions(TestCase):
       print 'Effective quadrature mean: ', myStats.mean
       print 'Effective quadrature variance:' , myStats.variance
 
-      a1,b1 = xo.getPDF(150)
+      a1,b1 = xo.getPDF(N=150)
       fig = plt.figure()
       #ax = fig.add_subplot(1,1,1)
       #plt.hist(, normed= True, bins=30, range=(0.0,1.0))
@@ -392,7 +394,7 @@ class Test_Distributions(TestCase):
       print 'Effective quadrature mean: ', myStats.mean#, myStats.variance
       print 'Effective quadrature variance:' , myStats.variance
 
-      a,b = xo.getPDF(150)
+      a,b = xo.getPDF(N=150)
       fig = plt.figure(4)
       ax = fig.add_subplot(1,1,1)
       #count, bins, ignored = plt.hist(x, 30, normed = True)

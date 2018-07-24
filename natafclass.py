@@ -7,7 +7,6 @@
 import numpy as np
 from equadratures import *
 from scipy import optimize
-from test_quadrature import Test_Quadratures
 
 class Natafclass(object):
     """

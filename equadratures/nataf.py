@@ -210,8 +210,13 @@ class Nataf(object):
         
         else:
              raise(ValueError, 'One input must be given to "get Correlated Samples" method: please choose between sampling N points or giving an array of uncorrelated data ')   
-        
+        #--------------------------------------------#
+        # lines 216, 218 has been added on the 25/07
+        #--------------------------------------------#
+        rows_of_distro = len(distro) # marginals along columns
         distro = distro.T
+        number_of_distro = len(distro)  # transpose of original matrix
+
         D = np.zeros((len(self.D),len(self.D)))
         for i in range(len(self.D)):
             for j in range(len(self.D)):
@@ -229,8 +234,19 @@ class Nataf(object):
             S = L*L^T where L^T is the transpose matrix of L.
         """
         L    = np.linalg.cholesky(S)
+        # the following lines have been added on the 25/07 : testing standardized distributions as inputs
+        # 1) subtract the mean value of each distribution: for statement in each column=distribution
+        #     distro is now a matrix with marginals along rows.
+        # 2) divide by the variance of each marginal
+        for i in range(number_of_distro):
+            for j in range(rows_of_distro):
+                distro[i,j] = (distro[i,j] - self.D[i].mean)/np.sqrt(self.D[i].variance)
+
         XC   = np.matmul(L, distro)
         XC   = XC.T
+        for i in range(number_of_distro):
+            for j in range(rows_of_distro):
+                XC[j,i] = XC[j,i] + self.D[i].mean
         #print XC
         """ The results will be stored in the following lines into 
             two different tuples: the element 0 contains the 
@@ -239,6 +255,10 @@ class Nataf(object):
             of the present method.
         """
         distro = distro.T
+        for i in range(number_of_distro):
+            for j in range(rows_of_distro):
+                distro[j,i] = (distro[j,i])*np.sqrt(self.D[i].variance) + self.D[i].mean
+
         return distro, XC          
       
     def CorrelationMatrix(self, X):

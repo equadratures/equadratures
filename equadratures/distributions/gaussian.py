@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 from distribution import Distribution
-
+import matplotlib.pyplot as plt
 class Gaussian(Distribution):
     """
     The class defines a Gaussian object. It is the child of Distribution.

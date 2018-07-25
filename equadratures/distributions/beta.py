@@ -85,13 +85,13 @@ class Beta(Distribution):
             x = np.linspace(0, 1, N)
             w = np.zeros((N,1))
             for i in range(0, N):
-                w[i] = betainc(a, b, x[i])
+                w[i] = betainc(self.shape_A, self.shape_B, x[i])
             return xreal, w
         elif points is not None:
             t = points.T
             for i in range(len(points)):
                 for j in range(len(t)):
-                    w[i,j] = betainc(a,b, points[i,j])
+                    w[i,j] = betainc(self.shape_A,self.shape_B, points[i,j])
             return w
 
     def getRecurrenceCoefficients(self, order):

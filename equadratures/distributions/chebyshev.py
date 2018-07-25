@@ -16,7 +16,8 @@ class Chebyshev(Distribution):
         self.lower = lower
         self.upper = upper
         self.bounds = np.array([0.0, 1.0])
-        self.mean = 1.0 / (self.upper - self.lower)
+        if ( self.lower is not None ) and (self.upper is not None) :
+            self.mean = 0.5
         self.variance = 1.0/8.0
         self.skewness = 0.0
     

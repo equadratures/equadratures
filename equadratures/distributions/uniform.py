@@ -65,7 +65,7 @@ class Uniform(Distribution):
             w = 0*x + (1.0)/(self.upper - self.lower)
             return x, w
         elif points is not None:
-            w = 0*x + (1.0)/(self.upper - self.lower)
+            w = 0*points + (1.0)/(self.upper - self.lower)
             return w
         else:
             raise(ValueError, 'Please digit an input for getPDF method')

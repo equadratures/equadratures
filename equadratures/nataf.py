@@ -5,10 +5,12 @@
     R : Correlation matrix
 """
 import numpy as np
-from equadratures import *
 from scipy import optimize
+from parameter import Parameter
+from polyint import Polyint 
+from basis import Basis 
 
-class Natafclass(object):
+class Nataf(object):
     """
     """
     def __init__(self, D=None, R=None):
@@ -28,6 +30,13 @@ class Natafclass(object):
         """
         """ 1) Check the type of correlated marginals
         """    
+        # Quadrature rule!
+        p1 = Parameter(distribution='uniform',lower=-1.,upper =1., order=5)
+        myBasis = Basis('Tensor grid')
+        Pols = Polyint([p1, p1], myBasis)
+        p = Pols.quadraturePoints
+        w = Pols.quadratureWeights
+                
 
         R0 = np.zeros((len(self.D),len(self.D)))
         for i in range(len(self.D)):
@@ -49,17 +58,7 @@ class Natafclass(object):
                   ampl    = sup_lim - inf_lim
                   """ The following lines solve Legendre with EQ tools
                   """
-                  lowerU = -1.0
-                  upperU = -lowerU
-                  meanU = 0.5*(upperU + lowerU)
-                  varU  = (1.0/12.0)*(upperU - lowerU)**2
-                  p1 = Parameter(distribution='uniform',lower=lowerU,upper =upperU, shape_parameter_A = meanU, shape_parameter_B=varU, order=3)
-                  myBasis = Basis('Tensor grid')
-                  Pols = Polyint([p1, p1], myBasis)
-                  p = Pols.quadraturePoints
-                  p = p[:,0]
-                  w = Pols.quadratureWeights
-                 
+                  
                   p = -(0.5*(p+1)*ampl + inf_lim)
                   w = w*(0.5* ampl)
                   N = len(p)
@@ -166,7 +165,7 @@ class Natafclass(object):
         #print Xc
         return Xc
     
-    def getUSamples(self, N=None):
+    def getUncorrelatedSamples(self, N=None):
         """ Method for sampling uncorrelated data: 
             N represents the number of the samples inside a range
             points represents the array we want to uncorrelate.
@@ -187,7 +186,7 @@ class Natafclass(object):
             raise(ValueError, 'One input must be given to "get Uncorrelated Samples" method: please digit the uncorrelated variables number (N)')
         
     
-    def getCSamples(self, N=None, points=None):
+    def getCorrelatedSamples(self, N=None, points=None):
         """ Method for sampling correlated data:
 
             N:  represents the number of the samples inside a range
@@ -200,8 +199,6 @@ class Natafclass(object):
         """ 
         if N is not None:
             distro = np.zeros((N, len(self.D)))
-            #print 'first distro, initialization:'
-            #print distro
             for i in range(len(self.D)):
                 for j in range(N):
                     distro1 = self.D[i].getSamples(N)
@@ -213,8 +210,13 @@ class Natafclass(object):
         
         else:
              raise(ValueError, 'One input must be given to "get Correlated Samples" method: please choose between sampling N points or giving an array of uncorrelated data ')   
-        
+        #--------------------------------------------#
+        # lines 216, 218 has been added on the 25/07
+        #--------------------------------------------#
+        rows_of_distro = len(distro) # marginals along columns
         distro = distro.T
+        number_of_distro = len(distro)  # transpose of original matrix
+
         D = np.zeros((len(self.D),len(self.D)))
         for i in range(len(self.D)):
             for j in range(len(self.D)):
@@ -232,8 +234,19 @@ class Natafclass(object):
             S = L*L^T where L^T is the transpose matrix of L.
         """
         L    = np.linalg.cholesky(S)
+        # the following lines have been added on the 25/07 : testing standardized distributions as inputs
+        # 1) subtract the mean value of each distribution: for statement in each column=distribution
+        #     distro is now a matrix with marginals along rows.
+        # 2) divide by the variance of each marginal
+        for i in range(number_of_distro):
+            for j in range(rows_of_distro):
+                distro[i,j] = (distro[i,j] - self.D[i].mean)/np.sqrt(self.D[i].variance)
+
         XC   = np.matmul(L, distro)
         XC   = XC.T
+        for i in range(number_of_distro):
+            for j in range(rows_of_distro):
+                XC[j,i] = XC[j,i] + self.D[i].mean
         #print XC
         """ The results will be stored in the following lines into 
             two different tuples: the element 0 contains the 
@@ -242,9 +255,13 @@ class Natafclass(object):
             of the present method.
         """
         distro = distro.T
+        for i in range(number_of_distro):
+            for j in range(rows_of_distro):
+                distro[j,i] = (distro[j,i])*np.sqrt(self.D[i].variance) + self.D[i].mean
+
         return distro, XC          
       
-    def CorrelationMatrix(X):
+    def CorrelationMatrix(self, X):
         """ The following calculations check the correlation
             matrix of input arrays and determine the covariance 
             matrix:

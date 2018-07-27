@@ -57,7 +57,7 @@ class Gamma(Distribution):
         else:
             raise(ValueError, 'Please digit an input for getPDF method')
     
-    def getCDF(k, theta, N=None, points=None):
+    def getCDF(self, N=None, points=None):
         """
         A gamma cumulative density function.
         
@@ -72,10 +72,10 @@ class Gamma(Distribution):
         """
         if N is not None:
             x = np.linspace(0, self.shape* self.scale * 10.0 , N)
-            w = 1.0/(gamma(k)) * gammainc(self.shape, x/self.scale)
+            w = 1.0/(gamma(self.shape)) * gammainc(self.shape, x/self.scale)
             return x, w
         elif points is not None:
-            w = 1.0/(gamma(k)) * gammainc(self.shape, points/self.scale)
+            w = 1.0/(gamma(self.shape)) * gammainc(self.shape, points/self.scale)
             return w
         else:
             raise(ValueError, 'Please digit an input for getCDF method')

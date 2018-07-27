@@ -41,12 +41,7 @@ class Uniform(Distribution):
                 w[i] = (x[i] - self.lower)/(self.upper - self.lower)
             return x, w
         elif points is not None:
-            m = len(points)
-            n = points.T
-            o = len(n)
-            for i in range(m):
-                for j in range(n):
-                    w[i,j] = (points[i,j] - self.lower)/(self.upper - self.lower)
+            w = (points - self.lower)/(self.upper-self.lower)
             return w
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
@@ -70,7 +65,7 @@ class Uniform(Distribution):
             w = 0*x + (1.0)/(self.upper - self.lower)
             return x, w
         elif points is not None:
-            w = 0*x + (1.0)/(self.upper - self.lower)
+            w = 0*points + (1.0)/(self.upper - self.lower)
             return w
         else:
             raise(ValueError, 'Please digit an input for getPDF method')

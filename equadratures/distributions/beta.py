@@ -88,11 +88,8 @@ class Beta(Distribution):
                 w[i] = betainc(self.shape_A, self.shape_B, x[i])
             return xreal, w
         elif points is not None:
-            t = points.T
-            for i in range(len(points)):
-                for j in range(len(t)):
-                    w[i,j] = betainc(self.shape_A,self.shape_B, points[i,j])
-            return w
+                w = betainc(self.shape_A,self.shape_B, points)
+                return w
 
     def getRecurrenceCoefficients(self, order):
         """

@@ -241,8 +241,8 @@ def getlocalquadraturelobatto(self, order=None):
         order = self.order - 2
     else:
         order = order - 2
-    a = self.shape_parameter_A
-    b = self.shape_parameter_B
+    a = self.distribution.shape_parameter_A
+    b = self.distribution.shape_parameter_B
     N = order
     # Get the recurrence coefficients & the jacobi matrix
     ab = self.getRecurrenceCoefficients(order+2)

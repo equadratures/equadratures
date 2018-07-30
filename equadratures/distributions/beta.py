@@ -27,9 +27,9 @@ class Beta(Distribution):
             self.variance = (self.shape_A * self.shape_B) / ( (self.shape_A + self.shape_B)**2 * (self.shape_A + self.shape_B + 1.0) )
             self.skewness = 2.0 * (self.shape_B - self.shape_A) * np.sqrt(self.shape_A + self.shape_B + 1.0) / ( (self.shape_A + self.shape_B + 2.0) * np.sqrt(self.shape_A * self.shape_B) ) 
             self.kurtosis = 6.0 * ((self.shape_A - self.shape_B)**2 * (self.shape_A + self.shape_B + 1.0) - self.shape_A * self.shape_B * (self.shape_A + self.shape_B + 2.0)  ) /( (self.shape_A * self.shape_B) * (self.shape_A + self.shape_B + 2.0) * (self.shape_A + self.shape_B + 3.0)) + 3.0   
-
-        self.bounds = np.array([0, 1])
-
+            self.bounds = np.array([0, 1])
+            self.shape_parameter_A = self.shape_B - 1.0
+            self.shape_parameter_B = self.shape_A - 1.0
     
     def getDescription(self):
         """
@@ -105,5 +105,5 @@ class Beta(Distribution):
         :return:
             Recurrence coefficients associated with the beta distribution.
         """
-        ab =  jacobi_recurrence_coefficients(self.shape_B - 1.0, self.shape_A - 1.0, self.lower, self.upper, order)
+        ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, order)
         return ab

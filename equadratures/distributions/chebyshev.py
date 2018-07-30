@@ -20,6 +20,8 @@ class Chebyshev(Distribution):
             self.mean = 0.5
         self.variance = 1.0/8.0
         self.skewness = 0.0
+        self.shape_parameter_A = -0.5
+        self.shape_parameter_B = -0.5
     
     def getDescription(self):
         """
@@ -90,5 +92,5 @@ class Chebyshev(Distribution):
         :return:
             Recurrence coefficients associated with the Chebyshev distribution.
         """
-        ab =  jacobi_recurrence_coefficients(-0.5, -0.5, self.lower, self.upper, order)
+        ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, order)
         return ab

@@ -19,6 +19,8 @@ class Uniform(Distribution):
             self.mean = 0.5 * (self.upper + self.lower)
             self.variance = 1.0/12.0 * (self.upper - self.lower)**2
         self.skewness = 0.0
+        self.shape_parameter_A = 0. 
+        self.shape_parameter_B = 0.
 	
     def getCDF(self, N=None, points=None):
         """
@@ -87,5 +89,5 @@ class Uniform(Distribution):
         :return:
             Recurrence coefficients associated with the uniform distribution.
         """
-        ab =  jacobi_recurrence_coefficients(0., 0., self.lower, self.upper, order)
+        ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, order)
         return ab

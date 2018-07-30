@@ -9,6 +9,7 @@ from scipy import optimize
 from parameter import Parameter
 from polyint import Polyint 
 from basis import Basis 
+import matplotlib.pyplot as plt
 
 class Nataf(object):
     """
@@ -24,91 +25,113 @@ class Nataf(object):
         else:
             self.R = R
         
-        self.std = Parameter(order=5, distribution='normal',shape_parameter_A = 0.0, shape_parameter_B = 1.0, lower=-90, upper = 90)
+        self.std = Parameter(order=5, distribution='normal',shape_parameter_A = 0.0, shape_parameter_B = 1.0)
         """   
             R0 = fictive matrix of correlated normal intermediate variables
         """
         """ 1) Check the type of correlated marginals
-        """    
-        # Quadrature rule!
-        p1 = Parameter(distribution='uniform',lower=-1.,upper =1., order=5)
+            2) Use Effective Quadrature for solving Legendre
+            3) Calculate the fictive matrix
+        """   
+        inf_lim = -8.0
+        sup_lim = - inf_lim
+
+        p1 = Parameter(distribution = 'uniform', lower = inf_lim,upper = sup_lim, order = 12)
         myBasis = Basis('Tensor grid')
         Pols = Polyint([p1, p1], myBasis)
         p = Pols.quadraturePoints
         w = Pols.quadratureWeights
-                
-
+                       
         R0 = np.zeros((len(self.D),len(self.D)))
         for i in range(len(self.D)):
-            j = i+1
+            #j = i+1
+            print 'marginal', i, 'is a ', self.D[i].name
             for j in range(len(self.D)):
                 if self.R[i,j] == 0:
-                    R0[i,j] = 0
+                    R0[i,j] = 0.0
                 elif i == j:
-                    R0[i,j] = 1             
-                elif (self.D[i].name == 'normal') or (self.D[i].name == 'gaussian') and (self.D[j].name == 'normal') or (self.D[j].name == 'gaussian'):
-                    R0[i,j] = self.R[i,j]
+                    R0[i,j] = 1.0 
+                #elif (self.D[i].name == 'gaussian') and (self.D[j].name == 'gaussian'):
+                #    R0[i,j] = self.R[i,j]
+                #    R0[j,i] = R0[i,j] 
                 else:
-                  """ 1.a) Method for calculating the fictive matrix of intermediate normal points.
-                  - Legendre method will be used for calculating weights and points of double integral.
+                  """ 3.a) Part of the Method for calculating the fictive matrix of intermediate normal points.
                   """
+                  p1  = p[:,0]
+                  p2  = p[:,1]
+
+                  tp1 = p[:,0]
+                  tp1 = self.std.getCDF(points=tp1)
+                   
+                  tp2 = p[:,1]
+                  tp2 = self.std.getCDF(points=tp2)
+                 
+                  surface = w*(sup_lim**2)*2*2
                   
-                  inf_lim = -10
-                  sup_lim = 10
-                  ampl    = sup_lim - inf_lim
-                  """ The following lines solve Legendre with EQ tools
-                  """
-                  
-                  p = -(0.5*(p+1)*ampl + inf_lim)
-                  w = w*(0.5* ampl)
-                  N = len(p)
-
-                  test_p1 = np.tile(p, [N,1])
-                  test_p1 = test_p1.flatten(order='F')
-                  test_p2 = np.tile(p,N)
-
-                  matrix1 = np.tile(w,N)
-                  matrix1 = np.reshape(matrix1, [N,N])
-                  matrix2 = np.transpose(matrix1)
-
-                  surface = matrix1*matrix2
-                  surface = surface.flatten()
-
                   """ General equation of off -diagonal element of fictive matrix
                   """
-                  tp1 = self.std.getCDF(points=test_p2)
-                  tp1 = np.array(tp1)
-                  for k in range(len(tp1)):
-                    if tp1[k] == 1.0:
-                        tp1[k] = 1.0 - 10**(-10)
-                    elif tp1[k] == 0.0:
-                        tp1[k] = 0.0 + 10**(-10)
-                  tp11 = ((self.D[j].getiCDF(tp1))-self.D[j].mean)/self.D[j].variance
-                  tp2 = self.std.getCDF(points=test_p1)
-                  for k in range(len(tp2)):
-                    if tp2[k] == 1.0:
-                        tp2[k] = 1.0 - 10.**(-10)
-                    elif tp2[k] == 0.0:
-                        tp2[k] = 0.0 + 10**(-10)
-                  tp22 = ((self.D[i].getiCDF(tp2))-self.D[i].mean)/self.D[i].variance
 
-                  t = tp11*tp22*surface
+                  for k in range(len(tp1)): 
+                        if tp1[k] == 1.0:
+                            tp1[k] = 1.0 - 10**(-10)
+                        elif tp1[k] == 0.0:
+                            tp1[k] = 0.0 + 10**(-10)
+
+                  tp11 = np.array(self.D[i].getiCDF(tp1))
+                  tp11 = ((tp11)-self.D[i].mean)/self.D[i].variance 
+                  
+                  for k in range(len(tp2)):
+                        if tp2[k] == 1.0:
+                            tp2[k] = 1.0 - 10.**(-10)
+                        elif tp2[k] == 0.0:
+                            tp2[k] = 0.0 + 10**(-10)
+
+                  tp22 = np.array(self.D[j].getiCDF(tp2))
+                  tp22 = ((tp22)-self.D[j].mean)/self.D[j].variance
+
+                  t = tp11*tp22
                   def check_difference(rho_ij):
                       if rho_ij >= 1.0:
                             rho_ij = 1.0-10**(-10)
                       elif rho_ij <= -1.0:
                             rho_ij = -1.0 +10**(-10)
-                      den = 2.0*np.pi*np.sqrt(1.0 - rho_ij**2)
-                      #print 'rho_ij:' , rho_ij
-                      esp = (-0.5/(1- rho_ij**2))*(tp1**2-2.0*tp1*tp2+tp2**2)
+                      den = 2.0*np.pi*np.sqrt(1.0 - rho_ij**2) 
+                      esp = (-0.5/(1- rho_ij**2))*(p1**2 - 2.0*p1*p2*rho_ij + p2**2)
                       diff = t*(1.0/den)*np.exp(esp) 
-                      difR = np.sum(diff) - self.R[i,j]
-                      return difR
-
-                  rho = optimize.newton(check_difference, 0.5, tol=3.0e-05)
+                      diff = np.dot(diff.T, surface) 
+                      return diff - self.R[i,j] 
+                
+                  hyp_1 = self.R[i,j]
+                  
+                  #print 'ipotesi:', hyp_1              
+                 
+                  rho = optimize.newton(check_difference, hyp_1, tol=1.0e-02)
+                  #rho = hyp_1
+                  #rho, r = optimize.brentq(f=check_difference, a=-1,b=1, full_output=True)
+                  #rho1 = optimize.fsolve(func = check_difference, x0=hyp_1, full_output=True)
+                  #print 'hyp_1:' , hyp_1
+                  #if (rho1[2]==1):
+                  #  R0[i,j] = rho1[0]
+                  #  #R0[j,i] = R0[i,j]
+                  #  print 'R0[i,j] in first loop:'
+                  #else:
+                  #  rho1 = optimize.fsolve(func=check_difference, x0 =0.5, full_output=True)
+                  #  if (rho1[2]==1):
+                  #      R0[i,j] = rho1[0]
+                  #      R0[j,i] = R0[i,j]
+                  #      print 'R0[i,j] in second loop:'
                   R0[i,j] = rho
-                  #print 'R0[i,j]', R0[i,j]
-        self.A = np.linalg.cholesky(R0)
+                  R0[j,i] = R0[i,j]
+                                      
+        print 'Fictive matrix R0:'
+        print R0
+        # 27 / 07 ----------------------------#
+        #invR0 = np.linalg.inv(R0)
+        #self.A = np.linalg.cholesky(invR0) 
+        #-------------------------------------#
+        self.A = np.linalg.cholesky(R0) 
+        print 'Cholesky lower matrix for R0:'
+        print self.A
     
     def C2U(self, X):
         """  Method for mapping correlated variables to a new standard space
@@ -160,8 +183,12 @@ class Nataf(object):
         Xc = np.zeros((len(Z[:,0]),len(self.D)))
         for i in range(len(self.D)):
             for j in range(len(Z[:,0])):
-                #Xc[j,i] = self.std.getiCDF(xc[j,i])
-                Xc[j,i] = self.D[i].getiCDF(xc[j,i])
+                temporary = np.matrix(xc[j,i])
+                temp = self.D[i].getiCDF(temporary)
+                #temp = np.reshape(temp, (1,1))
+                t = temp[0]
+                Xc[j,i] = t
+                #Xc[j,i] = self.D[i].getiCDF(xc[j,i])
         #print Xc
         return Xc
     
@@ -171,9 +198,7 @@ class Nataf(object):
             points represents the array we want to uncorrelate.
         """
         if N is not None:
-            distro = np.zeros((N, len(self.D)))
-            #print 'first distro, initialization:'
-            #print distro
+            distro = np.zeros((N, len(self.D))) 
             for i in range(len(self.D)):
                 for j in range(N):
                     distro1 = self.D[i].getSamples(N)
@@ -184,7 +209,6 @@ class Nataf(object):
          
         else:
             raise(ValueError, 'One input must be given to "get Uncorrelated Samples" method: please digit the uncorrelated variables number (N)')
-        
     
     def getCorrelatedSamples(self, N=None, points=None):
         """ Method for sampling correlated data:
@@ -196,27 +220,34 @@ class Nataf(object):
             uncorrelated variables we want to correlate. In this case
             the input file must have [Nxm] dimensions, where m is the
             number of input marginals.
-        """ 
-        if N is not None:
-            distro = np.zeros((N, len(self.D)))
-            for i in range(len(self.D)):
-                for j in range(N):
+        """
+        if N is not None: 
+            distro = list() 
+            for i in range(len(self.D)): 
                     distro1 = self.D[i].getSamples(N)
-                    distro[j,i] = distro1[j]
-                print 'Distribution number:',i,'is a', self.D[i].name
+                    
+                    # check dimensions ------------------#
+                    distro1 = np.matrix(distro1)
+                    dimension = np.shape(distro1)
+                    if dimension[0] == N:
+                        distro1 = distro1.T
+                    #------------------------------------#
+                    distro.append(distro1)
+                    print 'Distribution number:',i,'is a', self.D[i].name
+
+            distro = np.reshape(distro, (len(self.D),N)) 
+            distro = distro.T
         elif points is not None:
             distro = points
             N = len(distro[:,0])
         
         else:
              raise(ValueError, 'One input must be given to "get Correlated Samples" method: please choose between sampling N points or giving an array of uncorrelated data ')   
-        #--------------------------------------------#
-        # lines 216, 218 has been added on the 25/07
-        #--------------------------------------------#
+  
         rows_of_distro = len(distro) # marginals along columns
         distro = distro.T
         number_of_distro = len(distro)  # transpose of original matrix
-
+       
         D = np.zeros((len(self.D),len(self.D)))
         for i in range(len(self.D)):
             for j in range(len(self.D)):
@@ -234,10 +265,12 @@ class Nataf(object):
             S = L*L^T where L^T is the transpose matrix of L.
         """
         L    = np.linalg.cholesky(S)
-        # the following lines have been added on the 25/07 : testing standardized distributions as inputs
-        # 1) subtract the mean value of each distribution: for statement in each column=distribution
-        #     distro is now a matrix with marginals along rows.
-        # 2) divide by the variance of each marginal
+
+        """  standardized distributions as inputs
+             1) subtract the mean value of each distribution
+             distro is now a matrix with marginals along rows.
+             2) divide by the variance of each marginal
+        """
         for i in range(number_of_distro):
             for j in range(rows_of_distro):
                 distro[i,j] = (distro[i,j] - self.D[i].mean)/np.sqrt(self.D[i].variance)

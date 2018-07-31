@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Rayleigh &mdash; Effective Quadratures v7.0 documentation</title>
+  <title>Uniform &mdash; Effective Quadratures v7.0 documentation</title>
   
 
   
@@ -26,8 +26,8 @@
 
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="next" title="Exponential" href="exponential.html" />
-    <link rel="prev" title="Weibull" href="weibull.html" /> 
+    <link rel="next" title="Weibull" href="weibull.html" />
+    <link rel="prev" title="Gamma" href="gamma.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -93,9 +93,9 @@
 <li class="toctree-l3"><a class="reference internal" href="beta.html">Beta</a></li>
 <li class="toctree-l3"><a class="reference internal" href="chebyshev.html">Chebyshev</a></li>
 <li class="toctree-l3"><a class="reference internal" href="gamma.html">Gamma</a></li>
-<li class="toctree-l3"><a class="reference internal" href="uniform.html">Uniform</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Uniform</a></li>
 <li class="toctree-l3"><a class="reference internal" href="weibull.html">Weibull</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Rayleigh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rayleigh.html">Rayleigh</a></li>
 <li class="toctree-l3"><a class="reference internal" href="exponential.html">Exponential</a></li>
 <li class="toctree-l3"><a class="reference internal" href="chisquared.html">Chi-squared</a></li>
 </ul>
@@ -153,13 +153,13 @@
         
           <li><a href="distributions.html">Distributions</a> &raquo;</li>
         
-      <li>Rayleigh</li>
+      <li>Uniform</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/_documentation/rayleigh.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/_documentation/uniform.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -172,39 +172,52 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-equadratures.distributions.rayleigh">
-<span id="rayleigh"></span><h1>Rayleigh<a class="headerlink" href="#module-equadratures.distributions.rayleigh" title="Permalink to this headline">¶</a></h1>
-<p>The Rayleigh distribution.</p>
+  <div class="section" id="module-equadratures.distributions.uniform">
+<span id="uniform"></span><h1>Uniform<a class="headerlink" href="#module-equadratures.distributions.uniform" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="equadratures.distributions.rayleigh.Rayleigh">
-<em class="property">class </em><code class="descclassname">equadratures.distributions.rayleigh.</code><code class="descname">Rayleigh</code><span class="sig-paren">(</span><em>scale</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/rayleigh.html#Rayleigh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.rayleigh.Rayleigh" title="Permalink to this definition">¶</a></dt>
-<dd><p>The class defines a Rayleigh object. It is the child of Distribution.</p>
+<dt id="equadratures.distributions.uniform.Uniform">
+<em class="property">class </em><code class="descclassname">equadratures.distributions.uniform.</code><code class="descname">Uniform</code><span class="sig-paren">(</span><em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/uniform.html#Uniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.uniform.Uniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>The class defines a Uniform object. It is the child of Distribution.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>scale</strong> (<em>double</em>) &#8211; Scale parameter of the Rayleigh distribution.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mean</strong> (<em>double</em>) &#8211; <blockquote>
+<div>Mean of the Gaussian distribution.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">param double variance:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">Variance of the Gaussian distribution.</td>
+</tr>
+</tbody>
+</table>
+</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
-<dt id="equadratures.distributions.rayleigh.Rayleigh.getCDF">
-<code class="descname">getCDF</code><span class="sig-paren">(</span><em>N=None</em>, <em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/rayleigh.html#Rayleigh.getCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.rayleigh.Rayleigh.getCDF" title="Permalink to this definition">¶</a></dt>
-<dd><p>A Rayleigh cumulative density function.</p>
+<dt id="equadratures.distributions.uniform.Uniform.getCDF">
+<code class="descname">getCDF</code><span class="sig-paren">(</span><em>N=None</em>, <em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/uniform.html#Uniform.getCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.uniform.Uniform.getCDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>A uniform cumulative density function.
+:param integer N:</p>
+<blockquote>
+<div>Number of points for defining the cumulative density function.</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.rayleigh.Rayleigh" title="equadratures.distributions.rayleigh.Rayleigh"><em>Rayleigh</em></a>) &#8211; An instance of the Rayleigh class.</li>
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the cumulative density function.</li>
+<li><strong>lower</strong> (<em>double</em>) &#8211; Lower bound of the support of the uniform distribution.</li>
+<li><strong>upper</strong> (<em>double</em>) &#8211; Upper bound of the support of the uniform distribution.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the Rayleigh distribution.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Cumulative density values along the support of the Rayleigh distribution.</p>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Cumulative density values along the support of the uniform distribution.</p>
 </td>
 </tr>
 </tbody>
@@ -212,39 +225,47 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="equadratures.distributions.rayleigh.Rayleigh.getDescription">
-<code class="descname">getDescription</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/rayleigh.html#Rayleigh.getDescription"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.rayleigh.Rayleigh.getDescription" title="Permalink to this definition">¶</a></dt>
-<dd><p>A description of the Rayleigh distribution.</p>
+<dt id="equadratures.distributions.uniform.Uniform.getPDF">
+<code class="descname">getPDF</code><span class="sig-paren">(</span><em>N=None</em>, <em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/uniform.html#Uniform.getPDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.uniform.Uniform.getPDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>A uniform probability distribution.
+:param integer N:</p>
+<blockquote>
+<div>Number of points for defining the probability density function.</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.rayleigh.Rayleigh" title="equadratures.distributions.rayleigh.Rayleigh"><em>Rayleigh</em></a>) &#8211; An instance of the Rayleigh class.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>lower</strong> (<em>double</em>) &#8211; Lower bound of the support of the uniform distribution.</li>
+<li><strong>upper</strong> (<em>double</em>) &#8211; Upper bound of the support of the uniform distribution.</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A string describing the Rayleigh distribution.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Probability density values along the support of the uniform distribution.</p>
+</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="method">
-<dt id="equadratures.distributions.rayleigh.Rayleigh.getPDF">
-<code class="descname">getPDF</code><span class="sig-paren">(</span><em>N=None</em>, <em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/rayleigh.html#Rayleigh.getPDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.rayleigh.Rayleigh.getPDF" title="Permalink to this definition">¶</a></dt>
-<dd><p>A Rayleigh probability density function.</p>
+<dt id="equadratures.distributions.uniform.Uniform.getRecurrenceCoefficients">
+<code class="descname">getRecurrenceCoefficients</code><span class="sig-paren">(</span><em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/uniform.html#Uniform.getRecurrenceCoefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.uniform.Uniform.getRecurrenceCoefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recurrence coefficients for the uniform distribution.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.rayleigh.Rayleigh" title="equadratures.distributions.rayleigh.Rayleigh"><em>Rayleigh</em></a>) &#8211; An instance of the Rayleigh class.</li>
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the probability density function.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.uniform.Uniform" title="equadratures.distributions.uniform.Uniform"><em>Uniform</em></a>) &#8211; An instance of the Uniform class.</li>
+<li><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/array.html#module-array" title="(in Python v3.7)"><em>array</em></a>) &#8211; The order of the recurrence coefficients desired.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the Rayleigh distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Probability density values along the support of the Rayleigh distribution.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Recurrence coefficients associated with the uniform distribution.</p>
 </td>
 </tr>
 </tbody>
@@ -263,10 +284,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="exponential.html" class="btn btn-neutral float-right" title="Exponential" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="weibull.html" class="btn btn-neutral float-right" title="Weibull" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="weibull.html" class="btn btn-neutral" title="Weibull" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="gamma.html" class="btn btn-neutral" title="Gamma" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

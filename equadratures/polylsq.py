@@ -9,7 +9,6 @@ from qr import solveCLSQ
 import matplotlib.pyplot as plt
 from convex import maxdet, binary2indices
 
-
 class Polylsq(Poly):
     """
     This class defines a Polylsq (polynomial via least squares) object.

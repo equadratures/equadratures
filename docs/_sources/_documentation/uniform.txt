@@ -1,0 +1,5 @@
+Uniform
+====================
+
+.. automodule:: equadratures.distributions.uniform
+    :members:

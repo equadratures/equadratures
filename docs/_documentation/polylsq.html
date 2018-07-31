@@ -173,11 +173,99 @@
             
   <div class="section" id="module-equadratures.polylsq">
 <span id="least-squares"></span><h1>Least Squares<a class="headerlink" href="#module-equadratures.polylsq" title="Permalink to this headline">¶</a></h1>
-<p>Finding coefficients via least squares</p>
+<p>Finding coefficients via least squares.</p>
 <dl class="class">
 <dt id="equadratures.polylsq.Polylsq">
 <em class="property">class </em><code class="descclassname">equadratures.polylsq.</code><code class="descname">Polylsq</code><span class="sig-paren">(</span><em>parameters</em>, <em>basis</em>, <em>mesh</em>, <em>optimization=None</em>, <em>oversampling=None</em>, <em>gradients=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/polylsq.html#Polylsq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.polylsq.Polylsq" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class defines a Polylsq (polynomial via least squares) object</p>
+<dd><p>This class defines a Polylsq (polynomial via least squares) object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>parameters</strong> (<a class="reference internal" href="parameter.html#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; A list of parameters.</li>
+<li><strong>basis</strong> (<a class="reference internal" href="basis.html#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) &#8211; A basis selected for the multivariate polynomial.</li>
+<li><strong>mesh</strong> (<a class="reference external" href="https://docs.python.org/3/library/string.html#module-string" title="(in Python v3.7)"><em>string</em></a>) &#8211; A mesh used for the sampling scheme. Options include:
+&#8216;Tensor&#8217;: A tensor grid based on the order of each parameter;
+&#8216;Chebyshev&#8217;: A chebyshev sampling over the domain;
+&#8216;Uniform&#8217;: A uniform grid over the domain, where the number of points in each direction is based on the order of the parameter;
+&#8216;Random&#8217;: A random sampling over the domain.</li>
+<li><strong>optimization</strong> (<a class="reference external" href="https://docs.python.org/3/library/string.html#module-string" title="(in Python v3.7)"><em>string</em></a>) &#8211; The optimization strategy used for subsampling points from the underlying mesh. Options include:
+&#8216;Greedy-QR&#8217;: Subselecting points using QR column pivoting.
+&#8216;Greedy-SVD&#8217;: Subselecting points using the SVD followed by QR with column pivoting.
+&#8216;Newton&#8217;: Subselecting points via a determinant maximization heuristic, solved using Newton&#8217;s method.</li>
+<li><strong>oversampling</strong> (<em>double</em>) &#8211; The ratio of the number of points to the number of coefficients. It can be any value above 1.0 and below a value based on the total number of samples in the mesh.</li>
+<li><strong>gradients</strong> (<a class="reference external" href="https://docs.python.org/3/library/string.html#module-string" title="(in Python v3.7)"><em>string</em></a>) &#8211; If gradient values are provided, then select this option to &#8216;True&#8217;; default value is &#8216;False&#8217;.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd><ul class="first last simple">
+<li><strong>self.mesh</strong>:</li>
+<li><strong>self.optimization</strong>:</li>
+<li><strong>self.oversampling</strong>:</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="equadratures.polylsq.Polylsq.computeCoefficients">
+<code class="descname">computeCoefficients</code><span class="sig-paren">(</span><em>func</em>, <em>gradfunc=None</em>, <em>gradientmethod=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/polylsq.html#Polylsq.computeCoefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.polylsq.Polylsq.computeCoefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the coefficients of the polynomial via least squares.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.polylsq.Polylsq" title="equadratures.polylsq.Polylsq"><em>Polylsq</em></a>) &#8211; An instance of the Polylsq class.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Param:</th><td class="field-body">callable func:
+The function that needs to be approximated. In the absence of a callable function, the input can be the function evaluated at the quadrature points.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Param:</th><td class="field-body">callable gradfunc:
+The gradient of the function that needs to be approximated. In the absence of a callable gradient function, the input can be a matrix of gradient evaluations at the quadrature points.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Param:</th><td class="field-body">string gradientmethod:
+The underlying strategy used to estimate the coefficients when gradient evaluations are provided. Options include:
+&#8216;stacked&#8217;, &#8216;constrained-DE&#8217;, &#8216;constrained-NS&#8217;.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.polylsq.Polylsq.getDesignMatrix">
+<code class="descname">getDesignMatrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/polylsq.html#Polylsq.getDesignMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.polylsq.Polylsq.getDesignMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the design matrix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.polylsq.Polylsq" title="equadratures.polylsq.Polylsq"><em>Polylsq</em></a>) &#8211; An instance of the Polylsq class.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.polylsq.Polylsq.quadraturePointsWeights">
+<code class="descname">quadraturePointsWeights</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/polylsq.html#Polylsq.quadraturePointsWeights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.polylsq.Polylsq.quadraturePointsWeights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the quadrature points and weights.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.polylsq.Polylsq" title="equadratures.polylsq.Polylsq"><em>Polylsq</em></a>) &#8211; An instance of the Polylsq class.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The quadrature points.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The quadrature weights.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 </div>

@@ -23,13 +23,31 @@ class Distribution(object):
         
     
     def getDescription(self):
+        """
+        Returns the description of the distribution.
+    
+        :param Distribution self:
+                An instance of the distribution class.
+        """
         pass
         
-	def getPDF(self, N=None, points=None):
-		pass
+    def getPDF(self, N=None, points=None):
+        """
+        Returns the PDF of the distribution.
+    
+        :param Distribution self:
+                An instance of the distribution class.
+        """
+	pass
 
-	def getCDF(self, N=None, points=None):
-		pass
+    def getCDF(self, N=None, points=None):
+        """
+        Returns the CDF of the distribution.
+    
+        :param Distribution self:
+                An instance of the distribution class.
+        """
+	pass
 
     def getiCDF(self, xx):
         """

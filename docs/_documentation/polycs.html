@@ -173,22 +173,20 @@
             
   <div class="section" id="module-equadratures.polycs">
 <span id="compressive-sensing"></span><h1>Compressive sensing<a class="headerlink" href="#module-equadratures.polycs" title="Permalink to this headline">¶</a></h1>
-<p>Finding coefficients via compressive sensing</p>
+<p>Finding coefficients via compressive sensing.</p>
 <dl class="class">
 <dt id="equadratures.polycs.Polycs">
 <em class="property">class </em><code class="descclassname">equadratures.polycs.</code><code class="descname">Polycs</code><span class="sig-paren">(</span><em>parameters</em>, <em>basis</em>, <em>training_inputs=None</em>, <em>sampling=None</em>, <em>no_of_points=None</em>, <em>fun=None</em>, <em>training_outputs=None</em>, <em>quadrature_rule=None</em>, <em>no_of_quad_points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/polycs.html#Polycs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.polycs.Polycs" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class defines a Polycs (polynomial via compressive sensing) object
-:param ndarray training_inputs:</p>
-<blockquote>
-<div>Points at which the model is evaluated.</div></blockquote>
+<dd><p>This class defines a Polycs (polynomial via compressive sensing) object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>training_inputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/array.html#module-array" title="(in Python v3.7)"><em>array</em></a>) &#8211; Points at which the model is evaluated.</li>
 <li><strong>basis</strong> (<em>IndexSet</em>) &#8211; An instance of the IndexSet class, in case the user wants to overwrite the indices that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter corresponds to a tensor grid index set and is the default option if no basis parameter input is given.</li>
 <li><strong>parameters</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) &#8211; List of instances of Parameters class.</li>
-<li><strong>training_outputs</strong> (<em>ndarray</em>) &#8211; Column vector of regression targets corresponding to each row of training_inputs. Either this or fun should be specified, but not both. If this is specified, training_inputs must also be specified.</li>
+<li><strong>training_outputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/array.html#module-array" title="(in Python v3.7)"><em>array</em></a>) &#8211; Column vector of regression targets corresponding to each row of training_inputs. Either this or fun should be specified, but not both. If this is specified, training_inputs must also be specified.</li>
 <li><strong>fun</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#callable" title="(in Python v3.7)"><em>callable</em></a>) &#8211; Function to evaluate training_inputs on to obtain regression targets automatically. Either this or fun should be specified, but not both.</li>
 <li><strong>sampling</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) &#8211; Sampling method for non-data-driven model. Valid sampling methods include &#8220;standard&#8221;, &#8220;asymptotic&#8221; and &#8220;dlm&#8221;.</li>
 <li><strong>quadrature_rule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) &#8211; Quadrature rule. Can be &#8216;qmc&#8217; or &#8216;tensor grid&#8217;. Refer to documentation for poly.py for more details.</li>
@@ -201,12 +199,30 @@
 <dl class="method">
 <dt id="equadratures.polycs.Polycs.computeCoefficients">
 <code class="descname">computeCoefficients</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/polycs.html#Polycs.computeCoefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.polycs.Polycs.computeCoefficients" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function computes the coefficients using compressive sensing. To access the coefficients simply use the class&#8217;s attribute self.coefficients.</p>
+<dd><p>This function computes the coefficients using CS. To access the coefficients simply use the class&#8217;s attribute self.coefficients.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.polycs.Polycs" title="equadratures.polycs.Polycs"><em>Polycs</em></a>) &#8211; An instance of the Polycs class.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.polycs.Polycs.getQuadraturePointsWeights">
+<code class="descname">getQuadraturePointsWeights</code><span class="sig-paren">(</span><em>points</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/polycs.html#Polycs.getQuadraturePointsWeights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.polycs.Polycs.getQuadraturePointsWeights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates quadrature points and weights.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self</strong> (<a class="reference internal" href="polyparent.html#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
+<li><strong>number_of_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) &#8211; Generates a quadrature rule based on the number of points; if an integer value is provided then, QMC is used.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>

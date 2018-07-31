@@ -146,19 +146,39 @@
            <div itemprop="articleBody">
             
   <h1>Source code for equadratures.polylsq</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Finding coefficients via least squares&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">parameter</span> <span class="k">import</span> <span class="n">Parameter</span>
-<span class="kn">from</span> <span class="nn">basis</span> <span class="k">import</span> <span class="n">Basis</span>
-<span class="kn">from</span> <span class="nn">poly</span> <span class="k">import</span> <span class="n">Poly</span>
+<span></span><span class="sd">&quot;&quot;&quot;Finding coefficients via least squares.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">.parameter</span> <span class="k">import</span> <span class="n">Parameter</span>
+<span class="kn">from</span> <span class="nn">.basis</span> <span class="k">import</span> <span class="n">Basis</span>
+<span class="kn">from</span> <span class="nn">.poly</span> <span class="k">import</span> <span class="n">Poly</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">utils</span> <span class="k">import</span> <span class="n">evalfunction</span><span class="p">,</span> <span class="n">evalgradients</span><span class="p">,</span> <span class="n">cell2matrix</span>
 <span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="k">import</span> <span class="n">qr</span><span class="p">,</span> <span class="n">svd</span><span class="p">,</span> <span class="n">lu</span>
 <span class="kn">from</span> <span class="nn">qr</span> <span class="k">import</span> <span class="n">solveCLSQ</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">convex</span> <span class="k">import</span> <span class="n">maxdet</span><span class="p">,</span> <span class="n">binary2indices</span>
+
 <div class="viewcode-block" id="Polylsq"><a class="viewcode-back" href="../../_documentation/polylsq.html#equadratures.polylsq.Polylsq">[docs]</a><span class="k">class</span> <span class="nc">Polylsq</span><span class="p">(</span><span class="n">Poly</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This class defines a Polylsq (polynomial via least squares) object</span>
+<span class="sd">    This class defines a Polylsq (polynomial via least squares) object.</span>
+
+<span class="sd">    :param Parameter parameters: A list of parameters.</span>
+<span class="sd">    :param Basis basis: A basis selected for the multivariate polynomial.</span>
+<span class="sd">    :param string mesh: A mesh used for the sampling scheme. Options include:</span>
+<span class="sd">        &#39;Tensor&#39;: A tensor grid based on the order of each parameter;</span>
+<span class="sd">        &#39;Chebyshev&#39;: A chebyshev sampling over the domain;</span>
+<span class="sd">        &#39;Uniform&#39;: A uniform grid over the domain, where the number of points in each direction is based on the order of the parameter;</span>
+<span class="sd">        &#39;Random&#39;: A random sampling over the domain.</span>
+<span class="sd">    :param string optimization: The optimization strategy used for subsampling points from the underlying mesh. Options include:</span>
+<span class="sd">        &#39;Greedy-QR&#39;: Subselecting points using QR column pivoting.</span>
+<span class="sd">        &#39;Greedy-SVD&#39;: Subselecting points using the SVD followed by QR with column pivoting.</span>
+<span class="sd">        &#39;Newton&#39;: Subselecting points via a determinant maximization heuristic, solved using Newton&#39;s method.</span>
+<span class="sd">    :param double oversampling: The ratio of the number of points to the number of coefficients. It can be any value above 1.0 and below a value based on the total number of samples in the mesh.</span>
+<span class="sd">    :param string gradients: If gradient values are provided, then select this option to &#39;True&#39;; default value is &#39;False&#39;.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        * **self.mesh**: </span>
+<span class="sd">        * **self.optimization**: </span>
+<span class="sd">        * **self.oversampling**:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">oversampling</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradients</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
@@ -237,10 +257,10 @@
             <span class="n">refined_pts</span> <span class="o">=</span> <span class="n">pts</span><span class="p">[</span><span class="n">z_chosen</span><span class="p">]</span>
             <span class="n">Pz</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="n">refined_pts</span><span class="p">)</span>
             <span class="n">wts_orig_normalized</span> <span class="o">=</span>  <span class="n">wts</span><span class="p">[</span><span class="n">z_chosen</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">wts</span><span class="p">[</span><span class="n">z_chosen</span><span class="p">])</span>
-            <span class="n">Wz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">wts_orig_normalized</span> <span class="p">)</span> <span class="p">)</span>
+            <span class="n">Wz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">wts_orig_normalized</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
             <span class="n">Az</span> <span class="o">=</span>  <span class="n">Wz</span> <span class="o">*</span> <span class="n">Pz</span><span class="o">.</span><span class="n">T</span>
             <span class="n">dPcell</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomialGradient</span><span class="p">(</span><span class="n">refined_pts</span><span class="p">)</span>
-            <span class="n">dP</span> <span class="o">=</span> <span class="n">cell2matrix</span><span class="p">(</span><span class="n">dPcell</span><span class="p">)</span>
+            <span class="n">dP</span> <span class="o">=</span> <span class="n">cell2matrix</span><span class="p">(</span><span class="n">dPcell</span><span class="p">,</span> <span class="n">Wz</span><span class="p">)</span>
             <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">Az</span><span class="p">,</span> <span class="n">dP</span><span class="p">])</span>
             <span class="n">rank</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
             <span class="nb">print</span> <span class="s1">&#39;Iterating...system rank: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;, and the # of rows in Az: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
@@ -254,7 +274,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">wts_orig_normalized</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Az</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span> <span class="o">*</span> <span class="n">Pz</span><span class="o">.</span><span class="n">T</span>
         <span class="n">dPcell</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomialGradient</span><span class="p">(</span><span class="n">refined_pts</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Cz</span> <span class="o">=</span> <span class="n">cell2matrix</span><span class="p">(</span><span class="n">dPcell</span><span class="p">)</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">Cz</span> <span class="o">=</span> <span class="n">cell2matrix</span><span class="p">(</span><span class="n">dPcell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span><span class="p">)</span>  
         <span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span> <span class="o">=</span> <span class="n">refined_pts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">quadratureWeights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">wts_orig_normalized</span><span class="p">)</span> 
     <span class="k">def</span> <span class="nf">__gradientsFalse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pts</span><span class="p">,</span> <span class="n">wts</span><span class="p">,</span> <span class="n">m_refined</span><span class="p">):</span>
@@ -339,9 +359,33 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span> <span class="o">=</span> <span class="n">Wz</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span> <span class="o">=</span> <span class="n">points_subsampled</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">quadratureWeights</span> <span class="o">=</span> <span class="n">wts_orig_normalized</span>
-    <span class="k">def</span> <span class="nf">quadraturePointsWeights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quadratureWeights</span>
-    <span class="k">def</span> <span class="nf">computeCoefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">gradfunc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradientmethod</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Polylsq.quadraturePointsWeights"><a class="viewcode-back" href="../../_documentation/polylsq.html#equadratures.polylsq.Polylsq.quadraturePointsWeights">[docs]</a>    <span class="k">def</span> <span class="nf">quadraturePointsWeights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the quadrature points and weights.</span>
+
+<span class="sd">        :param Polylsq self:</span>
+<span class="sd">            An instance of the Polylsq class.</span>
+<span class="sd">        :return:</span>
+<span class="sd">            The quadrature points.</span>
+<span class="sd">        :return:</span>
+<span class="sd">            The quadrature weights.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quadratureWeights</span></div>
+<div class="viewcode-block" id="Polylsq.computeCoefficients"><a class="viewcode-back" href="../../_documentation/polylsq.html#equadratures.polylsq.Polylsq.computeCoefficients">[docs]</a>    <span class="k">def</span> <span class="nf">computeCoefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">gradfunc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradientmethod</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the coefficients of the polynomial via least squares.</span>
+
+<span class="sd">        :param Polylsq self:</span>
+<span class="sd">            An instance of the Polylsq class.</span>
+<span class="sd">        :param: callable func:</span>
+<span class="sd">            The function that needs to be approximated. In the absence of a callable function, the input can be the function evaluated at the quadrature points.</span>
+<span class="sd">        :param: callable gradfunc:</span>
+<span class="sd">            The gradient of the function that needs to be approximated. In the absence of a callable gradient function, the input can be a matrix of gradient evaluations at the quadrature points.</span>
+<span class="sd">        :param: string gradientmethod:</span>
+<span class="sd">            The underlying strategy used to estimate the coefficients when gradient evaluations are provided. Options include:</span>
+<span class="sd">            &#39;stacked&#39;, &#39;constrained-DE&#39;, &#39;constrained-NS&#39;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># If there are no gradients, solve via standard least squares!</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradients</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span><span class="o">.</span><span class="n">shape</span>
@@ -374,7 +418,7 @@
             <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">q</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
-                    <span class="n">d</span><span class="p">[</span><span class="n">counter</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_values</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
+                    <span class="n">d</span><span class="p">[</span><span class="n">counter</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">grad_values</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
                     <span class="n">counter</span> <span class="o">=</span> <span class="n">counter</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dy</span> <span class="o">=</span> <span class="n">d</span>
             <span class="k">del</span> <span class="n">d</span><span class="p">,</span> <span class="n">grad_values</span>
@@ -384,9 +428,15 @@
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradients</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">gradfunc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Polylsq:computeCoefficients:: Gradient function evaluations must be provided, either a callable function or as vectors.&#39;</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setCoefficients__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setQuadrature__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quadratureWeights</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">getDesignMatrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setDesignMatrix__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Az</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setQuadrature__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quadratureWeights</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Polylsq.getDesignMatrix"><a class="viewcode-back" href="../../_documentation/polylsq.html#equadratures.polylsq.Polylsq.getDesignMatrix">[docs]</a>    <span class="k">def</span> <span class="nf">getDesignMatrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the design matrix.</span>
+
+<span class="sd">        :param Polylsq self:</span>
+<span class="sd">            An instance of the Polylsq class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Polylsq</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setDesignMatrix__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Az</span><span class="p">)</span></div></div>
 
 <span class="c1">################################</span>
 <span class="c1"># Private functions!</span>

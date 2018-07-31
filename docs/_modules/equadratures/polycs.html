@@ -146,7 +146,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for equadratures.polycs</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Finding coefficients via compressive sensing&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;Finding coefficients via compressive sensing.&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">.parameter</span> <span class="k">import</span> <span class="n">Parameter</span>
 <span class="kn">from</span> <span class="nn">.basis</span> <span class="k">import</span> <span class="n">Basis</span>
 <span class="kn">from</span> <span class="nn">poly</span> <span class="k">import</span> <span class="n">Poly</span>
@@ -159,23 +159,16 @@
 
 <div class="viewcode-block" id="Polycs"><a class="viewcode-back" href="../../_documentation/polycs.html#equadratures.polycs.Polycs">[docs]</a><span class="k">class</span> <span class="nc">Polycs</span><span class="p">(</span><span class="n">Poly</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This class defines a Polycs (polynomial via compressive sensing) object</span>
-<span class="sd">    :param ndarray training_inputs: </span>
-<span class="sd">        Points at which the model is evaluated.</span>
-<span class="sd">    :param IndexSet basis: </span>
-<span class="sd">        An instance of the IndexSet class, in case the user wants to overwrite the indices that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter corresponds to a tensor grid index set and is the default option if no basis parameter input is given.</span>
-<span class="sd">    :param list parameters: </span>
-<span class="sd">        List of instances of Parameters class.</span>
-<span class="sd">    :param ndarray training_outputs: </span>
-<span class="sd">        Column vector of regression targets corresponding to each row of training_inputs. Either this or fun should be specified, but not both. If this is specified, training_inputs must also be specified.</span>
-<span class="sd">    :param callable fun: </span>
-<span class="sd">        Function to evaluate training_inputs on to obtain regression targets automatically. Either this or fun should be specified, but not both.</span>
-<span class="sd">    :param str sampling: </span>
-<span class="sd">        Sampling method for non-data-driven model. Valid sampling methods include &quot;standard&quot;, &quot;asymptotic&quot; and &quot;dlm&quot;.</span>
-<span class="sd">    :param str quadrature_rule: </span>
-<span class="sd">        Quadrature rule. Can be &#39;qmc&#39; or &#39;tensor grid&#39;. Refer to documentation for poly.py for more details.</span>
-<span class="sd">    :param int no_of_quad_points: </span>
-<span class="sd">        Number of quadrature points in case qmc is chosen for quadrature rule. Default number is 10000. Recommended to set to a low number (e.g. 1) when quadrature points are not needed (when statistics need not be computed, for instance).</span>
+<span class="sd">    This class defines a Polycs (polynomial via compressive sensing) object.</span>
+
+<span class="sd">    :param array training_inputs: Points at which the model is evaluated.</span>
+<span class="sd">    :param IndexSet basis: An instance of the IndexSet class, in case the user wants to overwrite the indices that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter corresponds to a tensor grid index set and is the default option if no basis parameter input is given.</span>
+<span class="sd">    :param list parameters: List of instances of Parameters class.</span>
+<span class="sd">    :param array training_outputs: Column vector of regression targets corresponding to each row of training_inputs. Either this or fun should be specified, but not both. If this is specified, training_inputs must also be specified.</span>
+<span class="sd">    :param callable fun: Function to evaluate training_inputs on to obtain regression targets automatically. Either this or fun should be specified, but not both.</span>
+<span class="sd">    :param str sampling: Sampling method for non-data-driven model. Valid sampling methods include &quot;standard&quot;, &quot;asymptotic&quot; and &quot;dlm&quot;.</span>
+<span class="sd">    :param str quadrature_rule: Quadrature rule. Can be &#39;qmc&#39; or &#39;tensor grid&#39;. Refer to documentation for poly.py for more details.</span>
+<span class="sd">    :param int no_of_quad_points: Number of quadrature points in case qmc is chosen for quadrature rule. Default number is 10000. Recommended to set to a low number (e.g. 1) when quadrature points are not needed (when statistics need not be computed, for instance).</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Constructor</span>
@@ -221,7 +214,7 @@
 
 <div class="viewcode-block" id="Polycs.computeCoefficients"><a class="viewcode-back" href="../../_documentation/polycs.html#equadratures.polycs.Polycs.computeCoefficients">[docs]</a>    <span class="k">def</span> <span class="nf">computeCoefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        This function computes the coefficients using compressive sensing. To access the coefficients simply use the class&#39;s attribute self.coefficients.</span>
+<span class="sd">        This function computes the coefficients using CS. To access the coefficients simply use the class&#39;s attribute self.coefficients.</span>
 
 <span class="sd">        :param Polycs self:</span>
 <span class="sd">            An instance of the Polycs class.</span>
@@ -256,20 +249,22 @@
         
         <span class="n">best_epsilon</span> <span class="o">=</span> <span class="n">epsilon</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">mean_errors</span><span class="p">)]</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">bp_denoise</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">best_epsilon</span><span class="p">)</span>
-<span class="c1">#        print best_epsilon</span>
-        <span class="c1">#Calculate residue</span>
         <span class="n">residue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">-</span> <span class="n">y</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
-<span class="c1">#        print &quot;-----&quot;</span>
-<span class="c1">#        print &quot;overall residue (Should be within noise bound!)&quot;</span>
-<span class="c1">#        print residue</span>
-<span class="c1">#        print &quot;-----&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span><span class="mi">1</span><span class="p">))</span></div>
     
-    <span class="k">def</span> <span class="nf">getQuadraturePointsWeights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">):</span>
+<div class="viewcode-block" id="Polycs.getQuadraturePointsWeights"><a class="viewcode-back" href="../../_documentation/polycs.html#equadratures.polycs.Polycs.getQuadraturePointsWeights">[docs]</a>    <span class="k">def</span> <span class="nf">getQuadraturePointsWeights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates quadrature points and weights.</span>
+
+<span class="sd">        :param Poly self:</span>
+<span class="sd">            An instance of the Poly class.</span>
+<span class="sd">        :param int number_of_points:</span>
+<span class="sd">            Generates a quadrature rule based on the number of points; if an integer value is provided then, QMC is used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">points</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">points</span> <span class="o">=</span> <span class="mi">10000</span>
         <span class="n">p</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getQuadratureRule</span><span class="p">(</span><span class="n">options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quadrature_rule</span><span class="p">,</span> <span class="n">number_of_points</span> <span class="o">=</span> <span class="n">points</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Polycs</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setQuadrature__</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">w</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Polycs</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setQuadrature__</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">w</span><span class="p">)</span></div></div>
 
 <span class="c1">#Generates the projection and preconditoning matrices for the given sampling method.</span>
 <span class="k">def</span> <span class="nf">samplingMethod</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">no_of_points</span><span class="p">):</span>

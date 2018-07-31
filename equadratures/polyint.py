@@ -1,9 +1,4 @@
-"""Operations involving multivariate polynomials (without gradients) via numerical quadrature. The following quadrature techniques are available for coefficient computation:
-    1. Tensor grids;
-    2. Sparse pseudospectral approximation method;
-
-References:
-    - Constantine, P. G., Eldred, M. S., & Phipps, E. T. (2012). Sparse pseudospectral approximation method. Computer Methods in Applied Mechanics and Engineering, 229, 1-12. `Paper <https://www.sciencedirect.com/science/article/pii/S0045782512000953>`_.
+"""Operations involving multivariate polynomials (without gradients) via numerical quadrature.
 """
 from parameter import Parameter
 from basis import Basis
@@ -27,9 +22,6 @@ class Polyint(Poly):
     """
     def __init__(self, parameters, basis):
         super(Polyint, self).__init__(parameters, basis)
-        """
-        Need to put data here!
-        """
         self.__computeQuadraturePoints()
 
     def __computeQuadraturePoints(self):

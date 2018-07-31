@@ -1,5 +1,5 @@
 Compressive sensing
-====================
+=====================
 
 .. automodule:: equadratures.polycs
     :members:

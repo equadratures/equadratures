@@ -11,6 +11,7 @@ from polyint import Polyint
 from basis import Basis 
 import matplotlib.pyplot as plt
 from scipy import stats
+from mpl_toolkits.mplot3d import Axes3D
 
 class Nataf(object):
     """
@@ -41,30 +42,15 @@ class Nataf(object):
            
         inf_lim = -8.0
         sup_lim = - inf_lim
-        p1 = Parameter(distribution = 'uniform', lower = inf_lim,upper = sup_lim, order = 10)
+        p1 = Parameter(distribution = 'uniform', lower = inf_lim,upper = sup_lim, order = 9)
         myBasis = Basis('Tensor grid')
         Pols = Polyint([p1, p1], myBasis)
-        #p = Pols.quadraturePoints
-        #w = Pols.quadratureWeights
+        p = Pols.quadraturePoints
+        w = Pols.quadratureWeights * (sup_lim - inf_lim)**2 
+        p1 = p[:,0]
+        p2 = p[:,1]
 
-        n = 10
-        zmax = 8
-        zmin = -zmax
-        points, weights = np.polynomial.legendre.leggauss(n)
-        points = - (0.5 * (points + 1) * (zmax - zmin) + zmin)
-        weights = weights * (0.5 * (zmax - zmin))
-
-        xi = np.tile(points, [n, 1])
-        p1 = xi.flatten(order='F')
-        p2 = np.tile(points, n)
-
-        first = np.tile(weights, n)
-        first = np.reshape(first, [n, n])
-        second = np.transpose(first)
-
-        weights2d = first * second
-        w2d = weights2d.flatten()
-
+        
         R0 = np.eye((len(self.D)))
         for i in range(len(self.D)):
             print 'marginal', i, 'is a ', self.D[i].name
@@ -74,35 +60,23 @@ class Nataf(object):
                 elif i == j:
                     R0[i,j] = 1.0 
                 else:
-                  #p1  = p[:,0]
-                  #p2  = p[:,1]
                   tp1 = self.std.getCDF(points=p1)
                   tp2 = self.std.getCDF(points=p2)
-                  tp11 = (np.array(self.D[i].getiCDF(stats.norm.cdf(p1))) - self.D[i].mean ) / np.sqrt( self.D[i].variance )
-                  tp22 = (np.array(self.D[j].getiCDF(stats.norm.cdf(p2))) -  self.D[j].mean)/np.sqrt( self.D[j].variance )
+                  tp11 = (np.array(self.D[i].getiCDF(self.std.getCDF(points=p1))) - self.D[i].mean ) / np.sqrt( self.D[i].variance )
+                  tp22 = (np.array(self.D[j].getiCDF(self.std.getCDF(points=p2))) -  self.D[j].mean)/np.sqrt( self.D[j].variance )
                   rho_ij = 0.6
                   bivariateNormalPDF = (1.0 / (2.0 * np.pi * np.sqrt(1.0-rho_ij**2)) * np.exp(-1.0/(2.0*(1.0 - rho_ij**2)) * (p1**2 - 2.0 * rho_ij * p1 * p2  + p2**2 )))
-                  coefficientsIntegral = tp11*tp22 * w2d
-
-                  fig = plt.figure()
-                  plt.plot(coefficientsIntegral * bivariateNormalPDF, '.')
-                  plt.show()
+                  coefficientsIntegral = tp11*tp22 * w
 
                   def check_difference(rho_ij):
                       bivariateNormalPDF = (1.0 / (2.0 * np.pi * np.sqrt(1.0-rho_ij**2)) * np.exp(-1.0/(2.0*(1.0 - rho_ij**2)) * (p1**2 - 2.0 * rho_ij * p1 * p2  + p2**2 )))
                       diff = np.dot(coefficientsIntegral, bivariateNormalPDF) 
                       return diff - self.R[i,j] 
-                
-                  #hyp_1 = self.R[i,j]
-                  #rho = optimize.newton(check_difference, self.R[i, j])
-                  x0, r = optimize.brentq(f=check_difference, a=-1 + np.finfo(float).eps, b=1 - np.finfo(float).eps, full_output=True, disp=True, maxiter=300)
-                  print ' got here!'
-                  print r 
-                  #rho = optimize.fsolve(func=check_difference, x0=self.R[i, j], full_output=True)
-                  if r.converged == 1: 
-                    R0[i,j] = x0
-                    R0[j,i] = R0[i,j]                         
-                    self.A = np.linalg.cholesky(R0) 
+
+                  rho = optimize.newton(check_difference, self.R[i, j])
+                  R0[i,j] = rho
+                  R0[j,i] = R0[i,j]                         
+                  self.A = np.linalg.cholesky(R0) 
 
         print self.A
     

@@ -1,6 +1,7 @@
 """The Rayleigh distribution."""
 import numpy as np
 from distribution import Distribution
+from scipy.stats import rayleigh
 
 class Rayleigh(Distribution):
     """
@@ -17,6 +18,9 @@ class Rayleigh(Distribution):
             self.variance = self.scale**2 * (4.0 - np.pi)/ 2.0 
             self.skewness = 2.0 * np.sqrt(np.pi) * (np.pi - 3.0) / ((4.0 - np.pi)**(1.5))
             self.kurtosis = -(6 * np.pi**2 - 24 * np.pi + 16.0 )/( (4 - np.pi)**(1.5)) + 3.0 
+    
+    def getiCDF(self, xx):
+        return rayleigh.ppf(xx, loc=0, scale=self.scale)
 
     def getDescription(self):
         """
@@ -67,10 +71,10 @@ class Rayleigh(Distribution):
             Cumulative density values along the support of the Rayleigh distribution.
         """
         if N is not None:
-            xreal = np.linspace(0.0, 3.5*self.scale)
+            xreal = np.linspace(0.0, 10.0*self.scale, N)
             wreal = 1.0 - np.exp(-xreal**2 * 1.0/(2.0 * self.scale**2))
             return xreal, wreal
-        elif point is not None:
+        elif points is not None:
             wreal = 1.0 - np.exp(-points**2 * 1.0/(2.0 * self.scale**2))
             return wreal
         else:

@@ -10,9 +10,15 @@ from parameter import Parameter
 from polyint import Polyint 
 from basis import Basis 
 import matplotlib.pyplot as plt
+from scipy import stats
 
 class Nataf(object):
     """
+    The class defines a Nataf transformation. 
+    :param list D:
+		A list of parameters (distributions), interpreted here as the marginals.
+	:param numpy-matrix R:
+		The correlation matrix associated with the joint distribution.
     """
     def __init__(self, D=None, R=None):
         if D is None:
@@ -26,111 +32,78 @@ class Nataf(object):
             self.R = R
         
         self.std = Parameter(order=5, distribution='normal',shape_parameter_A = 0.0, shape_parameter_B = 1.0)
-        """   
-            R0 = fictive matrix of correlated normal intermediate variables
-        """
-        """ 1) Check the type of correlated marginals
-            2) Use Effective Quadrature for solving Legendre
-            3) Calculate the fictive matrix
-        """   
+        #  
+        #    R0 = fictive matrix of correlated normal intermediate variables
+        #
+        #    1) Check the type of correlated marginals
+        #    2) Use Effective Quadrature for solving Legendre
+        #    3) Calculate the fictive matrix
+           
         inf_lim = -8.0
         sup_lim = - inf_lim
-
-        p1 = Parameter(distribution = 'uniform', lower = inf_lim,upper = sup_lim, order = 12)
+        p1 = Parameter(distribution = 'uniform', lower = inf_lim,upper = sup_lim, order = 10)
         myBasis = Basis('Tensor grid')
         Pols = Polyint([p1, p1], myBasis)
-        p = Pols.quadraturePoints
-        w = Pols.quadratureWeights
-                       
-        R0 = np.zeros((len(self.D),len(self.D)))
+        #p = Pols.quadraturePoints
+        #w = Pols.quadratureWeights
+
+        n = 10
+        zmax = 8
+        zmin = -zmax
+        points, weights = np.polynomial.legendre.leggauss(n)
+        points = - (0.5 * (points + 1) * (zmax - zmin) + zmin)
+        weights = weights * (0.5 * (zmax - zmin))
+
+        xi = np.tile(points, [n, 1])
+        p1 = xi.flatten(order='F')
+        p2 = np.tile(points, n)
+
+        first = np.tile(weights, n)
+        first = np.reshape(first, [n, n])
+        second = np.transpose(first)
+
+        weights2d = first * second
+        w2d = weights2d.flatten()
+
+        R0 = np.eye((len(self.D)))
         for i in range(len(self.D)):
-            #j = i+1
             print 'marginal', i, 'is a ', self.D[i].name
-            for j in range(len(self.D)):
+            for j in range(i+1, len(self.D), 1):
                 if self.R[i,j] == 0:
                     R0[i,j] = 0.0
                 elif i == j:
                     R0[i,j] = 1.0 
-                #elif (self.D[i].name == 'gaussian') and (self.D[j].name == 'gaussian'):
-                #    R0[i,j] = self.R[i,j]
-                #    R0[j,i] = R0[i,j] 
                 else:
-                  """ 3.a) Part of the Method for calculating the fictive matrix of intermediate normal points.
-                  """
-                  p1  = p[:,0]
-                  p2  = p[:,1]
+                  #p1  = p[:,0]
+                  #p2  = p[:,1]
+                  tp1 = self.std.getCDF(points=p1)
+                  tp2 = self.std.getCDF(points=p2)
+                  tp11 = (np.array(self.D[i].getiCDF(stats.norm.cdf(p1))) - self.D[i].mean ) / np.sqrt( self.D[i].variance )
+                  tp22 = (np.array(self.D[j].getiCDF(stats.norm.cdf(p2))) -  self.D[j].mean)/np.sqrt( self.D[j].variance )
+                  rho_ij = 0.6
+                  bivariateNormalPDF = (1.0 / (2.0 * np.pi * np.sqrt(1.0-rho_ij**2)) * np.exp(-1.0/(2.0*(1.0 - rho_ij**2)) * (p1**2 - 2.0 * rho_ij * p1 * p2  + p2**2 )))
+                  coefficientsIntegral = tp11*tp22 * w2d
 
-                  tp1 = p[:,0]
-                  tp1 = self.std.getCDF(points=tp1)
-                   
-                  tp2 = p[:,1]
-                  tp2 = self.std.getCDF(points=tp2)
-                 
-                  surface = w*(sup_lim**2)*2*2
-                  
-                  """ General equation of off -diagonal element of fictive matrix
-                  """
+                  fig = plt.figure()
+                  plt.plot(coefficientsIntegral * bivariateNormalPDF, '.')
+                  plt.show()
 
-                  for k in range(len(tp1)): 
-                        if tp1[k] == 1.0:
-                            tp1[k] = 1.0 - 10**(-10)
-                        elif tp1[k] == 0.0:
-                            tp1[k] = 0.0 + 10**(-10)
-
-                  tp11 = np.array(self.D[i].getiCDF(tp1))
-                  tp11 = ((tp11)-self.D[i].mean)/self.D[i].variance 
-                  
-                  for k in range(len(tp2)):
-                        if tp2[k] == 1.0:
-                            tp2[k] = 1.0 - 10.**(-10)
-                        elif tp2[k] == 0.0:
-                            tp2[k] = 0.0 + 10**(-10)
-
-                  tp22 = np.array(self.D[j].getiCDF(tp2))
-                  tp22 = ((tp22)-self.D[j].mean)/self.D[j].variance
-
-                  t = tp11*tp22
                   def check_difference(rho_ij):
-                      if rho_ij >= 1.0:
-                            rho_ij = 1.0-10**(-10)
-                      elif rho_ij <= -1.0:
-                            rho_ij = -1.0 +10**(-10)
-                      den = 2.0*np.pi*np.sqrt(1.0 - rho_ij**2) 
-                      esp = (-0.5/(1- rho_ij**2))*(p1**2 - 2.0*p1*p2*rho_ij + p2**2)
-                      diff = t*(1.0/den)*np.exp(esp) 
-                      diff = np.dot(diff.T, surface) 
+                      bivariateNormalPDF = (1.0 / (2.0 * np.pi * np.sqrt(1.0-rho_ij**2)) * np.exp(-1.0/(2.0*(1.0 - rho_ij**2)) * (p1**2 - 2.0 * rho_ij * p1 * p2  + p2**2 )))
+                      diff = np.dot(coefficientsIntegral, bivariateNormalPDF) 
                       return diff - self.R[i,j] 
                 
-                  hyp_1 = self.R[i,j]
-                  
-                  #print 'ipotesi:', hyp_1              
-                 
-                  rho = optimize.newton(check_difference, hyp_1, tol=1.0e-02)
-                  #rho = hyp_1
-                  #rho, r = optimize.brentq(f=check_difference, a=-1,b=1, full_output=True)
-                  #rho1 = optimize.fsolve(func = check_difference, x0=hyp_1, full_output=True)
-                  #print 'hyp_1:' , hyp_1
-                  #if (rho1[2]==1):
-                  #  R0[i,j] = rho1[0]
-                  #  #R0[j,i] = R0[i,j]
-                  #  print 'R0[i,j] in first loop:'
-                  #else:
-                  #  rho1 = optimize.fsolve(func=check_difference, x0 =0.5, full_output=True)
-                  #  if (rho1[2]==1):
-                  #      R0[i,j] = rho1[0]
-                  #      R0[j,i] = R0[i,j]
-                  #      print 'R0[i,j] in second loop:'
-                  R0[i,j] = rho
-                  R0[j,i] = R0[i,j]
-                                      
-        print 'Fictive matrix R0:'
-        print R0
-        # 27 / 07 ----------------------------#
-        #invR0 = np.linalg.inv(R0)
-        #self.A = np.linalg.cholesky(invR0) 
-        #-------------------------------------#
-        self.A = np.linalg.cholesky(R0) 
-        print 'Cholesky lower matrix for R0:'
+                  #hyp_1 = self.R[i,j]
+                  #rho = optimize.newton(check_difference, self.R[i, j])
+                  x0, r = optimize.brentq(f=check_difference, a=-1 + np.finfo(float).eps, b=1 - np.finfo(float).eps, full_output=True, disp=True, maxiter=300)
+                  print ' got here!'
+                  print r 
+                  #rho = optimize.fsolve(func=check_difference, x0=self.R[i, j], full_output=True)
+                  if r.converged == 1: 
+                    R0[i,j] = x0
+                    R0[j,i] = R0[i,j]                         
+                    self.A = np.linalg.cholesky(R0) 
+
         print self.A
     
     def C2U(self, X):

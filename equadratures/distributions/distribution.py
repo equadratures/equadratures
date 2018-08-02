@@ -61,7 +61,7 @@ class Distribution(object):
                 Inverse CDF samples associated with the gamma distribution.
         """
         yy = []
-        [x, c] = self.getCDF(1000)
+        [x, c] = self.getCDF(N=2000)
         for k in range(0, len(xx)):
                 for i in range(0, len(x)):
                     if ( (xx[k]>=c[i]) and (xx[k]<=c[i+1]) ):

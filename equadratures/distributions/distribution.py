@@ -1,7 +1,6 @@
 """The Distribution template."""
 import numpy as np
 from recurrence_utils import custom_recurrence_coefficients
-RECURRENCE_PDF_SAMPLES = 8000
 PDF_SAMPLES = 500000
 
 class Distribution(object):
@@ -9,9 +8,9 @@ class Distribution(object):
     The class defines a Distribution object. It serves as a template for all distributions.
         
     :param double lower:
-        Lower bound of the support of the Chebyshev (arcsine) distribution.
+        Lower bound of the support of the distribution.
     :param double upper:
-        Upper bound of the support of the Chebyshev (arcsine) distribution.
+        Upper bound of the support of the distribution.
     """
     def __init__(self, mean=None, variance=None, lower=None, upper=None, shape=None, scale=None, rate=None):
         self.mean = mean
@@ -20,7 +19,7 @@ class Distribution(object):
         self.upper = upper
         self.rate = rate
         self.scale = scale
-        
+        self.x_range_for_pdf = []
     
     def getDescription(self):
         """
@@ -31,14 +30,14 @@ class Distribution(object):
         """
         pass
         
-    def getPDF(self, N=None, points=None):
+    def getPDF(self, points=None):
         """
         Returns the PDF of the distribution.
     
         :param Distribution self:
                 An instance of the distribution class.
         """
-	pass
+        pass
 
     def getCDF(self, N=None, points=None):
         """
@@ -47,7 +46,7 @@ class Distribution(object):
         :param Distribution self:
                 An instance of the distribution class.
         """
-	pass
+        pass
 
     def getiCDF(self, xx):
         """
@@ -60,15 +59,7 @@ class Distribution(object):
         :return:
                 Inverse CDF samples associated with the gamma distribution.
         """
-        yy = []
-        [x, c] = self.getCDF(N=2000)
-        for k in range(0, len(xx)):
-                for i in range(0, len(x)):
-                    if ( (xx[k]>=c[i]) and (xx[k]<=c[i+1]) ):
-                        value =  float( (xx[k]-c[i])/(c[i+1]-c[i])*(x[i+1]-x[i])+x[i] )
-                        yy.append(value)
-                        break
-        return yy
+        pass
 
     def getRecurrenceCoefficients(self, order):
         """
@@ -81,8 +72,8 @@ class Distribution(object):
         :return:
             Recurrence coefficients associated with the distribution.
         """
-        x, w  = self.getPDF(RECURRENCE_PDF_SAMPLES)
-        ab = custom_recurrence_coefficients(x, w, order)
+        w_pdf = self.getPDF(self.x_range_for_pdf)
+        ab = custom_recurrence_coefficients(self.x_range_for_pdf, w_pdf, order)
         return ab
 
     def getSamples(self, m=None):

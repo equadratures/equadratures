@@ -3,6 +3,8 @@ import numpy as np
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 from distribution import Distribution
 import matplotlib.pyplot as plt
+from scipy.stats import norm
+RECURRENCE_PDF_SAMPLES = 8000
 class Gaussian(Distribution):
     """
     The class defines a Gaussian object. It is the child of Distribution.
@@ -17,10 +19,11 @@ class Gaussian(Distribution):
         self.variance = variance
         if self.variance is not None:
             self.sigma = np.sqrt(self.variance)
+            self.x_range_for_pdf = np.linspace(-15.0 * self.sigma, 15.0*self.sigma, RECURRENCE_PDF_SAMPLES)
         self.skewness = 0.0
         self.kurtosis = 0.0
         self.bounds = np.array([-np.inf, np.inf])
-
+        
     def getDescription(self):
         """
         A description of the Gaussian.
@@ -43,61 +46,33 @@ class Gaussian(Distribution):
         :return:
             A N-by-1 vector that contains the samples.
         """
-        if m is None:
-            number_of_random_samples = PDF_SAMPLES
-        else:
-            number_of_random_samples = m
-        return np.random.randn(number_of_random_samples, 1)*self.sigma + self.mean
+        return norm.rvs(self.mean, self.variance, size=m)
 
-    def getPDF(self, N=None, points=None):
+    def getPDF(self, points=None):
         """
         A Gaussian probability distribution.
 
         :param Gaussian self:
             An instance of the Gaussian class.
-		:param integer N:
-            Number of equidistant points over the support of the distribution; default value is 500.
         :return:
             An array of N equidistant values over the support of the distribution.
         :return:
             Probability density values along the support of the Gaussian distribution.
         """
-        if N is not None:
-            x = np.linspace(-15*self.sigma, 15*self.sigma, N)
-            x = x + self.mean 
-            w = 1.0/( np.sqrt(2 * self.variance * np.pi) ) * np.exp(-(x - self.mean)**2 * 1.0/(2 * self.variance) )
-            return x, w
-        elif points is not None:
-             w = 1.0/( np.sqrt(2 * self.variance * np.pi) ) * np.exp(-(points - self.mean)**2 * 1.0/(2 * self.variance) )
-             return w
-        else:
-             raise(ValueError, 'Please digit an input for getPDF method')
+        return norm.pdf(points, loc=self.mean, scale=self.variance )
 
-    def getCDF(self, N=None, points=None):
+    def getCDF(self, points=None):
         """
         A Gaussian cumulative density function.
 
 	    :param Gaussian self:
             An instance of the Gaussian class.
-        :param integer N:
-            Number of points for defining the cumulative density function; default value is 500.
         :param array points 
             Points for which the cumulative density function is required.
         :return:
-            An array of N equidistant values over the support of the Gaussian.
-        :return:
             Gaussian cumulative density values.
         """
-        if N is not None:
-            x = np.linspace(-15*self.sigma, 15*self.sigma, N)
-            x = x + self.mean # scaling it by the mean!
-            w = 0.5*(1 + erf((x - self.mean)/(self.sigma * np.sqrt(2) ) ) )
-            return x, w
-        elif points is not None:
-            w = 0.5*(1+erf((points-self.mean)/(self.sigma*np.sqrt(2))))
-            return w
-        else:
-            raise(ValueError, 'getCDF(): Please check your input arguments!')
+        return norm.cdf(points, loc=self.mean, scale=self.variance )
 
     def getiCDF(self, xx):
         """
@@ -105,9 +80,9 @@ class Gaussian(Distribution):
 
         :param Gaussian self:
             An instance of the Gaussian class.
-        :param array points:
+        :param array xx:
             A numpy array of uniformly distributed samples between [0,1].
         :return:
             Inverse CDF samples associated with the Gaussian distribution.
         """
-        return self.mean + np.sqrt(self.variance) * np.sqrt(2.0) * erfinv(2.0*xx - 1.0)
+        return norm.ppf(xx, loc=self.mean, scale=self.variance)

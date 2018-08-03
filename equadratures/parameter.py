@@ -80,11 +80,19 @@ class Parameter(object):
 	def setBounds(self):
 		self.bounds = self.distribution.bounds
 
-	def getPDF(self, N=None, points=None):
-		return self.distribution.getPDF(N,points)
+	def getPDF(self, points=None):
+		if points is None:
+			x = self.distribution.x_range_for_pdf
+			return x, self.distribution.getPDF(x)
+		else:
+			return self.distribution.getPDF(points)
 
-	def getCDF(self, N=None, points=None):
-		return self.distribution.getCDF(N,points)
+	def getCDF(self, points=None):
+		if points is None:
+			x = self.distribution.x_range_for_pdf
+			return x, self.distribution.getCDF(x)
+		else:
+			return self.distribution.getCDF(points)
 
 	def getiCDF(self, xx):
 		return self.distribution.getiCDF(xx)

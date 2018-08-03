@@ -22,7 +22,8 @@ class Cauchy(Distribution):
         self.variance = np.nan
         self.skewness = np.nan
         self.kurtosis = np.nan
-        self.x_range_for_pdf = np.linspace(-15*self.scale, 15*self.scale, RECURRENCE_PDF_SAMPLES)
+	if self.scale is not None:
+        	self.x_range_for_pdf = np.linspace(-15*self.scale, 15*self.scale, RECURRENCE_PDF_SAMPLES)
     
     def getDescription(self):
         """

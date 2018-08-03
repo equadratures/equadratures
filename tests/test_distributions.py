@@ -44,7 +44,7 @@ class Test_Distributions(TestCase):
        myPoly = Polyint([xo], myBasis)
        myPoly.computeCoefficients(blackbox)
        myStats = myPoly.getStatistics()
-       a,b = xo.getPDF(N=150)
+       a,b = xo.getPDF(points=150)
        samples = xo.getSamples(m=1000)
        std_dev = np.std(samples)
        plot(x, f_X, a, b, samples, xo.name)
@@ -82,7 +82,7 @@ class Test_Distributions(TestCase):
        myStats = myPoly.getStatistics()                                                                     
        xi = np.random.beta(shape_A, shape_B, (N,1))
        yi = evalfunction(np.reshape(xi, (N, 1) ), blackbox)
-       a,b = xo.getPDF(N=150)
+       a,b = xo.getPDF(points=150)
        samples = xo.getSamples(m=1000)
        plot(x, f_X, a, b, samples, xo.name)
        print xo.name, xo.shape_parameter_A, xo.shape_parameter_B
@@ -114,7 +114,7 @@ class Test_Distributions(TestCase):
        xi_o = np.random.rand(N,1)
        xi = lambdaa * (-np.log(xi_o))**(1.0/k)
        yi = evalfunction(np.reshape(xi, (N, 1) ), blackbox)
-       a,b = xo.getPDF(N=150)
+       a,b = xo.getPDF(points=150)
        samples = xo.getSamples(m=1000)
        plot(x, f_X, a, b, samples, xo.name)
        print xo.name, xo.shape_parameter_A, xo.shape_parameter_B
@@ -157,7 +157,7 @@ class Test_Distributions(TestCase):
       myPoly = Polyint([xo], myBasis)
       myPoly.computeCoefficients(blackbox)
       myStats = myPoly.getStatistics()
-      a,b = xo.getPDF(N=150) # analytical!
+      a,b = xo.getPDF(points=150) # analytical!
       samples = xo.getSamples(m=3000)
       yi = samples
       plot(x, f_X, a, b, samples, xo.name)
@@ -225,7 +225,7 @@ class Test_Distributions(TestCase):
       myPoly = Polyint([xo], myBasis)
       myPoly.computeCoefficients(blackbox)
       myStats = myPoly.getStatistics()
-      a,b = xo.getPDF(N=150)
+      a,b = xo.getPDF(points=150)
       samples = xo.getSamples(m=1000)
       yi = samples
       plot(x, f_X, a, b, samples, xo.name, ylims=[0., 0.8])

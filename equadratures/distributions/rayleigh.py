@@ -71,3 +71,21 @@ class Rayleigh(Distribution):
             Cumulative density values along the support of the Rayleigh distribution.
         """
         return rayleigh.cdf(points, loc=0, scale=self.scale )
+
+    def getSamples(self, m=None):
+        """
+         Generates samples from the Rayleigh distribution.
+         
+         :param rayleigh self:
+             An instance of the Rayleigh class.
+         :param integer m:
+             Number of random samples. If no value is provided, a default of     5e5 is assumed.
+         :return:
+             A N-by-1 vector that contains the samples.
+        """
+        if m is not None:
+           number = m
+        else: 
+            number = 500000
+        return rayleigh.rvs(loc=0.0, scale=self.scale, size=number, random_state=None)
+

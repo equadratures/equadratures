@@ -3,6 +3,7 @@ import numpy as np
 from distribution import Distribution
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 from recurrence_utils import jacobi_recurrence_coefficients
+from scipy.stats import beta
 
 class Beta(Distribution):
     """
@@ -43,53 +44,35 @@ class Beta(Distribution):
         text = "A beta distribution is defined over a support; given here as "+str(self.lower)+", to "+str(self.upper)+". It has two shape parameters, given here to be "+str(self.shape_A)+" and "+str(self.shape_B)+"."
         return text
 
-    def getPDF(self, N=None, points=None):
+    def getPDF(self, points=None):
         """
         A beta probability density function.
         
         :param Beta self:
             An instance of the Beta class.
-        :param integer N:
-            Number of points for defining the probability density function.
         :return:
             Probability density values along the support of the Beta distribution.
-        """
-        if N is not None:
-            x = np.linspace(0, 1, N)
-            w = (x**(self.shape_A - 1) * (1 - x)**(self.shape_B - 1))/(beta(self.shape_A, self.shape_B) )
-            xreal = np.linspace(self.lower, self.upper, N)
-            wreal = w * (1.0)/(self.upper - self.lower)
-            return xreal, wreal
-        elif points is not None:
-            w = (points**(self.shape_A - 1) * (1 - points)**(self.shape_B - 1))/(beta(self.shape_A, self.shape_B) )
-            wreal = w * (1.0)/(self.upper - self.lower)
-            return wreal
+        """ 
+        if points is not None: 
+            return beta.pdf(points, self.shape_parameter_A, self.shape_parameter_B, loc=0.0, scale=1.0)
         else:
             raise(ValueError, 'Please specify an input for getPDF method')
 
-    def getCDF(self, N=None, points=None):
+    def getCDF(self, points=None):
         """
         A beta cumulative density function.
         
         :param Beta self:
             An instance of the Beta class.
-        :param integer N:
-            Number of points for defining the cumulative density function.
         :return:
             An array of N equidistant values over the support of the distribution.
         :return:
             Cumulative density values along the support of the Gamma distribution.
         """
-        if N is not None:
-            xreal = np.linspace(self.lower, self.upper, N)
-            x = np.linspace(0, 1, N)
-            w = np.zeros((N,1))
-            for i in range(0, N):
-                w[i] = betainc(self.shape_A, self.shape_B, x[i])
-            return xreal, w
-        elif points is not None:
-                w = betainc(self.shape_A,self.shape_B, points)
-                return w
+        if points is not None:
+                return beta.cfd(points, self.shape_parameter_A, self.shape_parameter_B, loc=0.0, scale=1.0)
+        else:
+            raise(ValueError, 'Please digit an input for getCDF method')
 
     def getRecurrenceCoefficients(self, order):
         """
@@ -104,3 +87,33 @@ class Beta(Distribution):
         """
         ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, order)
         return ab
+
+    def getiCDF(self, xx):
+        """
+        A Beta inverse cumulative density function.
+
+        :param Beta self:
+            An instance of Beta class.
+        :param array xx:
+            Points at which the inverse cumulative density funcion needs to be evaluated.
+        :return:
+            Inverse cumulative density function values of the Beta distribution.
+        """
+        return beta.ppf(xx, self.shape_parameter_A, self.shape_parameter_B, loc=0.0, scale=1.0)
+
+    def getSamples(self, m =None):
+        """ Generates samples from the Beta distribution.
+            
+            :param beta self:
+                An instance of Beta class.
+            :param integer m:
+                Number of random samples. If no provided, a default value of 5e5 is assumed.
+            :return:
+                A N-by-1 vector that contains the samples.
+        """
+        if m is not None:
+            number = m 
+        else:
+            number = 500000
+        return beta.rvs(self.shape_parameter_A, self.shape_parameter_B, loc=0.0, scale=1.0, size= number, random_state=None)
+

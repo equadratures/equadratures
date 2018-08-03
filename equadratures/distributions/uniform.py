@@ -20,10 +20,11 @@ class Uniform(Distribution):
         if (self.lower is not None) and (self.upper is not None):
             self.mean = 0.5 * (self.upper + self.lower)
             self.variance = 1.0/12.0 * (self.upper - self.lower)**2
+	    self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
         self.skewness = 0.0
         self.shape_parameter_A = 0. 
         self.shape_parameter_B = 0.
-        self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
+        
 	
     def getCDF(self, points=None):
         """

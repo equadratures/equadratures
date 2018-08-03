@@ -36,7 +36,7 @@ class Weibull(Distribution):
         text = "A Weibull distribution with a shape parameter of "+str(self.shape)+" and a scale parameter of "+str(self.scale)
         return text
 
-    def getPDF(self, N=None, points=None):
+    def getPDF(self, points=None):
         """
         A Weibull probability density function.
 
@@ -45,12 +45,7 @@ class Weibull(Distribution):
         :param integer N:
             Number of points for defining the probability density function.
         """
-        if N is not None:
-            #x = np.linspace(0.0, 15.0/self.shape, N)
-            x = np.linspace(10**(-15), 30.0, N)
-            w = ((self.shape/self.scale * (x/self.scale)**(self.shape-1.0))) * np.exp(-1.0 * (x/self.scale)**self.shape )
-            return x, w
-        elif points is not None:
+        if points is not None:
             w = self.shape/self.scale * (points/self.scale)**(self.shape-1.0) * np.exp(-1.0 * (points/self.scale)**self.shape )
             return w
         else:
@@ -69,7 +64,7 @@ class Weibull(Distribution):
         """
         return self.scale * (-np.log(1.0 - xx))**(1.0/self.shape)
 
-    def getCDF(self, N=None, points=None):
+    def getCDF(self, points=None):
         """
         A Weibull cumulative density function.
 
@@ -82,11 +77,7 @@ class Weibull(Distribution):
         :return:
             Cumulative density values along the support of the Weibull distribution.
         """
-        if N is not None:
-            x = np.linspace(0, 15.0/self.shape, N)
-            w = 1 - np.exp(-1.0 * ( (x) / (self.scale * 1.0)  )**self.shape)
-            return x, w
-        elif points is not None:
+        if points is not None:
             w = 1 - np.exp(-1.0 * ( (points) / (self.scale * 1.0)  )**self.shape)
             return w
         else:

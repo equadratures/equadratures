@@ -2,6 +2,8 @@
 import numpy as np
 from distribution import Distribution
 from recurrence_utils import custom_recurrence_coefficients
+from scipy.stats import cauchy
+RECURRENCE_PDF_SAMPLES = 8000
 
 class Cauchy(Distribution):
     """
@@ -20,6 +22,8 @@ class Cauchy(Distribution):
         self.variance = np.nan
         self.skewness = np.nan
         self.kurtosis = np.nan
+	if self.scale is not None:
+        	self.x_range_for_pdf = np.linspace(-15*self.scale, 15*self.scale, RECURRENCE_PDF_SAMPLES)
     
     def getDescription(self):
         """
@@ -33,52 +37,40 @@ class Cauchy(Distribution):
         text = "A Cauchy distribution has an undefined mean and variance; its location parameter is "+str(self.location)+", and its scale parameter is "+str(self.scale)+"."
         return text
     
-    def getPDF(self, N=None, points=None):
+    def getPDF(self, points=None):
         """
         A Cauchy probability density function.
         
         :param Cauchy self:
             An instance of the Cauchy class.
-        :param int N:
-            Number of points for defining the probability density function.
+        :param array points:
+            Array of points for defining the probability density function.
         :return:
-            An array of N equidistant values over the support of the distribution.
+            An array of N values over the support of the distribution.
         :return:
             Probability density values along the support of the Cauchy distribution.
         """
-        if N is not None:
-            x = np.linspace(-15*self.scale, 15*self.scale, N)
-            x = x + self.location
-            w = 1.0/(np.pi * self.scale * (1 + ((x - self.location)/(self.scale))**2) )
-            return x, w
-        elif points is not None:
-            w = 1.0/(np.pi * self.scale * (1 + ((points - self.location)/(self.scale))**2) )
-            return w
+        if points is not None:
+            return cauchy.pdf(points, loc=0.0, scale=1.0)
         else:
             raise(ValueError, 'Please digit an input for getPDF method')
 
 
-    def getCDF(self, N=None, points=None):
+    def getCDF(self, points=None):
         """
         A Cauchy cumulative density function.
         
         :param Cauchy self:
             An instance of the Cauchy class.
-        :param integer N:
-            Number of points for defining the cumulative density function.
+        :param array points:
+            Array of points for defining the cumulative density function.
         :return:
             An array of N equidistant values over the support of the distribution.
         :return:
             Cumulative density values along the support of the Cauchy distribution.
         """
-        if N is not None:
-            x = np.linspace(-15*self.scale, 15*self.scale, N)
-            x = x + self.location
-            w = 1.0/np.pi * np.arctan((x - self.location) / self.scale) + 0.5
-            return x, w
-        elif points is not None:
-            w = 1.0/np.pi * np.arctan((points - self.location) / self.scale) + 0.5
-            return w
+        if points is not None:
+            return cauchy.cdf(points, loc=0.0, scale=self.scale)
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
 
@@ -93,5 +85,21 @@ class Cauchy(Distribution):
         :return:
             Inverse CDF samples associated with the Cauchy distribution.
         """
-        return self.location + self.scale * np.tan(np.pi * (xx - 0.5))
+        return cauchy.ppf(xx, loc=0.0, scale=self.scale)
+
+    def getSamples(self, m):
+        """
+         Generates samples from the Gaussian distribution.
+        :param Gaussian self:
+            An instance of the Gaussian class.
+        :param integer m:
+            Number of random samples. If no value is provided, a default of     5e5 is assumed.
+        :return:
+            A N-by-1 vector that contains the samples.
+        """
+        if m is not None:
+            number = m
+        else:
+            number = 500000
+        return cauchy.rvs(loc=0.0, scale=self.scale, size=number, random_state=None)
 

@@ -1,8 +1,9 @@
-""" Class for solving the Nataf transformation in ND case, for generic
-    marginals.
-    input parameter: 
-    D : Distributions: they are instances of Parameter class.
-    R : Correlation matrix
+""" Class for solving the Nataf transformation in N-Dimensional case, 
+    for generic types of input  marginals.
+    
+    Input parameter: 
+    D : List of Distributions: instances of Parameter class.
+    R : Correlation matrix of distributions which belong to D.
 """
 import numpy as np
 from scipy import optimize
@@ -15,11 +16,25 @@ from mpl_toolkits.mplot3d import Axes3D
 
 class Nataf(object):
     """
-    The class defines a Nataf transformation. 
+    The class defines a Nataf transformation.
+    References for theory:
+        Melchers, R., E. (Robert E.), 1945- Structural reliability analysis
+        and predictions - 2nd edition - John Wiley & Sons Ltd.
+        
+    The input correlated marginals are mapped from their physical space to a new 
+    standard normal space, in which points are uncorrelated.
+    
+    Attributes of the class:
     :param list D:
-		A list of parameters (distributions), interpreted here as the marginals.
-	:param numpy-matrix R:
-		The correlation matrix associated with the joint distribution.
+            List of parameters (distributions), interpreted here as the marginals.
+    :param numpy-matrix R:
+            The correlation matrix associated with the joint distribution.
+    :param object std:
+            A standard normal distribution
+    :param numpy-matrix A:
+            The Cholesky decomposition of Fictive matrix R0, 
+            associated with the set of normal intermediate
+            correlated distributions.        
     """
     def __init__(self, D=None, R=None):
         if D is None:
@@ -73,16 +88,25 @@ class Nataf(object):
                       diff = np.dot(coefficientsIntegral, bivariateNormalPDF) 
                       return diff - self.R[i,j] 
 
-                  rho = optimize.newton(check_difference, self.R[i, j])
+                  rho = optimize.newton(check_difference, self.R[i, j],tol=1e-03)
                   R0[i,j] = rho
                   R0[j,i] = R0[i,j]                         
                   self.A = np.linalg.cholesky(R0) 
-
+        print 'The Cholesky decomposition of fictive matrix R0 is:'
         print self.A
     
     def C2U(self, X):
-        """  Method for mapping correlated variables to a new standard space
-             The imput matrix must have [Nxm] dimension, where m is the number of correlated marginals
+        """  Method for mapping correlated variables to a new standard space.
+             The imput matrix must have [Nxm] dimension, where m is the number
+             of correlated marginals.
+             
+             :param numpy-matrix X: 
+                    A N-by-M Matrix where input marginals are organized along columns
+                    M represents the number of correlated marginals
+             :return:
+                    A N-by-M Matrix which contains standardized uncorrelated data.
+                    The transformation of each i-th input marginal is stored along 
+                    the i-th column of the output matrix.
         """
         c = X[:,0]
 
@@ -94,30 +118,36 @@ class Nataf(object):
                     w1[j,i] = 1.0 - 10**(-10)
                 elif (w1[j,i] <= 0.0):
                     w1[j,i] = 0.0 + 10**(-10)
-        #print 'w1:'
-        #print w1
+
         sU = np.zeros((len(c),len(self.D)))
         for i in range(len(self.D)):
             for j in range(len(c)):
-                sU[j,i] = self.std.getiCDF(w1[j,i])
-        #print 'Su:'
-        #print sU
+                sU[j,i] = self.std.getiCDF(w1[j,i]) 
+        
         sU = np.array(sU)
         sU = sU.T
 
         xu = np.linalg.solve(self.A,sU)
         xu = np.array(xu)
         xu = xu.T
-        #print 'xu:'
-        #print xu
+
         return xu
 
     def U2C(self, X):
-        """ Methof for mappint uncorrelated variables to a new physical space in which variables are correlated
+        """ Method for mapping uncorrelated variables from standard normal space
+            to a new physical space in which variables are correlated.
             Input matrix must have [mxN] dimension, where m is the number of input marginals.
+
+            :param numpy-matrix X:
+                    A Matrix of M-by-N dimensions, in which uncorrelated marginals
+                    are organized along rows.
+            :return:
+                    A N-by-M matrix in which the result of the inverse transformation
+                    applied to the i-th marginal is stored along the i-th column
+                    of the ouput matrix.
         """
         X = X.T
-        #print X
+
         invA = np.linalg.inv(self.A)
         Z = np.linalg.solve(invA, X)
         Z = Z.T
@@ -132,41 +162,19 @@ class Nataf(object):
             for j in range(len(Z[:,0])):
                 temporary = np.matrix(xc[j,i])
                 temp = self.D[i].getiCDF(temporary)
-                #temp = np.reshape(temp, (1,1))
+                
                 t = temp[0]
-                Xc[j,i] = t
-                #Xc[j,i] = self.D[i].getiCDF(xc[j,i])
-        #print Xc
+                Xc[j,i] = t 
         return Xc
     
     def getUncorrelatedSamples(self, N=None):
         """ Method for sampling uncorrelated data: 
-            N represents the number of the samples inside a range
-            points represents the array we want to uncorrelate.
-        """
-        if N is not None:
-            distro = np.zeros((N, len(self.D))) 
-            for i in range(len(self.D)):
-                for j in range(N):
-                    distro1 = self.D[i].getSamples(N)
-                    distro[j,i] = distro1[j]
-                print 'Distribution number:',i,'is a', self.D[i].name 
-         
-            return distro
-         
-        else:
-            raise(ValueError, 'One input must be given to "get Uncorrelated Samples" method: please digit the uncorrelated variables number (N)')
-    
-    def getCorrelatedSamples(self, N=None, points=None):
-        """ Method for sampling correlated data:
 
-            N:  represents the number of the samples inside a range
-            points represents the array we want to correlate.
-            
-            points: is the input matrix which contains che set of
-            uncorrelated variables we want to correlate. In this case
-            the input file must have [Nxm] dimensions, where m is the
-            number of input marginals.
+            :param integer N:
+                    represents the number of the samples inside a range
+            :return:
+                    A N-by-M matrix, each i-th column contains the points
+                    which belong to the i-th distribution stored into list D.
         """
         if N is not None: 
             distro = list() 
@@ -179,8 +187,45 @@ class Nataf(object):
                     if dimension[0] == N:
                         distro1 = distro1.T
                     #------------------------------------#
-                    distro.append(distro1)
-                    print 'Distribution number:',i,'is a', self.D[i].name
+                    distro.append(distro1) 
+                                                                                                                                                                                  
+            distro = np.reshape(distro, (len(self.D),N)) 
+            distro = distro.T
+       
+        else:
+             raise(ValueError, 'One input must be given to "get Correlated Samples" method')   
+        return distro
+  
+    def getCorrelatedSamples(self, N=None, points=None):
+        """ Method for sampling correlated data:
+
+            :param integer N:
+                represents the number of the samples inside a range
+                points represents the array we want to correlate.
+            
+            :param matrix points:
+                points: is the input matrix which contains che set of
+                uncorrelated variables we want to correlate. In this case
+                the input file must have [Nxm] dimensions, where m is the
+                number of input marginals.
+            :return:
+                A N-by-M matrix in which correlated samples are organized
+                along columns: the result of the run of the present method
+                for the i-th marginal into the input matrix is stored 
+                along the i-th column of the output matrix.
+        """
+        if N is not None: 
+            distro = list() 
+            for i in range(len(self.D)): 
+                    distro1 = self.D[i].getSamples(N)
+                    
+                    # check dimensions ------------------#
+                    distro1 = np.matrix(distro1)
+                    dimension = np.shape(distro1)
+                    if dimension[0] == N:
+                        distro1 = distro1.T
+                    #------------------------------------#
+                    distro.append(distro1) 
 
             distro = np.reshape(distro, (len(self.D),N)) 
             distro = distro.T
@@ -206,18 +251,18 @@ class Nataf(object):
         R = self.R
         Si     = np.matmul(D,R)
         S      = np.matmul(Si, D)
-        """ Once S (covariance matrix) has been calculated,
-            the Cholesky decomposition of this later can 
-            be carried out.
-            S = L*L^T where L^T is the transpose matrix of L.
-        """
+        # Once S (covariance matrix) has been calculated,
+        #    the Cholesky decomposition of this later can 
+        #    be carried out.
+        #    S = L*L^T where L^T is the transpose matrix of L.
+        #
         L    = np.linalg.cholesky(S)
 
-        """  standardized distributions as inputs
-             1) subtract the mean value of each distribution
-             distro is now a matrix with marginals along rows.
-             2) divide by the variance of each marginal
-        """
+        #"""  standardized distributions as inputs
+        #     1) subtract the mean value of each distribution
+        #     distro is now a matrix with marginals along rows.
+        #     2) divide by the variance of each marginal
+        #"""
         for i in range(number_of_distro):
             for j in range(rows_of_distro):
                 distro[i,j] = (distro[i,j] - self.D[i].mean)/np.sqrt(self.D[i].variance)
@@ -228,12 +273,12 @@ class Nataf(object):
             for j in range(rows_of_distro):
                 XC[j,i] = XC[j,i] + self.D[i].mean
         #print XC
-        """ The results will be stored in the following lines into 
-            two different tuples: the element 0 contains the 
-            original coordinates that have been given as inputs;
-            the element 1 contains the results of the running
-            of the present method.
-        """
+        #""" The results will be stored in the following lines into 
+        #    two different tuples: the element 0 contains the 
+        #    original coordinates that have been given as inputs;
+        #    the element 1 contains the results of the running
+        #    of the present method.
+        #"""
         distro = distro.T
         for i in range(number_of_distro):
             for j in range(rows_of_distro):
@@ -244,13 +289,17 @@ class Nataf(object):
     def CorrelationMatrix(self, X):
         """ The following calculations check the correlation
             matrix of input arrays and determine the covariance 
-            matrix:
-            D = diagonal matrix which cointains the variances
-            R = actual correlation matrix of input
-            S = covariance matrix
-
-            The input matrix mush have [Nxm] dimensions where
+            matrix: The input matrix mush have [Nxm] dimensions where
             m is the number of the marginals.
+            
+            :param X:
+                Matrix of correlated data
+            :param D:
+                diagonal matrix which cointains the variances
+            :param S:
+                covariance matrix
+            :return:
+                A correlation matrix R           
         """
         N = len(X)
         D = np.zeros((len(self.D),len(self.D)))

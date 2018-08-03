@@ -1,6 +1,8 @@
 import numpy as np
 from distribution import Distribution
 from recurrence_utils import jacobi_recurrence_coefficients
+from scipy.stats import uniform
+RECURRENCE_PDF_SAMPLES = 8000
 
 class Uniform(Distribution):
     """
@@ -18,15 +20,18 @@ class Uniform(Distribution):
         if (self.lower is not None) and (self.upper is not None):
             self.mean = 0.5 * (self.upper + self.lower)
             self.variance = 1.0/12.0 * (self.upper - self.lower)**2
+            self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
+	    
         self.skewness = 0.0
         self.shape_parameter_A = 0. 
         self.shape_parameter_B = 0.
+	        
 	
-    def getCDF(self, N=None, points=None):
+    def getCDF(self, points=None):
         """
         A uniform cumulative density function.
-        :param integer N:
-            Number of points for defining the cumulative density function.
+        :param points: 
+                Matrix of points which have to be evaluated 
         :param double lower:
             Lower bound of the support of the uniform distribution.
         :param double upper:
@@ -36,23 +41,16 @@ class Uniform(Distribution):
         :return:
             Cumulative density values along the support of the uniform distribution.
         """
-        if N is not None:
-            x = np.linspace(self.lower, self.upper, N)
-            w = np.zeros((N, 1))
-            for i in range(0, N):
-                w[i] = (x[i] - self.lower)/(self.upper - self.lower)
-            return x, w
-        elif points is not None:
-            w = (points - self.lower)/(self.upper-self.lower)
-            return w
+        if points is not None: 
+            return uniform.cdf(points, loc=0.0, scale=1.0)
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
 
-    def getPDF(self, N=None, points=None):
+    def getPDF(self, points=None):
         """
         A uniform probability distribution.
-        :param integer N:
-            Number of points for defining the probability density function.
+        :param points:
+            Matrix of points which have to be evaluated
         :param double lower:
             Lower bound of the support of the uniform distribution.
         :param double upper:
@@ -62,13 +60,8 @@ class Uniform(Distribution):
         :return:
             Probability density values along the support of the uniform distribution.
         """
-        if N is not None:
-            x = np.linspace(self.lower, self.upper, N)
-            w = 0*x + (1.0)/(self.upper - self.lower)
-            return x, w
-        elif points is not None:
-            w = 0*points + (1.0)/(self.upper - self.lower)
-            return w
+        if points is not None:
+            return uniform.pdf(points, loc=0.0, scale=1.0)
         else:
             raise(ValueError, 'Please digit an input for getPDF method')
 
@@ -86,3 +79,34 @@ class Uniform(Distribution):
         """
         ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, order)
         return ab
+
+    def getiCDF(self, xx):
+        """
+        A Uniform inverse cumulative density function.
+
+        :param: Uniform self:
+            An instance of Uniform class
+        :param array xx:
+            Points at which the inverse cumulative density function need to be evaluated.
+        :return:
+            Inverse cumulative density function values of the Uniform distribution.
+        """
+        return uniform.ppf(xx, loc=0.0, scale=1.0)
+
+    def getSamples(self, m = None):
+        """
+        Generates samples from the Uniform distribution.
+
+        :param: uniform self:
+            An instance of Uniform class
+        :param: integer m:
+            NUmber of random samples. If no provided, a default number of 5e5 is assumed.
+        :return:
+            A N-by-1 vector that contains the samples.
+        """
+        if m is not None:
+            number = m
+        else:
+            number = 500000
+        return uniform.rvs(size=number, loc=0.0, scale=1.0, random_state=None)
+

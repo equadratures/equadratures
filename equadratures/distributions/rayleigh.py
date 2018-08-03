@@ -2,6 +2,7 @@
 import numpy as np
 from distribution import Distribution
 from scipy.stats import rayleigh
+RECURRENCE_PDF_SAMPLES = 8000
 
 class Rayleigh(Distribution):
     """
@@ -18,7 +19,7 @@ class Rayleigh(Distribution):
             self.variance = self.scale**2 * (4.0 - np.pi)/ 2.0 
             self.skewness = 2.0 * np.sqrt(np.pi) * (np.pi - 3.0) / ((4.0 - np.pi)**(1.5))
             self.kurtosis = -(6 * np.pi**2 - 24 * np.pi + 16.0 )/( (4 - np.pi)**(1.5)) + 3.0 
-            self.x_range_for_pdf = np.linspace(0.0, 8.0 * self.scale)
+            self.x_range_for_pdf = np.linspace(0.0, 8.0 * self.scale, RECURRENCE_PDF_SAMPLES)
     
     def getiCDF(self, xx):
         """
@@ -71,3 +72,21 @@ class Rayleigh(Distribution):
             Cumulative density values along the support of the Rayleigh distribution.
         """
         return rayleigh.cdf(points, loc=0, scale=self.scale )
+
+    def getSamples(self, m=None):
+        """
+         Generates samples from the Rayleigh distribution.
+         
+         :param rayleigh self:
+             An instance of the Rayleigh class.
+         :param integer m:
+             Number of random samples. If no value is provided, a default of     5e5 is assumed.
+         :return:
+             A N-by-1 vector that contains the samples.
+        """
+        if m is not None:
+           number = m
+        else: 
+            number = 500000
+        return rayleigh.rvs(loc=0.0, scale=self.scale, size=number, random_state=None)
+

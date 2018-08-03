@@ -2,6 +2,8 @@
 import numpy as np
 from distribution import Distribution
 from recurrence_utils import jacobi_recurrence_coefficients
+from scipy.stats import arcsine
+RECURRENCE_PDF_SAMPLES = 8000
 
 class Chebyshev(Distribution):
     """
@@ -17,11 +19,13 @@ class Chebyshev(Distribution):
         self.upper = upper
         self.bounds = np.array([0.0, 1.0])
         if ( self.lower is not None ) and (self.upper is not None) :
-            self.mean = 0.5
+         	self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
+        self.mean = 0.5
         self.variance = 1.0/8.0
         self.skewness = 0.0
         self.shape_parameter_A = -0.5
         self.shape_parameter_B = -0.5
+        
     
     def getDescription(self):
         """
@@ -35,49 +39,39 @@ class Chebyshev(Distribution):
         text = "A Chebyshev (arcsine) distribution is characterised by its lower bound, which is"+str(self.lower)+" and its upper bound, which is"+str(self.upper)+"."
         return text
 
-    def getPDF(self, N=None, points=None):
+    def getPDF(self, points=None):
         """
         A Chebyshev probability density function.
         
         :param Chebyshev self:
             An instance of the Chebyshev (arcsine) class.
-        :param integer N:
-            Number of points for defining the probability density function.
+        :param points:
+            Matrix of points for defining the probability density function.
         :return:
-            An array of N equidistant values over the support of the Chebyshev (arcsine) distribution.
+            An array of N the support of the Chebyshev (arcsine) distribution.
         :return:
             Probability density values along the support of the Chebyshev (arcsine) distribution.
         """
-        if N is not None:
-            xreal = np.linspace(self.lower, self.upper, N)
-            wreal = 1.0 / (np.pi * np.sqrt( ((xreal+0.0000001) - self.lower) * (self.upper - (xreal-0.0000001)) )  )
-            return xreal, wreal
-        elif points is not None:
-            wreal = 1.0 / (np.pi * np.sqrt( ((points+0.0000001) - self.lower) * (self.upper - (points-0.0000001)) )  )
-            return wreal
+        if points is not None:
+            return arcsine.pdf(points, loc=0.0, scale=1.0)
         else:
             raise(ValueError, 'Please digit an input for getPDF method')
 
-    def getCDF(self, N=None, points=None):
+    def getCDF(self, points=None):
         """
         A Chebyshev cumulative density function.
         
         :param Chebyshev self:
             An instance of the Chebyshev class.
-        :param integer N:
-            Number of points for defining the cumulative density function.
+        :param points:
+            Matrix of points for defining the cumulative density function.
         :return:
-            An array of N equidistant values over the support of the Chebyshev (arcsine) distribution.
+            An array of N values over the support of the Chebyshev (arcsine) distribution.
         :return:
             Cumulative density values along the support of the Chebyshev (arcsine) distribution.
         """
-        if N is not None:
-            xreal = np.linspace(self.lower, self.upper, N)
-            wreal = 2.0 / (np.pi) * np.arcsin( np.sqrt( (xreal - self.lower)/(self.upper - self.lower) ) )
-            return xreal, wreal
-        elif points is not None:
-            wreal = 2.0 / (np.pi) * np.arcsin( np.sqrt( (points - self.lower)/(self.upper - self.lower) ) )
-            return wreal
+        if points is not None:
+             return arcsine.cdf(points, loc=0.0, scale=1.0)
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
 
@@ -94,3 +88,32 @@ class Chebyshev(Distribution):
         """
         ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, order)
         return ab
+
+    def getiCDF(self, xx):
+        """
+        A Arcisine inverse cumulative density function.
+        
+        :param Arcsine self:
+            An instance of Arcisine class.
+        :param xx:
+            A matrix of points at which the inverse cumulative density function needs to be evaluated.
+        :return:
+            Inverse cumulative density function values of the Arcisine distribution.
+        """
+        return arcsine.ppf(xx, loc=0.0, scale=1.0)
+
+    def getSamples(self, m=None):
+        """
+        Generates samples from the Arcsine distribution.
+
+        :param arcsine self:
+            An instance of Arcsine class.
+        :param integer m:
+            Number of random samples. If not provided, a default of 5e05 is assumed.
+
+        """
+        if m is not None:
+            number = m
+        else:
+            number = 500000
+        return arcsine.rvs(loc=0.0, scale=1.0, size=number) 

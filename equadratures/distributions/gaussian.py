@@ -5,6 +5,7 @@ from distribution import Distribution
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 RECURRENCE_PDF_SAMPLES = 8000
+
 class Gaussian(Distribution):
     """
     The class defines a Gaussian object. It is the child of Distribution.
@@ -19,7 +20,7 @@ class Gaussian(Distribution):
         self.variance = variance
         if self.variance is not None:
             self.sigma = np.sqrt(self.variance)
-            self.x_range_for_pdf = np.linspace(-15.0 * self.sigma, 15.0*self.sigma, RECURRENCE_PDF_SAMPLES)
+            self.x_range_for_pdf = np.linspace(-15.0 * self.sigma, 15.0*self.sigma, RECURRENCE_PDF_SAMPLES) + self.mean
         self.skewness = 0.0
         self.kurtosis = 0.0
         self.bounds = np.array([-np.inf, np.inf])
@@ -46,7 +47,11 @@ class Gaussian(Distribution):
         :return:
             A N-by-1 vector that contains the samples.
         """
-        return norm.rvs(self.mean, self.variance, size=m)
+        if m is not None:
+            number = m
+        else: 
+            number = 500000
+        return norm.rvs(self.mean, self.variance, size=number)
 
     def getPDF(self, points=None):
         """

@@ -32,6 +32,7 @@ class Beta(Distribution):
             self.bounds = np.array([0, 1])
             self.shape_parameter_A = self.shape_B - 1.0
             self.shape_parameter_B = self.shape_A - 1.0
+        if (self.lower is not None) and (self.upper is not None):
             self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
     
     def getDescription(self):

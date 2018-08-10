@@ -16,7 +16,7 @@ class Uniform(Distribution):
     def __init__(self, lower, upper):
         self.lower = lower
         self.upper = upper
-        self.bounds = np.array([self.lower, self.upper])
+        self.bounds = np.array([-1., 1.])
         if (self.lower is not None) and (self.upper is not None):
             self.mean = 0.5 * (self.upper + self.lower)
             self.variance = 1.0/12.0 * (self.upper - self.lower)**2

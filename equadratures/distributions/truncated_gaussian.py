@@ -22,8 +22,8 @@ class TruncatedGaussian(Distribution):
         if (mean is not None) and (variance is not None) and (lower is not None) and (upper is not None):
             meanParent = mean
             varianceParent = variance
-            self.std    = Gaussian(mean=0.0, variance=1.0)
-            self.parent = Gaussian(mean= meanParent, variance=varianceParent)
+            self.std = Gaussian(mean = 0.0, variance = 1.0)
+            self.parent = Gaussian(mean = meanParent, variance = varianceParent)
             self.lower = lower 
             self.upper = upper
             self.skewness = 0.0
@@ -41,6 +41,8 @@ class TruncatedGaussian(Distribution):
             self.variance = varianceParent*(1-(num_i/den)-(num_ii/den)**2)
             self.sigma = np.sqrt(self.variance)
             self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
+            
+            self.parents = truncnorm(a = self.alpha, b = self.beta, loc=meanParent, scale=varianceParent )
 
     def getDescription(self):
         """
@@ -67,8 +69,13 @@ class TruncatedGaussian(Distribution):
         :return:
             Probability density values along the support of the truncated Gaussian distribution.
         """
-        if point is not None:
-            return truncnorm.pdf(points, self.alpha, self.beta, loc=0.0, scale=1.0)
+        #if points is not None:
+        #    num = self.parent.getPDF(points = points)
+        #    den = self.parent.getCDF(points= self.upper)-self.parent.getCDF(points=self.lower)
+        #    w = num/den
+        #    return w
+        if points is not None:
+            return self.parents.pdf(points)
         else:
             raise(ValueError, 'Please digit an input for getPDF method')
 
@@ -86,7 +93,7 @@ class TruncatedGaussian(Distribution):
             Gaussian cumulative density values.
         """
         if points is not None:          
-            return truncnorm.cdf(poins, self.alpha, self.beta)
+            return self.parents.cdf(points)
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
 
@@ -100,7 +107,7 @@ class TruncatedGaussian(Distribution):
         :return:
             Inverse cumulative density function values of the Truncated Gaussian distributuion.
         """
-        return truncnorm.ppf(xx, self.alpha, self.beta, loc=0.0, scale=1.0)
+        return self.parents.ppf(xx)
 
     def getSamples(self, m=None):
         """ Generates samples from the Truncated-Gaussian distribution.
@@ -112,9 +119,9 @@ class TruncatedGaussian(Distribution):
          :return:
              A N-by-1 vector that contains the samples.
         """
-        if n is not None:
+        if m is not None:
            number = m
         else:
            number = 500000
-        return truncnorm.rvs(self.alpha, self.beta, loc=0.0, scale=1.0, random_state=None)
+        return self.parents.rvs(size=number)
 

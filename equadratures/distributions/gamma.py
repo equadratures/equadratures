@@ -24,6 +24,7 @@ class Gamma(Distribution):
             self.skewness = 2.0 / np.sqrt(self.shape)
             self.kurtosis = 6.0 / self.shape # double-check!
             self.x_range_for_pdf = np.linspace(0, self.shape*self.scale*10, RECURRENCE_PDF_SAMPLES)
+            self.parent = gamma(a=self.shape, scale=self.scale)
     
     def getDescription(self):
         """
@@ -51,7 +52,7 @@ class Gamma(Distribution):
             Probability density values along the support of the Gamma distribution.
         """
         if points is not None:
-            return gamma.pdf(points, self.shape, loc=0.0, scale=self.scale)
+            return self.parent.pdf(points)
         else:
             raise(ValueError, 'Please digit an input for getPDF method')
     
@@ -69,7 +70,7 @@ class Gamma(Distribution):
             Cumulative density values along the support of the gamma distribution.
         """
         if points is not None:
-            return gamma.cdf(points, self.shape, loc=0.0, scale=self.scale)
+            return self.parent.cdf(points)
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
 
@@ -84,7 +85,7 @@ class Gamma(Distribution):
         :return:
             Inverse cumulative density function values of the Gamma distribution.
         """
-        return gamma.ppf(xx, self.shape, loc=0.0, scale=self.scale)
+        return self.parent.ppf(xx)
 
     def getSamples(self, m=None):
         """
@@ -101,5 +102,5 @@ class Gamma(Distribution):
            number = m
         else:
            number = 500000
-        return gamma.rvs(self.shape, loc=0.0, scale=self.scale, random_state=None, size = number)
+        return self.parent.rvs(size = number)
 

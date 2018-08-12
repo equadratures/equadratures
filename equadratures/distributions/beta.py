@@ -32,8 +32,10 @@ class Beta(Distribution):
             self.bounds = np.array([0, 1])
             self.shape_parameter_A = self.shape_B - 1.0
             self.shape_parameter_B = self.shape_A - 1.0
+            self.parent = beta(self.shape_A, self.shape_B)
         if (self.lower is not None) and (self.upper is not None):
             self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
+       
     
     def getDescription(self):
         """
@@ -57,7 +59,7 @@ class Beta(Distribution):
             Probability density values along the support of the Beta distribution.
         """ 
         if points is not None: 
-            return beta.pdf(points, self.shape_parameter_A, self.shape_parameter_B, loc=0.0, scale=1.0)
+            return self.parent.pdf(points)
         else:
             raise(ValueError, 'Please specify an input for getPDF method')
 
@@ -73,7 +75,7 @@ class Beta(Distribution):
             Cumulative density values along the support of the Gamma distribution.
         """
         if points is not None:
-                return beta.cfd(points, self.shape_parameter_A, self.shape_parameter_B, loc=0.0, scale=1.0)
+                return self.parent.cdf(points)
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
 
@@ -102,7 +104,7 @@ class Beta(Distribution):
         :return:
             Inverse cumulative density function values of the Beta distribution.
         """
-        return beta.ppf(xx, self.shape_parameter_A, self.shape_parameter_B, loc=0.0, scale=1.0)
+        return self.parent.ppf(xx)
 
     def getSamples(self, m =None):
         """ Generates samples from the Beta distribution.
@@ -118,5 +120,5 @@ class Beta(Distribution):
             number = m 
         else:
             number = 500000
-        return beta.rvs(self.shape_parameter_A, self.shape_parameter_B, loc=0.0, scale=1.0, size= number, random_state=None)
+        return self.parent.rvs(size= number)
 

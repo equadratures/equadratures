@@ -24,6 +24,7 @@ class Chisquared(Distribution):
             self.skewness = np.sqrt(8.0 / self.mean)
             self.kurtosis = 12.0/self.mean + 3.0
             self.x_range_for_pdf = np.linspace(0.0, 10.0*self.mean,RECURRENCE_PDF_SAMPLES)
+            self.parent = chi2(self.dofs)
     
     def getDescription(self):
         """
@@ -51,7 +52,7 @@ class Chisquared(Distribution):
             Probability density values along the support of the Chi-squared distribution.
         """
         if points is not None:
-            return chi2.pdf(points, self.dofs, loc=0.0, scale=1.0)
+            return self.parent.pdf(points)
         else: 
             raise(ValueError, 'Please digit an input for getPDF method')
 
@@ -69,7 +70,7 @@ class Chisquared(Distribution):
             Cumulative density values along the support of the Chi-squared distribution.
         """
         if points is not None:
-            return chi2.cdf(points, self.dofs,loc=0.0, scale=1.0)
+            return self.parent.cdf(points)
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
 
@@ -85,7 +86,7 @@ class Chisquared(Distribution):
         :return:
             Inverse cumulative density function values of the Chi-squared distribution.
         """
-        return chi2.ppf(xx, self.dofs, loc=0.0, scale=1.0)
+        return self.parent.ppf(xx)
     
     def getSamples(self, m=None):
         """ 
@@ -102,5 +103,5 @@ class Chisquared(Distribution):
             number = m
         else:
             number = 500000
-        return chi2.rvs(self.dofs,loc=0.0, scale=1.0, size= number, random_state=None)
+        return self.parent.rvs(size= number)
 

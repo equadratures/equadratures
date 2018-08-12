@@ -21,6 +21,7 @@ class Gaussian(Distribution):
         if self.variance is not None:
             self.sigma = np.sqrt(self.variance)
             self.x_range_for_pdf = np.linspace(-15.0 * self.sigma, 15.0*self.sigma, RECURRENCE_PDF_SAMPLES) + self.mean
+            self.parent = norm(loc=self.mean, scale=self.sigma)
         self.skewness = 0.0
         self.kurtosis = 0.0
         self.bounds = np.array([-np.inf, np.inf])
@@ -51,7 +52,7 @@ class Gaussian(Distribution):
             number = m
         else: 
             number = 500000
-        return norm.rvs(self.mean, self.variance, size=number)
+        return self.parent.rvs(size=number)
 
     def getPDF(self, points=None):
         """
@@ -64,7 +65,7 @@ class Gaussian(Distribution):
         :return:
             Probability density values along the support of the Gaussian distribution.
         """
-        return norm.pdf(points, loc=self.mean, scale=self.variance )
+        return self.parent.pdf(points )
 
     def getCDF(self, points=None):
         """
@@ -77,7 +78,7 @@ class Gaussian(Distribution):
         :return:
             Gaussian cumulative density values.
         """
-        return norm.cdf(points, loc=self.mean, scale=self.variance )
+        return self.parent.cdf(points )
 
     def getiCDF(self, xx):
         """
@@ -90,4 +91,4 @@ class Gaussian(Distribution):
         :return:
             Inverse CDF samples associated with the Gaussian distribution.
         """
-        return norm.ppf(xx, loc=self.mean, scale=self.variance)
+        return self.parent.ppf(xx)

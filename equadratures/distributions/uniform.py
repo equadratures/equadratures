@@ -16,16 +16,16 @@ class Uniform(Distribution):
     def __init__(self, lower, upper):
         self.lower = lower
         self.upper = upper
-        self.bounds = np.array([-1., 1.])
+        self.bounds = np.array([-1.0, 1.0])
         if (self.lower is not None) and (self.upper is not None):
             self.mean = 0.5 * (self.upper + self.lower)
             self.variance = 1.0/12.0 * (self.upper - self.lower)**2
             self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
+            self.parent = uniform(loc=(self.lower), scale=(self.upper-self.lower))
 	    
         self.skewness = 0.0
         self.shape_parameter_A = 0. 
         self.shape_parameter_B = 0.
-	        
 	
     def getCDF(self, points=None):
         """
@@ -42,7 +42,7 @@ class Uniform(Distribution):
             Cumulative density values along the support of the uniform distribution.
         """
         if points is not None: 
-            return uniform.cdf(points, loc=0.0, scale=1.0)
+            return self.parent.cdf(points)
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
 
@@ -61,7 +61,7 @@ class Uniform(Distribution):
             Probability density values along the support of the uniform distribution.
         """
         if points is not None:
-            return uniform.pdf(points, loc=0.0, scale=1.0)
+            return self.parent.pdf(points)
         else:
             raise(ValueError, 'Please digit an input for getPDF method')
 
@@ -91,7 +91,7 @@ class Uniform(Distribution):
         :return:
             Inverse cumulative density function values of the Uniform distribution.
         """
-        return uniform.ppf(xx, loc=0.0, scale=1.0)
+        return self.parent.ppf(xx)
 
     def getSamples(self, m = None):
         """
@@ -108,5 +108,5 @@ class Uniform(Distribution):
             number = m
         else:
             number = 500000
-        return uniform.rvs(size=number, loc=0.0, scale=1.0, random_state=None)
+        return self.parent.rvs(size=number)
 

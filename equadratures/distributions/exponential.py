@@ -15,13 +15,16 @@ class Exponential(Distribution):
     def __init__(self, rate=None):
         self.rate = rate
         if (self.rate is not None) and (self.rate > 0.0):
-            self.mean = 1.0/self.rate
-            self.variance = 1.0/(self.rate)**2
+            #self.mean = 1. / self.rate
+            #self.variance = 1./(self.rate)**2
             self.skewness = 2.0
             self.kurtosis = 6.0
             self.bounds = np.array([0.0, np.inf])
             self.x_range_for_pdf = np.linspace(0.0, 20*self.rate, RECURRENCE_PDF_SAMPLES)
-        
+            self.parent = expon(scale=1.0*rate) 
+            self.mean = self.parent.mean()
+            self.variance = self.parent.var()
+            
     def getDescription(self):
         """
         A description of the Exponential distribution.
@@ -48,7 +51,7 @@ class Exponential(Distribution):
             Probability density values along the support of the exponential distribution.
         """
         if points is not None:
-            return expon.pdf(points, loc=0.0, scale=1.0)
+            return self.parent.pdf(points)
         else: 
             raise(ValueError, 'Please digit an input for getPDF method')
 
@@ -63,7 +66,7 @@ class Exponential(Distribution):
         :return:
             Inverse CDF samples associated with the exponential distribution.
         """
-        return expon.ppf(xx, loc=0.0, scale=1.0)
+        return self.parent.ppf(xx)
 
     def getCDF(self, points=None):
         """
@@ -79,7 +82,7 @@ class Exponential(Distribution):
             Cumulative density values along the support of the exponential distribution.
         """
         if points is not None:
-            return expon.cdf(points, loc=0.0, scale=1.0)
+            return self.parent.cdf(points)
         else: 
             raise(ValueError, 'Please digit an input for getCDF method')
     def getSamples(self, m=None):
@@ -97,4 +100,4 @@ class Exponential(Distribution):
             number = m
         else:
             number = 500000
-        return expon.rvs(loc=0.0, scale=1.0, size= number, random_state=None)
+        return self.parent.rvs(size= number)

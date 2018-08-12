@@ -29,20 +29,25 @@ class TruncatedGaussian(Distribution):
             self.skewness = 0.0
             self.kurtosis = 0.0
             self.bounds = np.array([-np.inf, np.inf]) 
-            self.beta  = (self.upper - self.parent.mean)/self.parent.variance  
-            self.alpha = (self.lower - meanParent)/varianceParent
-            num = self.std.getPDF(points=self.beta)-self.std.getPDF(points=self.alpha)
-            den = self.std.getCDF(points=self.beta)-self.std.getCDF(points=self.alpha)
-            self.mean = meanParent - varianceParent*(num/den)
+            self.beta  = (self.upper - self.parent.mean)/np.sqrt(self.parent.variance)
+            self.alpha = (self.lower - meanParent)/np.sqrt(varianceParent)
+            #num = self.std.getPDF(points=self.beta)-self.std.getPDF(points=self.alpha)
+            #den = self.std.getCDF(points=self.beta)-self.std.getCDF(points=self.alpha)
+            #self.mean = meanParent - np.sqrt(varianceParent)*(num/den)
+            #print 'from class: mean of truncnorm:', self.mean 
+            #num_i = self.beta*self.std.getPDF(points=self.beta)-self.alpha*self.std.getPDF(points=self.alpha)
+            #den   = self.std.getCDF(points=self.beta)-self.std.getCDF(points=self.alpha)
+            #num_ii= self.std.getPDF(points=self.beta)-self.std.getPDF(points=self.alpha)
             
-            num_i = self.beta*self.std.getPDF(points=self.beta)-self.alpha*self.std.getPDF(points=self.alpha)
-            den   = self.std.getCDF(points=self.beta)-self.std.getCDF(points=self.alpha)
-            num_ii= self.std.getPDF(points=self.beta)-self.std.getPDF(points=self.alpha)
-            self.variance = varianceParent*(1-(num_i/den)-(num_ii/den)**2)
-            self.sigma = np.sqrt(self.variance)
+            #self.variance = varianceParent*(1-(num_i/den)-(num_ii/den)**2)
+            #print 'from class: variance of truncated', self.variance
+            #self.sigma = np.sqrt(self.variance)
             self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
             
             self.parents = truncnorm(a = self.alpha, b = self.beta, loc=meanParent, scale=varianceParent )
+            self.mean = self.parents.mean()
+            self.variance = self.parents.var()
+            self.sigma = np.sqrt(self.variance)
 
     def getDescription(self):
         """

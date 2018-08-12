@@ -10,9 +10,7 @@ from scipy import optimize
 from parameter import Parameter
 from polyint import Polyint 
 from basis import Basis 
-import matplotlib.pyplot as plt
 from scipy import stats
-from mpl_toolkits.mplot3d import Axes3D
 
 class Nataf(object):
     """
@@ -57,7 +55,7 @@ class Nataf(object):
            
         inf_lim = -8.0
         sup_lim = - inf_lim
-        p1 = Parameter(distribution = 'uniform', lower = inf_lim,upper = sup_lim, order = 31)
+        p1 = Parameter(distribution = 'uniform', lower = inf_lim, upper = sup_lim, order = 31)
         myBasis = Basis('Tensor grid')
         Pols = Polyint([p1, p1], myBasis)
         p = Pols.quadraturePoints
@@ -67,36 +65,25 @@ class Nataf(object):
         p2 = p[:,1]
         
         R0 = np.eye((len(self.D)))
-        for i in range(len(self.D)):
-            print 'marginal', i, 'is a ', self.D[i].name
+        for i in range(len(self.D)): 
             for j in range(i+1, len(self.D), 1):
                 if self.R[i,j] == 0:
                     R0[i,j] = 0.0
                 else: 
                   tp11 = -(np.array(self.D[i].getiCDF(self.std.getCDF(points=p1))) - self.D[i].mean ) / np.sqrt( self.D[i].variance ) 
-                  #print 'mean of D:', self.D[i].mean
-                  #print 'variance of D:', self.D[i].variance
                   tp22 = -(np.array(self.D[j].getiCDF(self.std.getCDF(points=p2))) -  self.D[j].mean)/np.sqrt( self.D[j].variance )
                   
                   rho_ij = self.R[i,j]
                   bivariateNormalPDF = (1.0 / (2.0 * np.pi * np.sqrt(1.0-rho_ij**2)) * np.exp(-1.0/(2.0*(1.0 - rho_ij**2)) * (p1**2 - 2.0 * rho_ij * p1 * p2  + p2**2 )))
                   coefficientsIntegral = np.flipud(tp11*tp22 * w)
-                  #fig = plt.figure()
-                  #plt.plot(coefficientsIntegral, 'o')
-                  #plt.show()
-
-
 
                   def check_difference(rho_ij):
                       bivariateNormalPDF = (1.0 / (2.0 * np.pi * np.sqrt(1.0-rho_ij**2)) * np.exp(-1.0/(2.0*(1.0 - rho_ij**2)) * (p1**2 - 2.0 * rho_ij * p1 * p2  + p2**2 )))
                       diff = np.dot(coefficientsIntegral, bivariateNormalPDF) 
                       return diff - self.R[i,j] 
 
-                  #rho = optimize.newton(check_difference, self.R[i, j])   
-                  #rho = optimize.fsolve(func=check_difference, x0=self.R[i,j], xtol=1e-07)
                   rho, r = optimize.brentq(f=check_difference, a =-1 + np.finfo(float).eps, b=1 - np.finfo(float).eps, full_output=True)
-                  #rho = optimize.brenth(f=check_difference, a = -(1.0-1e-10), b = (1.0-1e-10), xtol = 1.0e-05)
-                  #rho = optimize.bisect(f=check_difference, a = -(1.0-1e-10), b = (1.0-1e-10), xtol = 1.0e-05)
+
                   R0[i,j] = rho
                   R0[j,i] = R0[i,j] 
 
@@ -233,7 +220,7 @@ class Nataf(object):
                     #------------------------------------#
                     distro.append(distro1) 
 
-            distro = np.reshape(distro, (len(self.D),N)) 
+            distro = np.reshape(distro, (len(self.D),N))
             interm = np.dot(self.A, distro)
             correlated = np.zeros((len(self.D),N))
             for i in range(len(self.D)):
@@ -292,6 +279,5 @@ class Nataf(object):
                     den11  = np.sqrt(den1)
                     den22  = np.sqrt(den2)
                     R[j,k] = np.sum(prod_n)/(den11*den22)
-        
-        #print R
+         
         return R

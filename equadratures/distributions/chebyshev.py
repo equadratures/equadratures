@@ -53,7 +53,7 @@ class Chebyshev(Distribution):
             Probability density values along the support of the Chebyshev (arcsine) distribution.
         """
         if points is not None:
-            return arcsine.pdf(points, loc=0.0, scale=1.0)
+            return arcsine.pdf(points)
         else:
             raise(ValueError, 'Please digit an input for getPDF method')
 
@@ -71,7 +71,7 @@ class Chebyshev(Distribution):
             Cumulative density values along the support of the Chebyshev (arcsine) distribution.
         """
         if points is not None:
-             return arcsine.cdf(points, loc=0.0, scale=1.0)
+             return arcsine.cdf(points)
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
 
@@ -100,7 +100,7 @@ class Chebyshev(Distribution):
         :return:
             Inverse cumulative density function values of the Arcisine distribution.
         """
-        return arcsine.ppf(xx, loc=0.0, scale=1.0)
+        return arcsine.ppf(xx)
 
     def getSamples(self, m=None):
         """
@@ -116,4 +116,4 @@ class Chebyshev(Distribution):
             number = m
         else:
             number = 500000
-        return arcsine.rvs(loc=0.0, scale=1.0, size=number) 
+        return arcsine.rvs(size=number) 

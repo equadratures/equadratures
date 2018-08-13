@@ -82,7 +82,7 @@ class Nataf(object):
                       diff = np.dot(coefficientsIntegral, bivariateNormalPDF) 
                       return diff - self.R[i,j] 
 
-                  rho, r = optimize.brentq(f=check_difference, a =-1 + np.finfo(float).eps, b=1 - np.finfo(float).eps, full_output=True)
+                  rho = optimize.newton(check_difference, self.R[i,j])
 
                   R0[i,j] = rho
                   R0[j,i] = R0[i,j] 

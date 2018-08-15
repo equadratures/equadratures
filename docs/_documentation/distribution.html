@@ -13,6 +13,8 @@
 
   
   
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  
   
   
 
@@ -47,6 +49,9 @@
             <a href="index.html" class="icon icon-home"> Effective Quadratures
           
 
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -150,11 +155,6 @@
   <div class="section" id="distributions">
 <h1>Distributions<a class="headerlink" href="#distributions" title="Permalink to this headline">¶</a></h1>
 <p>Distributions for characterizing the parameters.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="gaussian.html">Gaussian</a></li>
-</ul>
-</div>
 <span class="target" id="module-equadratures.distributions.distribution"></span><p>The Distribution template.</p>
 <dl class="class">
 <dt id="equadratures.distributions.distribution.Distribution">
@@ -165,8 +165,8 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>lower</strong> (<em>double</em>) &#8211; Lower bound of the support of the Chebyshev (arcsine) distribution.</li>
-<li><strong>upper</strong> (<em>double</em>) &#8211; Upper bound of the support of the Chebyshev (arcsine) distribution.</li>
+<li><strong>lower</strong> (<em>double</em>) &#8211; Lower bound of the support of the distribution.</li>
+<li><strong>upper</strong> (<em>double</em>) &#8211; Upper bound of the support of the distribution.</li>
 </ul>
 </td>
 </tr>
@@ -202,7 +202,7 @@
 
 <dl class="method">
 <dt id="equadratures.distributions.distribution.Distribution.getPDF">
-<code class="descname">getPDF</code><span class="sig-paren">(</span><em>N=None</em>, <em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/distribution.html#Distribution.getPDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.distribution.Distribution.getPDF" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getPDF</code><span class="sig-paren">(</span><em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/distribution.html#Distribution.getPDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.distribution.Distribution.getPDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the PDF of the distribution.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

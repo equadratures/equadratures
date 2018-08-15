@@ -10,6 +10,7 @@ from distributions.weibull import Weibull
 from distributions.rayleigh import Rayleigh
 from distributions.chisquared import Chisquared
 from distributions.truncated_gaussian import TruncatedGaussian
+from distributions.custom import Custom
 import numpy as np
 
 class Parameter(object):
@@ -43,7 +44,7 @@ class Parameter(object):
     :param Endpoints:
         A boolean entry. If set to True, then the quadrature points and weights will have end-points.
     """
-	def __init__(self, order, distribution, endpoints=False, shape_parameter_A=None, shape_parameter_B=None, lower=None, upper=None):
+	def __init__(self, order, distribution, endpoints=False, shape_parameter_A=None, shape_parameter_B=None, lower=None, upper=None, data=None):
 		self.name = distribution
 		self.order = order 
 		self.shape_parameter_A = shape_parameter_A
@@ -51,6 +52,7 @@ class Parameter(object):
 		self.lower = lower
 		self.upper = upper
 		self.endpoints = endpoints
+		self.data = data
 		self.setDistribution()
 		self.setBounds()
 		self.setMoments()
@@ -59,6 +61,7 @@ class Parameter(object):
 		choices = {'gaussian': Gaussian(self.shape_parameter_A, self.shape_parameter_B),
 			       'normal': Gaussian(self.shape_parameter_A, self.shape_parameter_B),
 			       'uniform' : Uniform(self.lower, self.upper),
+				   'custom': Custom(self.data),
 				   'beta': Beta(self.lower, self.upper, self.shape_parameter_A, self.shape_parameter_B),
 				   'cauchy' : Cauchy(self.shape_parameter_A, self.shape_parameter_B), 
 				   'exponential': Exponential(self.shape_parameter_A),
@@ -80,11 +83,19 @@ class Parameter(object):
 	def setBounds(self):
 		self.bounds = self.distribution.bounds
 
-	def getPDF(self, N=None, points=None):
-		return self.distribution.getPDF(N,points)
+	def getPDF(self, points=None):
+		if points is None:
+			x = self.distribution.x_range_for_pdf
+			return x, self.distribution.getPDF(x)
+		else:
+			return self.distribution.getPDF(points)
 
-	def getCDF(self, N=None, points=None):
-		return self.distribution.getCDF(N,points)
+	def getCDF(self, points=None):
+		if points is None:
+			x = self.distribution.x_range_for_pdf
+			return x, self.distribution.getCDF(x)
+		else:
+			return self.distribution.getCDF(points)
 
 	def getiCDF(self, xx):
 		return self.distribution.getiCDF(xx)

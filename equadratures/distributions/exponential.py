@@ -2,6 +2,8 @@
 import numpy as np
 from distribution import Distribution
 from recurrence_utils import custom_recurrence_coefficients
+from scipy.stats import expon
+RECURRENCE_PDF_SAMPLES = 8000
 
 class Exponential(Distribution):
     """
@@ -13,12 +15,16 @@ class Exponential(Distribution):
     def __init__(self, rate=None):
         self.rate = rate
         if (self.rate is not None) and (self.rate > 0.0):
-            self.mean = 1.0/self.rate
-            self.variance = 1.0/(self.rate)**2
+            #self.mean = 1. / self.rate
+            #self.variance = 1./(self.rate)**2
             self.skewness = 2.0
             self.kurtosis = 6.0
             self.bounds = np.array([0.0, np.inf])
-        
+            self.x_range_for_pdf = np.linspace(0.0, 20*self.rate, RECURRENCE_PDF_SAMPLES)
+            self.parent = expon(scale=1.0*rate) 
+            self.mean = self.parent.mean()
+            self.variance = self.parent.var()
+            
     def getDescription(self):
         """
         A description of the Exponential distribution.
@@ -31,26 +37,21 @@ class Exponential(Distribution):
         text = "An exponential distribution with a rate parameter of"+str(self.rate)+"."
         return text
 
-    def getPDF(self, N=None, points=None):
+    def getPDF(self, points=None):
         """
         An exponential probability density function.
         
         :param Exponential self:
             An instance of the Exponential class.
-        :param integer N:
-            Number of points for defining the probability density function.
+        :param matrix points:
+            Matrix of points for defining the probability density function.
         :return:
-            An array of N equidistant values over the support of the distribution.
+            An array of N values over the support of the distribution.
         :return:
             Probability density values along the support of the exponential distribution.
         """
-        if N is not None:
-            x = np.linspace(0, 20*self.rate, N)
-            w = self.rate * np.exp(-self.rate * x)
-            return x, w
-        elif points is not None:
-            w = self.rate * np.exp(-self.rate * points)
-            return w
+        if points is not None:
+            return self.parent.pdf(points)
         else: 
             raise(ValueError, 'Please digit an input for getPDF method')
 
@@ -65,28 +66,38 @@ class Exponential(Distribution):
         :return:
             Inverse CDF samples associated with the exponential distribution.
         """
-        return (-np.log(1.0 - xx))/(self.rate)
+        return self.parent.ppf(xx)
 
-    def getCDF(self, N=None, points=None):
+    def getCDF(self, points=None):
         """
         An exponential cumulative density function.
         
         :param Exponential self:
             An instance of the Exponential class.
-        :param integer N:
-            Number of points for defining the cumulative density function.
+        :param matrix points:
+            Matrix of points for defining the cumulative density function.
         :return:
-            An array of N equidistant values over the support of the distribution.
+            An array of N values over the support of the distribution.
         :return:
             Cumulative density values along the support of the exponential distribution.
         """
-        if N is not None:
-            x = np.linspace(0, 20*self.rate, N)
-            w = 1 - np.exp(-self.rate * x)
-            return x, w
-        elif points is not None:
-            w = 1 - np.exp(-self.rate * points)
-            return w
+        if points is not None:
+            return self.parent.cdf(points)
         else: 
             raise(ValueError, 'Please digit an input for getCDF method')
-
+    def getSamples(self, m=None):
+        """
+        Generates samples from the Exponential distribution.
+         
+         :param Expon self:
+             An instance of the Exponential class.
+         :param integer m:
+              Number of random samples. If no value is provided, a default of 5e05 is assumed
+         :return:
+             A N-by-1 vector that contains the samples.
+        """
+        if m is not None:
+            number = m
+        else:
+            number = 500000
+        return self.parent.rvs(size= number)

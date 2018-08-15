@@ -2,6 +2,8 @@
 import numpy as np
 from distribution import Distribution
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
+from scipy.stats import gamma
+RECURRENCE_PDF_SAMPLES = 8000
 
 class Gamma(Distribution):
     """
@@ -21,6 +23,8 @@ class Gamma(Distribution):
             self.variance = self.shape * self.scale**2
             self.skewness = 2.0 / np.sqrt(self.shape)
             self.kurtosis = 6.0 / self.shape # double-check!
+            self.x_range_for_pdf = np.linspace(0, self.shape*self.scale*10, RECURRENCE_PDF_SAMPLES)
+            self.parent = gamma(a=self.shape, scale=self.scale)
     
     def getDescription(self):
         """
@@ -34,49 +38,69 @@ class Gamma(Distribution):
         text = "A gamma distribution with a shape parameter of "+str(self.shape)+", and a scale parameter of "+str(self.scale)+"."
         return text
 
-    def getPDF(self, N=None, points=None):
+    def getPDF(self, points=None):
         """
         A gamma probability density function.
         
         :param Gamma self:
             An instance of the Gamma class.
-        :param integer N:
-            Number of points for defining the probability density function.
+        :param matrix points:
+            Matrix of points for defining the probability density function.
         :return:
             An array of N equidistant values over the support of the distribution.
         :return:
             Probability density values along the support of the Gamma distribution.
         """
-        if N is not None:
-            x = np.linspace(0, self.shape*self.scale*10, N)
-            w = 1.0/(gamma(self.shape) * self.scale**self.shape ) * x**(self.shape - 1) * np.exp(-x /self.scale)
-            return x, w
-        elif points is not None:
-             w = 1.0/(gamma(self.shape) * self.scale**self.shape ) * points**(self.shape - 1) * np.exp(-points /self.scale)
-             return w
+        if points is not None:
+            return self.parent.pdf(points)
         else:
             raise(ValueError, 'Please digit an input for getPDF method')
     
-    def getCDF(self, N=None, points=None):
+    def getCDF(self, points=None):
         """
         A gamma cumulative density function.
         
         :param Gamma self:
             An instance of the Gamma class.
-        :param integer N:
-            Number of points for defining the gamma cumulative density function.
+        :param matrix points:
+            Matrix of points for defining the gamma cumulative density function.
         :return:
             An array of N equidistant values over the support of the gamma distribution.
         :return:
             Cumulative density values along the support of the gamma distribution.
         """
-        if N is not None:
-            x = np.linspace(0, self.shape* self.scale * 10.0 , N)
-            w = 1.0/(gamma(self.shape)) * gammainc(self.shape, x/self.scale)
-            return x, w
-        elif points is not None:
-            w = 1.0/(gamma(self.shape)) * gammainc(self.shape, points/self.scale)
-            return w
+        if points is not None:
+            return self.parent.cdf(points)
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
+
+    def getiCDF(self, xx):
+        """
+        A gamma inverse cumulative density function.
+        
+        :param gamma self:
+            An instance of Gamma class.
+        :param xx:
+            An array of points at which the inverse of cumulative density function needs to be evaluated.
+        :return:
+            Inverse cumulative density function values of the Gamma distribution.
+        """
+        return self.parent.ppf(xx)
+
+    def getSamples(self, m=None):
+        """
+         Generates samples from the Gamma distribution.
+         
+         :param Gamma self:
+             An instance of the Gamma class.
+         :param integer m:
+             Number of random samples. If no value is provided, a default of     5e5 is assumed.
+         :return:
+             A N-by-1 vector that contains the samples.
+        """
+        if m is not None:
+           number = m
+        else:
+           number = 500000
+        return self.parent.rvs(size = number)
 

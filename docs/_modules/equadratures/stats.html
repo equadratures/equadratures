@@ -13,6 +13,8 @@
 
   
   
+    <link rel="shortcut icon" href="../../_static/logo.png"/>
+  
   
   
 
@@ -47,6 +49,9 @@
             <a href="../../_documentation/index.html" class="icon icon-home"> Effective Quadratures
           
 
+          
+            
+            <img src="../../_static/logo.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -146,18 +151,15 @@
            <div itemprop="articleBody">
             
   <h1>Source code for equadratures.stats</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Computing Statistics from Polynomial Expansions&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;Computing statistics from polynomial expansions.&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">.plotting</span> <span class="k">import</span> <span class="n">barplot</span><span class="p">,</span> <span class="n">triplebarplot</span>
 <span class="kn">from</span> <span class="nn">.basis</span> <span class="k">import</span> <span class="n">Basis</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="o">*</span>
+
 <div class="viewcode-block" id="Statistics"><a class="viewcode-back" href="../../_documentation/stats.html#equadratures.stats.Statistics">[docs]</a><span class="k">class</span> <span class="nc">Statistics</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param numpy-matrix coefficients: Coefficients from a polynomial expansion. Can be computed using any technique.</span>
 <span class="sd">    :param Basis basis: Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.</span>
-<span class="sd">    :param ndarray quadrature_weights: Length N array. Contains the quadrature weights.</span>
-<span class="sd">    :param ndarray polynomial_evals: N by d array, where N is the number of quadrature points; d is the number of dimensions (input parameters). Contains the polynomial basis functions evaluated at the corresponding quadrature points.</span>
-<span class="sd">    :param int max_sobol_order: Indicates the maximum order of Sobol&#39; indices to pre-calculate. In high dimensional problems (e.g. &gt;7D) it is advised to use this option to reduce the computational load upon initialization.</span>
 <span class="sd">    Attributes:</span>
 <span class="sd">        * **self.mean**: (double) Mean of the polynomial expansion.</span>
 <span class="sd">        * **self.variance**: (double) Variance of the polynomial expansion.</span>
@@ -165,18 +167,20 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># constructor</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">quadrature_weights</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">polynomial_evals</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">max_sobol_order</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span>  <span class="n">quadrature_points</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">quadrature_weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">polynomial_evals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">max_sobol_order</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,):</span>
         <span class="n">mm</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coefficients</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coefficients</span><span class="p">),</span> <span class="p">(</span><span class="n">mm</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="n">basis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">parameters</span> <span class="c1">#should be a list containing instances of Parameter</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">getMean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">variance</span> <span class="o">=</span> <span class="n">getVariance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sobol</span> <span class="o">=</span> <span class="n">getAllSobol</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="n">max_sobol_order</span><span class="p">)</span>
 
         <span class="c1">#Prepare evals of polynomials for skewness and kurtosis</span>
-        <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">quadrature_weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span><span class="p">(</span><span class="n">polynomial_evals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">light</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">quadrature_points</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">quadrature_weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">polynomial_evals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="n">nn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">quadrature_weights</span><span class="p">)</span>
             <span class="n">weighted_evals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">mm</span><span class="p">,</span> <span class="n">nn</span><span class="p">))</span>
             <span class="n">weighted_evals</span> <span class="o">=</span> <span class="n">polynomial_evals</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span>
@@ -184,31 +188,22 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">quad_wts</span> <span class="o">=</span> <span class="n">quadrature_weights</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">skewness</span> <span class="o">=</span> <span class="n">getSkewness</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quad_wts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_evals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variance</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">kurtosis</span> <span class="o">=</span> <span class="n">getKurtosis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quad_wts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_evals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variance</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">light</span> <span class="o">=</span> <span class="kc">True</span>
-        
-    
-<div class="viewcode-block" id="Statistics.plot"><a class="viewcode-back" href="../../_documentation/stats.html#equadratures.stats.Statistics.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Produces a bar graph of the first order Sobol indices</span>
-<span class="sd">        :param Statistics object: An instance of the Statistics class.</span>
-<span class="sd">        :param string filename: A file name in case the user wishes to save the bar graph. The default output is an eps file.</span>
-<span class="sd">        **Sample usage:** </span>
-<span class="sd">        For usage please see the ipython-notebooks at www.effective-quadratures.org</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># A bar graph plot of the first order Sobol indices!</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getSobol</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
-        <span class="n">barplot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">getSobol</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="s1">&#39;Parameters&#39;</span><span class="p">,</span> <span class="s1">&#39;Sobol indices&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">getSobol</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
     
 <div class="viewcode-block" id="Statistics.getSobol"><a class="viewcode-back" href="../../_documentation/stats.html#equadratures.stats.Statistics.getSobol">[docs]</a>    <span class="k">def</span> <span class="nf">getSobol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get Sobol&#39; indices at specified order. </span>
+
 <span class="sd">        :param order int: The order at which Sobol&#39; indices are computed. By default, computes first order Sobol&#39; indices.</span>
-<span class="sd">        :return: indices, Dictionary where keys specify non-zero dimensions and values represent Sobol&#39; indices.</span>
+
+<span class="sd">        :return: indices: Dictionary where keys specify non-zero dimensions and values represent Sobol&#39; indices.</span>
 <span class="sd">        :rtype: dict</span>
+
 <span class="sd">        **Sample usage:**</span>
-<span class="sd">        stats = Statistics(coeffcients, basis)</span>
-<span class="sd">        fosi = stats.getSobol(1)        </span>
+
+<span class="sd">        .. code-block:: python</span>
+<span class="sd">        </span>
+<span class="sd">            stats = Statistics(coeffcients, basis)</span>
+<span class="sd">            fosi = stats.getSobol(1)        </span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sobol</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="n">order</span><span class="p">}</span></div>
@@ -217,33 +212,39 @@
 <div class="viewcode-block" id="Statistics.getCondSkewness"><a class="viewcode-back" href="../../_documentation/stats.html#equadratures.stats.Statistics.getCondSkewness">[docs]</a>    <span class="k">def</span> <span class="nf">getCondSkewness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get conditional skewness indices at specified order. </span>
+
 <span class="sd">        :param order int: The order at which conditional skewness indices are computed. By default, computes first order conditional skewness.</span>
-<span class="sd">        :return: indices, Dictionary where keys specify non-zero dimensions and values represent conditional skewness indices.</span>
+
+<span class="sd">        :return: indices: Dictionary where keys specify non-zero dimensions and values represent conditional skewness indices.</span>
 <span class="sd">        :rtype: dict</span>
+
 <span class="sd">        **Sample usage:**</span>
-<span class="sd">        stats = Statistics(coeffcients, basis)</span>
-<span class="sd">        first_order_skewness = stats.getCondSkewness(1)        </span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            stats = Statistics(coeffcients, basis)</span>
+<span class="sd">            first_order_skewness = stats.getCondSkewness(1)        </span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">light</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Use non-light version to calculate skewness indices.&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">CondSkewness</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quad_wts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_evals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">skewness</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">CondSkewness</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quad_wts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_evals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">skewness</span><span class="p">)</span></div>
 <div class="viewcode-block" id="Statistics.getCondKurtosis"><a class="viewcode-back" href="../../_documentation/stats.html#equadratures.stats.Statistics.getCondKurtosis">[docs]</a>    <span class="k">def</span> <span class="nf">getCondKurtosis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get conditional kurtosis indices at specified order. </span>
+
 <span class="sd">        :param order int: The order at which conditional kurtosis indices are computed. By default, computes first order conditional kurtosis.</span>
-<span class="sd">        :return: indices, Dictionary where keys specify non-zero dimensions and values represent conditional kurtosis indices.</span>
+
+<span class="sd">        :return: indices: Dictionary where keys specify non-zero dimensions and values represent conditional kurtosis indices.</span>
 <span class="sd">        :rtype: dict</span>
+
 <span class="sd">        **Sample usage:**</span>
-<span class="sd">        stats = Statistics(coeffcients, basis)</span>
-<span class="sd">        first_order_kurtosis = stats.getCondKurtosis(1)        </span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            stats = Statistics(coeffcients, basis)</span>
+<span class="sd">            first_order_kurtosis = stats.getCondKurtosis(1)        </span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">light</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Use non-light version to calculate kurtosis indices.&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">CondKurtosis</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quad_wts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_evals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kurtosis</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">CondKurtosis</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quad_wts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_evals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kurtosis</span><span class="p">)</span></div>
     
     <span class="c1">#Calculates the total sensitivity based on list of input dicts</span>
     <span class="c1">#Assumes they are ordered so that the first element is the first order indices!</span>
@@ -257,83 +258,7 @@
                     <span class="k">if</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">k</span><span class="p">:</span>
                         <span class="n">TSI</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">TSI</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">list_of_indices_dicts</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span>
                         
-        <span class="k">return</span> <span class="n">TSI</span>
-    
-    <span class="c1">#plots variance, skewness and kurtosis. Users can &quot;update&quot; the input dictionaries first to </span>
-    <span class="c1">#plot multiple orders at once</span>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">plot_all_indices</span><span class="p">(</span><span class="n">list_of_indices_dicts</span><span class="p">):</span>       
-        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">list_of_indices_dicts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="c1">#v + s + k </span>
-        <span class="n">v</span> <span class="o">=</span> <span class="n">list_of_indices_dicts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="n">list_of_indices_dicts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">k</span> <span class="o">=</span> <span class="n">list_of_indices_dicts</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-        <span class="n">a</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
-        <span class="n">b</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span><span class="n">a</span><span class="p">),</span><span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">pair</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]))]</span>
-        <span class="n">vvals</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span><span class="n">v</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">pair</span><span class="p">:(</span><span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]))]</span>
-        <span class="n">svals</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">s</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">pair</span><span class="p">:(</span><span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]))]</span>
-        <span class="n">kvals</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">k</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">pair</span><span class="p">:(</span><span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]))]</span>
-        <span class="n">triplebarplot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">vvals</span><span class="p">,</span> <span class="n">svals</span><span class="p">,</span> <span class="n">kvals</span><span class="p">,</span> <span class="s2">&quot;Dimensions&quot;</span><span class="p">,</span> <span class="s2">&quot;Index Value&quot;</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span> <span class="o">=</span> <span class="nb">len</span><span class="p">))</span></div>
-    
-    <span class="c1">#Pie chart of variance, skewness and kurtosis indices</span>
-    <span class="c1">#Var names in list form</span>
-<span class="c1">#    @staticmethod</span>
-<span class="c1">#    def pie_chart( list_of_indices_dicts, highest_order = 1, var_names = None, title = &quot;Sobol&#39; indices&quot;):</span>
-<span class="c1">#        v = list_of_indices_dicts[0]</span>
-<span class="c1">#        if len(list_of_indices_dicts) &gt; 1:</span>
-<span class="c1">#            s = list_of_indices_dicts[1]</span>
-<span class="c1">#        if len(list_of_indices_dicts) &gt; 2:</span>
-<span class="c1">#            k = list_of_indices_dicts[2]</span>
-<span class="c1">#        labels_and_values = {}</span>
-<span class="c1">#        if not(var_names is None):</span>
-<span class="c1">#            v = dict((tuple([var_names[i] for i in key]), val) for key, val in v.iteritems())</span>
-<span class="c1">#        for i in v.keys():</span>
-<span class="c1">#            if v[i] &gt; 1e-6:</span>
-<span class="c1">#                if len(i) &lt;= highest_order:</span>
-<span class="c1">#                    labels_and_values[i] = v[i]</span>
-<span class="c1">#                else:</span>
-<span class="c1">#                    key = &quot;order &quot; + str(len(i))</span>
-<span class="c1">#                    try:</span>
-<span class="c1">#                        labels_and_values[key] += v[i]</span>
-<span class="c1">#                    except KeyError:</span>
-<span class="c1">#                        labels_and_values[key] = v[i]</span>
-<span class="c1">#                    </span>
-<span class="c1">#        </span>
-<span class="c1">#        labels = labels_and_values.keys()</span>
-<span class="c1">#        values = labels_and_values.values()</span>
-<span class="c1">#        vl = sorted(zip(values, labels), reverse = True)</span>
-<span class="c1">#        values, labels = zip(*vl)</span>
-<span class="c1">#        </span>
-<span class="c1">#        piechart(labels, values, title)</span>
-        
-<span class="c1">#    @staticmethod</span>
-<span class="c1">#    def scatter_plot(list_of_indices_dicts, highest_order = 2, var_names = None, title = &quot;Sobol&#39; indices&quot;):</span>
-<span class="c1">#        # Assume all dicts have the same keys!</span>
-<span class="c1">#        list_of_dicts = list_of_indices_dicts[:]</span>
-<span class="c1">#        if not(var_names is None):</span>
-<span class="c1">#            for j in range(len(list_of_indices_dicts)):</span>
-<span class="c1">#                list_of_dicts[j] = dict((tuple([var_names[i] for i in key]), val) for key, val in list_of_indices_dicts[j].iteritems())</span>
-<span class="c1">#        </span>
-<span class="c1">#        valid_keys = [i for i in list_of_dicts[0].keys() if len(i) &lt;= highest_order]</span>
-<span class="c1">#        </span>
-<span class="c1">#        labels = sorted(valid_keys, key = len)</span>
-<span class="c1">#</span>
-<span class="c1">#        col = np.reshape(np.arange(len(valid_keys), dtype = &#39;float&#39;), (len(valid_keys),1))</span>
-<span class="c1">#        list_of_cols = []</span>
-<span class="c1">#        for i in range(len(list_of_dicts)):</span>
-<span class="c1">#            list_of_cols.append(col.copy())</span>
-<span class="c1">#        x = np.hstack(list_of_cols)</span>
-<span class="c1">#        y = x.copy()</span>
-<span class="c1">#        for i in range(len(list_of_dicts)):</span>
-<span class="c1">#            for j in range(y.shape[0]):</span>
-<span class="c1">#                y[j,i] = list_of_dicts[i][labels[j]]</span>
-<span class="c1">#        </span>
-<span class="c1">#        </span>
-<span class="c1">#        scatterplot2(x,y,labels)</span>
-                
-            
-        
-            
-            
+        <span class="k">return</span> <span class="n">TSI</span></div>
         
 <span class="c1"># Private functions!</span>
 <span class="k">def</span> <span class="nf">getMean</span><span class="p">(</span><span class="n">coefficients</span><span class="p">):</span>
@@ -345,8 +270,6 @@
         <span class="n">variance</span> <span class="o">=</span> <span class="n">result</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">coefficients</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">variance</span>
     <span class="k">return</span> <span class="n">variance</span>
-
-
 
 <span class="c1"># Function that computes the Sobol&#39; indices of all orders up to dimension of i/p</span>
 <span class="k">def</span> <span class="nf">getAllSobol</span><span class="p">(</span><span class="n">coefficients</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">max_order</span><span class="p">):</span>
@@ -361,10 +284,11 @@
         <span class="n">combo_index</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">max_order</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">max_order</span> <span class="o">&gt;</span> <span class="n">dimensions</span><span class="p">:</span>
             <span class="n">max_order</span> <span class="o">=</span> <span class="n">dimensions</span>
-        <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">max_order</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span> <span class="c1">#loop over order            </span>
+        <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">max_order</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span> <span class="c1">#loop over order           </span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">dimensions</span><span class="p">),</span><span class="n">order</span><span class="p">):</span>
                 <span class="c1">#initialize each index to be 0                </span>
                 <span class="n">combo_index</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                
                 
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">basis_entries</span><span class="p">):</span> <span class="c1">#loop over rows</span>
                 <span class="n">row</span> <span class="o">=</span> <span class="n">basis</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
@@ -372,7 +296,6 @@
                 <span class="n">non_zero_entries</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>    <span class="c1">#just in case</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_zero_entries</span><span class="p">)</span> <span class="o">==</span> <span class="n">order</span><span class="p">:</span> <span class="c1">#neglect entries that should actually be zero (what constitutes as zero?)</span>
                     <span class="n">combo_index</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">non_zero_entries</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">combo_index</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">non_zero_entries</span><span class="p">)]</span> <span class="o">+</span> <span class="n">coefficients</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">variance</span><span class="p">)</span>
-        
         <span class="n">check_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">combo_index</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
         <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">check_sum</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">2</span><span class="p">):</span>
             <span class="nb">print</span> <span class="s2">&quot;Possible discrepancy in calculation, sum of indices = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">check_sum</span><span class="p">)</span> 
@@ -406,12 +329,14 @@
     <span class="n">norm_ind</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">tuple</span><span class="p">,(</span><span class="n">norm_ind</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
     
     <span class="n">combo_index</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="c1">#    for tot_order in range(1,dimensions+1): #loop over order</span>
-<span class="c1">#    print dimensions, order            </span>
+<span class="c1">#    for tot_order in range(1,dimensions+1): #loop over order          </span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">dimensions</span><span class="p">),</span> <span class="n">order</span><span class="p">):</span>
-        <span class="c1">#initialize each index of the specified order to be 0                 </span>
+        <span class="c1">#initialize each index of the specified order to be 0                </span>
+<span class="c1">#        if sum(i) != order:</span>
+<span class="c1">#            continue</span>
+<span class="c1">#        combo_index[i] = 0.0   </span>
         <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span>
-        <span class="n">index</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">combo_index</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">index</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
     
     <span class="c1">#1st term</span>
@@ -495,12 +420,12 @@
     <span class="n">combo_index</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="c1">#    for tot_order in range(1,dimensions+1): #loop over order            </span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">dimensions</span><span class="p">),</span> <span class="n">order</span><span class="p">):</span>
-        <span class="c1">#initialize each index of the specified order to be 0                </span>
-<span class="c1">#        if sum(i) != order:</span>
-<span class="c1">#            continue</span>
-<span class="c1">#        combo_index[i] = 0.0   </span>
+        <span class="c1">#initialize each index to be 0                </span>
+<span class="c1">#            if sum(i) != order:</span>
+<span class="c1">#                continue</span>
+<span class="c1">#            combo_index[i] = 0.0</span>
         <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span>
-        <span class="n">index</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">combo_index</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">index</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="c1">#1st term</span>
     <span class="n">fourth_evals</span> <span class="o">=</span> <span class="n">weighted_evals</span><span class="o">**</span><span class="mi">4</span>

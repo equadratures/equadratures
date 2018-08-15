@@ -2,6 +2,7 @@
 import numpy as np
 from distribution import Distribution
 from scipy.stats import rayleigh
+RECURRENCE_PDF_SAMPLES = 8000
 
 class Rayleigh(Distribution):
     """
@@ -18,8 +19,19 @@ class Rayleigh(Distribution):
             self.variance = self.scale**2 * (4.0 - np.pi)/ 2.0 
             self.skewness = 2.0 * np.sqrt(np.pi) * (np.pi - 3.0) / ((4.0 - np.pi)**(1.5))
             self.kurtosis = -(6 * np.pi**2 - 24 * np.pi + 16.0 )/( (4 - np.pi)**(1.5)) + 3.0 
+            self.x_range_for_pdf = np.linspace(0.0, 8.0 * self.scale, RECURRENCE_PDF_SAMPLES)
     
     def getiCDF(self, xx):
+        """
+        A Rayleigh inverse cumulative density function.
+        
+        :param Rayleigh self:
+            An instance of the Rayleigh class.
+        :param array xx:
+            Points at which the inverse cumulative density function needs to be evaluated.
+        :return:
+            Inverse cumulative density function values of the Rayleigh distribution.
+        """
         return rayleigh.ppf(xx, loc=0, scale=self.scale)
 
     def getDescription(self):
@@ -34,48 +46,47 @@ class Rayleigh(Distribution):
         text = "A Rayleigh distribution is characterised by its scale parameter, which is"+str(self.scale)+"."
         return text
 
-    def getPDF(self, N=None, points=None):
+    def getPDF(self, points=None):
         """
         A Rayleigh probability density function.
         
         :param Rayleigh self:
             An instance of the Rayleigh class.
-        :param integer N:
-            Number of points for defining the probability density function.
-        :return:
-            An array of N equidistant values over the support of the Rayleigh distribution.
+        :param array points:
+            Points at which the PDF needs to be evaluated.
         :return:
             Probability density values along the support of the Rayleigh distribution.
         """
-        if N is not None:
-            xreal = np.linspace(0.0, 3.5*self.scale)
-            wreal = xreal / (self.scale**2) * np.exp( - xreal**2 * 1.0/(2.0 * self.scale**2 ))
-            return xreal, wreal
-        elif points is not None:
-            wreal = points / (self.scale**2) * np.exp( - points**2 * 1.0/(2.0 * self.scale**2 ))
-            return wreal
-        else:
-            raise(ValueError, 'Please Digit an input for getPDF method')
+        return rayleigh.pdf(points, loc=0, scale=self.scale )
 
-    def getCDF(self, N=None, points=None):
+
+    def getCDF(self, points=None):
         """
         A Rayleigh cumulative density function.
         
         :param Rayleigh self:
             An instance of the Rayleigh class.
-        :param integer N:
-            Number of points for defining the cumulative density function.
-        :return:
-            An array of N equidistant values over the support of the Rayleigh distribution.
+        :param array points:
+            Points at which the CDF needs to be evaluated.
         :return:
             Cumulative density values along the support of the Rayleigh distribution.
         """
-        if N is not None:
-            xreal = np.linspace(0.0, 10.0*self.scale, N)
-            wreal = 1.0 - np.exp(-xreal**2 * 1.0/(2.0 * self.scale**2))
-            return xreal, wreal
-        elif points is not None:
-            wreal = 1.0 - np.exp(-points**2 * 1.0/(2.0 * self.scale**2))
-            return wreal
-        else:
-            raise(ValueError, 'Please digit an input for getCDF method')
+        return rayleigh.cdf(points, loc=0, scale=self.scale )
+
+    def getSamples(self, m=None):
+        """
+         Generates samples from the Rayleigh distribution.
+         
+         :param rayleigh self:
+             An instance of the Rayleigh class.
+         :param integer m:
+             Number of random samples. If no value is provided, a default of     5e5 is assumed.
+         :return:
+             A N-by-1 vector that contains the samples.
+        """
+        if m is not None:
+           number = m
+        else: 
+            number = 500000
+        return rayleigh.rvs(loc=0.0, scale=self.scale, size=number, random_state=None)
+

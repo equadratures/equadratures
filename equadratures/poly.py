@@ -92,7 +92,11 @@ class Poly(object):
         else:
             basis = customBases
         basis_entries, dimensions = basis.shape
-        no_of_points, _ = stackOfPoints.shape
+
+        if stackOfPoints.ndim == 1:
+            no_of_points = 1
+        else:
+            no_of_points, __ = stackOfPoints.shape 
         polynomial = np.zeros((basis_entries, no_of_points))
         p = {}
 

@@ -13,6 +13,8 @@
 
   
   
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  
   
   
 
@@ -27,7 +29,7 @@
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="next" title="Chebyshev" href="chebyshev.html" />
-    <link rel="prev" title="Cauchy" href="cauchy.html" /> 
+    <link rel="prev" title="Custom" href="custom.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -49,6 +51,9 @@
             <a href="index.html" class="icon icon-home"> Effective Quadratures
           
 
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -90,6 +95,7 @@
 <li class="toctree-l3"><a class="reference internal" href="gaussian.html">Gaussian</a></li>
 <li class="toctree-l3"><a class="reference internal" href="truncated_gaussian.html">Truncated-Gaussian</a></li>
 <li class="toctree-l3"><a class="reference internal" href="cauchy.html">Cauchy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="custom.html">Custom</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Beta</a></li>
 <li class="toctree-l3"><a class="reference internal" href="chebyshev.html">Chebyshev</a></li>
 <li class="toctree-l3"><a class="reference internal" href="gamma.html">Gamma</a></li>
@@ -195,23 +201,17 @@
 </table>
 <dl class="method">
 <dt id="equadratures.distributions.beta.Beta.getCDF">
-<code class="descname">getCDF</code><span class="sig-paren">(</span><em>N=None</em>, <em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/beta.html#Beta.getCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.beta.Beta.getCDF" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getCDF</code><span class="sig-paren">(</span><em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/beta.html#Beta.getCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.beta.Beta.getCDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>A beta cumulative density function.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.beta.Beta" title="equadratures.distributions.beta.Beta"><em>Beta</em></a>) &#8211; An instance of the Beta class.</li>
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the cumulative density function.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.beta.Beta" title="equadratures.distributions.beta.Beta"><em>Beta</em></a>) &#8211; An instance of the Beta class.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">An array of N equidistant values over the support of the distribution.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Cumulative density values along the support of the Gamma distribution.</p>
-</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Cumulative density values along the support of the Gamma distribution.</td>
 </tr>
 </tbody>
 </table>
@@ -235,20 +235,15 @@
 
 <dl class="method">
 <dt id="equadratures.distributions.beta.Beta.getPDF">
-<code class="descname">getPDF</code><span class="sig-paren">(</span><em>N=None</em>, <em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/beta.html#Beta.getPDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.beta.Beta.getPDF" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getPDF</code><span class="sig-paren">(</span><em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/beta.html#Beta.getPDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.beta.Beta.getPDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>A beta probability density function.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.beta.Beta" title="equadratures.distributions.beta.Beta"><em>Beta</em></a>) &#8211; An instance of the Beta class.</li>
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points for defining the probability density function.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.beta.Beta" title="equadratures.distributions.beta.Beta"><em>Beta</em></a>) &#8211; An instance of the Beta class.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Probability density values along the support of the Beta distribution.</p>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Probability density values along the support of the Beta distribution.</td>
 </tr>
 </tbody>
 </table>
@@ -275,6 +270,48 @@
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="equadratures.distributions.beta.Beta.getSamples">
+<code class="descname">getSamples</code><span class="sig-paren">(</span><em>m=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/beta.html#Beta.getSamples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.beta.Beta.getSamples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates samples from the Beta distribution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>self</strong> (<a class="reference internal" href="#module-equadratures.distributions.beta" title="equadratures.distributions.beta"><em>beta</em></a>) &#8211; An instance of Beta class.</li>
+<li><strong>m</strong> (<em>integer</em>) &#8211; Number of random samples. If no provided, a default value of 5e5 is assumed.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A N-by-1 vector that contains the samples.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.distributions.beta.Beta.getiCDF">
+<code class="descname">getiCDF</code><span class="sig-paren">(</span><em>xx</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/beta.html#Beta.getiCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.beta.Beta.getiCDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Beta inverse cumulative density function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.beta.Beta" title="equadratures.distributions.beta.Beta"><em>Beta</em></a>) &#8211; An instance of Beta class.</li>
+<li><strong>xx</strong> (<a class="reference external" href="https://docs.python.org/3/library/array.html#module-array" title="(in Python v3.7)"><em>array</em></a>) &#8211; Points at which the inverse cumulative density funcion needs to be evaluated.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Inverse cumulative density function values of the Beta distribution.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -290,7 +327,7 @@
         <a href="chebyshev.html" class="btn btn-neutral float-right" title="Chebyshev" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="cauchy.html" class="btn btn-neutral" title="Cauchy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="custom.html" class="btn btn-neutral" title="Custom" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

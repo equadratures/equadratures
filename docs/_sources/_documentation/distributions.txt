@@ -11,6 +11,7 @@ Distributions for characterizing the parameters.
    gaussian
    truncated_gaussian
    cauchy 
+   custom
    beta
    chebyshev
    gamma

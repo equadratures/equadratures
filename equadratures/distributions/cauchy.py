@@ -17,13 +17,17 @@ class Cauchy(Distribution):
     def __init__(self, location=None, scale=None):
         self.location = location
         self.scale = scale
-        self.bounds = np.array([-np.inf, np.inf])
-        self.mean = np.nan
-        self.variance = np.nan
+        self.bounds = np.array([-np.inf, np.inf])    
+        #self.mean = np.nan
+        #self.variance = np.nan
         self.skewness = np.nan
         self.kurtosis = np.nan
 	if self.scale is not None:
         	self.x_range_for_pdf = np.linspace(-15*self.scale, 15*self.scale, RECURRENCE_PDF_SAMPLES)
+                self.parent = cauchy(loc=self.location, scale=self.scale)
+                self.mean = np.mean(self.getSamples(m=1000))
+                self.variance = np.var(self.getSamples(m=1000))
+                
     
     def getDescription(self):
         """
@@ -51,7 +55,7 @@ class Cauchy(Distribution):
             Probability density values along the support of the Cauchy distribution.
         """
         if points is not None:
-            return cauchy.pdf(points, loc=0.0, scale=1.0)
+            return self.parent.pdf(points)
         else:
             raise(ValueError, 'Please digit an input for getPDF method')
 
@@ -70,7 +74,7 @@ class Cauchy(Distribution):
             Cumulative density values along the support of the Cauchy distribution.
         """
         if points is not None:
-            return cauchy.cdf(points, loc=0.0, scale=self.scale)
+            return self.parent.cdf(points)
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
 
@@ -85,7 +89,7 @@ class Cauchy(Distribution):
         :return:
             Inverse CDF samples associated with the Cauchy distribution.
         """
-        return cauchy.ppf(xx, loc=0.0, scale=self.scale)
+        return self.parent.ppf(xx)
 
     def getSamples(self, m):
         """
@@ -101,5 +105,5 @@ class Cauchy(Distribution):
             number = m
         else:
             number = 500000
-        return cauchy.rvs(loc=0.0, scale=self.scale, size=number, random_state=None)
+        return self.parent.rvs(size=number)
 

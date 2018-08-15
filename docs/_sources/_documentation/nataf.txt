@@ -1,4 +1,4 @@
-Nataf utilities  
+Nataf utilities   
 ==================
 
 .. automodule:: equadratures.nataf

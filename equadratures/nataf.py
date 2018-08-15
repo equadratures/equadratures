@@ -219,7 +219,7 @@ class Nataf(object):
     def CorrelationMatrix(self, X):
         """ The following calculations check the correlation
             matrix of input arrays and determine the covariance 
-            matrix: The input matrix mush have [Nxm] dimensions where
+            matrix: The input matrix must have dimensions N-by-m where
             m is the number of the marginals.
             
             :param X:

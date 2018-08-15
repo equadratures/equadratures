@@ -991,10 +991,7 @@ class Test_Nataf(TestCase):
     	self.mean_variance_estimation(D,u)
     	print 'Physical space:'
     	self.mean_variance_estimation(D,c)
-	
 
-def testbasic(self):
-    print 'done!'
                                            
 if __name__== '__main__':
     unittest.main()

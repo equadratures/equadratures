@@ -1,7 +1,8 @@
-"""Computing Statistics from Polynomial Expansions"""
+"""Computing statistics from polynomial expansions."""
 import numpy as np
 from .basis import Basis
 from itertools import *
+
 class Statistics(object):
     """
     :param numpy-matrix coefficients: Coefficients from a polynomial expansion. Can be computed using any technique.
@@ -38,12 +39,18 @@ class Statistics(object):
     def getSobol(self, order = 1):
         """
         Get Sobol' indices at specified order. 
+
         :param order int: The order at which Sobol' indices are computed. By default, computes first order Sobol' indices.
-        :return: indices, Dictionary where keys specify non-zero dimensions and values represent Sobol' indices.
+
+        :return: indices: Dictionary where keys specify non-zero dimensions and values represent Sobol' indices.
         :rtype: dict
+
         **Sample usage:**
-        stats = Statistics(coeffcients, basis)
-        fosi = stats.getSobol(1)        
+
+        .. code-block:: python
+        
+            stats = Statistics(coeffcients, basis)
+            fosi = stats.getSobol(1)        
         
         """
         return {key: value for key, value in self.sobol.iteritems() if len(key) == order}
@@ -52,24 +59,36 @@ class Statistics(object):
     def getCondSkewness(self, order = 1):
         """
         Get conditional skewness indices at specified order. 
+
         :param order int: The order at which conditional skewness indices are computed. By default, computes first order conditional skewness.
-        :return: indices, Dictionary where keys specify non-zero dimensions and values represent conditional skewness indices.
+
+        :return: indices: Dictionary where keys specify non-zero dimensions and values represent conditional skewness indices.
         :rtype: dict
+
         **Sample usage:**
-        stats = Statistics(coeffcients, basis)
-        first_order_skewness = stats.getCondSkewness(1)        
+
+        .. code-block:: python
+
+            stats = Statistics(coeffcients, basis)
+            first_order_skewness = stats.getCondSkewness(1)        
         
         """
         return CondSkewness(order, self.quad_wts, self.weighted_evals, self.basis, self.variance, self.skewness)
     def getCondKurtosis(self, order = 1):
         """
         Get conditional kurtosis indices at specified order. 
+
         :param order int: The order at which conditional kurtosis indices are computed. By default, computes first order conditional kurtosis.
-        :return: indices, Dictionary where keys specify non-zero dimensions and values represent conditional kurtosis indices.
+
+        :return: indices: Dictionary where keys specify non-zero dimensions and values represent conditional kurtosis indices.
         :rtype: dict
+
         **Sample usage:**
-        stats = Statistics(coeffcients, basis)
-        first_order_kurtosis = stats.getCondKurtosis(1)        
+
+        .. code-block:: python
+
+            stats = Statistics(coeffcients, basis)
+            first_order_kurtosis = stats.getCondKurtosis(1)        
         
         """
         return CondKurtosis(order, self.quad_wts, self.weighted_evals, self.basis, self.variance, self.kurtosis)

@@ -13,6 +13,8 @@
 
   
   
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  
   
   
 
@@ -49,6 +51,9 @@
             <a href="index.html" class="icon icon-home"> Effective Quadratures
           
 
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -90,6 +95,7 @@
 <li class="toctree-l3"><a class="reference internal" href="gaussian.html">Gaussian</a></li>
 <li class="toctree-l3"><a class="reference internal" href="truncated_gaussian.html">Truncated-Gaussian</a></li>
 <li class="toctree-l3"><a class="reference internal" href="cauchy.html">Cauchy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="custom.html">Custom</a></li>
 <li class="toctree-l3"><a class="reference internal" href="beta.html">Beta</a></li>
 <li class="toctree-l3"><a class="reference internal" href="chebyshev.html">Chebyshev</a></li>
 <li class="toctree-l3"><a class="reference internal" href="gamma.html">Gamma</a></li>
@@ -199,11 +205,11 @@
 </table>
 <dl class="method">
 <dt id="equadratures.distributions.uniform.Uniform.getCDF">
-<code class="descname">getCDF</code><span class="sig-paren">(</span><em>N=None</em>, <em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/uniform.html#Uniform.getCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.uniform.Uniform.getCDF" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getCDF</code><span class="sig-paren">(</span><em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/uniform.html#Uniform.getCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.uniform.Uniform.getCDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>A uniform cumulative density function.
-:param integer N:</p>
+:param points:</p>
 <blockquote>
-<div>Number of points for defining the cumulative density function.</div></blockquote>
+<div>Matrix of points which have to be evaluated</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -226,11 +232,11 @@
 
 <dl class="method">
 <dt id="equadratures.distributions.uniform.Uniform.getPDF">
-<code class="descname">getPDF</code><span class="sig-paren">(</span><em>N=None</em>, <em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/uniform.html#Uniform.getPDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.uniform.Uniform.getPDF" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getPDF</code><span class="sig-paren">(</span><em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/uniform.html#Uniform.getPDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.uniform.Uniform.getPDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>A uniform probability distribution.
-:param integer N:</p>
+:param points:</p>
 <blockquote>
-<div>Number of points for defining the probability density function.</div></blockquote>
+<div>Matrix of points which have to be evaluated</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -267,6 +273,45 @@
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Recurrence coefficients associated with the uniform distribution.</p>
 </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.distributions.uniform.Uniform.getSamples">
+<code class="descname">getSamples</code><span class="sig-paren">(</span><em>m=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/uniform.html#Uniform.getSamples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.uniform.Uniform.getSamples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates samples from the Uniform distribution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Param:</th><td class="field-body">uniform self:
+An instance of Uniform class</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Param:</th><td class="field-body">integer m:
+NUmber of random samples. If no provided, a default number of 5e5 is assumed.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A N-by-1 vector that contains the samples.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.distributions.uniform.Uniform.getiCDF">
+<code class="descname">getiCDF</code><span class="sig-paren">(</span><em>xx</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/uniform.html#Uniform.getiCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.uniform.Uniform.getiCDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Uniform inverse cumulative density function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Param:</th><td class="field-body">Uniform self:
+An instance of Uniform class</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>xx</strong> (<a class="reference external" href="https://docs.python.org/3/library/array.html#module-array" title="(in Python v3.7)"><em>array</em></a>) &#8211; Points at which the inverse cumulative density function need to be evaluated.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Inverse cumulative density function values of the Uniform distribution.</td>
 </tr>
 </tbody>
 </table>

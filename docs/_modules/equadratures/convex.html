@@ -13,6 +13,8 @@
 
   
   
+    <link rel="shortcut icon" href="../../_static/logo.png"/>
+  
   
   
 
@@ -47,6 +49,9 @@
             <a href="../../_documentation/index.html" class="icon icon-home"> Effective Quadratures
           
 
+          
+            
+            <img src="../../_static/logo.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -146,14 +151,25 @@
            <div itemprop="articleBody">
             
   <h1>Source code for equadratures.convex</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;A library of convex optimizers&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;A library of convex optimizers.</span>
+
+<span class="sd">References:</span>
+<span class="sd">    - Joshi, S., Boyd, S., (2009) Sensor selection via convex optimization, IEEE Transactions on Signal Processing, 57(2). `Paper &lt;https://web.stanford.edu/~boyd/papers/pdf/sensor_selection.pdf&gt;`_.</span>
+<span class="sd">    - Candes, E., Romberg, J., (2005) L1-Magic: Recovery of sparse signals via convex programming. `Paper &lt;https://statweb.stanford.edu/~candes/l1magic/downloads/l1magic.pdf&gt;`_.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="k">import</span> <span class="n">det</span><span class="p">,</span> <span class="n">cholesky</span><span class="p">,</span> <span class="n">lstsq</span>
-
-
 <div class="viewcode-block" id="maxdet"><a class="viewcode-back" href="../../_documentation/convex.html#equadratures.convex.maxdet">[docs]</a><span class="k">def</span> <span class="nf">maxdet</span><span class="p">(</span><span class="n">Amatrix</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Formulation of the determinant maximization as a convex program</span>
+<span class="sd">    Determinant maximization routine.</span>
+
+<span class="sd">    :param numpy-matrix Amatrix:</span>
+<span class="sd">        A matrix with more columns than rows.</span>
+<span class="sd">    :param int k:</span>
+<span class="sd">        The number of column subsamples required such that the determinant of the resulting matrix is maximized.</span>
+
+<span class="sd">    **Notes**</span>
+<span class="sd">        This code is based on Newton&#39;s method as detailed in Joshi and Boyd (2009).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">maxiter</span> <span class="o">=</span> <span class="mi">50</span>
     <span class="n">n_tol</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">12</span>
@@ -241,8 +257,17 @@
     <span class="k">return</span> <span class="n">zhat</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">ztilde</span><span class="p">,</span> <span class="n">Utilde</span></div>
 <div class="viewcode-block" id="CG_solve"><a class="viewcode-back" href="../../_documentation/convex.html#equadratures.convex.CG_solve">[docs]</a><span class="k">def</span> <span class="nf">CG_solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">max_iters</span><span class="p">,</span> <span class="n">tol</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Solves Ax = b iteratively using conjugate gradient.</span>
-<span class="sd">    A must be a SPD matrix</span>
+<span class="sd">    Solves Ax = b iteratively using conjugate gradient, assuming A is a symmetric positive definite matrix.</span>
+
+<span class="sd">    :param numpy-matrix A:</span>
+<span class="sd">        The matrix.</span>
+<span class="sd">    :param numpy-array b:</span>
+<span class="sd">        The right hand side column vector.</span>
+<span class="sd">    :param int max_iters:</span>
+<span class="sd">        Maximum number of iterations for the conjugate gradient algorithm.</span>
+<span class="sd">    :param double tol:</span>
+<span class="sd">        Tolerance for cut-off.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;A is not symmetric positive definite.&#39;</span><span class="p">)</span>
@@ -285,9 +310,18 @@
     <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">residual</span><span class="p">,</span> <span class="n">iterations</span></div>
 <div class="viewcode-block" id="bp"><a class="viewcode-back" href="../../_documentation/convex.html#equadratures.convex.bp">[docs]</a><span class="k">def</span> <span class="nf">bp</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x0</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cgtol</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cgmaxiter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">pdtol</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">pdmaxiter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">use_CG</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    l1 minimization with equality constraint Ax = b.</span>
-<span class="sd">    (Noiseless basis pursuit)</span>
-<span class="sd">    Adapted from l1-magic, l1eq_pd.m (Candes and Romberg)</span>
+<span class="sd">    Solving the noiseless basis pursuit problem.</span>
+
+<span class="sd">    :param numpy-matrix A:</span>
+<span class="sd">        The matrix.</span>
+<span class="sd">    :param numpy-array b:</span>
+<span class="sd">        The right hand side column vector.</span>
+<span class="sd">    :param numpy-array x0:</span>
+<span class="sd">        Initial solution; if not provided the least norm solution is used.</span>
+<span class="sd">    :param double cgtol:</span>
+<span class="sd">        Tolerance for conjugate gradients.</span>
+<span class="sd">    :param int cgmaxiter:</span>
+<span class="sd">        Maximum number of iterations for the conjugate gradient method.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Free parameters</span>
@@ -453,9 +487,17 @@
     <span class="k">return</span> <span class="n">xp</span></div>
 <div class="viewcode-block" id="bp_denoise"><a class="viewcode-back" href="../../_documentation/convex.html#equadratures.convex.bp_denoise">[docs]</a><span class="k">def</span> <span class="nf">bp_denoise</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">x0</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">lbtol</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="n">mu</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">cgtol</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">8</span><span class="p">,</span> <span class="n">cgmaxiter</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">use_CG</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    l1 minimization with inequality constraint ||Ax - b||_2 &lt;= epsilon.</span>
-<span class="sd">    (Basis pursuit denoising)</span>
-<span class="sd">    Adapted from l1-magic, l1qc_logbarrier.m (Candes and Romberg)</span>
+<span class="sd">    Solving the basis pursuit de-noising problem.</span>
+
+<span class="sd">    :param numpy-matrix A:</span>
+<span class="sd">        The matrix.</span>
+<span class="sd">    :param numpy-array b:</span>
+<span class="sd">        The right hand side column vector.</span>
+<span class="sd">    :param double epsilon:</span>
+<span class="sd">        The noise.</span>
+<span class="sd">    :param numpy-array x0:</span>
+<span class="sd">        Initial solution; if not provided the least norm solution is used.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">newtontol</span> <span class="o">=</span> <span class="n">lbtol</span><span class="p">;</span>
@@ -520,6 +562,7 @@
       <span class="n">tau</span> <span class="o">*=</span> <span class="n">mu</span>
 
     <span class="k">return</span> <span class="n">xp</span></div>
+
 <span class="k">def</span> <span class="nf">l1qc_newton</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">u0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">newtontol</span><span class="p">,</span> <span class="n">newtonmaxiter</span><span class="p">,</span> <span class="n">cgtol</span><span class="p">,</span> <span class="n">cgmaxiter</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span> <span class="n">use_CG</span><span class="p">):</span>
     <span class="c1"># line search parameters</span>
     <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">;</span>

@@ -1,4 +1,4 @@
-Convex optimization utilities
+Convex optimization utilities  
 ================================
 
 .. automodule:: equadratures.convex

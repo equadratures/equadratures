@@ -7,7 +7,7 @@ import scipy.stats as stats
 RECURRENCE_PDF_SAMPLES = 8000
 
 class Custom(Distribution):
-    """ The class defines a Custom object.
+    """ The class defines a Custom object, determined by a kernel density estimation of data.
             
         :param data:
               A numpy array with data values (x-y column format). Note this option is only invoked if the user uses the Custom param_type.

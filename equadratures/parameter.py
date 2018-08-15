@@ -52,7 +52,7 @@ class Parameter(object):
 		self.lower = lower
 		self.upper = upper
 		self.endpoints = endpoints
-                self.data = data
+		self.data = data
 		self.setDistribution()
 		self.setBounds()
 		self.setMoments()
@@ -61,7 +61,7 @@ class Parameter(object):
 		choices = {'gaussian': Gaussian(self.shape_parameter_A, self.shape_parameter_B),
 			       'normal': Gaussian(self.shape_parameter_A, self.shape_parameter_B),
 			       'uniform' : Uniform(self.lower, self.upper),
-                               'custom': Custom(self.data),
+				   'custom': Custom(self.data),
 				   'beta': Beta(self.lower, self.upper, self.shape_parameter_A, self.shape_parameter_B),
 				   'cauchy' : Cauchy(self.shape_parameter_A, self.shape_parameter_B), 
 				   'exponential': Exponential(self.shape_parameter_A),

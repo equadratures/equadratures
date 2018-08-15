@@ -1,9 +1,5 @@
 """ Class for solving the Nataf transformation in N-Dimensional case, 
     for generic types of input  marginals.
-    
-    Input parameter: 
-    D : List of Distributions: instances of Parameter class.
-    R : Correlation matrix of distributions which belong to D.
 """
 import numpy as np
 from scipy import optimize
@@ -14,25 +10,13 @@ from scipy import stats
 
 class Nataf(object):
     """
-    The class defines a Nataf transformation.
-    References for theory:
-        Melchers, R., E. (Robert E.), 1945- Structural reliability analysis
-        and predictions - 2nd edition - John Wiley & Sons Ltd.
-        
-    The input correlated marginals are mapped from their physical space to a new 
+    The class defines a Nataf transformation: the input correlated marginals are mapped from their physical space to a new 
     standard normal space, in which points are uncorrelated.
-    
-    Attributes of the class:
+
     :param list D:
             List of parameters (distributions), interpreted here as the marginals.
     :param numpy-matrix R:
-            The correlation matrix associated with the joint distribution.
-    :param object std:
-            A standard normal distribution
-    :param numpy-matrix A:
-            The Cholesky decomposition of Fictive matrix R0, 
-            associated with the set of normal intermediate
-            correlated distributions.        
+            The correlation matrix associated with the joint distribution.      
     """
     def __init__(self, D=None, R=None):
         if D is None:

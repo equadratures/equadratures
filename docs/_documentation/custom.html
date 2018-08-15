@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Gamma &mdash; Effective Quadratures v7.0 documentation</title>
+  <title>Custom &mdash; Effective Quadratures v7.0 documentation</title>
   
 
   
@@ -28,8 +28,8 @@
 
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="next" title="Uniform" href="uniform.html" />
-    <link rel="prev" title="Chebyshev" href="chebyshev.html" /> 
+    <link rel="next" title="Beta" href="beta.html" />
+    <link rel="prev" title="Cauchy" href="cauchy.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -95,10 +95,10 @@
 <li class="toctree-l3"><a class="reference internal" href="gaussian.html">Gaussian</a></li>
 <li class="toctree-l3"><a class="reference internal" href="truncated_gaussian.html">Truncated-Gaussian</a></li>
 <li class="toctree-l3"><a class="reference internal" href="cauchy.html">Cauchy</a></li>
-<li class="toctree-l3"><a class="reference internal" href="custom.html">Custom</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Custom</a></li>
 <li class="toctree-l3"><a class="reference internal" href="beta.html">Beta</a></li>
 <li class="toctree-l3"><a class="reference internal" href="chebyshev.html">Chebyshev</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Gamma</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gamma.html">Gamma</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uniform.html">Uniform</a></li>
 <li class="toctree-l3"><a class="reference internal" href="weibull.html">Weibull</a></li>
 <li class="toctree-l3"><a class="reference internal" href="rayleigh.html">Rayleigh</a></li>
@@ -159,13 +159,13 @@
         
           <li><a href="distributions.html">Distributions</a> &raquo;</li>
         
-      <li>Gamma</li>
+      <li>Custom</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/_documentation/gamma.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/_documentation/custom.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -178,43 +178,91 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-equadratures.distributions.gamma">
-<span id="gamma"></span><h1>Gamma<a class="headerlink" href="#module-equadratures.distributions.gamma" title="Permalink to this headline">¶</a></h1>
-<p>The Gamma distribution.</p>
+  <div class="section" id="module-equadratures.distributions.custom">
+<span id="custom"></span><h1>Custom<a class="headerlink" href="#module-equadratures.distributions.custom" title="Permalink to this headline">¶</a></h1>
+<p>The Custom distribution</p>
 <dl class="class">
-<dt id="equadratures.distributions.gamma.Gamma">
-<em class="property">class </em><code class="descclassname">equadratures.distributions.gamma.</code><code class="descname">Gamma</code><span class="sig-paren">(</span><em>shape=None</em>, <em>scale=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/gamma.html#Gamma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.gamma.Gamma" title="Permalink to this definition">¶</a></dt>
-<dd><p>The class defines a Gamma object. It is the child of Distribution.</p>
+<dt id="equadratures.distributions.custom.Custom">
+<em class="property">class </em><code class="descclassname">equadratures.distributions.custom.</code><code class="descname">Custom</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/custom.html#Custom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.custom.Custom" title="Permalink to this definition">¶</a></dt>
+<dd><p>The class defines a Custom object, determined by a kernel density estimation of data.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>shape</strong> (<em>double</em>) &#8211; Shape parameter of the gamma distribution.</li>
-<li><strong>scale</strong> (<em>double</em>) &#8211; Scale parameter of the gamma distribution.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> &#8211; A numpy array with data values (x-y column format). Note this option is only invoked if the user uses the Custom param_type.</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
-<dt id="equadratures.distributions.gamma.Gamma.getCDF">
-<code class="descname">getCDF</code><span class="sig-paren">(</span><em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/gamma.html#Gamma.getCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.gamma.Gamma.getCDF" title="Permalink to this definition">¶</a></dt>
-<dd><p>A gamma cumulative density function.</p>
+<dt id="equadratures.distributions.custom.Custom.getCDF">
+<code class="descname">getCDF</code><span class="sig-paren">(</span><em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/custom.html#Custom.getCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.custom.Custom.getCDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>A cumulative density function associated with a given data set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>points</strong> &#8211; An array of points in which the cumulative distribution function needs to be evaluated.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Cumulative distribution function values along the support of the custom distribution.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.distributions.custom.Custom.getDescription">
+<code class="descname">getDescription</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/custom.html#Custom.getDescription"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.custom.Custom.getDescription" title="Permalink to this definition">¶</a></dt>
+<dd><p>A destription of custom distribution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.custom.Custom" title="equadratures.distributions.custom.Custom"><em>Custom</em></a>) &#8211; An instance of Custom class.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A string describing the Custom distribution.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.distributions.custom.Custom.getPDF">
+<code class="descname">getPDF</code><span class="sig-paren">(</span><em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/custom.html#Custom.getPDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.custom.Custom.getPDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>A custom probability density function.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.gamma.Gamma" title="equadratures.distributions.gamma.Gamma"><em>Gamma</em></a>) &#8211; An instance of the Gamma class.</li>
-<li><strong>points</strong> (<em>matrix</em>) &#8211; Matrix of points for defining the gamma cumulative density function.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.custom.Custom" title="equadratures.distributions.custom.Custom"><em>Custom</em></a>) &#8211; An instance of Custom class.</li>
+<li><strong>points</strong> &#8211; An array of points in which the probability density function needs to be calculated.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the gamma distribution.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Probability density values along the support of custom distribution.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Cumulative density values along the support of the gamma distribution.</p>
+</tbody>
+</table>
+<p>** Notes **
+To obtain a probability density function from finite samples, this function uses kerne density estimation (with Gaussian kernel).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.distributions.custom.Custom.getRecurrenceCoefficients">
+<code class="descname">getRecurrenceCoefficients</code><span class="sig-paren">(</span><em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/custom.html#Custom.getRecurrenceCoefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.custom.Custom.getRecurrenceCoefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recurrence coefficients for the custom distribution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.custom.Custom" title="equadratures.distributions.custom.Custom"><em>Custom</em></a>) &#8211; An instance of Custom class.</li>
+<li><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/array.html#module-array" title="(in Python v3.7)"><em>array</em></a>) &#8211; The order of the recurrence coefficients desidered.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Recurrence coefficients associated with the custom distribution.</p>
 </td>
 </tr>
 </tbody>
@@ -222,81 +270,20 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="equadratures.distributions.gamma.Gamma.getDescription">
-<code class="descname">getDescription</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/gamma.html#Gamma.getDescription"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.gamma.Gamma.getDescription" title="Permalink to this definition">¶</a></dt>
-<dd><p>A description of the gamma distribution.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.gamma.Gamma" title="equadratures.distributions.gamma.Gamma"><em>Gamma</em></a>) &#8211; An instance of the Gamma class.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A string describing the gamma distribution.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="equadratures.distributions.gamma.Gamma.getPDF">
-<code class="descname">getPDF</code><span class="sig-paren">(</span><em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/gamma.html#Gamma.getPDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.gamma.Gamma.getPDF" title="Permalink to this definition">¶</a></dt>
-<dd><p>A gamma probability density function.</p>
+<dt id="equadratures.distributions.custom.Custom.getiCDF">
+<code class="descname">getiCDF</code><span class="sig-paren">(</span><em>xx</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/custom.html#Custom.getiCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.custom.Custom.getiCDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>A custom inverse cumulative distribution function.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.gamma.Gamma" title="equadratures.distributions.gamma.Gamma"><em>Gamma</em></a>) &#8211; An instance of the Gamma class.</li>
-<li><strong>points</strong> (<em>matrix</em>) &#8211; Matrix of points for defining the probability density function.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.custom.Custom" title="equadratures.distributions.custom.Custom"><em>Custom</em></a>) &#8211; An instance of Custom class.</li>
+<li><strong>xx</strong> (<a class="reference external" href="https://docs.python.org/3/library/array.html#module-array" title="(in Python v3.7)"><em>array</em></a>) &#8211; An array of points in which the inverse cumulative density function needs to be evaluated.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Probability density values along the support of the Gamma distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="equadratures.distributions.gamma.Gamma.getSamples">
-<code class="descname">getSamples</code><span class="sig-paren">(</span><em>m=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/gamma.html#Gamma.getSamples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.gamma.Gamma.getSamples" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates samples from the Gamma distribution.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.gamma.Gamma" title="equadratures.distributions.gamma.Gamma"><em>Gamma</em></a>) &#8211; An instance of the Gamma class.</li>
-<li><strong>m</strong> (<em>integer</em>) &#8211; Number of random samples. If no value is provided, a default of     5e5 is assumed.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A N-by-1 vector that contains the samples.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="equadratures.distributions.gamma.Gamma.getiCDF">
-<code class="descname">getiCDF</code><span class="sig-paren">(</span><em>xx</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/gamma.html#Gamma.getiCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.gamma.Gamma.getiCDF" title="Permalink to this definition">¶</a></dt>
-<dd><p>A gamma inverse cumulative density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#module-equadratures.distributions.gamma" title="equadratures.distributions.gamma"><em>gamma</em></a>) &#8211; An instance of Gamma class.</li>
-<li><strong>xx</strong> &#8211; An array of points at which the inverse of cumulative density function needs to be evaluated.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Inverse cumulative density function values of the Gamma distribution.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Inverse cumulative density function values of the Custom distribution.</p>
 </td>
 </tr>
 </tbody>
@@ -315,10 +302,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="uniform.html" class="btn btn-neutral float-right" title="Uniform" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="beta.html" class="btn btn-neutral float-right" title="Beta" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="chebyshev.html" class="btn btn-neutral" title="Chebyshev" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="cauchy.html" class="btn btn-neutral" title="Cauchy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

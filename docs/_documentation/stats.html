@@ -13,6 +13,8 @@
 
   
   
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  
   
   
 
@@ -49,6 +51,9 @@
             <a href="index.html" class="icon icon-home"> Effective Quadratures
           
 
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -88,6 +93,7 @@
 <li class="toctree-l2"><a class="reference internal" href="convex.html">Convex optimization utilities</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Statistics utilities</a></li>
 <li class="toctree-l2"><a class="reference internal" href="qr.html">Matrix factorization utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nataf.html">Nataf utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
@@ -159,10 +165,10 @@
             
   <div class="section" id="module-equadratures.stats">
 <span id="statistics-utilities"></span><h1>Statistics utilities<a class="headerlink" href="#module-equadratures.stats" title="Permalink to this headline">¶</a></h1>
-<p>Computing Statistics from Polynomial Expansions</p>
+<p>Computing statistics from polynomial expansions.</p>
 <dl class="class">
 <dt id="equadratures.stats.Statistics">
-<em class="property">class </em><code class="descclassname">equadratures.stats.</code><code class="descname">Statistics</code><span class="sig-paren">(</span><em>coefficients</em>, <em>basis</em>, <em>quadrature_weights=None</em>, <em>polynomial_evals=None</em>, <em>max_sobol_order=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/stats.html#Statistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.stats.Statistics" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">equadratures.stats.</code><code class="descname">Statistics</code><span class="sig-paren">(</span><em>coefficients</em>, <em>basis</em>, <em>parameters</em>, <em>quadrature_points=None</em>, <em>quadrature_weights=None</em>, <em>polynomial_evals=None</em>, <em>max_sobol_order=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/stats.html#Statistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.stats.Statistics" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -170,9 +176,6 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>coefficients</strong> (<em>numpy-matrix</em>) &#8211; Coefficients from a polynomial expansion. Can be computed using any technique.</li>
 <li><strong>basis</strong> (<a class="reference internal" href="basis.html#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) &#8211; Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.</li>
-<li><strong>quadrature_weights</strong> (<em>ndarray</em>) &#8211; Length N array. Contains the quadrature weights.</li>
-<li><strong>polynomial_evals</strong> (<em>ndarray</em>) &#8211; N by d array, where N is the number of quadrature points; d is the number of dimensions (input parameters). Contains the polynomial basis functions evaluated at the corresponding quadrature points.</li>
-<li><strong>max_sobol_order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) &#8211; Indicates the maximum order of Sobol&#8217; indices to pre-calculate. In high dimensional problems (e.g. &gt;7D) it is advised to use this option to reduce the computational load upon initialization.</li>
 </ul>
 </td>
 </tr>
@@ -190,47 +193,70 @@
 <dl class="method">
 <dt id="equadratures.stats.Statistics.getCondKurtosis">
 <code class="descname">getCondKurtosis</code><span class="sig-paren">(</span><em>order=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/stats.html#Statistics.getCondKurtosis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.stats.Statistics.getCondKurtosis" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get conditional kurtosis indices at specified order. 
-:param order int: The order at which conditional kurtosis indices are computed. By default, computes first order conditional kurtosis.
-:return: indices, Dictionary where keys specify non-zero dimensions and values represent conditional kurtosis indices.
-:rtype: dict
-<strong>Sample usage:</strong>
-stats = Statistics(coeffcients, basis)
-first_order_kurtosis = stats.getCondKurtosis(1)</p>
+<dd><p>Get conditional kurtosis indices at specified order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>int</strong> (<em>order</em>) &#8211; The order at which conditional kurtosis indices are computed. By default, computes first order conditional kurtosis.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">indices: Dictionary where keys specify non-zero dimensions and values represent conditional kurtosis indices.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample usage:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">stats</span> <span class="o">=</span> <span class="n">Statistics</span><span class="p">(</span><span class="n">coeffcients</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+<span class="n">first_order_kurtosis</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getCondKurtosis</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>        
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="method">
 <dt id="equadratures.stats.Statistics.getCondSkewness">
 <code class="descname">getCondSkewness</code><span class="sig-paren">(</span><em>order=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/stats.html#Statistics.getCondSkewness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.stats.Statistics.getCondSkewness" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get conditional skewness indices at specified order. 
-:param order int: The order at which conditional skewness indices are computed. By default, computes first order conditional skewness.
-:return: indices, Dictionary where keys specify non-zero dimensions and values represent conditional skewness indices.
-:rtype: dict
-<strong>Sample usage:</strong>
-stats = Statistics(coeffcients, basis)
-first_order_skewness = stats.getCondSkewness(1)</p>
+<dd><p>Get conditional skewness indices at specified order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>int</strong> (<em>order</em>) &#8211; The order at which conditional skewness indices are computed. By default, computes first order conditional skewness.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">indices: Dictionary where keys specify non-zero dimensions and values represent conditional skewness indices.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample usage:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">stats</span> <span class="o">=</span> <span class="n">Statistics</span><span class="p">(</span><span class="n">coeffcients</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+<span class="n">first_order_skewness</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getCondSkewness</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>        
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="method">
 <dt id="equadratures.stats.Statistics.getSobol">
 <code class="descname">getSobol</code><span class="sig-paren">(</span><em>order=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/stats.html#Statistics.getSobol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.stats.Statistics.getSobol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get Sobol&#8217; indices at specified order. 
-:param order int: The order at which Sobol&#8217; indices are computed. By default, computes first order Sobol&#8217; indices.
-:return: indices, Dictionary where keys specify non-zero dimensions and values represent Sobol&#8217; indices.
-:rtype: dict
-<strong>Sample usage:</strong>
-stats = Statistics(coeffcients, basis)
-fosi = stats.getSobol(1)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="equadratures.stats.Statistics.plot">
-<code class="descname">plot</code><span class="sig-paren">(</span><em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/stats.html#Statistics.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.stats.Statistics.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Produces a bar graph of the first order Sobol indices
-:param Statistics object: An instance of the Statistics class.
-:param string filename: A file name in case the user wishes to save the bar graph. The default output is an eps file.
-<strong>Sample usage:</strong> 
-For usage please see the ipython-notebooks at www.effective-quadratures.org</p>
+<dd><p>Get Sobol&#8217; indices at specified order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>int</strong> (<em>order</em>) &#8211; The order at which Sobol&#8217; indices are computed. By default, computes first order Sobol&#8217; indices.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">indices: Dictionary where keys specify non-zero dimensions and values represent Sobol&#8217; indices.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample usage:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">stats</span> <span class="o">=</span> <span class="n">Statistics</span><span class="p">(</span><span class="n">coeffcients</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+<span class="n">fosi</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getSobol</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>        
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>

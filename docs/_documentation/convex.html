@@ -13,6 +13,8 @@
 
   
   
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  
   
   
 
@@ -49,6 +51,9 @@
             <a href="index.html" class="icon icon-home"> Effective Quadratures
           
 
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
           
           </a>
 
@@ -88,6 +93,7 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Convex optimization utilities</a></li>
 <li class="toctree-l2"><a class="reference internal" href="stats.html">Statistics utilities</a></li>
 <li class="toctree-l2"><a class="reference internal" href="qr.html">Matrix factorization utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nataf.html">Nataf utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
@@ -159,12 +165,33 @@
             
   <div class="section" id="module-equadratures.convex">
 <span id="convex-optimization-utilities"></span><h1>Convex optimization utilities<a class="headerlink" href="#module-equadratures.convex" title="Permalink to this headline">¶</a></h1>
-<p>A library of convex optimizers</p>
+<p>A library of convex optimizers.</p>
+<dl class="docutils">
+<dt>References:</dt>
+<dd><ul class="first last simple">
+<li>Joshi, S., Boyd, S., (2009) Sensor selection via convex optimization, IEEE Transactions on Signal Processing, 57(2). <a class="reference external" href="https://web.stanford.edu/~boyd/papers/pdf/sensor_selection.pdf">Paper</a>.</li>
+<li>Candes, E., Romberg, J., (2005) L1-Magic: Recovery of sparse signals via convex programming. <a class="reference external" href="https://statweb.stanford.edu/~candes/l1magic/downloads/l1magic.pdf">Paper</a>.</li>
+</ul>
+</dd>
+</dl>
 <dl class="function">
 <dt id="equadratures.convex.CG_solve">
 <code class="descclassname">equadratures.convex.</code><code class="descname">CG_solve</code><span class="sig-paren">(</span><em>A</em>, <em>b</em>, <em>max_iters</em>, <em>tol</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/convex.html#CG_solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.convex.CG_solve" title="Permalink to this definition">¶</a></dt>
-<dd><p>Solves Ax = b iteratively using conjugate gradient.
-A must be a SPD matrix</p>
+<dd><p>Solves Ax = b iteratively using conjugate gradient, assuming A is a symmetric positive definite matrix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>A</strong> (<em>numpy-matrix</em>) &#8211; The matrix.</li>
+<li><strong>b</strong> (<em>numpy-array</em>) &#8211; The right hand side column vector.</li>
+<li><strong>max_iters</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) &#8211; Maximum number of iterations for the conjugate gradient algorithm.</li>
+<li><strong>tol</strong> (<em>double</em>) &#8211; Tolerance for cut-off.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -176,23 +203,64 @@ A must be a SPD matrix</p>
 <dl class="function">
 <dt id="equadratures.convex.bp">
 <code class="descclassname">equadratures.convex.</code><code class="descname">bp</code><span class="sig-paren">(</span><em>A</em>, <em>b</em>, <em>x0=None</em>, <em>cgtol=None</em>, <em>cgmaxiter=None</em>, <em>pdtol=None</em>, <em>pdmaxiter=None</em>, <em>verbose=False</em>, <em>use_CG=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/convex.html#bp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.convex.bp" title="Permalink to this definition">¶</a></dt>
-<dd><p>l1 minimization with equality constraint Ax = b.
-(Noiseless basis pursuit)
-Adapted from l1-magic, l1eq_pd.m (Candes and Romberg)</p>
+<dd><p>Solving the noiseless basis pursuit problem.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>A</strong> (<em>numpy-matrix</em>) &#8211; The matrix.</li>
+<li><strong>b</strong> (<em>numpy-array</em>) &#8211; The right hand side column vector.</li>
+<li><strong>x0</strong> (<em>numpy-array</em>) &#8211; Initial solution; if not provided the least norm solution is used.</li>
+<li><strong>cgtol</strong> (<em>double</em>) &#8211; Tolerance for conjugate gradients.</li>
+<li><strong>cgmaxiter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) &#8211; Maximum number of iterations for the conjugate gradient method.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="equadratures.convex.bp_denoise">
 <code class="descclassname">equadratures.convex.</code><code class="descname">bp_denoise</code><span class="sig-paren">(</span><em>A</em>, <em>b</em>, <em>epsilon</em>, <em>x0=None</em>, <em>lbtol=0.001</em>, <em>mu=10</em>, <em>cgtol=1e-08</em>, <em>cgmaxiter=200</em>, <em>verbose=False</em>, <em>use_CG=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/convex.html#bp_denoise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.convex.bp_denoise" title="Permalink to this definition">¶</a></dt>
-<dd><p>l1 minimization with inequality constraint ||Ax - b||_2 &lt;= epsilon.
-(Basis pursuit denoising)
-Adapted from l1-magic, l1qc_logbarrier.m (Candes and Romberg)</p>
+<dd><p>Solving the basis pursuit de-noising problem.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>A</strong> (<em>numpy-matrix</em>) &#8211; The matrix.</li>
+<li><strong>b</strong> (<em>numpy-array</em>) &#8211; The right hand side column vector.</li>
+<li><strong>epsilon</strong> (<em>double</em>) &#8211; The noise.</li>
+<li><strong>x0</strong> (<em>numpy-array</em>) &#8211; Initial solution; if not provided the least norm solution is used.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="equadratures.convex.maxdet">
 <code class="descclassname">equadratures.convex.</code><code class="descname">maxdet</code><span class="sig-paren">(</span><em>Amatrix</em>, <em>k</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/convex.html#maxdet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.convex.maxdet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Formulation of the determinant maximization as a convex program</p>
+<dd><p>Determinant maximization routine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>Amatrix</strong> (<em>numpy-matrix</em>) &#8211; A matrix with more columns than rows.</li>
+<li><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) &#8211; The number of column subsamples required such that the determinant of the resulting matrix is maximized.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt><strong>Notes</strong></dt>
+<dd>This code is based on Newton&#8217;s method as detailed in Joshi and Boyd (2009).</dd>
+</dl>
 </dd></dl>
 
 </div>

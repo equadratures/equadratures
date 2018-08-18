@@ -4,3 +4,4 @@ A parameter---i.e., the definition of a univariate variable :math:`x`---is one t
 
 .. automodule:: equadratures.parameter
     :members:
+ 

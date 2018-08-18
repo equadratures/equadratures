@@ -12,15 +12,15 @@ import numpy as np
 from utils import evalfunction, evalgradients, meshgrid
 from dr import *
 import matplotlib
-params = {'legend.fontsize': 11,
-          'font.size' : 10.0,
+params = {'legend.fontsize': 13,
+          'font.size' : 13.0,
           'font.family': 'serif',
           'font.stretch': 'semi-condensed',
-          'axes.labelsize': 11,
-          'axes.titlesize': 11,
+          'axes.labelsize': 12,
+          'axes.titlesize': 12,
           'axes.axisbelow': True,
-          'xtick.labelsize' :11,
-          'ytick.labelsize': 11,
+          'xtick.labelsize' :13,
+          'ytick.labelsize': 13,
           'mathtext.fontset': 'cm',
           'mathtext.rm': 'sans',
           'font.variant':'small-caps',

@@ -1,16 +1,15 @@
 Effective Quadratures
-=================================================
+========================================
 
 Overview
 --------------
-Effective Quadratures is a Python-based library that supports a wide range of utilities in *uncertainty quantification*, *dimension reduction*, *sensitivity analysis* and *optimisation*---all using polynomials. The project was initially born out of a need to replicate the results of various works within the field of polynomial chaos. It has subsequently morphed into a dedicated effort to use polynomials for a range of objectives under the broad umbrella of **supervised machine learning**. 
+Effective Quadratures is an open-source Python-based library that supports a wide range of utilities in *uncertainty quantification*, *dimension reduction*, *sensitivity analysis* and *optimisation*---all using polynomials. The project was initially born out of a need to replicate the results of various works within the field of polynomial chaos. It has subsequently morphed into a dedicated effort to use polynomials for a range of objectives under the broad umbrella of **supervised machine learning**. 
 
-The project is under active development with new techniques within the fields indicated above. The primary developers are academics at the `University of Cambridge <http://www.cam.ac.uk>`__.
+The project is under active development with new techniques within the fields indicated above. The primary developers are academics at the `University of Cambridge <http://www.cam.ac.uk>`__, with advisory support from `Stanford University <http://www.stanford.edu>`__, `Universita degli Studi di Cagliari <https://unica.it/unica/>`__, and the `University of Utah <http://www.utah.edu>`__,
 
 Download Links
 ---------------
-
-To download the code, please visit `www.effective-quadratures.org <http://www.effective-quadratures.org>`__. You will find useful resources and several quick start guides.
+To download the code, please visit `www.effective-quadratures.org <http://www.effective-quadratures.org>`__. Click either on the *Fork Code* button or the Github link.
 
 
 License and copyright

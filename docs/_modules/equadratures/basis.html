@@ -85,8 +85,8 @@
             
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../_documentation/introduction.html">Effective Quadratures</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../_documentation/corecode.html">Core code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../_documentation/utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/tutorials.html">Quick start guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../_documentation/contact.html">Contact</a></li>
 </ul>
 
@@ -160,10 +160,9 @@
 <span class="sd">    Basis class constructor.</span>
 
 <span class="sd">    :param string basis_type: The type of index set to be used. Options include:</span>
-<span class="sd">        `Total order`, `Tensor grid`, `Sparse grid`, `Hyperbolic basis` and `Euclidean degree`. All basis are isotropic. If you require anisotropic basis do email us.</span>
+<span class="sd">        `Univariate&#39;, `Total order`, `Tensor grid`, `Sparse grid`, `Hyperbolic basis` and `Euclidean degree`. All basis are isotropic. If you require anisotropic basis do email us.</span>
 <span class="sd">    :param ndarray orders: List of integers corresponding to the highest polynomial order in each direction.</span>
 <span class="sd">    :param string growth_rule: The type of growth rule associated with sparse grids. Options include: `linear&#39; and `exponential&#39;. This input is only required when using a sparse grid.</span>
-<span class="sd">    :param integer dimensions: The number of dimensions of the problem. This input is only required when using a sparse grid.</span>
 <span class="sd">    :param double q: The `q&#39; parameter is used to control the number of basis terms used in a hyperbolic basis. It varies between 0.0 to 1.0. A value of 1.0 yields a total order basis.</span>
 
 <span class="sd">    Attributes:</span>
@@ -221,6 +220,8 @@
         <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_type</span>
         <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;total order&quot;</span><span class="p">:</span>
             <span class="n">basis</span> <span class="o">=</span> <span class="n">total_order_basis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orders</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span>  <span class="s2">&quot;univariate&quot;</span><span class="p">:</span>
+            <span class="n">basis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">orders</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">orders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="p">)</span>
         <span class="k">elif</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;sparse grid&quot;</span><span class="p">:</span>
             <span class="n">sparse_index</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">SG_set</span> <span class="o">=</span> <span class="n">sparse_grid_basis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">growth_rule</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span><span class="p">)</span> <span class="c1"># Note sparse grid rule depends on points!</span>
             <span class="n">basis</span> <span class="o">=</span> <span class="n">SG_set</span>
@@ -237,7 +238,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">elements</span> <span class="o">=</span> <span class="n">basis</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span>
 
-        <span class="c1"># Don&#39;t sort a sparse grid index set, because the order is tied to the coefficients!</span>
+        <span class="c1">## Don&#39;t sort a sparse grid index set, because the order is tied to the coefficients!</span>
         <span class="k">if</span> <span class="n">name</span> <span class="o">==</span><span class="s2">&quot;Hyperbolic basis&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Euclidean degree&quot;</span><span class="p">:</span>
@@ -505,7 +506,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018 by The Effective Quadratures Team.
+        &copy; Copyright 2018 by Effective Quadratures.
 
     </p>
   </div>

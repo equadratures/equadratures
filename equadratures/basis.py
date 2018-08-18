@@ -10,7 +10,6 @@ class Basis(object):
         `Univariate', `Total order`, `Tensor grid`, `Sparse grid`, `Hyperbolic basis` and `Euclidean degree`. All basis are isotropic. If you require anisotropic basis do email us.
     :param ndarray orders: List of integers corresponding to the highest polynomial order in each direction.
     :param string growth_rule: The type of growth rule associated with sparse grids. Options include: `linear' and `exponential'. This input is only required when using a sparse grid.
-    :param integer dimensions: The number of dimensions of the problem. This input is only required when using a sparse grid.
     :param double q: The `q' parameter is used to control the number of basis terms used in a hyperbolic basis. It varies between 0.0 to 1.0. A value of 1.0 yields a total order basis.
 
     Attributes:

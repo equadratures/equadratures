@@ -29,7 +29,7 @@
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="next" title="Basis" href="basis.html" />
-    <link rel="prev" title="Core code" href="corecode.html" /> 
+    <link rel="prev" title="Modules" href="modules.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -87,14 +87,15 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Effective Quadratures</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="corecode.html">Core code</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Modules</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Parameter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="basis.html">Basis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="poly.html">Polynomials</a></li>
 <li class="toctree-l2"><a class="reference internal" href="distributions.html">Distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html">Utilities</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Quick start guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
 </ul>
 
@@ -141,7 +142,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-          <li><a href="corecode.html">Core code</a> &raquo;</li>
+          <li><a href="modules.html">Modules</a> &raquo;</li>
         
       <li>Parameter</li>
     
@@ -165,19 +166,10 @@
   <div class="section" id="parameter">
 <h1>Parameter<a class="headerlink" href="#parameter" title="Permalink to this headline">¶</a></h1>
 <p>A parameter&#8212;i.e., the definition of a univariate variable <span class="math">\(x\)</span>&#8212;is one the main building blocks in Effective Quadratures. It characterized by its distribution (and support) <span class="math">\(\rho(x)\)</span>.</p>
-<span class="target" id="module-equadratures.parameter"></span><p>Core class for setting the properties of a univariate parameter.</p>
-<dl class="docutils">
-<dt>References:</dt>
-<dd><ul class="first last simple">
-<li>Akil Narayan Paper on Induced Distributions <a class="reference external" href="https://epubs.siam.org/doi/abs/10.1137/16M1057668">Paper</a>.</li>
-<li>Walter Gautschi resources on orthogonal polynomials</li>
-<li>Tiziano&#8217;s paper on adaptive polynomial expansions</li>
-</ul>
-</dd>
-</dl>
+<span class="target" id="module-equadratures.parameter"></span><p>Definition of a univariate parameter.</p>
 <dl class="class">
 <dt id="equadratures.parameter.Parameter">
-<em class="property">class </em><code class="descclassname">equadratures.parameter.</code><code class="descname">Parameter</code><span class="sig-paren">(</span><em>order</em>, <em>lower=None</em>, <em>upper=None</em>, <em>distribution=None</em>, <em>shape_parameter_A=None</em>, <em>shape_parameter_B=None</em>, <em>data=None</em>, <em>endpoints=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#Parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.Parameter" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">equadratures.parameter.</code><code class="descname">Parameter</code><span class="sig-paren">(</span><em>order</em>, <em>distribution</em>, <em>endpoints=False</em>, <em>shape_parameter_A=None</em>, <em>shape_parameter_B=None</em>, <em>lower=None</em>, <em>upper=None</em>, <em>data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#Parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.Parameter" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class defines a univariate parameter. Below are details of its constructor.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -187,285 +179,25 @@
 <li><strong>lower</strong> (<em>double</em>) &#8211; Lower bound for the parameter.</li>
 <li><strong>upper</strong> (<em>double</em>) &#8211; Upper bound for the parameter.</li>
 <li><strong>order</strong> (<em>integer</em>) &#8211; Order of the parameter.</li>
-<li><strong>param_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/string.html#module-string" title="(in Python v3.7)"><em>string</em></a>) &#8211; The type of distribution that characterizes the parameter. Options include: <a class="reference external" href="https://en.wikipedia.org/wiki/Arcsine_distribution">Chebyshev (arcsine)</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Truncated_normal_distribution">Truncated-Gaussian</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Beta_distribution">Beta</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Cauchy_distribution">Cauchy</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Exponential_distribution">Exponential</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)">Uniform</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Gamma_distribution">Gamma</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Weibull_distribution">Weibull</a>. If no string is provided, a <cite>Uniform</cite> distribution is assumed. If the user provides data, and would like to generate orthogonal polynomials (and quadrature rules) based on the data, they can set this option to be Custom.</li>
+<li><strong>param_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/string.html#module-string" title="(in Python v3.7)"><em>string</em></a>) &#8211; <dl class="docutils">
+<dt>The type of distribution that characterizes the parameter. Options include: </dt>
+<dd><a class="reference external" href="https://en.wikipedia.org/wiki/Arcsine_distribution">Chebyshev (arcsine)</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Truncated_normal_distribution">Truncated-Gaussian</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Beta_distribution">Beta</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Cauchy_distribution">Cauchy</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Exponential_distribution">Exponential</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)">Uniform</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Gamma_distribution">Gamma</a>, 
+<a class="reference external" href="https://en.wikipedia.org/wiki/Weibull_distribution">Weibull</a>. 
+If no string is provided, a <cite>Uniform</cite> distribution is assumed. If the user provides data, and would like to generate orthogonal polynomials (and quadrature rules) based on the data, they can set this option to be Custom.</dd>
+</dl>
+</li>
 <li><strong>shape_parameter_A</strong> (<em>double</em>) &#8211; Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a <cite>Gaussian</cite> (or <cite>TruncatedGaussian</cite>), this represents the mean. In the case of a Beta distribution this represents the alpha value. For a uniform distribution this input is not required.</li>
 <li><strong>shape_parameter_B</strong> (<em>double</em>) &#8211; This is the second shape parameter that characterizes the distribution selected. In the case of a <cite>Gaussian</cite> or <cite>TruncatedGaussian</cite>, this is the variance.</li>
 <li><strong>data</strong> &#8211; A numpy array with data values (x-y column format). Note this option is only invoked if the user uses the Custom param_type.</li>
 <li><strong>Endpoints</strong> &#8211; A boolean entry. If set to True, then the quadrature points and weights will have end-points.</li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="equadratures.parameter.Parameter.computeMean">
-<code class="descname">computeMean</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#Parameter.computeMean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.Parameter.computeMean" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the mean of the parameter.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Mean of the parameter.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="equadratures.parameter.Parameter.fastInducedJacobiDistribution">
-<code class="descname">fastInducedJacobiDistribution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#Parameter.fastInducedJacobiDistribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.Parameter.fastInducedJacobiDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fast computations for inverse Jacobi distributions &#8211; main file!</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="equadratures.parameter.Parameter.fastInducedJacobiDistributionSetup">
-<code class="descname">fastInducedJacobiDistributionSetup</code><span class="sig-paren">(</span><em>n</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#Parameter.fastInducedJacobiDistributionSetup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.Parameter.fastInducedJacobiDistributionSetup" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fast computations for inverse Jacobi distributions</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="equadratures.parameter.Parameter.getCDF">
-<code class="descname">getCDF</code><span class="sig-paren">(</span><em>N</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#Parameter.getCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.Parameter.getCDF" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the cumulative density function of the parameter.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class.</li>
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points along the x-axis.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A 1-by-N matrix that contains the values of the x-axis along the support of the parameter.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A 1-by-N matrix that contains the values of the PDF of the parameter.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="equadratures.parameter.Parameter.getJacobiEigenvectors">
-<code class="descname">getJacobiEigenvectors</code><span class="sig-paren">(</span><em>order=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#Parameter.getJacobiEigenvectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.Parameter.getJacobiEigenvectors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the eigenvectors of the tridiagonal Jacobi matrix. These are used for computing quadrature rules for numerical integration.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class.</li>
-<li><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) &#8211; Number of eigenvectors required. This function makes the call getJacobiMatrix(order) and then computes the corresponding eigenvectors.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A order-by-order matrix that contains the eigenvectors of the Jacobi matrix.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="equadratures.parameter.Parameter.getJacobiMatrix">
-<code class="descname">getJacobiMatrix</code><span class="sig-paren">(</span><em>order=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#Parameter.getJacobiMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.Parameter.getJacobiMatrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the tridiagonal Jacobi matrix.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class.</li>
-<li><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) &#8211; The number of rows and columns of the JacobiMatrix that is required. By default, this value is set to be the same as the number of points used when the parameter constructor is initiated.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">An order-by-order sized Jacobi tridiagonal matrix.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="equadratures.parameter.Parameter.getPDF">
-<code class="descname">getPDF</code><span class="sig-paren">(</span><em>N</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#Parameter.getPDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.Parameter.getPDF" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the probability density function of the parameter.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class.</li>
-<li><strong>N</strong> (<em>integer</em>) &#8211; Number of points along the x-axis.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A 1-by-N matrix that contains the values of the x-axis along the support of the parameter.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="equadratures.parameter.Parameter.getRecurrenceCoefficients">
-<code class="descname">getRecurrenceCoefficients</code><span class="sig-paren">(</span><em>order=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#Parameter.getRecurrenceCoefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.Parameter.getRecurrenceCoefficients" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the recurrence coefficients of the parameter.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class.</li>
-<li><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) &#8211; The number of recurrence coefficients required. By default this is the same as the number of points used when the parameter constructor is initiated.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">An order-by-2 matrix that containts the recurrence coefficients.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="equadratures.parameter.Parameter.getSamples">
-<code class="descname">getSamples</code><span class="sig-paren">(</span><em>m=None</em>, <em>graph=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#Parameter.getSamples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.Parameter.getSamples" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns samples of the parameter.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class.</li>
-<li><strong>m</strong> (<em>integer</em>) &#8211; Number of random samples. If no value is provided, a default of 5e5 is assumed.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A N-by-1 vector that contains the samples.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="equadratures.parameter.Parameter.getiCDF">
-<code class="descname">getiCDF</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#Parameter.getiCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.Parameter.getiCDF" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns values of the inverse CDF.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class.</li>
-<li><strong>array</strong> (<em>numpy</em>) &#8211; A 1-by-N array of doubles where each entry is between [0,1].</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A 1-by-N array where each entry is the inverse CDF of input x.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="equadratures.parameter.Parameter.induced_distribution_jacobi_bisection">
-<code class="descname">induced_distribution_jacobi_bisection</code><span class="sig-paren">(</span><em>u</em>, <em>n</em>, <em>alpha</em>, <em>beta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#Parameter.induced_distribution_jacobi_bisection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.Parameter.induced_distribution_jacobi_bisection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the inverse of the order-n induced primitive for the Jacobi distribution
-with shape parameters alpha and beta. Uses a bisection method in conjunction with forward
-evaluation given by the induced jacobi distribution function.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="equadratures.parameter.Parameter.induced_jacobi_distribution">
-<code class="descname">induced_jacobi_distribution</code><span class="sig-paren">(</span><em>x</em>, <em>n</em>, <em>M=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#Parameter.induced_jacobi_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.Parameter.induced_jacobi_distribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluates the induced Jacobi distribution.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class.</li>
-<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/library/array.html#module-array" title="(in Python v3.7)"><em>array</em></a>) &#8211; Points over which the induced distribution must be computed.</li>
-<li><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) &#8211; Order of the distribution. Note that this value will override the order associated with the Parameter instance.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The median estimate (double)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.parameter.linearModification">
-<code class="descclassname">equadratures.parameter.</code><code class="descname">linearModification</code><span class="sig-paren">(</span><em>ab</em>, <em>x0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#linearModification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.linearModification" title="Permalink to this definition">¶</a></dt>
-<dd><p>Performs a linear modification of the orthogonal polynomial recurrence coefficients. It transforms the coefficients
-such that the new coefficients are associated with a polynomial family that is orthonormal under the weight (x - x0)**2</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class</li>
-<li><strong>double</strong> &#8211; The shift in the weights</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A N-by-2 matrix that contains the modified recurrence coefficients.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.parameter.median_approximation_jacobi">
-<code class="descclassname">equadratures.parameter.</code><code class="descname">median_approximation_jacobi</code><span class="sig-paren">(</span><em>alpha</em>, <em>beta</em>, <em>n</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#median_approximation_jacobi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.median_approximation_jacobi" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns an estimate for the median of the order-n Jacobi induced distribution.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class</li>
-<li><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) &#8211; Order of the distribution. Note that this value will override the order associated with the Parameter instance.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The median estimate (double)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="equadratures.parameter.quadraticModification">
-<code class="descclassname">equadratures.parameter.</code><code class="descname">quadraticModification</code><span class="sig-paren">(</span><em>alphabeta</em>, <em>x0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/parameter.html#quadraticModification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.parameter.quadraticModification" title="Permalink to this definition">¶</a></dt>
-<dd><p>Performs a quadratic modification of the orthogonal polynomial recurrence coefficients. It transforms the coefficients
-such that the new coefficients are associated with a polynomial family that is orthonormal under the weight (x - x0)**2</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; An instance of the Parameter class</li>
-<li><strong>double</strong> &#8211; The shift in the weights</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A N-by-2 matrix that contains the modified recurrence coefficients.</p>
 </td>
 </tr>
 </tbody>
@@ -485,7 +217,7 @@ such that the new coefficients are associated with a polynomial family that is o
         <a href="basis.html" class="btn btn-neutral float-right" title="Basis" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="corecode.html" class="btn btn-neutral" title="Core code" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="modules.html" class="btn btn-neutral" title="Modules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -494,7 +226,7 @@ such that the new coefficients are associated with a polynomial family that is o
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018 by The Effective Quadratures Team.
+        &copy; Copyright 2018 by Effective Quadratures.
 
     </p>
   </div>

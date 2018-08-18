@@ -72,10 +72,6 @@ class Nataf(object):
                   R0[j,i] = R0[i,j] 
 
         self.A = np.linalg.cholesky(R0) 
-        print 'The Cholesky decomposition of fictive matrix R0 is:'
-        print self.A
-        print 'The fictive matrix is:'
-        print R0
     
     def C2U(self, X):
         """  Method for mapping correlated variables to a new standard space.

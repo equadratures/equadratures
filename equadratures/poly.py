@@ -247,7 +247,7 @@ class Poly(object):
             p = np.zeros((default_number_of_points, self.dimensions))
             w = 1.0/float(default_number_of_points) * np.ones((default_number_of_points))
             for i in range(0, self.dimensions):
-                p[:,i] = np.array(self.parameters[i].getSamples(m=default_number_of_points)).reshape((default_number_of_points,))
+                p[:,i] = np.array(self.parameters[i].getSamples(default_number_of_points)).reshape((default_number_of_points,))
             return p, w
 
         if options.lower() == 'tensor grid' or options.lower() == 'quadrature':

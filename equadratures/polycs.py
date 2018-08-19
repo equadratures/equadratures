@@ -114,7 +114,7 @@ class Polycs(Poly):
             Generates a quadrature rule based on the number of points; if an integer value is provided then, QMC is used.
         """
         if points is None:
-            points = 10000
+            points = 4000
         p, w = self.getQuadratureRule(options = self.quadrature_rule, number_of_points = points)
         super(Polycs, self).__setQuadrature__(p,w)
 

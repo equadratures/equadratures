@@ -82,3 +82,14 @@ Now, we will use the :code:`getSamples()` functionality to create a histogram.
    :scale: 30 %
 
    Figure. Histogram of a standard Gaussian variable with 6000 samples.
+
+One can repeat the above for a range of distributions. We provide a few additional definitions below.
+
+.. code::
+
+	zeta_1 = Parameter(distribution='uniform', lower=-1., upper=1., order=3)
+	zeta_2 = Parameter(distribution='chebyshev', lower=-1., upper=1., order=3)
+	zeta_3 = Parameter(distribution='gamma', shape_parameter_A=3.5, shape_parameter=2.0, order=4)
+	zeta_4 = Parameter(distribution='beta', lower=0., upper=1., shape_parameter_A=1.7, shape_parameter_B=2.5, order=6)
+	
+Feel free to generate PDFs, CDFs and histograms using the above definitions. 

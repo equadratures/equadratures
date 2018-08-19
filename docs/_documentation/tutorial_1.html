@@ -238,6 +238,14 @@
 <a class="reference internal image-reference" href="../_images/Fig_3.png"><img alt="../_images/Fig_3.png" src="../_images/Fig_3.png" style="width: 442.2px; height: 345.9px;" /></a>
 <p class="caption"><span class="caption-text">Figure. Histogram of a standard Gaussian variable with 6000 samples.</span></p>
 </div>
+<p>One can repeat the above for a range of distributions. We provide a few additional definitions below.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">zeta_1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;uniform&#39;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=-</span><span class="mf">1.</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">zeta_2</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;chebyshev&#39;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=-</span><span class="mf">1.</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">zeta_3</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;gamma&#39;</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span> <span class="n">shape_parameter</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">zeta_4</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;beta&#39;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="mf">1.7</span><span class="p">,</span> <span class="n">shape_parameter_B</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Feel free to generate PDFs, CDFs and histograms using the above definitions.</p>
 </div>
 
 
@@ -260,7 +268,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018 by Effective Quadratures.
+        &copy; Copyright 2016-2018 by Effective Quadratures.
 
     </p>
   </div>

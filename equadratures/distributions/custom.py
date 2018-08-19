@@ -2,7 +2,7 @@
 import numpy as np
 from distribution import Distribution
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
-from recurrence_utils import jacobi_recurrence_coefficients
+from recurrence_utils import custom_recurrence_coefficients
 import scipy.stats as stats
 RECURRENCE_PDF_SAMPLES = 8000
 
@@ -17,8 +17,9 @@ class Custom(Distribution):
              self.data     = data
              self.mean     = np.mean(self.data)
              self.variance = np.var(self.data)
-             self.lower    = np.min(self.data)
-             self.upper    = np.max(self.data)
+             range_of_data = np.max(self.data) - np.min(self.data)
+             self.lower    = np.min(self.data) - 0.2*range_of_data
+             self.upper    = np.max(self.data) + 0.2*range_of_data
              # the following lines are correct?
              self.bounds   = np.array([self.lower, self.upper])
              self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
@@ -89,7 +90,10 @@ class Custom(Distribution):
         :return:
             Recurrence coefficients associated with the custom distribution.
         """
-        print 'this method has to be completed!'
+        kernel = stats.gaussian_kde(self.data)
+        wts = kernel(self.x_range_for_pdf)
+        ab = custom_recurrence_coefficients(self.x_range_for_pdf, wts, order)
+        return ab
 
     def getiCDF(self, xx):
         """ 
@@ -102,22 +106,21 @@ class Custom(Distribution):
         :return:
             Inverse cumulative density function values of the Custom distribution.
         """
-        x  = self.data
+        x  = np.linspace(self.lower, self.upper, 1000)
         y  = self.getPDF(x)
-        c  = []
+
+        c = []
         yy = []
         c.append(0.0)
         for i in range(1, len(x)):
             c.append(c[i-1]+(x[i]-x[i-1])*(y[i]+y[i-1])*.5)
         for i in range(1, len(x)):
             c[i]=c[i]/c[len(x)-1]
-        for k in range(0, len(x)):
+
+        for k in range(0, len(xx)):
             for i in range(0, len(x)):
-                if ((xx[k]>=c[i]) and (xx[k]<=c[i+1])):
-                    value = float((xx[k]-c[i])/(c[i+1]-c[i])*(x[i+1]-x[i])+x[i])
+                if ( (xx[k]>=c[i]) and (xx[k]<=c[i+1]) ):
+                    value =  float( (xx[k]-c[i])/(c[i+1]-c[i])*(x[i+1]-x[i])+x[i] )
                     yy.append(value)
                     break
         return yy
-
-
-

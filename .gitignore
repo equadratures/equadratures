@@ -25,7 +25,6 @@ etc/
 *.egg
 *.egg-info
 dist
-source
 .ipynb*
 *_
 eggs

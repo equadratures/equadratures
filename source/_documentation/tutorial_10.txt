@@ -176,8 +176,4 @@ Now, if we increase the order from 1 to 3, we obtain:
 
 .. [1] Lebrun, R., Dutfoy, A. An innovating analysis of the Nataf transformation from the copula viewpoint. Probabilistic Engineering Mechanics 24.3 (2009): 312-320. `Paper <https://www.sciencedirect.com/science/article/pii/S0266892008000660>`__
 
-.. [2] Eldred, M., Webster, C., Constantine, P. Evaluation of non-intrusive approaches for Wiener-Askey generalized polynomial chaos. 49th AIAA/ASME/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference, 16th AIAA/ASME/AHS Adaptive Structures Conference, 10th AIAA Non-Deterministic Approaches Conference, 9th AIAA Gossamer Spacecraft Forum, 4th AIAA Multidisciplinary Design Optimization Specialists Conference, 2008.`Paper <https://arc.aiaa.org/doi/abs/10.2514/6.2008-1892>`__
-
-
-
-Eldred, Michael, Clayton Webster, and Paul Constantine. "" . 2008.
+.. [2] Eldred, M., Webster, C., Constantine, P. Evaluation of non-intrusive approaches for Wiener-Askey generalized polynomial chaos. 49th AIAA/ASME/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference, 16th AIAA/ASME/AHS Adaptive Structures Conference, 10th AIAA Non-Deterministic Approaches Conference, 9th AIAA Gossamer Spacecraft Forum, 4th AIAA Multidisciplinary Design Optimization Specialists Conference, 2008. `Paper <https://arc.aiaa.org/doi/abs/10.2514/6.2008-1892>`__

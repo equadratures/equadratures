@@ -175,7 +175,25 @@
             
   <div class="section" id="polynomial-least-squares">
 <h1>Polynomial least squares<a class="headerlink" href="#polynomial-least-squares" title="Permalink to this headline">¶</a></h1>
-<p>In this tutorial, we go over some of the main concepts concerning polynomial least squares. We recast the problem of estimating coefficients through least s</p>
+<p>Motivated by reducing the number of samples required for constructing polynomial approximations, we recast our problem of finding suitable quadrature points, with ideas from least squares. Here, we solve</p>
+<div class="math notranslate">
+\[\text{minimize} \; \; \left\Vert \boldsymbol{Ax}-\boldsymbol{b}\right\Vert_{2}\]</div>
+<p>[Add more details…]</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">equadratures</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">zeta_1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;beta&#39;</span><span class="p">,</span> <span class="n">shape_parameter_A</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">shape_parameter_B</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">zeta_2</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;uniform&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">lower</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">fun</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mf">3.5</span>
+
+<span class="n">myBasis</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;total order&#39;</span><span class="p">)</span>
+<span class="n">myPoly</span> <span class="o">=</span> <span class="n">Polylsq</span><span class="p">([</span><span class="n">zeta_1</span><span class="p">,</span> <span class="n">zeta_2</span><span class="p">],</span> <span class="n">myBasis</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="s1">&#39;tensor&#39;</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="s1">&#39;greedy-qr&#39;</span><span class="p">,</span> <span class="n">oversampling</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">myPoly</span><span class="o">.</span><span class="n">computeCoefficients</span><span class="p">(</span><span class="n">fun</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 
 

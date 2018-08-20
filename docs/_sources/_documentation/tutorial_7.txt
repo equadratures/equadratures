@@ -1,3 +1,24 @@
 Polynomial least squares
 ========================================
-In this tutorial, we go over some of the main concepts concerning polynomial least squares. We recast the problem of estimating coefficients through least s
+Motivated by reducing the number of samples required for constructing polynomial approximations, we recast our problem of finding suitable quadrature points, with ideas from least squares. Here, we solve 
+
+.. math::
+	\text{minimize} \; \; \left\Vert \boldsymbol{Ax}-\boldsymbol{b}\right\Vert_{2}
+
+[Add more details...]
+
+.. code::
+	
+	import numpy as np
+	from equadratures import *
+	import matplotlib.pyplot as plt
+
+	zeta_1 = Parameter(distribution='beta', shape_parameter_A = 1.5, shape_parameter_B = 2.0, order=3, lower= 0., upper=1.0)
+	zeta_2 = Parameter(distribution='uniform', order=3, lower=-1.0, upper=1.0)
+
+	def fun(x):
+    	return x[0]**2 + x[1]*x[0] + x[1]**2 - 3.5
+
+	myBasis = Basis('total order')
+	myPoly = Polylsq([zeta_1, zeta_2], myBasis, mesh='tensor', optimization='greedy-qr', oversampling=1.0)
+	myPoly.computeCoefficients(fun)

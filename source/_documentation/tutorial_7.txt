@@ -1,2 +1,3 @@
 Polynomial least squares
 ========================================
+In this tutorial, we go over some of the main concepts concerning polynomial least squares. 

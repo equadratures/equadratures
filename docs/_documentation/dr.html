@@ -28,6 +28,8 @@
 
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Convex optimization utilities" href="convex.html" />
     <link rel="prev" title="Utilities" href="utilities.html" /> 
 
@@ -198,8 +200,8 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>PolynomialObject</strong> &#8211; an instance of PolynomialObject class</li>
-<li><strong>samples</strong> &#8211; ndarray, sample vector points, default to None</li>
+<li><strong>PolynomialObject</strong> – an instance of PolynomialObject class</li>
+<li><strong>samples</strong> – ndarray, sample vector points, default to None</li>
 </ul>
 </td>
 </tr>
@@ -224,15 +226,15 @@ Calculates the Jacobian tensor using polynomial basis functions</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>V</strong> &#8211; ndarray, the affine transfored outputs</li>
-<li><strong>V_plus</strong> &#8211; ndarray, psuedoinverse matrix</li>
-<li><strong>U</strong> &#8211; ndarray, the active subspace directions</li>
-<li><strong>y</strong> &#8211; array, the untransformed projected values of inputs in active subspace</li>
-<li><strong>f</strong> &#8211; array, the untransfored outputs</li>
-<li><strong>Polybasis</strong> &#8211; Poly object, an instance of Poly class</li>
-<li><strong>eta</strong> &#8211; ndarray, the affine transformed projected values of inputs in active subspace</li>
-<li><strong>minmax</strong> &#8211; ndarray, the upper and lower bounds of input projections in each dimension</li>
-<li><strong>X</strong> &#8211; ndarray, the input</li>
+<li><strong>V</strong> – ndarray, the affine transfored outputs</li>
+<li><strong>V_plus</strong> – ndarray, psuedoinverse matrix</li>
+<li><strong>U</strong> – ndarray, the active subspace directions</li>
+<li><strong>y</strong> – array, the untransformed projected values of inputs in active subspace</li>
+<li><strong>f</strong> – array, the untransfored outputs</li>
+<li><strong>Polybasis</strong> – Poly object, an instance of Poly class</li>
+<li><strong>eta</strong> – ndarray, the affine transformed projected values of inputs in active subspace</li>
+<li><strong>minmax</strong> – ndarray, the upper and lower bounds of input projections in each dimension</li>
+<li><strong>X</strong> – ndarray, the input</li>
 </ul>
 </td>
 </tr>
@@ -255,9 +257,9 @@ Calculates the Jacobian tensor using polynomial basis functions</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>Xtrain</strong> &#8211; ndarray, the input values</li>
-<li><strong>ytrain</strong> &#8211; array, the output values</li>
-<li><strong>bounds</strong> &#8211; ndarray, the upper and lower bounds for input values in each dimension</li>
+<li><strong>Xtrain</strong> – ndarray, the input values</li>
+<li><strong>ytrain</strong> – array, the output values</li>
+<li><strong>bounds</strong> – ndarray, the upper and lower bounds for input values in each dimension</li>
 </ul>
 </td>
 </tr>
@@ -281,8 +283,8 @@ Calculates the Jacobian tensor using polynomial basis functions</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>X</strong> &#8211; ndarray, the undimensioned input values</li>
-<li><strong>bounds</strong> &#8211; ndarray, the upper and lower bounds for input values in each dimension</li>
+<li><strong>X</strong> – ndarray, the undimensioned input values</li>
+<li><strong>bounds</strong> – ndarray, the upper and lower bounds for input values in each dimension</li>
 </ul>
 </td>
 </tr>
@@ -306,8 +308,8 @@ Calculates the Vandermonde matrix using polynomial basis functions</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>eta</strong> &#8211; ndarray, the affine transformed projected values of inputs in active subspace</li>
-<li><strong>p</strong> &#8211; int, the maximum degree of polynomials</li>
+<li><strong>eta</strong> – ndarray, the affine transformed projected values of inputs in active subspace</li>
+<li><strong>p</strong> – int, the maximum degree of polynomials</li>
 </ul>
 </td>
 </tr>
@@ -331,12 +333,12 @@ Calculates the Vandermonde matrix using polynomial basis functions</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>X</strong> &#8211; ndarray, the input</li>
-<li><strong>f</strong> &#8211; array, the output</li>
-<li><strong>n</strong> &#8211; int, degree of active subspace</li>
-<li><strong>p</strong> &#8211; int, degree of polynomials</li>
-<li><strong>gamma</strong> &#8211; double, step length reduction factor (0,1)</li>
-<li><strong>beta</strong> &#8211; double, Armijo tolerance for backtracking line search (0,1)</li>
+<li><strong>X</strong> – ndarray, the input</li>
+<li><strong>f</strong> – array, the output</li>
+<li><strong>n</strong> – int, degree of active subspace</li>
+<li><strong>p</strong> – int, degree of polynomials</li>
+<li><strong>gamma</strong> – double, step length reduction factor (0,1)</li>
+<li><strong>beta</strong> – double, Armijo tolerance for backtracking line search (0,1)</li>
 </ul>
 </td>
 </tr>
@@ -400,13 +402,13 @@ Calculates the Vandermonde matrix using polynomial basis functions</p>
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

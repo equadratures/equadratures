@@ -28,6 +28,8 @@
 
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Quick start guide" href="tutorials.html" />
     <link rel="prev" title="Matrix factorization utilities" href="qr.html" /> 
 
@@ -186,8 +188,8 @@ standard normal space, in which points are uncorrelated.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>D</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) &#8211; List of parameters (distributions), interpreted here as the marginals.</li>
-<li><strong>R</strong> (<em>numpy-matrix</em>) &#8211; The correlation matrix associated with the joint distribution.</li>
+<li><strong>D</strong> (<em>list</em>) – List of parameters (distributions), interpreted here as the marginals.</li>
+<li><strong>R</strong> (<em>numpy-matrix</em>) – The correlation matrix associated with the joint distribution.</li>
 </ul>
 </td>
 </tr>
@@ -203,7 +205,7 @@ of correlated marginals.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>numpy-matrix</em>) &#8211; A N-by-M Matrix where input marginals are organized along columns
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>numpy-matrix</em>) – A N-by-M Matrix where input marginals are organized along columns
 M represents the number of correlated marginals</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A N-by-M Matrix which contains standardized uncorrelated data.
@@ -226,9 +228,9 @@ m is the number of the marginals.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>X</strong> &#8211; Matrix of correlated data</li>
-<li><strong>D</strong> &#8211; diagonal matrix which cointains the variances</li>
-<li><strong>S</strong> &#8211; covariance matrix</li>
+<li><strong>X</strong> – Matrix of correlated data</li>
+<li><strong>D</strong> – diagonal matrix which cointains the variances</li>
+<li><strong>S</strong> – covariance matrix</li>
 </ul>
 </td>
 </tr>
@@ -249,7 +251,7 @@ Input matrix must have [mxN] dimension, where m is the number of input marginals
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>numpy-matrix</em>) &#8211; A Matrix of M-by-N dimensions, in which uncorrelated marginals
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>numpy-matrix</em>) – A Matrix of M-by-N dimensions, in which uncorrelated marginals
 are organized along rows.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A N-by-M matrix in which the result of the inverse transformation
@@ -268,7 +270,7 @@ of the ouput matrix.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>N</strong> (<em>integer</em>) &#8211; represents the number of the samples inside a range
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>N</strong> (<em>integer</em>) – represents the number of the samples inside a range
 points represents the array we want to correlate.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A N-by-M matrix in which correlated samples are organized
@@ -288,7 +290,7 @@ along the i-th column of the output matrix.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>N</strong> (<em>integer</em>) &#8211; represents the number of the samples inside a range</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>N</strong> (<em>integer</em>) – represents the number of the samples inside a range</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A N-by-M matrix, each i-th column contains the points
 which belong to the i-th distribution stored into list D.</td>
@@ -348,13 +350,13 @@ which belong to the i-th distribution stored into list D.</td>
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

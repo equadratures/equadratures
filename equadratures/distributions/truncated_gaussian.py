@@ -56,18 +56,13 @@ class TruncatedGaussian(Distribution):
 
         :param truncated Gaussian self:
             An instance of the truncated Gaussian class.
-	:param matrix points:
+        :param matrix points:
             Matrix of points over the support of the distribution; default value is 500.
         :return:
             An array of N values over the support of the distribution.
         :return:
             Probability density values along the support of the truncated Gaussian distribution.
         """
-        #if points is not None:
-        #    num = self.parent.getPDF(points = points)
-        #    den = self.parent.getCDF(points= self.upper)-self.parent.getCDF(points=self.lower)
-        #    w = num/den
-        #    return w
         if points is not None:
             return self.parents.pdf(points)
         else:
@@ -76,8 +71,8 @@ class TruncatedGaussian(Distribution):
     def getCDF(self, points = None):
         """
         A truncated Gaussian cumulative density function.
-
-	:param truncated Gaussian self:
+        
+        :param truncated Gaussian self:
             An instance of the Gaussian class.
         :param matrix points:
             Matrix of points for defining the cumulative density function; default value is 500.
@@ -93,7 +88,6 @@ class TruncatedGaussian(Distribution):
 
     def getiCDF(self, xx):
         """ A truncated gaussian inverse cumulative density function,
-
         :param truncnorm:
             An instance of Truncated-Gaussian class.
         :param array xx:
@@ -118,4 +112,3 @@ class TruncatedGaussian(Distribution):
         else:
            number = 500000
         return self.parents.rvs(size=number)
-

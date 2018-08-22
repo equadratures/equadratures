@@ -27,9 +27,7 @@
   
 
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
@@ -245,8 +243,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Euclidean degree&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Total order&quot;</span><span class="p">:</span></div>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Total order&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Basis.prune"><a class="viewcode-back" href="../../_documentation/basis.html#equadratures.basis.Basis.prune">[docs]</a>    <span class="k">def</span> <span class="nf">prune</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number_of_elements_to_delete</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -261,8 +259,8 @@
         <span class="n">new_elements</span> <span class="o">=</span> <span class="n">total_elements</span> <span class="o">-</span> <span class="n">number_of_elements_to_delete</span>
         <span class="k">if</span> <span class="n">new_elements</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="p">:</span>
             <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;In Basis() --&gt; prune(): Number of elements to be deleted must be greater than the total number of elements&#39;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span></div>
-            <span class="bp">self</span><span class="o">.</span><span class="n">elements</span> <span class="o">=</span>  <span class="n">index_entries</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">new_elements</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">elements</span> <span class="o">=</span>  <span class="n">index_entries</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">new_elements</span><span class="p">,</span> <span class="p">:]</span></div>
 
 <div class="viewcode-block" id="Basis.sort"><a class="viewcode-back" href="../../_documentation/basis.html#equadratures.basis.Basis.sort">[docs]</a>    <span class="k">def</span> <span class="nf">sort</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -286,8 +284,8 @@
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">number_of_elements</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span><span class="p">):</span>
                 <span class="n">row_index</span> <span class="o">=</span> <span class="n">sorted_indices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-                <span class="n">sorted_elements</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="n">row_index</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span></div>
-        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span> <span class="o">=</span> <span class="n">sorted_elements</span>
+                <span class="n">sorted_elements</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="n">row_index</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span> <span class="o">=</span> <span class="n">sorted_elements</span></div>
 
 <div class="viewcode-block" id="Basis.getBasis"><a class="viewcode-back" href="../../_documentation/basis.html#equadratures.basis.Basis.getBasis">[docs]</a>    <span class="k">def</span> <span class="nf">getBasis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -309,8 +307,8 @@
             <span class="n">basis</span> <span class="o">=</span> <span class="n">euclidean_degree_basis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orders</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Basis __init__: invalid value for basis_type!&#39;</span><span class="p">)</span>
-            <span class="n">basis</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span></div></div>
-        <span class="k">return</span> <span class="n">basis</span>
+            <span class="n">basis</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">basis</span></div></div>
 
 
 
@@ -535,13 +533,13 @@
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

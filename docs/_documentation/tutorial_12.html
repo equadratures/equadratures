@@ -28,8 +28,6 @@
 
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Contact" href="contact.html" />
     <link rel="prev" title="Active subspaces with polynomial approximations" href="tutorial_11.html" /> 
 
@@ -100,7 +98,7 @@
 <li class="toctree-l2"><a class="reference internal" href="tutorial_6.html">Polynomial regression for data-sets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_7.html">Polynomial least squares</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_8.html">Polynomials via compressive sensing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol’ indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol&#8217; indices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_10.html">Nataf transform for correlated inputs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_11.html">Active subspaces with polynomial approximations</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Polynomial variable projection</a></li>
@@ -175,6 +173,205 @@
             
   <div class="section" id="polynomial-variable-projection">
 <h1>Polynomial variable projection<a class="headerlink" href="#polynomial-variable-projection" title="Permalink to this headline">¶</a></h1>
+<p>The variable projection method has been used for solving separable non-linear least squares problems for the past few decades [1]. The general idea is to minimise the residual of a non-linear fitting. Given a set of observations, the model is a linear combination of non-linear functions that depends on multiple parameters. In this tutorial the idea of variable projection is applied to ridge approximation for dimension reduction purposes. Here the algorithm is built on the idea proposed by Hokanson et al. [2].</p>
+<p><strong>Theory</strong></p>
+<p>For a function with inputs and outputs, variable projection approximates the outputs <span class="math">\(y_i\)</span> with polynomials</p>
+<div class="math">
+\[\begin{split}\begin{align*}
+y_i  &amp; = f(\boldsymbol{x}_i) \\
+&amp; \approx g(\mathbf{U}^T\boldsymbol{x}_i) \\
+&amp; =\sum_j a_j\phi_j(\mathbf{U}^T\boldsymbol{x}_i),
+\end{align*}\end{split}\]</div>
+<p><span class="math">\(\phi_j(\mathbf{U}^T\boldsymbol{x}_i)\)</span> are polynomial basis terms;
+<span class="math">\(a_j\)</span> are their coefficients.</p>
+<p>The residual is then given by</p>
+<div class="math">
+\[\begin{equation}
+r_i(\mathbf{U})=y_i-\sum_j a_j\phi_j(\mathbf{U}^T\boldsymbol{x}_i).
+\end{equation}\]</div>
+<p>Re-writing this in matrix form,</p>
+<div class="math">
+\[\begin{equation}
+\mathbf{r(U)}=\mathbf{y}-\mathbf{V(U)}\mathbf{a},
+\end{equation}\]</div>
+<p><span class="math">\(r_i(\mathbf{U})\)</span> are entries of <span class="math">\(\mathbf{r(U)}\)</span>;
+<span class="math">\(y_i\)</span> are entries of <span class="math">\(\mathbf{y}\)</span>;
+<span class="math">\(\phi_j(\mathbf{U}^T\boldsymbol{x}_i)\)</span> are entries of Vandermonde matrix <span class="math">\(\mathbf{V(U)}\)</span>;
+<span class="math">\(a_j\)</span> are entries of <span class="math">\(\mathbf{a}\)</span>.</p>
+<p>The Vandermonde matrix contains all polynomial terms <span class="math">\(\phi_j\)</span>.</p>
+<div class="math">
+\[\begin{split}\begin{equation}
+\mathbf{V(U)}=
+\begin{bmatrix}
+    \phi_1(\mathbf{U}^T\boldsymbol{x}_1)       &amp; \phi_2(\mathbf{U}^T\boldsymbol{x}_1) &amp; \dots &amp; \phi_j(\mathbf{U}^T\boldsymbol{x}_1)  &amp; \dots \\
+    \phi_1(\mathbf{U}^T\boldsymbol{x}_2)       &amp; \phi_2(\mathbf{U}^T\boldsymbol{x}_2) &amp; \dots &amp; \phi_j(\mathbf{U}^T\boldsymbol{x}_2)  &amp; \dots \\
+\vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\
+    \phi_1(\mathbf{U}^T\boldsymbol{x}_i)       &amp; \phi_2(\mathbf{U}^T\boldsymbol{x}_i) &amp; \dots &amp; \phi_j(\mathbf{U}^T\boldsymbol{x}_i)  &amp; \dots \\
+\vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \vdots
+\end{bmatrix}.
+\end{equation}\end{split}\]</div>
+<p>When the degree of polynomial is 2 and subspace dimension is 2,</p>
+<div class="math">
+\[\begin{split} \begin{equation}
+ \mathbf{V(U)}=
+ \begin{bmatrix}
+     1       &amp; \mathbf{U}_1^T\boldsymbol{x}_1 &amp; \mathbf{U}_2^T\boldsymbol{x}_1 &amp; (\mathbf{U}_1^T\boldsymbol{x}_1)
+(\mathbf{U}_2^T\boldsymbol{x}_1)  &amp;  (\mathbf{U}_1^T\boldsymbol{x}_1)^2 &amp; (\mathbf{U}_2^T\boldsymbol{x}_1)^2\\
+         1       &amp; \mathbf{U}_1^T\boldsymbol{x}_2 &amp; \mathbf{U}_2^T\boldsymbol{x}_2 &amp; (\mathbf{U}_1^T\boldsymbol{x}_2)
+(\mathbf{U}_2^T\boldsymbol{x}_2)  &amp;  (\mathbf{U}_1^T\boldsymbol{x}_2)^2 &amp; (\mathbf{U}_2^T\boldsymbol{x}_2)^2\\
+ \vdots &amp; \vdots &amp; \vdots &amp;   &amp; \vdots &amp; \vdots \\
+         1       &amp; \mathbf{U}_1^T\boldsymbol{x}_M &amp; \mathbf{U}_2^T\boldsymbol{x}_M &amp; (\mathbf{U}_1^T\boldsymbol{x}_M)
+(\mathbf{U}_2^T\boldsymbol{x}_M)  &amp;  (\mathbf{U}_1^T\boldsymbol{x}_M)^2 &amp; (\mathbf{U}_2^T\boldsymbol{x}_2)^M
+ \end{bmatrix}.
+ \end{equation}\end{split}\]</div>
+<p>This is a non-linear least squares problem. We can find its solution:</p>
+<div class="math">
+\[\begin{equation}
+\mathbf{a}=\mathbf{V(U)}^+\mathbf{y},
+\end{equation}\]</div>
+<p>then the residual can be reformulated:</p>
+<div class="math">
+\[ \begin{align}
+ \mathbf{r(U)} &amp;=\mathbf{y}-\mathbf{V(U)}\mathbf{a} =\mathbf{y}-\mathbf{V(U)V(U)^+}\mathbf{y}=(\mathbf{I}-
+\mathbf{V(U)}\mathbf{V(U)})\mathbf{y}.
+ \end{align}\]</div>
+<p>Find <span class="math">\(\mathbf{U}\)</span> by optimisation,</p>
+<div class="math">
+\[ \begin{equation}
+ \mathbf{U}=\underset{\mathbf{U}\in\mathbb{G}(n,\mathbb{R}^m)}{\text{argmin}} \| \mathbf{r(U)}    \|_2^2\,=\underset{\mathbf{U}}
+{\text{argmin}}\| (\mathbf{I}-\mathbf{V(U)}\mathbf{V(U)}^+)\mathbf{y}\|_2^2\,.
+ \end{equation}\]</div>
+<p>Gauss-Newton algorithm is used for optimisation, as it is a non-linear least squares problem.</p>
+<p>The Jacobian tensor is defined as</p>
+<div class="math">
+\[\begin{equation}
+\boldsymbol{\mathcal{J}}_{i,j,k}(\mathbf{U})=\frac{\partial \mathbf{[r(U)]}_i}{\partial [\mathbf{U}]_{j,k}}\, .
+\end{equation}\]</div>
+<p>The iterative update expression is</p>
+<div class="math">
+\[\begin{equation}
+\mathbf{U}^{(s+1)}=\mathbf{U}^{(s)}-(\boldsymbol{\mathcal{J}}_{i,j,k}(\mathbf{U}^{(s)}))^+\mathbf{r}(\mathbf{U}^{(s)}),
+\end{equation}\]</div>
+<p>where  <span class="math">\((\boldsymbol{\mathcal{J}}_{i,j,k}(\mathbf{U}^{(s)}))^+\)</span> is the pseudoinverse of the Jacobian.</p>
+<p><strong>Code Implementation</strong></p>
+<p>In turbomachinery design, the fan blade designs are usually parametrised by a few hundred design variables, representing the geometric properties at various positions of the fan blade span. In this notebook, we study one such fan blade, which contains 25 variables per design, while the corresponding efficiency of each design is evaluated by Computational Fluid Dynamics (CFD) simulations.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="k">import</span> <span class="n">orth</span>
+<span class="kn">from</span> <span class="nn">equadratures</span> <span class="k">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;X.dat&#39;</span><span class="p">)</span>
+<span class="n">fX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;Y.dat&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This dataset (taken from [3]) contains 554 pairs of inputs (designs of blades) and outputs (CFD-evaluataed efficiency). The dimension of inputs is 25 (25D design space). Using variable projection, we wish to find a surrogate model for this relationship in 2D. All input vectors are put in X.dat, while the outputs are in Y.dat. They are stored as variables X and fX respectively.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">n</span><span class="o">=</span><span class="mi">2</span>
+<span class="n">p</span><span class="o">=</span><span class="mi">2</span>
+</pre></div>
+</div>
+<p><span class="math">\(n\)</span> stands for the dimensionality of the active subspace, which is also the dimenion of surrogate model. Here it is set to 2. This indicates the active subspace <span class="math">\(\mathbf{U}\)</span> found would be of <span class="math">\(25\times 2\)</span>. <span class="math">\(p\)</span> stands for the degree of polynomial basis terms. <span class="math">\(p=2\)</span> suggests the model can capture both linear and quadratic relationships, but not cubic or above.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">U</span><span class="p">,</span><span class="n">R</span><span class="o">=</span><span class="n">variable_projection</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">fX</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">gamma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">beta</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here gamma is the line search step reduction factor, where beta is the Armijo tolerance for backtracking line search. We set both values at 0.1 here. In the outputs, U is the active subspace found, R is the optimised residual.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">U</span>
+</pre></div>
+</div>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="o">-</span><span class="mf">0.01382107</span> <span class="o">-</span><span class="mf">0.00637475</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.01067215</span> <span class="o">-</span><span class="mf">0.02186359</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.06475873</span> <span class="o">-</span><span class="mf">0.04025172</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.04618423</span> <span class="o">-</span><span class="mf">0.0144828</span> <span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.05212156</span>  <span class="mf">0.05920027</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.02217815</span>  <span class="mf">0.03444545</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.23755612</span>  <span class="mf">0.06829657</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.46031284</span>  <span class="mf">0.17809686</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.49535082</span>  <span class="mf">0.4846477</span> <span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.16282678</span>  <span class="mf">0.52534648</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.0949624</span>   <span class="mf">0.03154215</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.0086608</span>   <span class="mf">0.05961242</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.08081011</span>  <span class="mf">0.14893545</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.34311475</span>  <span class="mf">0.38051787</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.53168775</span>  <span class="mf">0.51996495</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.02957525</span> <span class="o">-</span><span class="mf">0.02173312</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.01349072</span> <span class="o">-</span><span class="mf">0.01918691</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.0537243</span>  <span class="o">-</span><span class="mf">0.01603187</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.0195819</span>   <span class="mf">0.00475512</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.01454217</span> <span class="o">-</span><span class="mf">0.0044287</span> <span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.01978521</span> <span class="o">-</span><span class="mf">0.01777296</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.03929334</span> <span class="o">-</span><span class="mf">0.00383454</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.03420664</span> <span class="o">-</span><span class="mf">0.02237725</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.12303776</span> <span class="o">-</span><span class="mf">0.0336818</span> <span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.10549695</span> <span class="o">-</span><span class="mf">0.02667934</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>Now the active subspace is found, we can plot the high dimensional data onto the 2D active subspace. Here it is noted that since the approach finds the active subspace <span class="math">\(\mathbf{U}\)</span> without a kernel matrix, <span class="math">\(\mathbf{U}=[\mathbf{U}_1,\mathbf{U}_2]\)</span>.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">active1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">X</span> <span class="p">,</span> <span class="n">U</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="p">)</span>
+<span class="n">active2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">X</span> <span class="p">,</span> <span class="n">U</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="p">)</span>
+</pre></div>
+</div>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">cax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">active1</span><span class="p">,</span> <span class="n">fX</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">fX</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">cbar</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cax</span><span class="p">,</span> <span class="n">extend</span><span class="o">=</span><span class="s1">&#39;neither&#39;</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="s1">&#39;proportional&#39;</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Active variable 1, $\mathbf{XU_</span><span class="si">{1}</span><span class="s1">}$&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Non-dimensional efficiency, $\eta$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">])</span>
+<span class="n">adjust_spines</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;bottom&#39;</span><span class="p">])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Efficiency along $\mathbf{U_</span><span class="si">{1}</span><span class="s1">}$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="figure">
+<a class="reference internal image-reference" href="../_images/VP_1.png"><img alt="../_images/VP_1.png" src="../_images/VP_1.png" style="width: 403.0px; height: 292.0px;" /></a>
+</div>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib.mlab</span> <span class="k">import</span> <span class="n">griddata</span>
+<span class="k">def</span> <span class="nf">grid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">resX</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">resY</span><span class="o">=</span><span class="mi">40</span><span class="p">):</span>
+    <span class="s2">&quot;Convert 3 column data to matplotlib grid&quot;</span>
+    <span class="n">xi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">resX</span><span class="p">)</span>
+    <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">resY</span><span class="p">)</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">griddata</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">interp</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">grid</span><span class="p">(</span><span class="n">active1</span><span class="p">,</span> <span class="n">active2</span><span class="p">,</span> <span class="n">fX</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">cax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">cax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">active1</span><span class="p">,</span> <span class="n">active2</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="n">fX</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="n">cbar</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cax</span><span class="p">,</span> <span class="n">extend</span><span class="o">=</span><span class="s1">&#39;neither&#39;</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="s1">&#39;proportional&#39;</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Active variable 1, $\mathbf{XU_</span><span class="si">{1}</span><span class="s1">}$&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Active variable 2, $\mathbf{XU_</span><span class="si">{2}</span><span class="s1">}$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">])</span>
+<span class="n">adjust_spines</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;bottom&#39;</span><span class="p">])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Efficiency along $\mathbf{U_</span><span class="si">{1}</span><span class="s1">}$ and $\mathbf{U_</span><span class="si">{2}</span><span class="s1">}$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="figure">
+<a class="reference internal image-reference" href="../_images/VP_2.png"><img alt="../_images/VP_2.png" src="../_images/VP_2.png" style="width: 403.0px; height: 292.0px;" /></a>
+</div>
+<p><strong>References</strong></p>
+<table class="docutils footnote" frame="void" id="id1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td>Golub, G., Pereyra, V., (2003). Separable nonlinear least squares: the variable projection method and its applications. Inverse Problems, 19(2). <a class="reference external" href="http://iopscience.iop.org/article/10.1088/0266-5611/19/2/201/meta">Paper</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[2]</td><td>Honkason, J. and Constantine, P. (2018). Data-driven polynomial ridge approximation using variable projection. SIAM Journal on Scientific Computing 40.3 (2018): A1566-A1589. <a class="reference external" href="https://epubs.siam.org/doi/abs/10.1137/17M1117690">Paper</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[3]</td><td>Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery active subspace performance maps. Journal of Turbomachinery, 140(4), 041003. <a class="reference external" href="http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256">Paper</a></td></tr>
+</tbody>
+</table>
 </div>
 
 
@@ -224,13 +421,13 @@
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

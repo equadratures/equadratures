@@ -1,2 +1,241 @@
 Polynomial variable projection
 =================================================
+
+The variable projection method has been used for solving separable non-linear least squares problems for the past few decades [1]. The general idea is to minimise the residual of a non-linear fitting. Given a set of observations, the model is a linear combination of non-linear functions that depends on multiple parameters. In this tutorial the idea of variable projection is applied to ridge approximation for dimension reduction purposes. Here the algorithm is built on the idea proposed by Hokanson et al. [2].
+
+**Theory**
+
+For a function with inputs and outputs, variable projection approximates the outputs :math:`y_i` with polynomials
+
+.. math::
+
+	\begin{align*}
+        y_i  & = f(\boldsymbol{x}_i) \\
+	& \approx g(\mathbf{U}^T\boldsymbol{x}_i) \\
+	& =\sum_j a_j\phi_j(\mathbf{U}^T\boldsymbol{x}_i),
+	\end{align*}
+
+:math:`\phi_j(\mathbf{U}^T\boldsymbol{x}_i)` are polynomial basis terms;
+:math:`a_j` are their coefficients.
+
+The residual is then given by
+
+.. math::
+
+	\begin{equation}
+	r_i(\mathbf{U})=y_i-\sum_j a_j\phi_j(\mathbf{U}^T\boldsymbol{x}_i).
+	\end{equation}
+
+Re-writing this in matrix form,
+
+.. math::
+
+	\begin{equation}
+	\mathbf{r(U)}=\mathbf{y}-\mathbf{V(U)}\mathbf{a},
+	\end{equation}
+
+:math:`r_i(\mathbf{U})` are entries of :math:`\mathbf{r(U)}`; 
+:math:`y_i` are entries of :math:`\mathbf{y}`; 
+:math:`\phi_j(\mathbf{U}^T\boldsymbol{x}_i)` are entries of Vandermonde matrix :math:`\mathbf{V(U)}`; 
+:math:`a_j` are entries of :math:`\mathbf{a}`.
+
+The Vandermonde matrix contains all polynomial terms :math:`\phi_j`.
+
+.. math::
+
+        \begin{equation}
+        \mathbf{V(U)}=
+        \begin{bmatrix}
+            \phi_1(\mathbf{U}^T\boldsymbol{x}_1)       & \phi_2(\mathbf{U}^T\boldsymbol{x}_1) & \dots & \phi_j(\mathbf{U}^T\boldsymbol{x}_1)  & \dots \\
+            \phi_1(\mathbf{U}^T\boldsymbol{x}_2)       & \phi_2(\mathbf{U}^T\boldsymbol{x}_2) & \dots & \phi_j(\mathbf{U}^T\boldsymbol{x}_2)  & \dots \\
+        \vdots & \vdots & \vdots & \vdots & \vdots \\
+            \phi_1(\mathbf{U}^T\boldsymbol{x}_i)       & \phi_2(\mathbf{U}^T\boldsymbol{x}_i) & \dots & \phi_j(\mathbf{U}^T\boldsymbol{x}_i)  & \dots \\
+        \vdots & \vdots & \vdots & \vdots & \vdots     
+        \end{bmatrix}.
+        \end{equation}
+
+When the degree of polynomial is 2 and subspace dimension is 2,
+
+.. math::
+
+        \begin{equation}
+        \mathbf{V(U)}=
+        \begin{bmatrix}
+            1       & \mathbf{U}_1^T\boldsymbol{x}_1 & \mathbf{U}_2^T\boldsymbol{x}_1 & (\mathbf{U}_1^T\boldsymbol{x}_1) 
+       (\mathbf{U}_2^T\boldsymbol{x}_1)  &  (\mathbf{U}_1^T\boldsymbol{x}_1)^2 & (\mathbf{U}_2^T\boldsymbol{x}_1)^2\\
+	        1       & \mathbf{U}_1^T\boldsymbol{x}_2 & \mathbf{U}_2^T\boldsymbol{x}_2 & (\mathbf{U}_1^T\boldsymbol{x}_2) 
+       (\mathbf{U}_2^T\boldsymbol{x}_2)  &  (\mathbf{U}_1^T\boldsymbol{x}_2)^2 & (\mathbf{U}_2^T\boldsymbol{x}_2)^2\\
+        \vdots & \vdots & \vdots &   & \vdots & \vdots \\
+	        1       & \mathbf{U}_1^T\boldsymbol{x}_M & \mathbf{U}_2^T\boldsymbol{x}_M & (\mathbf{U}_1^T\boldsymbol{x}_M) 
+       (\mathbf{U}_2^T\boldsymbol{x}_M)  &  (\mathbf{U}_1^T\boldsymbol{x}_M)^2 & (\mathbf{U}_2^T\boldsymbol{x}_2)^M
+        \end{bmatrix}.
+        \end{equation}
+
+This is a non-linear least squares problem. We can find its solution:
+
+.. math::
+
+        \begin{equation}
+        \mathbf{a}=\mathbf{V(U)}^+\mathbf{y},
+        \end{equation}
+
+then the residual can be reformulated:
+
+.. math::
+
+        \begin{align}
+        \mathbf{r(U)} &=\mathbf{y}-\mathbf{V(U)}\mathbf{a} =\mathbf{y}-\mathbf{V(U)V(U)^+}\mathbf{y}=(\mathbf{I}- 
+       \mathbf{V(U)}\mathbf{V(U)})\mathbf{y}.
+        \end{align}
+
+Find :math:`\mathbf{U}` by optimisation,
+
+.. math::
+
+        \begin{equation}
+        \mathbf{U}=\underset{\mathbf{U}\in\mathbb{G}(n,\mathbb{R}^m)}{\text{argmin}} \| \mathbf{r(U)}    \|_2^2\,=\underset{\mathbf{U}} 
+       {\text{argmin}}\| (\mathbf{I}-\mathbf{V(U)}\mathbf{V(U)}^+)\mathbf{y}\|_2^2\,.
+        \end{equation}
+
+Gauss-Newton algorithm is used for optimisation, as it is a non-linear least squares problem.
+
+The Jacobian tensor is defined as
+
+.. math::
+
+        \begin{equation}
+        \boldsymbol{\mathcal{J}}_{i,j,k}(\mathbf{U})=\frac{\partial \mathbf{[r(U)]}_i}{\partial [\mathbf{U}]_{j,k}}\, .
+        \end{equation}
+
+The iterative update expression is
+
+.. math::
+
+        \begin{equation}
+        \mathbf{U}^{(s+1)}=\mathbf{U}^{(s)}-(\boldsymbol{\mathcal{J}}_{i,j,k}(\mathbf{U}^{(s)}))^+\mathbf{r}(\mathbf{U}^{(s)}),
+        \end{equation}
+
+where  :math:`(\boldsymbol{\mathcal{J}}_{i,j,k}(\mathbf{U}^{(s)}))^+` is the pseudoinverse of the Jacobian.
+
+**Code Implementation**
+
+In turbomachinery design, the fan blade designs are usually parametrised by a few hundred design variables, representing the geometric properties at various positions of the fan blade span. In this notebook, we study one such fan blade, which contains 25 variables per design, while the corresponding efficiency of each design is evaluated by Computational Fluid Dynamics (CFD) simulations.
+
+.. code::
+
+        import numpy as np
+        import scipy
+        from scipy.linalg import orth
+        from equadratures import *
+
+.. code::
+
+        X = np.loadtxt('X.dat')
+        fX = np.loadtxt('Y.dat')
+
+This dataset (taken from [3]) contains 554 pairs of inputs (designs of blades) and outputs (CFD-evaluataed efficiency). The dimension of inputs is 25 (25D design space). Using variable projection, we wish to find a surrogate model for this relationship in 2D. All input vectors are put in X.dat, while the outputs are in Y.dat. They are stored as variables X and fX respectively.
+
+.. code::
+
+        n=2
+        p=2
+
+:math:`n` stands for the dimensionality of the active subspace, which is also the dimenion of surrogate model. Here it is set to 2. This indicates the active subspace :math:`\mathbf{U}` found would be of :math:`25\times 2`. :math:`p` stands for the degree of polynomial basis terms. :math:`p=2` suggests the model can capture both linear and quadratic relationships, but not cubic or above.
+
+..  code::
+
+        U,R=variable_projection(X,fX,n,p,gamma=0.1,beta=0.1)
+
+Here gamma is the line search step reduction factor, where beta is the Armijo tolerance for backtracking line search. We set both values at 0.1 here. In the outputs, U is the active subspace found, R is the optimised residual.
+
+.. code::
+
+        print U
+
+.. code::
+
+        [[-0.01382107 -0.00637475]
+         [ 0.01067215 -0.02186359]
+         [-0.06475873 -0.04025172]
+         [-0.04618423 -0.0144828 ]
+         [ 0.05212156  0.05920027]
+         [ 0.02217815  0.03444545]
+         [-0.23755612  0.06829657]
+         [-0.46031284  0.17809686]
+         [-0.49535082  0.4846477 ]
+         [-0.16282678  0.52534648]
+         [ 0.0949624   0.03154215]
+         [ 0.0086608   0.05961242]
+         [ 0.08081011  0.14893545]
+         [ 0.34311475  0.38051787]
+         [ 0.53168775  0.51996495]
+         [-0.02957525 -0.02173312]
+         [-0.01349072 -0.01918691]
+         [-0.0537243  -0.01603187]
+         [ 0.0195819   0.00475512]
+         [ 0.01454217 -0.0044287 ]
+         [-0.01978521 -0.01777296]
+         [ 0.03929334 -0.00383454]
+         [ 0.03420664 -0.02237725]
+         [ 0.12303776 -0.0336818 ]
+         [ 0.10549695 -0.02667934]]
+
+Now the active subspace is found, we can plot the high dimensional data onto the 2D active subspace. Here it is noted that since the approach finds the active subspace :math:`\mathbf{U}` without a kernel matrix, :math:`\mathbf{U}=[\mathbf{U}_1,\mathbf{U}_2]`.
+
+.. code::
+
+        active1 = np.dot( X , U[:,0] ) 
+        active2 = np.dot( X , U[:,1] )
+
+.. code::
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.grid(True)
+        cax = ax.scatter(active1, fX, c=fX, marker='o', s=100, vmin=-1, vmax=0.5)
+        cbar = plt.colorbar(cax, extend='neither', spacing='proportional', orientation='vertical', shrink=0.8)
+        ax.set_xlabel('Active variable 1, $\mathbf{XU_{1}}$')
+        ax.set_ylabel('Non-dimensional efficiency, $\eta$')
+        plt.xlim([-2.0, 2.0])
+        adjust_spines(ax, ['left', 'bottom'])
+        ax.set_title('Efficiency along $\mathbf{U_{1}}$')
+        plt.show()
+
+.. figure:: Figures/VP_1.png
+   :scale: 100 %
+
+.. code::
+
+        from matplotlib.mlab import griddata
+        def grid(x, y, z, resX=40, resY=40):
+            "Convert 3 column data to matplotlib grid"
+            xi = np.linspace(min(x), max(x), resX)
+            yi = np.linspace(min(y), max(y), resY)
+            Z = griddata(x, y, z, xi, yi, interp='linear')
+            X, Y = np.meshgrid(xi, yi)
+            return X, Y, Z
+        
+        X, Y, Z = grid(active1, active2, fX)
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+        cax = plt.contourf(X, Y, Z, 20, vmin=-1, vmax=0.5)
+        cax = ax.scatter(active1, active2,c=fX, marker='o', s=30)
+        cbar = plt.colorbar(cax, extend='neither', spacing='proportional', orientation='vertical', shrink=0.8)
+        ax.set_xlabel('Active variable 1, $\mathbf{XU_{1}}$')
+        ax.set_ylabel('Active variable 2, $\mathbf{XU_{2}}$')
+        plt.xlim([-2.0, 2.0])
+        plt.ylim([-2.0, 2.0])
+        adjust_spines(ax, ['left', 'bottom'])
+        ax.set_title('Efficiency along $\mathbf{U_{1}}$ and $\mathbf{U_{2}}$')
+        plt.show()
+
+.. figure:: Figures/VP_2.png
+   :scale: 100 %
+
+**References**
+
+.. [1] Golub, G., Pereyra, V., (2003). Separable nonlinear least squares: the variable projection method and its applications. Inverse Problems, 19(2). `Paper <http://iopscience.iop.org/article/10.1088/0266-5611/19/2/201/meta>`__
+
+.. [2] Honkason, J. and Constantine, P. (2018). Data-driven polynomial ridge approximation using variable projection. SIAM Journal on Scientific Computing 40.3 (2018): A1566-A1589. `Paper <https://epubs.siam.org/doi/abs/10.1137/17M1117690>`__
+
+.. [3] Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery active subspace performance maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__

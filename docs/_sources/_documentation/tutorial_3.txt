@@ -1,2 +1,37 @@
 Constructing an orthogonal polynomials
 ========================================
+In this tutorial we describe how one can construct orthogonal polynomials in Effective Quadratures. For starters, we consider Legendre polynomials---orthogonal with respect to the uniform weight function. 
+
+
+.. code::
+	
+	from equadratures import *
+	import numpy as np
+	import matplotlib.pyplot as plt
+
+
+	zeta = Parameter(distribution='uniform', lower=-1., upper=1., order=5)
+	xo = np.linspace(-1, 1, 100)
+	P , __ = zeta._getOrthoPoly(xo)
+
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	plt.plot(xo, P[0,:], lw=2, label='Order 0')
+	plt.plot(xo, P[1,:], lw=2, label='Order 1')
+	plt.plot(xo, P[2,:], lw=2, label='Order 2')
+	plt.plot(xo, P[3,:], lw=2, label='Order 3')
+	plt.plot(xo, P[4,:], lw=2, label='Order 4')
+	plt.plot(xo, P[5,:], lw=2, label='Order 5')
+	adjust_spines(ax, ['left', 'bottom'])
+	plt.legend(loc='best', ncol=3, mode="expand", shadow=True, fancybox=True)
+	ax.set_axisbelow(True)
+	plt.xlabel('$\zeta$', fontsize=18)
+	plt.ylabel('Polynomials', fontsize=18)
+	plt.savefig('Fig_05.png', dpi=200, bbox_inches='tight')
+
+
+.. figure:: Figures/Fig_05.png
+   :scale: 30 %
+
+   Figure. The first six Legendre polynomials
+

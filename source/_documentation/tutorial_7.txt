@@ -1,11 +1,26 @@
-Polynomial least squares
+Polynomial least squares approximations
 ========================================
 Motivated by reducing the number of samples required for constructing polynomial approximations, we recast our problem of finding suitable quadrature points, with ideas from least squares. Here, we solve 
 
 .. math::
 	\text{minimize} \; \; \left\Vert \boldsymbol{Ax}-\boldsymbol{b}\right\Vert_{2}
 
-[Add more details...]
+where entries of :math:`\boldsymbol{A}` are given by 
+
+.. math::
+	\boldsymbol{A}(i,j) = \sqrt{w_{j}} \psi_{i}\left(\bar{\zeta}_{j}\right)
+
+which is the weighted :math:`i`-th orthogonal polynomial evaluated at the :math:`j`-th quadrature point. Elements of :math:`\boldsymbol{b}` are given by 
+
+.. math::
+
+	\boldsymbol{b}(j)=\sqrt{w_{j}} f(\bar{\zeta}_{j})
+
+where :math:`f(\cdot)` represents the function to be evaluated. Now if the quadrature points are weights are taken from a tensor grid, then there is equivalence between a polynomial least squares approximation and a pseudospectral approximation. However, seeing as our motivation is to reduce the number of points used, in tutorial we opt for a few different sampling strategies, based on the work in [1,2].
+
+**For low dimensions**
+
+First, we discuss the *effectively subsampled approach*---also the namesake of our code---where one subsamples (deterministically) points from a tensor grid [2]. This subsampling strategy is performed via QR column pivoting. First, we examine the difference (both in syntax and execution) of a tensor grid versus this effectively subsampled approach.
 
 .. code::
 	
@@ -17,8 +32,59 @@ Motivated by reducing the number of samples required for constructing polynomial
 	zeta_2 = Parameter(distribution='uniform', order=3, lower=-1.0, upper=1.0)
 
 	def fun(x):
-    	return x[0]**2 + x[1]*x[0] + x[1]**2 - 3.5
+    		return x[0]**2 + x[1]*x[0] + x[1]**2 - 3.5
+	
+Now, we first setup the standard tensor grid
 
-	myBasis = Basis('total order')
-	myPoly = Polylsq([zeta_1, zeta_2], myBasis, mesh='tensor', optimization='greedy-qr', oversampling=1.0)
+.. code::
+
+	myBasis = Basis('tensor grid')
+	myPoly = Polyint([zeta_1, zeta_2], myBasis)
 	myPoly.computeCoefficients(fun)
+	
+Followed by the polynomial least squares approximation, using the Polylsq class. Three additional inputs are required:
+
+- the :code:`mesh` from which subsamples will be selected;
+- the :code:`optimization` strategy used to select subsamples;
+- the :code:`oversampling` ratio, which sets the ratio of the number of rows to columns.
+
+Opting for the QR column pivoting routine on a tensor grid and without any oversampling (not typically recommended), we have:
+
+.. code::
+	
+	myBasis = Basis('total order')	
+	myPoly2 = Polylsq([zeta_1, zeta_2], myBasis, mesh='tensor', optimization='greedy-qr', oversampling=1.0)
+	myPoly2.computeCoefficients(fun)
+	
+Let us compare the points and the response surfaces:
+
+.. code::
+
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	plt.plot(myPoly.quadraturePoints[:,0], myPoly.quadraturePoints[:,1], 'o', ms=18, c='crimson', label='Tensor grid')
+	plt.plot(myPoly2.quadraturePoints[:,0], myPoly2.quadraturePoints[:,1], 'd', ms=18, c='navy', alpha=0.6, label='Effectively subsampled')
+	adjust_spines(ax, ['left', 'bottom'])
+	ax.set_axisbelow(True)
+	plt.xlabel('$\zeta_1$', fontsize=15)
+	plt.ylabel('$\zeta_2$', fontsize=15)
+	plt.xlim([0.0 , 1.1])
+	plt.ylim([-1.25 , 1.25])
+	plt.legend(loc='upper center', ncol=2, shadow=True, fancybox=True)
+	plt.savefig('Fig_003.png', dpi=200, bbox_inches='tight')
+	
+.. figure:: Figures/Fig_003.png
+   :scale: 30 %
+
+   Figure. A comparison of quadrature points from a tensor grid with effectively subsampled quadrature points.
+
+
+
+**References**
+
+
+.. [1] Seshadri, P., Iaccarino, G., Ghisu, T. Quadrature Strategies for Constructing Polynomial Approximations. [To appear in Springer shortly]. Preprint available: `https://arxiv.org/abs/1805.07296 <https://arxiv.org/abs/1805.07296>`__
+
+.. [2] Seshadri, P., Narayan, A., Sankaran M. Effectively Subsampled Quadratures for Least Squares Polynomial Approximations." SIAM/ASA Journal on Uncertainty Quantification 5.1 (2017): 1003-1023. `https://epubs.siam.org/doi/abs/10.1137/16M1057668 <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
+
+

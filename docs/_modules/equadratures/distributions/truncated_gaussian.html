@@ -209,18 +209,13 @@
 
 <span class="sd">        :param truncated Gaussian self:</span>
 <span class="sd">            An instance of the truncated Gaussian class.</span>
-<span class="sd">	:param matrix points:</span>
+<span class="sd">        :param matrix points:</span>
 <span class="sd">            Matrix of points over the support of the distribution; default value is 500.</span>
 <span class="sd">        :return:</span>
 <span class="sd">            An array of N values over the support of the distribution.</span>
 <span class="sd">        :return:</span>
 <span class="sd">            Probability density values along the support of the truncated Gaussian distribution.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1">#if points is not None:</span>
-        <span class="c1">#    num = self.parent.getPDF(points = points)</span>
-        <span class="c1">#    den = self.parent.getCDF(points= self.upper)-self.parent.getCDF(points=self.lower)</span>
-        <span class="c1">#    w = num/den</span>
-        <span class="c1">#    return w</span>
         <span class="k">if</span> <span class="n">points</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -229,8 +224,8 @@
 <div class="viewcode-block" id="TruncatedGaussian.getCDF"><a class="viewcode-back" href="../../../_documentation/truncated_gaussian.html#equadratures.distributions.truncated_gaussian.TruncatedGaussian.getCDF">[docs]</a>    <span class="k">def</span> <span class="nf">getCDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A truncated Gaussian cumulative density function.</span>
-
-<span class="sd">	:param truncated Gaussian self:</span>
+<span class="sd">        </span>
+<span class="sd">        :param truncated Gaussian self:</span>
 <span class="sd">            An instance of the Gaussian class.</span>
 <span class="sd">        :param matrix points:</span>
 <span class="sd">            Matrix of points for defining the cumulative density function; default value is 500.</span>
@@ -246,7 +241,6 @@
 
 <div class="viewcode-block" id="TruncatedGaussian.getiCDF"><a class="viewcode-back" href="../../../_documentation/truncated_gaussian.html#equadratures.distributions.truncated_gaussian.TruncatedGaussian.getiCDF">[docs]</a>    <span class="k">def</span> <span class="nf">getiCDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xx</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A truncated gaussian inverse cumulative density function,</span>
-
 <span class="sd">        :param truncnorm:</span>
 <span class="sd">            An instance of Truncated-Gaussian class.</span>
 <span class="sd">        :param array xx:</span>
@@ -271,7 +265,6 @@
         <span class="k">else</span><span class="p">:</span>
            <span class="n">number</span> <span class="o">=</span> <span class="mi">500000</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">number</span><span class="p">)</span></div></div>
-
 </pre></div>
 
            </div>

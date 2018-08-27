@@ -4,6 +4,7 @@ from equadratures import *
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.special import erf, gamma
+from scipy.stats import rayleigh, beta, arcsine, chi2, expon, truncnorm, weibull_min, norm
 
 class Test_Nataf(TestCase):
     """ this class compares:
@@ -991,7 +992,60 @@ class Test_Nataf(TestCase):
     	self.mean_variance_estimation(D,u)
     	print 'Physical space:'
     	self.mean_variance_estimation(D,c)
-	
+
+    def test_PolyBlackbox_Nataf(self):
+        """ method for testing the values of mean and variance
+            using quadrature after a Nataf transformation and
+            Monte Carlo after a Nataf transformation.
+        """
+        def blackbox(x1, x2):
+            return x1 + 3.*x2 -32.5 -x1*x2
+        
+        print 'Test of Quadrature with Nataf transformation:'
+        R = np.matrix([[1.0, 0.6],[0.6, 1.0]])    
+        
+        U = list()
+        U.append( Parameter(order=5, distribution='normal', shape_parameter_A = 0.0, shape_parameter_B=1.0))
+        U.append(Parameter(order=5, distribution='uniform', lower=-1., upper =1.))
+        U.append(Parameter(order=5, distribution='rayleigh', shape_parameter_A =1.))
+        U.append(Parameter(order=5, distribution='beta', shape_parameter_A = 1., shape_parameter_B = 1., lower=0., upper = 1.))
+        U.append(Parameter(order=5, distribution='Chebyshev', upper = 1., lower=0.))
+        U.append(Parameter(order=5, distribution='Chisquared', shape_parameter_A = 14))
+        U.append(Parameter(order=5, distribution='exponential', shape_parameter_A = 0.7))
+        U.append(Parameter(order=5, distribution='truncated-gaussian', shape_parameter_A = 1., shape_parameter_B = 1., lower = 0.5, upper = 1.5))
+        U.append(Parameter(order=5, distribution='weibull', shape_parameter_A = 0.8, shape_parameter_B = 0.9))
+        for i in range(len(U)):
+        # Effective quadrature
+         myBasis = Basis('Tensor grid')
+         Pols = Polyint([U[i], U[i]], myBasis)
+         p = Pols.quadraturePoints
+         
+         obj = Nataf([U[i], U[i]], R)
+         pc = obj.U2C(p)
+         results = blackbox(pc[:,0], pc[:,1])
+         Pols.computeCoefficients(results)
+         myStats = Pols.getStatistics()
+         
+         print 'the distribution is:', U[i].name
+         print 'Effective quadrature mean', myStats.mean
+         print 'Effective quadrature variance', myStats.variance
+         # Monte Carlo
+         N = 2000
+         xi = norm.rvs(size=(N,2))
+         yc = obj.U2C(xi)
+         y = blackbox(yc[:,0], yc[:,1])
+         print 'MonteCarlo mean', np.mean(y)
+         print 'MonteCarlo variance', np.var(y)
+
+         # assert function for testing differences between MC and EQ
+
+         #eq_m = float('%.4f' %myStats.mean)
+         #mc_m = float('%.4f' %np.mean(y))
+         #error_mean = np.testing.assert_almost_equal(eq_m, mc_m, decimal=1, err_msg="difference greater than imposed tolerance for mean value")
+         #eq_v = float('%.4f' %myStats.variance)
+         #mc_v = float('%.4f' %np.var(y))
+         #error_var = np.testing.assert_almost_equal(eq_v, mc_v, decimal=1, err_msg="difference greater than imposed tolerance for variance value")
+         print '-------------------------------------------------'
 
                                           
 if __name__== '__main__':

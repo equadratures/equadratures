@@ -27,7 +27,9 @@
   
 
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> 
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
 
   
   <script src="../../../_static/js/modernizr.min.js"></script>
@@ -189,8 +191,8 @@
 <span class="sd">            :return:</span>
 <span class="sd">                A string describing the Custom distribution.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;A Custom distribution has been defined over a suppor from &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; to &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;. It has a mean value equal to &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; and a variance equal to &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variance</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.&quot;</span>
-        <span class="k">return</span> <span class="n">text</span></div>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;A Custom distribution has been defined over a suppor from &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; to &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;. It has a mean value equal to &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; and a variance equal to &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variance</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.&quot;</span></div>
+        <span class="k">return</span> <span class="n">text</span>
     
 <div class="viewcode-block" id="Custom.getPDF"><a class="viewcode-back" href="../../../_documentation/custom.html#equadratures.distributions.custom.Custom.getPDF">[docs]</a>    <span class="k">def</span> <span class="nf">getPDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A custom probability density function.</span>
@@ -208,8 +210,8 @@
             <span class="n">kernel</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">gaussian_kde</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
             <span class="n">wts</span>    <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">wts</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s1">&#39;An input array have to be given to the getPDF method.&#39;</span></div>
+        <span class="k">else</span><span class="p">:</span></div>
+            <span class="nb">print</span> <span class="s1">&#39;An input array have to be given to the getPDF method.&#39;</span>
 
 <div class="viewcode-block" id="Custom.getCDF"><a class="viewcode-back" href="../../../_documentation/custom.html#equadratures.distributions.custom.Custom.getCDF">[docs]</a>    <span class="k">def</span> <span class="nf">getCDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A cumulative density function associated with a given data set.</span>
@@ -229,8 +231,8 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
                 <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">c</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">c</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s1">&#39;An input array has to be given to the getCDF method.&#39;</span></div>
+        <span class="k">else</span><span class="p">:</span></div>
+            <span class="nb">print</span> <span class="s1">&#39;An input array has to be given to the getCDF method.&#39;</span>
             
 <div class="viewcode-block" id="Custom.getRecurrenceCoefficients"><a class="viewcode-back" href="../../../_documentation/custom.html#equadratures.distributions.custom.Custom.getRecurrenceCoefficients">[docs]</a>    <span class="k">def</span> <span class="nf">getRecurrenceCoefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -245,8 +247,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">kernel</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">gaussian_kde</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
         <span class="n">wts</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_range_for_pdf</span><span class="p">)</span>
-        <span class="n">ab</span> <span class="o">=</span> <span class="n">custom_recurrence_coefficients</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_range_for_pdf</span><span class="p">,</span> <span class="n">wts</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ab</span></div>
+        <span class="n">ab</span> <span class="o">=</span> <span class="n">custom_recurrence_coefficients</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_range_for_pdf</span><span class="p">,</span> <span class="n">wts</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">ab</span>
 
 <div class="viewcode-block" id="Custom.getiCDF"><a class="viewcode-back" href="../../../_documentation/custom.html#equadratures.distributions.custom.Custom.getiCDF">[docs]</a>    <span class="k">def</span> <span class="nf">getiCDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xx</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; </span>
@@ -275,8 +277,8 @@
                 <span class="k">if</span> <span class="p">(</span> <span class="p">(</span><span class="n">xx</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">&gt;=</span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="n">xx</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">&lt;=</span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="p">):</span>
                     <span class="n">value</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span> <span class="p">(</span><span class="n">xx</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">-</span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">+</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">)</span>
                     <span class="n">yy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-                    <span class="k">break</span>
-        <span class="k">return</span> <span class="n">yy</span></div></div>
+                    <span class="k">break</span></div></div>
+        <span class="k">return</span> <span class="n">yy</span>
 </pre></div>
 
            </div>
@@ -316,13 +318,13 @@
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

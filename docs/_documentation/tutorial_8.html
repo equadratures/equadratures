@@ -28,8 +28,10 @@
 
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Computing Sobol’ indices" href="tutorial_9.html" />
-    <link rel="prev" title="Polynomial least squares" href="tutorial_7.html" /> 
+    <link rel="prev" title="Polynomial least squares approximations" href="tutorial_7.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -96,9 +98,9 @@
 <li class="toctree-l2"><a class="reference internal" href="tutorial_4b.html">Multi-index sets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_5.html">Sparse and tensor grid quadrature rules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_6.html">Polynomial regression for data-sets</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_7.html">Polynomial least squares</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_7.html">Polynomial least squares approximations</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Polynomials via compressive sensing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol&#8217; indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol’ indices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_10.html">Nataf transform for correlated inputs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_11.html">Active subspaces with polynomial approximations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_12.html">Polynomial variable projection</a></li>
@@ -174,19 +176,19 @@
   <div class="section" id="polynomials-via-compressive-sensing">
 <h1>Polynomials via compressive sensing<a class="headerlink" href="#polynomials-via-compressive-sensing" title="Permalink to this headline">¶</a></h1>
 <p>Recall that in Effective-Quadratures, we approximate models using a linear combination of orthogonal polynomials</p>
-<div class="math">
+<div class="math notranslate">
 \[f\left(s\right)=\sum_{i=0}^{N-1}x_{i}\psi_{i}\left(\zeta\right)\]</div>
-<p>To find the polynomial coefficients <span class="math">\(x_i\)</span>, we need to evaluate an integral</p>
-<div class="math">
+<p>To find the polynomial coefficients <span class="math notranslate">\(x_i\)</span>, we need to evaluate an integral</p>
+<div class="math notranslate">
 \[x_{i}=\int_{\mathcal{D}}f\left(\zeta\right)\psi_{i}\left(\zeta\right)\rho\left(\zeta\right)d\zeta.\]</div>
-<p>To numerically evaluate the integral, we often use quadrature rules or least squares, both of which require at least as many observations as the number of basis terms as we use. To reduce computational costs related to evaluating the model, we ask if we could afford to use fewer observations than basis terms. This motivates the idea of compressive sensing (CS). In CS, we assume that the solution we seek is sparse&#8212;i.e., there are only a few non-zero coefficients and many coefficients near zero. If the solution is sufficiently sparse, it can be shown that the solution is guaranteed to be found with high probability using a number of observations that scales with the sparsity (number of non-zeros) of the solution instead of the number of basis terms. This permits us to solve for the coefficients using fewer observations than basis terms.</p>
+<p>To numerically evaluate the integral, we often use quadrature rules or least squares, both of which require at least as many observations as the number of basis terms as we use. To reduce computational costs related to evaluating the model, we ask if we could afford to use fewer observations than basis terms. This motivates the idea of compressive sensing (CS). In CS, we assume that the solution we seek is sparse—i.e., there are only a few non-zero coefficients and many coefficients near zero. If the solution is sufficiently sparse, it can be shown that the solution is guaranteed to be found with high probability using a number of observations that scales with the sparsity (number of non-zeros) of the solution instead of the number of basis terms. This permits us to solve for the coefficients using fewer observations than basis terms.</p>
 <p>With this technique, we solve for the sparsest compatible coefficients given our observations. This is NP-hard, but we can implement this in polynomial time using the basis pursuit denoising algorithm:</p>
-<div class="math">
+<div class="math notranslate">
 \[\begin{split}\text{minimize} \; \; \left\Vert \boldsymbol{x} \right\Vert _{1} \\
 \text{such that} \; \; \left\Vert \boldsymbol{Ax}-\boldsymbol{b}\right\Vert \leq\eta\end{split}\]</div>
-<p>where <span class="math">\(\boldsymbol{A}\)</span> is the Vendermonde-like matrix of polynomial term evaluations, <span class="math">\(\boldsymbol{b}\)</span> is a vector of model evaluations, and <span class="math">\(\eta\)</span> a positive constant representing the error we allow in our approximation. We have implemented utilities for calculating coefficients using CS in Effective Quadratures; based on the work of Tang and Iaccarino [1] and using the basis pursuit de-noising approaches in [2, 3].</p>
+<p>where <span class="math notranslate">\(\boldsymbol{A}\)</span> is the Vendermonde-like matrix of polynomial term evaluations, <span class="math notranslate">\(\boldsymbol{b}\)</span> is a vector of model evaluations, and <span class="math notranslate">\(\eta\)</span> a positive constant representing the error we allow in our approximation. We have implemented utilities for calculating coefficients using CS in Effective Quadratures; based on the work of Tang and Iaccarino [1] and using the basis pursuit de-noising approaches in [2, 3].</p>
 <p>We demonstrate the capabilities of CS using a dataset, obtained from [4]. In this data, we measure the system efficiency of a blade using five blade design parameters, measured at five stations along the blade. This gives us 25 variables in total. We are given 548 observations in total. These are loaded in the arrays X and Y:</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../&#39;</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">equadratures</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -197,7 +199,7 @@
 </pre></div>
 </div>
 <p>We fit a quadratic in 25 dimensions to the data using a total order basis set (yielding 351 basis terms).</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">N</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">N</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">p_order</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="n">params</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">basis_orders</span> <span class="o">=</span> <span class="p">[]</span>
@@ -210,7 +212,7 @@
 </pre></div>
 </div>
 <p>Hence, for least squares (LS) we expect that at least 351 observations are required. However, as we shall demonstrate, we do not need so many for CS. We randomly pick 200 out of the 548 observations and attempt to recover the coefficients. That is, we randomly sample 200 rows out of X and Y:</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">num_obs</span> <span class="o">=</span> <span class="mi">200</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">num_obs</span> <span class="o">=</span> <span class="mi">200</span>
 <span class="n">chosen_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">),</span> <span class="n">size</span> <span class="o">=</span> <span class="n">num_obs</span><span class="p">,</span> <span class="n">replace</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 <span class="n">X_red</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">chosen_points</span><span class="p">,:]</span>
 <span class="n">Y_red</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">chosen_points</span><span class="p">]</span>
@@ -218,7 +220,7 @@
 </div>
 <p>We then initialize the polycs class, which automatically calculates the coefficients for us.</p>
 <p>To verify that the coefficients we calculate are sensible, we verify the fit on data not used for training.</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">remaining_pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N</span><span class="p">),</span> <span class="n">chosen_points</span><span class="p">)</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">remaining_pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N</span><span class="p">),</span> <span class="n">chosen_points</span><span class="p">)</span>
 <span class="n">chosen_valid_pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">remaining_pts</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span> <span class="n">replace</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 <span class="n">x_eval</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">chosen_valid_pts</span><span class="p">]</span>
 <span class="n">y_eval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">polycs</span><span class="o">.</span><span class="n">evaluatePolyFit</span><span class="p">(</span><span class="n">x_eval</span><span class="p">)))</span>
@@ -226,7 +228,7 @@
 </pre></div>
 </div>
 <p>Now lets generate some plots!</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">linregress</span><span class="p">(</span><span class="n">y_eval</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span><span class="n">y_valid</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">linregress</span><span class="p">(</span><span class="n">y_eval</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span><span class="n">y_valid</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
 <span class="n">r2</span> <span class="o">=</span> <span class="s2">&quot;$R^2$ value = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
@@ -289,7 +291,7 @@
         <a href="tutorial_9.html" class="btn btn-neutral float-right" title="Computing Sobol’ indices" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="tutorial_7.html" class="btn btn-neutral" title="Polynomial least squares" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="tutorial_7.html" class="btn btn-neutral" title="Polynomial least squares approximations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -325,13 +327,13 @@
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

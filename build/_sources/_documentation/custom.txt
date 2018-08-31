@@ -1,0 +1,5 @@
+Custom
+====================
+
+.. automodule:: equadratures.distributions.custom
+    :members:

@@ -1,0 +1,408 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>equadratures.polyreg &mdash; Effective Quadratures v7.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/logo.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../_documentation/index.html" class="icon icon-home"> Effective Quadratures
+          
+
+          
+            
+            <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                7.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/introduction.html">Effective Quadratures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/tutorials.html">Quick start guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/contact.html">Contact</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../_documentation/index.html">Effective Quadratures</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../_documentation/index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>equadratures.polyreg</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for equadratures.polyreg</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Finding coefficients via regression.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">parameter</span> <span class="k">import</span> <span class="n">Parameter</span>
+<span class="kn">from</span> <span class="nn">basis</span> <span class="k">import</span> <span class="n">Basis</span>
+<span class="kn">from</span> <span class="nn">poly</span> <span class="k">import</span> <span class="n">Poly</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">stats</span> <span class="k">import</span> <span class="n">Statistics</span><span class="p">,</span> <span class="n">getAllSobol</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
+<span class="kn">from</span> <span class="nn">qr</span> <span class="k">import</span> <span class="n">solveCLSQ</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="k">import</span> <span class="n">cell2matrix</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">linregress</span>
+
+<div class="viewcode-block" id="Polyreg"><a class="viewcode-back" href="../../_documentation/polyreg.html#equadratures.polyreg.Polyreg">[docs]</a><span class="k">class</span> <span class="nc">Polyreg</span><span class="p">(</span><span class="n">Poly</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The class defines a Polyreg object. It is the child of Poly.</span>
+<span class="sd">    :param Parameter parameters:</span>
+<span class="sd">        A list of parameters.</span>
+<span class="sd">    :param Basis basis:</span>
+<span class="sd">        A basis selected for the multivariate polynomial.</span>
+<span class="sd">    :param matrix training_inputs:</span>
+<span class="sd">        A N-by-d matrix of input training points.</span>
+<span class="sd">    :param matrix training_outputs:</span>
+<span class="sd">        A N-by-1 matrix of output training points.</span>
+<span class="sd">    :param matrix training_grads:</span>
+<span class="sd">        A N-by-d matrix of gradient evaluations.</span>
+<span class="sd">    :param callable fun:</span>
+<span class="sd">        Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Constructor</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">training_inputs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">training_outputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">training_grads</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">quadrature_rule</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">no_of_quad_points</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">gradmethod</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Polyreg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">training_inputs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">training_inputs</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="c1"># Check that x is in the correct shape</span>
+
+        <span class="k">if</span> <span class="ow">not</span><span class="p">((</span><span class="n">training_outputs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">fun</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Specify atleast one of fun or training_outputs.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">fun</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Fun must be callable.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">training_outputs</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Polyreg:__init__:: The number of parameters and the number of dimensions in the index set must be the same.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_grads</span> <span class="o">=</span> <span class="n">training_grads</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradmethod</span> <span class="o">=</span> <span class="n">gradmethod</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setDesignMatrix</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cond</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">computeCoefficients</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quadrature_rule</span> <span class="o">=</span> <span class="n">quadrature_rule</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">getQuadraturePointsWeights</span><span class="p">(</span><span class="n">no_of_quad_points</span><span class="p">)</span>
+
+    <span class="c1"># Solve for coefficients using ordinary least squares</span>
+<div class="viewcode-block" id="Polyreg.computeCoefficients"><a class="viewcode-back" href="../../_documentation/polyreg.html#equadratures.polyreg.Polyreg.computeCoefficients">[docs]</a>    <span class="k">def</span> <span class="nf">computeCoefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function computes the coefficients using least squares. To access the coefficients simply use the class&#39;s attribute self.coefficients.</span>
+<span class="sd">        :param Polyreg self:</span>
+<span class="sd">            An instance of the Polyreg class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_grads</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span> <span class="p">,</span>  <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="p">)</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bz</span><span class="p">)</span> <span class="c1"># Opted for numpy&#39;s standard version because of speed!</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">Polyreg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setCoefficients__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span> <span class="p">,</span>  <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="p">)</span>
+            <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_grads</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">p</span><span class="o">*</span><span class="n">q</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">q</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
+                    <span class="n">d</span><span class="p">[</span><span class="n">counter</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_grads</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
+                    <span class="n">counter</span> <span class="o">=</span> <span class="n">counter</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dy</span> <span class="o">=</span> <span class="n">d</span>
+            <span class="k">del</span> <span class="n">d</span>
+            <span class="n">coefficients</span><span class="p">,</span> <span class="n">cond</span> <span class="o">=</span> <span class="n">solveCLSQ</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradmethod</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">=</span> <span class="n">coefficients</span></div>
+            <span class="nb">super</span><span class="p">(</span><span class="n">Polyreg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setCoefficients__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">)</span>
+            
+            
+<div class="viewcode-block" id="Polyreg.cross_validation"><a class="viewcode-back" href="../../_documentation/polyreg.html#equadratures.polyreg.Polyreg.cross_validation">[docs]</a>    <span class="k">def</span> <span class="nf">cross_validation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folds</span> <span class="o">=</span> <span class="mi">5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function carries out a cross validation procedure on the polynomial.</span>
+
+<span class="sd">        :param Polyreg self:</span>
+<span class="sd">            An instance of the Polyreg class.</span>
+<span class="sd">        :param int folds:</span>
+<span class="sd">            The number of cross validation folds; default value is 5.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">R_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">folds</span><span class="p">)</span>
+         
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">folds</span><span class="p">):</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">n</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">N</span><span class="o">/</span><span class="mf">5.0</span><span class="p">)</span> <span class="o">+</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">N</span><span class="o">/</span><span class="mf">5.0</span><span class="p">)))</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">]</span>
+            <span class="n">x_ver</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+            <span class="n">x_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">y_ver</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+            <span class="n">y_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">indices</span><span class="p">))</span>
+             
+            <span class="n">poly_trained</span> <span class="o">=</span> <span class="n">Polyreg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="n">training_inputs</span> <span class="o">=</span> <span class="n">x_train</span><span class="p">,</span> <span class="n">training_outputs</span> <span class="o">=</span> <span class="n">y_train</span><span class="p">,</span><span class="n">no_of_quad_points</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">y_trained</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">poly_trained</span><span class="o">.</span><span class="n">evaluatePolyFit</span><span class="p">(</span><span class="n">x_ver</span><span class="p">)))</span>
+             
+            <span class="n">_</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">linregress</span><span class="p">(</span><span class="n">y_ver</span><span class="p">,</span> <span class="n">y_trained</span><span class="p">)</span>
+             
+            <span class="n">R_sq</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span><span class="o">**</span><span class="mf">2.0</span>
+        </div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">R_sq</span><span class="p">)</span>
+             
+             
+<div class="viewcode-block" id="Polyreg.setDesignMatrix"><a class="viewcode-back" href="../../_documentation/polyreg.html#equadratures.polyreg.Polyreg.setDesignMatrix">[docs]</a>    <span class="k">def</span> <span class="nf">setDesignMatrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the design matrix using the polynomials defined in the basis.</span>
+<span class="sd">        :param Polyreg self:</span>
+<span class="sd">            An instance of the Polyreg class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Pz</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polyreg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">wts</span> <span class="o">=</span>  <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">Pz</span><span class="o">**</span><span class="mi">2</span> <span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">wts_normalized</span> <span class="o">=</span> <span class="n">wts</span> <span class="o">*</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">wts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">wts_normalized</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span> <span class="o">*</span> <span class="n">Pz</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_grads</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dPcell</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Polyreg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getPolynomialGradient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">cell2matrix</span><span class="p">(</span><span class="n">dPcell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Wz</span><span class="p">)</span>  
+        <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">rows</span> <span class="o">&lt;=</span> <span class="n">cols</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training_grads</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Polyreg:setDesignMatrix:: Number of columns have to be less than (or equal to) the number of rows!&#39;</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Polyreg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setDesignMatrix__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Polyreg.getfitStatistics"><a class="viewcode-back" href="../../_documentation/polyreg.html#equadratures.polyreg.Polyreg.getfitStatistics">[docs]</a>    <span class="k">def</span> <span class="nf">getfitStatistics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes statistics based on the quality of the fit</span>
+<span class="sd">        :param Polyreg self:</span>
+<span class="sd">            An instance of the Polyreg class.</span>
+<span class="sd">        :return:</span>
+<span class="sd">            `T statistic &lt;https://en.wikipedia.org/wiki/T-statistic&gt;`_.</span>
+<span class="sd">        :return:</span>
+<span class="sd">            `Coefficient of determination / R-squared value &lt;https://en.wikipedia.org/wiki/Coefficient_of_determination&gt;`_.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">t_stat</span> <span class="o">=</span> <span class="n">get_t_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">r_sq</span> <span class="o">=</span> <span class="n">get_R_squared</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">t_stat</span><span class="p">,</span> <span class="n">r_sq</span>
+    
+    <span class="k">def</span> <span class="nf">getQuadraturePointsWeights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">points</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">points</span> <span class="o">=</span> <span class="mi">10000</span>
+        <span class="n">p</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getQuadratureRule</span><span class="p">(</span><span class="n">options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quadrature_rule</span><span class="p">,</span> <span class="n">number_of_points</span> <span class="o">=</span> <span class="n">points</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Polyreg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setQuadrature__</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">w</span><span class="p">)</span>
+
+<span class="nd">@staticmethod</span>
+<span class="k">def</span> <span class="nf">get_F_stat</span><span class="p">(</span><span class="n">coefficients_0</span><span class="p">,</span> <span class="n">A_0</span><span class="p">,</span> <span class="n">coefficients_1</span><span class="p">,</span> <span class="n">A_1</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">coefficients_0</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coefficients_1</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">A_0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">A_1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># Set 0 to be reduced model, 1 to be &quot;full&quot; model</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">coefficients_0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">coefficients_1</span><span class="p">):</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">coefficients_0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">coefficients_0</span> <span class="o">=</span> <span class="n">coefficients_1</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">coefficients_1</span> <span class="o">=</span> <span class="n">temp</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">coefficients_0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">coefficients_1</span><span class="p">)</span>
+
+    <span class="n">RSS_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A_0</span><span class="p">,</span><span class="n">coefficients_0</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">RSS_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A_1</span><span class="p">,</span><span class="n">coefficients_1</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="n">A_0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">p_1</span> <span class="o">=</span> <span class="n">A_1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">p_0</span> <span class="o">=</span> <span class="n">A_0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="p">(</span><span class="n">RSS_0</span> <span class="o">-</span> <span class="n">RSS_1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">p_1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">RSS_1</span> <span class="o">*</span> <span class="p">(</span><span class="n">p_1</span> <span class="o">-</span> <span class="n">p_0</span><span class="p">))</span>
+    <span class="c1"># p-value is scipy.stats.f.cdf(F, n - p_1, p_1 - p_0)</span>
+    <span class="k">return</span> <span class="n">F</span>
+
+
+<span class="k">def</span> <span class="nf">get_t_value</span><span class="p">(</span><span class="n">coefficients</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="n">RSS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">coefficients</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">n</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="n">p</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;exact&quot;</span>
+    <span class="n">RSE</span> <span class="o">=</span> <span class="n">RSS</span><span class="o">/</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">Q</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">qr</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">inv_ATA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">R</span><span class="p">))</span>
+    <span class="n">se</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">RSE</span> <span class="o">*</span> <span class="n">inv_ATA</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">)])</span>
+    <span class="n">t_stat</span> <span class="o">=</span> <span class="n">coefficients</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">se</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">se</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="c1"># p-value is scipy.stats.t.cdf(t_stat, n - p)</span>
+    <span class="k">return</span> <span class="n">t_stat</span>
+
+<span class="k">def</span> <span class="nf">get_R_squared</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="n">y_bar</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+    <span class="n">TSS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_bar</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">RSS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">alpha</span><span class="p">)</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">RSS</span><span class="o">/</span><span class="n">TSS</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016-2018 by Effective Quadratures.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'v7.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

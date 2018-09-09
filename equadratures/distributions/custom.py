@@ -2,12 +2,12 @@
 import numpy as np
 from distribution import Distribution
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
-from recurrence_utils import custom_recurrence_coefficients
+from recurrence_utils import jacobi_recurrence_coefficients
 import scipy.stats as stats
 RECURRENCE_PDF_SAMPLES = 8000
 
 class Custom(Distribution):
-    """ The class defines a Custom object, determined by a kernel density estimation of data.
+    """ The class defines a Custom object.
             
         :param data:
               A numpy array with data values (x-y column format). Note this option is only invoked if the user uses the Custom param_type.
@@ -17,16 +17,14 @@ class Custom(Distribution):
              self.data     = data
              self.mean     = np.mean(self.data)
              self.variance = np.var(self.data)
-             range_of_data = np.max(self.data) - np.min(self.data)
-             self.lower    = np.min(self.data) - 0.2*range_of_data
-             self.upper    = np.max(self.data) + 0.2*range_of_data
-             # the following lines are correct?
+             self.std      = np.std(self.data)
+             self.lower    = self.mean -(np.sqrt(self.std)*5.)
+             self.upper    = self.mean +(np.sqrt(self.std)*5.)
+
              self.bounds   = np.array([self.lower, self.upper])
              self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
              self.skewness = stats.skew(self.data)
-             self.kurtosis = stats.kurtosis(self.data)
-             #else:     
-             #raise(ValueError, 'Custom class __init__: if data is provided then the custom distribution must be selected!')
+             self.kurtosis = stats.kurtosis(self.data) 
         
     def getDescription(self):
         """ A destription of custom distribution.
@@ -51,7 +49,7 @@ class Custom(Distribution):
             ** Notes **
             To obtain a probability density function from finite samples, this function uses kerne density estimation (with Gaussian kernel).
         """
-        if points is not None:
+        if points is not None: 
             kernel = stats.gaussian_kde(self.data)
             wts    = kernel(points)
             return wts
@@ -67,8 +65,9 @@ class Custom(Distribution):
                 Cumulative distribution function values along the support of the custom distribution.
         """
         if points is not None:
-            x = points
-            y = self.getPDF(self.data)
+            x = np.sort(points)
+            y = self.getPDF(x)
+           
             c = []
             c.append(0.0)
             for i in range(1, len(x)):
@@ -77,8 +76,8 @@ class Custom(Distribution):
                 c[i] = c[i]/c[len(x)-1]
             return c
         else:
-            print 'An input array has to be given to the getCDF method.'
-            
+            print 'An input array has to be given to the getCDF method.'    
+
     def getRecurrenceCoefficients(self, order):
         """
         Recurrence coefficients for the custom distribution.
@@ -90,10 +89,7 @@ class Custom(Distribution):
         :return:
             Recurrence coefficients associated with the custom distribution.
         """
-        kernel = stats.gaussian_kde(self.data)
-        wts = kernel(self.x_range_for_pdf)
-        ab = custom_recurrence_coefficients(self.x_range_for_pdf, wts, order)
-        return ab
+        print 'this method has to be completed!'
 
     def getiCDF(self, xx):
         """ 
@@ -106,21 +102,22 @@ class Custom(Distribution):
         :return:
             Inverse cumulative density function values of the Custom distribution.
         """
-        x  = np.linspace(self.lower, self.upper, 1000)
+        x  = np.sort(self.data) 
         y  = self.getPDF(x)
-
-        c = []
+        c  = []
         yy = []
         c.append(0.0)
         for i in range(1, len(x)):
             c.append(c[i-1]+(x[i]-x[i-1])*(y[i]+y[i-1])*.5)
         for i in range(1, len(x)):
             c[i]=c[i]/c[len(x)-1]
-
-        for k in range(0, len(xx)):
+        for k in range(0, len(x)):
             for i in range(0, len(x)):
-                if ( (xx[k]>=c[i]) and (xx[k]<=c[i+1]) ):
-                    value =  float( (xx[k]-c[i])/(c[i+1]-c[i])*(x[i+1]-x[i])+x[i] )
+                if ((xx[k]>=c[i]) and (xx[k]<=c[i+1])):
+                    value = float((xx[k]-c[i])/(c[i+1]-c[i])*(x[i+1]-x[i])+x[i])
                     yy.append(value)
                     break
         return yy
+
+
+

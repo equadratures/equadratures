@@ -1,0 +1,5 @@
+Weibull
+====================
+
+.. automodule:: equadratures.distributions.weibull
+    :members:

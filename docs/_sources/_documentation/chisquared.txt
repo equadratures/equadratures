@@ -1,0 +1,5 @@
+Chi-squared
+====================
+
+.. automodule:: equadratures.distributions.chisquared
+    :members:

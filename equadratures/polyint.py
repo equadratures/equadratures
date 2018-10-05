@@ -1,9 +1,4 @@
-"""Operations involving multivariate polynomials (without gradients) via numerical quadrature. The following quadrature techniques are available for coefficient computation:
-    1. Tensor grids;
-    2. Sparse pseudospectral approximation method;
-
-References:
-    - Constantine, P. G., Eldred, M. S., & Phipps, E. T. (2012). Sparse pseudospectral approximation method. Computer Methods in Applied Mechanics and Engineering, 229, 1-12. `Paper <https://www.sciencedirect.com/science/article/pii/S0045782512000953>`_.
+"""Operations involving multivariate polynomials (without gradients) via numerical quadrature.
 """
 from parameter import Parameter
 from basis import Basis
@@ -27,9 +22,6 @@ class Polyint(Poly):
     """
     def __init__(self, parameters, basis):
         super(Polyint, self).__init__(parameters, basis)
-        """
-        Need to put data here!
-        """
         self.__computeQuadraturePoints()
 
     def __computeQuadraturePoints(self):
@@ -39,7 +31,7 @@ class Polyint(Poly):
         method = self.basis.basis_type
         if method.lower() == 'sparse grid':
             __ , indexset, evaled_pts, weights = getSparsePseudospectralCoefficients(self, dummy_function)
-        elif (method.lower() == 'tensor grid') or (method.lower() == 'tensor'):
+        elif (method.lower() == 'tensor grid') or (method.lower() == 'tensor') or (method.lower() == 'univariate'):
             __ , indexset, evaled_pts, weights = getPseudospectralCoefficients(self, dummy_function)
             self.basis.elements = indexset
         self.multi_index = indexset
@@ -50,13 +42,18 @@ class Polyint(Poly):
         """
         Returns multivariate orthonormal polynomial coefficients.
 
-        :param Polyint self: An instance of the Polyint class
-        :param: callable function: The function that needs to be approximated (or interpolated)
-        :return: coefficients: The pseudospectral coefficients
+        :param Polyint self: 
+            An instance of the Polyint class
+        :param: callable function:
+            The function that needs to be approximated (or interpolated)
+        :return: coefficients: 
+            The pseudospectral coefficients
         :rtype: ndarray
-        :return: indexset: The indices used for the pseudospectral computation
+        :return: indexset: 
+            The indices used for the pseudospectral computation
         :rtype: ndarray
-        :return: evaled_pts: The points at which the function was evaluated
+        :return: evaled_pts: 
+            The points at which the function was evaluated
         :rtype: ndarray
 
         """
@@ -64,7 +61,7 @@ class Polyint(Poly):
         method = self.basis.basis_type
         if method.lower() == 'sparse grid':
             coefficients, indexset, evaled_pts, weights = getSparsePseudospectralCoefficients(self, function)
-        elif (method.lower() == 'tensor grid') or (method.lower() == 'tensor'):
+        elif (method.lower() == 'tensor grid') or (method.lower() == 'tensor') or (method.lower() == 'univariate'):
             coefficients, indexset, evaled_pts, weights = getPseudospectralCoefficients(self, function)
             self.basis.elements = indexset
         self.coefficients = coefficients

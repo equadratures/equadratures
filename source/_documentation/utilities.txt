@@ -1,0 +1,17 @@
+Utilities
+==================
+To aid polynomial construction, as well as to facilitate statistical inference, a set of utilities have been coded up and are given below.
+
+.. toctree::
+   :maxdepth: 5
+
+   dr
+   convex
+   stats
+   qr
+   nataf
+
+
+
+.. automodule:: equadratures
+    :members:

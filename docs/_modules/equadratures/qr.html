@@ -1,0 +1,759 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>equadratures.qr &mdash; Effective Quadratures v7.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/logo.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../_documentation/index.html" class="icon icon-home"> Effective Quadratures
+          
+
+          
+            
+            <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                7.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/introduction.html">Effective Quadratures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/tutorials.html">Quick start guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_documentation/contact.html">Contact</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../_documentation/index.html">Effective Quadratures</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../_documentation/index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>equadratures.qr</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for equadratures.qr</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="sd">&quot;&quot;&quot;Utilities with QR factorization.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="k">import</span> <span class="n">qr</span>
+<span class="kn">import</span> <span class="nn">scipy.linalg</span> <span class="k">as</span> <span class="nn">sc</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">minimize</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="k">import</span> <span class="n">sqrtm</span>
+
+<span class="k">def</span> <span class="nf">implicitSymmetricQR</span><span class="p">(</span><span class="n">T</span><span class="p">):</span>
+    <span class="c1"># Preliminary parameters</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span> <span class="c1"># but because its symmetric m = n!</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">(</span> <span class="n">T</span><span class="p">[</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">T</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="p">(</span> <span class="n">T</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="n">T</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span><span class="o">/</span><span class="p">(</span> <span class="n">d</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">d</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">T</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span> <span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">mu</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># For loop with Givens rotation</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">givens</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+        <span class="n">G</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span>
+        <span class="n">G</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">s</span>
+        <span class="n">G</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
+        <span class="n">G</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">T</span> <span class="o">*</span> <span class="n">G</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">T</span>
+
+<div class="viewcode-block" id="gsvd"><a class="viewcode-back" href="../../_documentation/qr.html#equadratures.qr.gsvd">[docs]</a><span class="k">def</span> <span class="nf">gsvd</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	:param a: Matrix to GSVD</span>
+<span class="sd">	:param m: 1st Constraint, (u.T * m * u) = I</span>
+<span class="sd">	:param w: 2nd Constraint, (v.T * w * v) = I</span>
+<span class="sd">	:return: (u ,s, v)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+
+	<span class="p">(</span><span class="n">aHeight</span><span class="p">,</span> <span class="n">aWidth</span><span class="p">)</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span>
+	<span class="p">(</span><span class="n">mHeight</span><span class="p">,</span> <span class="n">mWidth</span><span class="p">)</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">shape</span>
+	<span class="p">(</span><span class="n">wHeight</span><span class="p">,</span> <span class="n">mWidth</span><span class="p">)</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">shape</span>
+
+	<span class="k">assert</span><span class="p">(</span><span class="n">aHeight</span> <span class="o">==</span> <span class="n">mHeight</span><span class="p">)</span>
+	<span class="k">assert</span><span class="p">(</span><span class="n">aWidth</span> <span class="o">==</span> <span class="n">mWidth</span><span class="p">)</span>
+
+	<span class="n">mSqrt</span> <span class="o">=</span> <span class="n">sqrtm</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+	<span class="n">wSqrt</span> <span class="o">=</span> <span class="n">sqrtm</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+
+
+	<span class="n">mSqrtInv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">mSqrt</span><span class="p">)</span>
+	<span class="n">wSqrtInv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">wSqrt</span><span class="p">)</span>
+
+	<span class="n">_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mSqrt</span><span class="p">,</span> <span class="n">a</span><span class="p">),</span> <span class="n">wSqrt</span><span class="p">)</span>
+
+	<span class="p">(</span><span class="n">_u</span><span class="p">,</span> <span class="n">_s</span><span class="p">,</span> <span class="n">_v</span><span class="p">)</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">_a</span><span class="p">)</span>
+
+	<span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mSqrtInv</span><span class="p">,</span> <span class="n">_u</span><span class="p">)</span>
+	<span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">wSqrtInv</span><span class="p">,</span> <span class="n">_v</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+	<span class="n">s</span> <span class="o">=</span> <span class="n">_s</span>
+</div>
+	<span class="k">return</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+<div class="viewcode-block" id="qr_Givens"><a class="viewcode-back" href="../../_documentation/qr.html#equadratures.qr.qr_Givens">[docs]</a><span class="k">def</span> <span class="nf">qr_Givens</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the Givens QR factorization of a matrix A</span>
+
+<span class="sd">    :param numpy matrix A: Matrix input for QR factorization</span>
+<span class="sd">    :return: Q, the m x m orthogonal matrix</span>
+<span class="sd">    :rtype: numpy matrix</span>
+<span class="sd">    :return: R, the m x n upper triangular matrix</span>
+<span class="sd">    :rtype: numpy matrix</span>
+
+<span class="sd">    **Sample declaration**</span>
+<span class="sd">    ::</span>
+<span class="sd">        &gt;&gt; Q, R = qr_Givens(A)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Declarations!</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+    <span class="c1">#Q_trans = np.mat(np.eye(m,m), dtype=&#39;float64&#39;)</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="n">G_store</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Introduce zeros by rows</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+                <span class="n">c</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">givens</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">j</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
+                <span class="n">G</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span>
+                <span class="n">G</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
+                <span class="n">G</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">s</span>
+                <span class="n">G</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span>
+                <span class="n">A</span><span class="p">[[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span> <span class="p">]</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">A</span><span class="p">[[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span> <span class="p">]</span>
+
+                <span class="c1"># Collect the individual Givens rotations!</span>
+                <span class="n">G_local</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+                <span class="n">G_local</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span>
+                <span class="n">G_local</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
+                <span class="n">G_local</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">s</span>
+                <span class="n">G_local</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span>
+                <span class="n">G_store</span> <span class="o">=</span> <span class="n">G_local</span> <span class="o">*</span> <span class="n">G_store</span>
+
+    <span class="n">R</span> <span class="o">=</span> <span class="n">A</span>
+</div>
+    <span class="k">return</span> <span class="n">G_store</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">R</span>
+
+<div class="viewcode-block" id="bidiag"><a class="viewcode-back" href="../../_documentation/qr.html#equadratures.qr.bidiag">[docs]</a><span class="k">def</span> <span class="nf">bidiag</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the bidiagonalization of the m-by-n matrix A := U B V&#39;, where</span>
+<span class="sd">    m &gt;=n. Here U is an m-by-n orthogonal matrix, B is a n-by-n bi-diagonal matrix</span>
+<span class="sd">    and V is a n-by-n orthogonal matrix.</span>
+
+<span class="sd">    :param numpy matrix A: an m-by-n matrix</span>
+<span class="sd">    :return: U, the left orthogonal matrix</span>
+<span class="sd">    :rtype: numpy matrix</span>
+<span class="sd">    :return: B, the bidiagonal matrix</span>
+<span class="sd">    :rtype: numpy matrix</span>
+<span class="sd">    :return: V, the right orthogonal matrix</span>
+<span class="sd">    :rtype: numpy matrix</span>
+
+<span class="sd">    ** Notes **</span>
+<span class="sd">    Uses the algorithm of Golub and Kahan (1965) and requires 4mn^2 - 4n^3/3 flops.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">if</span> <span class="n">m</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="p">:</span>
+        <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;bidiag(A): Only valid for an m-by-n matrix A, wher m&gt;=n.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Allocate space</span>
+    <span class="n">U</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="o">-</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">))</span> <span class="p">]</span> <span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span> <span class="c1"># For storing U and V Householder vectors</span>
+
+    <span class="c1"># For loop for computing bi-diagional matrix A</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="n">v</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">house</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">m</span><span class="o">-</span><span class="n">j</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">beta</span><span class="p">,</span>  <span class="n">v</span> <span class="o">*</span> <span class="n">v</span><span class="o">.</span><span class="n">T</span> <span class="p">))</span> <span class="o">*</span> <span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span><span class="p">]</span>
+        <span class="n">G</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">m</span><span class="o">-</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">2</span> <span class="p">:</span>
+            <span class="n">v</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">house</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span>  <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">beta</span><span class="p">,</span>  <span class="n">v</span> <span class="o">*</span> <span class="n">v</span><span class="o">.</span><span class="n">T</span> <span class="p">)</span> <span class="p">)</span>
+            <span class="n">G</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span> <span class="p">:</span> <span class="n">n</span><span class="o">-</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># Unpack U</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">G</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">]:</span>
+                <span class="n">beta</span> <span class="o">=</span> <span class="mf">2.0</span>
+                <span class="n">U</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">U</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span> <span class="n">beta</span><span class="p">,</span>  <span class="n">U</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">G</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="n">beta</span> <span class="o">=</span>  <span class="mf">2.0</span><span class="o">/</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">G</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">U</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">U</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span> <span class="n">beta</span><span class="p">,</span>  <span class="n">v</span><span class="p">)</span> <span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">T</span>  <span class="o">*</span> <span class="n">U</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
+
+    <span class="c1"># Unpack V</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">:</span>
+            <span class="n">beta</span> <span class="o">=</span> <span class="mf">2.0</span>
+            <span class="n">V</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">V</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span> <span class="n">beta</span><span class="p">,</span>  <span class="n">V</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">G</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>  <span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="n">beta</span> <span class="o">=</span>  <span class="mf">2.0</span><span class="o">/</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">G</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span><span class="n">n</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">V</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">V</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span> <span class="n">beta</span><span class="p">,</span>  <span class="n">v</span><span class="p">)</span> <span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">T</span>  <span class="o">*</span> <span class="n">V</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
+
+    <span class="c1"># Remove trailing zeros from A</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="n">U</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">V</span>
+<div class="viewcode-block" id="solveCLSQ"><a class="viewcode-back" href="../../_documentation/qr.html#equadratures.qr.solveCLSQ">[docs]</a><span class="k">def</span> <span class="nf">solveCLSQ</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">C</span><span class="p">,</span><span class="n">d</span><span class="p">,</span> <span class="n">technique</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d.</span>
+
+<span class="sd">    :param numpy matrix A: an m-by-n matrix</span>
+<span class="sd">    :param numpy matrix b: an m-by-1 matrix</span>
+<span class="sd">    :param numpy ndarray C: an k-by-n matrix</span>
+<span class="sd">    :param numpy ndarray d: an k-by-1 matrix</span>
+<span class="sd">    :param string technique: The technique for solving the least squares problem. Options include, weighted, constrainedDE, constrainedNS.</span>
+<span class="sd">    :return: x, the coefficients of the least squares problem.</span>
+<span class="sd">    :rtype: ndarray</span>
+
+
+<span class="sd">    method options: &#39;equality&#39;, &#39;weighted&#39;, &#39;inequality&#39;,...</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Size of matrices!</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">k</span><span class="p">,</span> <span class="n">l</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">s</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="c1"># Check that the number of elements in b are equivalent to the number of rows in A</span>
+    <span class="k">if</span> <span class="n">m</span> <span class="o">!=</span> <span class="n">p</span><span class="p">:</span>
+        <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;solveCLSQ(): mismatch in sizes of A and b&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">k</span> <span class="o">!=</span> <span class="n">s</span><span class="p">:</span>
+        <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;solveCLSQ(): mismatch in sizes of C and d&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">technique</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;weighted&#39;</span> <span class="ow">or</span> <span class="n">technique</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">cond</span> <span class="o">=</span> <span class="n">solveLSQ</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">A</span><span class="p">,</span> <span class="n">C</span><span class="p">])),</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">b</span><span class="p">,</span> <span class="n">d</span><span class="p">])))</span>
+    <span class="k">elif</span> <span class="n">technique</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;direct-elimination&#39;</span><span class="p">:</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">cond</span> <span class="o">=</span> <span class="n">directElimination</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">technique</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;null-space&#39;</span><span class="p">:</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">cond</span> <span class="o">=</span> <span class="n">nullSpaceMethod</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;solveCLSQ: Incorrect choice for technique. Choose between weighted, direct-elimination or null-space, please.&#39;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">cond</span>
+
+
+<div class="viewcode-block" id="nullSpaceMethod"><a class="viewcode-back" href="../../_documentation/qr.html#equadratures.qr.nullSpaceMethod">[docs]</a><span class="k">def</span> <span class="nf">nullSpaceMethod</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solves the constrained least squares problem min ||Ax-b||_2 subject to Cx=d via the null space method.</span>
+<span class="sd">    :param numpy ndarray A: an m-by-n A matrix</span>
+<span class="sd">    :param numpy ndarray b: an m-by-1 b matrix</span>
+
+<span class="sd">    :return: x, the coefficients of the least squares problem.</span>
+<span class="sd">    :rtype: ndarray</span>
+<span class="sd">    :return: cond, the condition number of the final matrix on which least squares is performed</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">p</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">Q</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="n">qr</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s1">&#39;complete&#39;</span><span class="p">)</span>
+    <span class="c1">#Q, R = qr_Householder(C.T)</span>
+    <span class="n">Q1</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">p</span><span class="p">]</span>
+    <span class="n">Q2</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span><span class="n">n</span><span class="p">]</span>
+    <span class="c1"># Lower triangular matrix!</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">p</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">p</span><span class="p">]</span>
+    <span class="n">y1</span><span class="p">,</span> <span class="n">not_required</span> <span class="o">=</span> <span class="n">solveLSQ</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">b</span> <span class="o">-</span> <span class="p">(</span><span class="n">A</span> <span class="o">*</span> <span class="n">Q1</span><span class="p">)</span> <span class="o">*</span> <span class="n">y1</span>
+    <span class="n">AQ2</span> <span class="o">=</span> <span class="n">A</span> <span class="o">*</span> <span class="n">Q2</span>
+    <span class="n">y2</span><span class="p">,</span> <span class="n">not_required</span> <span class="o">=</span> <span class="n">solveLSQ</span><span class="p">(</span><span class="n">AQ2</span> <span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">Q1</span> <span class="o">*</span> <span class="n">y1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">Q2</span> <span class="o">*</span> <span class="n">y2</span><span class="p">)</span>
+    <span class="n">cond</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">AQ2</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">cond</span>
+ 
+<div class="viewcode-block" id="directElimination"><a class="viewcode-back" href="../../_documentation/qr.html#equadratures.qr.directElimination">[docs]</a><span class="k">def</span> <span class="nf">directElimination</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solves the constrained least squares problem min ||Ax-b||_2 subject to Cx=d via the direct elimination method.</span>
+<span class="sd">    :param numpy ndarray A: an m-by-n A matrix</span>
+<span class="sd">    :param numpy ndarray b: an m-by-1 b matrix</span>
+
+<span class="sd">    :return: x, the coefficients of the least squares problem.</span>
+<span class="sd">    :rtype: ndarray</span>
+<span class="sd">    :return: cond, the condition number of the final matrix on which least squares is performed</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#Q, R, pvec = qr(C, pivoting=True)</span>
+    <span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P2</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">qr</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">pivoting</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">m1</span><span class="p">,</span> <span class="n">n1</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">permvec2mat</span><span class="p">(</span><span class="n">P2</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+    <span class="n">R_11</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">r</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">r</span><span class="p">]</span>
+    <span class="n">R_12</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">r</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span><span class="n">n1</span><span class="p">]</span>
+    <span class="n">d_tilde</span> <span class="o">=</span> <span class="n">Q</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">d</span>
+    <span class="n">d1_tilde</span> <span class="o">=</span> <span class="n">d_tilde</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">r</span><span class="p">]</span>
+    <span class="c1">#d2_tilde = d_tilde[r: m1]</span>
+    <span class="n">A_tilde</span> <span class="o">=</span> <span class="n">A</span> <span class="o">*</span> <span class="n">P</span>
+    <span class="n">A1_tilde</span> <span class="o">=</span> <span class="n">A_tilde</span><span class="p">[:,</span> <span class="mi">0</span> <span class="p">:</span> <span class="n">r</span><span class="p">]</span>
+    <span class="n">A2_tilde</span> <span class="o">=</span> <span class="n">A_tilde</span><span class="p">[:,</span> <span class="n">r</span> <span class="p">:</span> <span class="n">n1</span><span class="p">]</span>
+    <span class="n">A2_hat</span> <span class="o">=</span> <span class="n">A2_tilde</span> <span class="o">-</span> <span class="n">A1_tilde</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">R_11</span><span class="p">)</span> <span class="o">*</span> <span class="n">R_12</span>
+    <span class="n">b_hat</span> <span class="o">=</span> <span class="n">b</span> <span class="o">-</span> <span class="n">A1_tilde</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">R_11</span><span class="p">)</span> <span class="o">*</span> <span class="n">d1_tilde</span>
+    <span class="n">x2_tilde</span> <span class="p">,</span> <span class="n">cond_not_used</span> <span class="o">=</span> <span class="n">solveLSQ</span><span class="p">(</span><span class="n">A2_hat</span><span class="p">,</span> <span class="n">b_hat</span><span class="p">)</span>
+    <span class="n">x1_tilde</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">R_11</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">d1_tilde</span> <span class="o">-</span> <span class="n">R_12</span> <span class="o">*</span> <span class="n">x2_tilde</span><span class="p">)</span>
+    <span class="n">x_tilde</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">x1_tilde</span><span class="p">,</span> <span class="n">x2_tilde</span><span class="p">])</span> <span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="n">cond</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">A2_hat</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">P</span> <span class="o">*</span> <span class="n">x_tilde</span></div>
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">cond</span>
+
+<div class="viewcode-block" id="solveLSQ"><a class="viewcode-back" href="../../_documentation/qr.html#equadratures.qr.solveLSQ">[docs]</a><span class="k">def</span> <span class="nf">solveLSQ</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solves the direct least squares problem ||Ax-b||_2 using the method of QR factorization</span>
+
+<span class="sd">    :param numpy ndarray A: an m-by-n A matrix</span>
+<span class="sd">    :param numpy ndarray b: an m-by-1 b matrix</span>
+
+<span class="sd">    :return: x, the coefficients of the least squares problem.</span>
+<span class="sd">    :rtype: ndarray</span>
+<span class="sd">    :return: cond, the condition number of the matrix A</span>
+<span class="sd">    :rtype: float</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Direct methods!</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">alpha</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="house"><a class="viewcode-back" href="../../_documentation/qr.html#equadratures.qr.house">[docs]</a><span class="k">def</span> <span class="nf">house</span><span class="p">(</span><span class="n">vec</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a scalar and a vector that may be used to form a Householder matrix</span>
+
+<span class="sd">    :param numpy ndarray vec: The input vector that needs to be reflected in the hyperplane</span>
+<span class="sd">        spanned by the Householder vector, v</span>
+
+<span class="sd">    :return: v, the Householder vector</span>
+<span class="sd">    :rtype: ndarray</span>
+<span class="sd">    :return: beta, the Householder scalar</span>
+<span class="sd">    :rtype: double</span>
+
+<span class="sd">    **Notes**</span>
+<span class="sd">        The Householder vector is given by P = I - beta * v * v&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vec</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">m</span><span class="p">]</span><span class="o">.</span><span class="n">T</span> <span class="p">,</span> <span class="n">vec</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">m</span><span class="p">]</span> <span class="p">)</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">vec</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">m</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">betav</span> <span class="o">=</span> <span class="n">vec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">sigma</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">vec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">elif</span> <span class="n">sigma</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">vec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="p">:</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">vec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mf">2.0</span> <span class="o">+</span> <span class="n">sigma</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">vec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">mu</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">mu</span> <span class="o">+</span> <span class="n">vec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mf">1.0</span> <span class="p">)</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mf">2.0</span><span class="p">)</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">/</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">T</span></div>
+    <span class="k">return</span> <span class="n">v</span><span class="p">,</span> <span class="n">beta</span>
+
+<div class="viewcode-block" id="qr_MGS"><a class="viewcode-back" href="../../_documentation/qr.html#equadratures.qr.qr_MGS">[docs]</a><span class="k">def</span> <span class="nf">qr_MGS</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">pivoting</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the thin QR factorization via the Modified Gram Schmidt Method</span>
+
+<span class="sd">    :param numpy matrix A: Matrix input for QR factorization</span>
+<span class="sd">    :param sting pivoting: Set pivoting to yes to compute a QR with column pivoting factorization.</span>
+<span class="sd">    :return: Q, the m x n orthogonal matrix</span>
+<span class="sd">    :rtype: numpy matrix</span>
+<span class="sd">    :return: R, the n x n upper triangular matrix</span>
+<span class="sd">    :rtype: numpy matrix</span>
+
+<span class="sd">    **Sample declaration**</span>
+<span class="sd">    ::</span>
+<span class="sd">        &gt;&gt; Q, R = qr_MGS(A)</span>
+<span class="sd">        &gt;&gt; Q, R, p = qr_MGS(A, pivoting=&#39;yes&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">pivoting</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">qr_MGS_Pivoting</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">m</span> <span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Min and maximum values</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">m</span><span class="p">,</span><span class="n">n</span><span class="p">])</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">m</span><span class="p">,</span><span class="n">n</span><span class="p">])</span>
+
+    <span class="c1"># Outer for loop for MGS QR factorization</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+
+        <span class="c1"># Re-orthogonalization</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="p">(</span><span class="n">Q</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="p">,</span><span class="n">i</span><span class="p">])</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="p">,</span><span class="n">k</span><span class="p">]</span>
+                <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">alpha</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">Q</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="p">,</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="c1"># Normalization</span>
+        <span class="n">R</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">k</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">const</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">k</span><span class="p">]</span>
+        <span class="n">Q</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">R</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">k</span><span class="p">])</span>
+
+        <span class="c1"># Orthogonalization</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+                <span class="n">R</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">Q</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="p">,</span><span class="n">k</span><span class="p">])</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="p">,</span><span class="n">j</span><span class="p">];</span>
+                <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">*</span> <span class="n">Q</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="p">,</span><span class="n">k</span><span class="p">];</span>
+</div>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">,</span> <span class="n">R</span>
+
+<span class="k">def</span> <span class="nf">qr_MGS_Pivoting</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+
+    <span class="c1"># Determine the size of</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">m</span> <span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">])</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">])</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Initialize!</span>
+    <span class="n">column_norms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">))</span>
+    <span class="n">pivots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int16&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Compute the column norms</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">column_norms</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A</span><span class="p">[:,</span><span class="n">j</span><span class="p">]),</span> <span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+
+
+    <span class="c1"># Now loop!</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+
+        <span class="c1">#----------------------------------------------</span>
+        <span class="c1"># Step 0: Column norm sorting</span>
+        <span class="c1">#----------------------------------------------</span>
+        <span class="c1"># Find the &quot;j*&quot; column index with the highest</span>
+        <span class="c1"># column norm</span>
+        <span class="n">j_star</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">column_norms</span><span class="p">[</span><span class="n">k</span><span class="p">:</span><span class="n">n</span><span class="p">])</span>
+        <span class="n">r_star</span> <span class="o">=</span> <span class="n">j_star</span> <span class="o">+</span> <span class="n">k</span>
+
+
+        <span class="c1"># If j_star = k, skip to step 1, else swap columns!</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="n">j_star</span><span class="p">:</span>
+
+            <span class="c1"># Swap columns in A:</span>
+            <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="p">[</span><span class="n">r_star</span><span class="p">,</span> <span class="n">k</span><span class="p">]]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">r_star</span><span class="p">]]</span>
+            <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="p">[</span><span class="n">r_star</span><span class="p">,</span> <span class="n">k</span><span class="p">]]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">r_star</span><span class="p">]]</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="n">pivots</span><span class="p">[</span><span class="n">r_star</span><span class="p">]</span>
+            <span class="n">pivots</span><span class="p">[</span><span class="n">r_star</span><span class="p">]</span> <span class="o">=</span> <span class="n">pivots</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">pivots</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span>
+            <span class="k">del</span> <span class="n">temp</span>
+        <span class="c1">#-----------------------------------------------</span>
+        <span class="c1"># Step 1: Reorthogonalization</span>
+        <span class="c1">#-----------------------------------------------</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Q</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">T</span> <span class="p">,</span> <span class="n">A</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span> <span class="p">)</span>
+                <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">alpha</span>
+                <span class="n">A</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">Q</span><span class="p">[:,</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="c1">#----------------------------------------------</span>
+        <span class="c1"># Step 2: Normalization</span>
+        <span class="c1">#----------------------------------------------</span>
+        <span class="n">R</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A</span><span class="p">[:,</span><span class="n">k</span><span class="p">]),</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">R</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">k</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mf">1e-15</span><span class="p">:</span>
+            <span class="n">Q</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">R</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">k</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Q</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A</span><span class="p">[:,</span><span class="n">k</span><span class="p">])</span>
+        <span class="c1">#----------------------------------------------</span>
+        <span class="c1"># Step 3: Orthogonalization</span>
+        <span class="c1">#----------------------------------------------</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+                <span class="n">R</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Q</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">T</span> <span class="p">,</span> <span class="n">A</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span> <span class="p">)</span>
+                <span class="n">A</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">R</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">Q</span><span class="p">[:,</span><span class="n">k</span><span class="p">]))</span>
+
+                <span class="c1"># Now re-compute column norms</span>
+                <span class="n">column_norms</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A</span><span class="p">[:,</span><span class="n">j</span><span class="p">]),</span> <span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+
+
+    <span class="k">return</span> <span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">pivots</span>
+
+<div class="viewcode-block" id="qr_Householder"><a class="viewcode-back" href="../../_documentation/qr.html#equadratures.qr.qr_Householder">[docs]</a><span class="k">def</span> <span class="nf">qr_Householder</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the Householder QR factorization of a matrix A</span>
+
+<span class="sd">    :param numpy matrix A: Matrix input for QR factorization</span>
+<span class="sd">    :return: Q, the m x m orthogonal matrix</span>
+<span class="sd">    :rtype: numpy matrix</span>
+<span class="sd">    :return: R, the m x n upper triangular matrix</span>
+<span class="sd">    :rtype: numpy matrix</span>
+
+<span class="sd">    **Sample declaration**</span>
+<span class="sd">    ::</span>
+<span class="sd">        &gt;&gt; Q, R = qr_Householder(A)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">m</span><span class="p">,</span><span class="n">n</span><span class="p">])</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">m</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="n">v</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">house</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">m</span><span class="o">-</span><span class="n">j</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">beta</span><span class="p">,</span>  <span class="n">v</span> <span class="o">*</span> <span class="n">v</span><span class="o">.</span><span class="n">T</span> <span class="p">))</span> <span class="o">*</span> <span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">n</span><span class="p">]</span>
+        <span class="c1"># The section below ensures that the lower triangular portion of A stores the Householder</span>
+        <span class="c1"># vectors that will be used when computing Q!</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">m</span> <span class="p">:</span>
+            <span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">m</span><span class="o">-</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+
+    <span class="c1"># Computing Q using backward accumulation of lower triangular part of A!</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">]:</span>
+                <span class="n">beta</span> <span class="o">=</span> <span class="mf">2.0</span>
+                <span class="n">Q</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span> <span class="n">beta</span><span class="p">,</span>  <span class="n">Q</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="n">beta</span> <span class="o">=</span>  <span class="mf">2.0</span><span class="o">/</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">Q</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span> <span class="n">beta</span><span class="p">,</span>  <span class="n">v</span><span class="p">)</span> <span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">T</span>  <span class="o">*</span> <span class="n">Q</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span><span class="n">m</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
+
+</div>
+    <span class="k">return</span> <span class="n">Q</span><span class="p">,</span> <span class="n">R</span>
+
+<div class="viewcode-block" id="permvec2mat"><a class="viewcode-back" href="../../_documentation/qr.html#equadratures.qr.permvec2mat">[docs]</a><span class="k">def</span> <span class="nf">permvec2mat</span><span class="p">(</span><span class="n">vec</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts a permutation vector into a permutation matrix</span>
+
+<span class="sd">    :param numpy matrix p: A 1 x k vector of permutation indices (all integers)</span>
+<span class="sd">    :return: P, the k x k permutation matrix</span>
+<span class="sd">    :rtype: numpy matrix</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">vec</span><span class="p">[</span><span class="n">counter</span><span class="p">]:</span>
+                <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">counter</span> <span class="o">=</span> <span class="n">counter</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">break</span></div>
+    <span class="k">return</span> <span class="n">P</span><span class="o">.</span><span class="n">T</span>
+
+<span class="c1"># Private functions below!</span>
+<span class="k">def</span> <span class="nf">givens</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">b</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="mf">1.0</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">tau</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">s</span> <span class="o">*</span> <span class="n">tau</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="mf">1.0</span><span class="p">)</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">tau</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">c</span> <span class="o">*</span> <span class="n">tau</span>
+
+    <span class="k">return</span> <span class="n">c</span><span class="p">,</span> <span class="n">s</span>
+
+<span class="k">def</span> <span class="nf">rowNormalize</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">row_norms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="n">Normalization</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cols</span><span class="p">):</span>
+            <span class="n">row_norms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span> <span class="o">+</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="n">row_norms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">row_norms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">row_norms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">cols</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Normalization</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">row_norms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">A_normalized</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Normalization</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">A_normalized</span><span class="p">,</span> <span class="n">Normalization</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016-2018 by Effective Quadratures.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'v7.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -7,10 +7,9 @@ class Basis(object):
     Basis class constructor.
 
     :param string basis_type: The type of index set to be used. Options include:
-        `Total order`, `Tensor grid`, `Sparse grid`, `Hyperbolic basis` and `Euclidean degree`. All basis are isotropic. If you require anisotropic basis do email us.
+        `Univariate', `Total order`, `Tensor grid`, `Sparse grid`, `Hyperbolic basis` and `Euclidean degree`. All basis are isotropic. If you require anisotropic basis do email us.
     :param ndarray orders: List of integers corresponding to the highest polynomial order in each direction.
     :param string growth_rule: The type of growth rule associated with sparse grids. Options include: `linear' and `exponential'. This input is only required when using a sparse grid.
-    :param integer dimensions: The number of dimensions of the problem. This input is only required when using a sparse grid.
     :param double q: The `q' parameter is used to control the number of basis terms used in a hyperbolic basis. It varies between 0.0 to 1.0. A value of 1.0 yields a total order basis.
 
     Attributes:
@@ -68,6 +67,8 @@ class Basis(object):
         name = self.basis_type
         if name.lower() == "total order":
             basis = total_order_basis(self.orders)
+        elif name.lower() ==  "univariate":
+            basis = np.reshape( np.linspace(0, self.orders[0], self.orders[0]+1) , (self.orders[0]+1, 1) )
         elif name.lower() == "sparse grid":
             sparse_index, a, SG_set = sparse_grid_basis(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
             basis = SG_set
@@ -84,7 +85,7 @@ class Basis(object):
         self.elements = basis
         self.cardinality = len(basis)
 
-        # Don't sort a sparse grid index set, because the order is tied to the coefficients!
+        ## Don't sort a sparse grid index set, because the order is tied to the coefficients!
         if name =="Hyperbolic basis":
             self.sort()
         elif name == "Euclidean degree":

@@ -1,0 +1,5 @@
+Gamma
+=========
+
+.. automodule:: equadratures.distributions.gamma
+    :members:

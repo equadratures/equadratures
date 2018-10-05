@@ -13,14 +13,19 @@ class Poly(object):
 
     """
     def __init__(self, parameters, basis):
+        try:
+            len(parameters)
+        except TypeError:
+            parameters = [parameters]
         self.parameters = parameters
         self.basis = basis
         self.dimensions = len(parameters)
         self.orders = []
-        for i in range(0, self.dimensions):
-            self.orders.append(self.parameters[i].order)
         if not self.basis.orders :
+            for i in range(0, self.dimensions):
+                self.orders.append(self.parameters[i].order)
             self.basis.setOrders(self.orders)
+
     def __setCoefficients__(self, coefficients):
         """
         Sets the coefficients for polynomial. This function will be called by the children of Poly
@@ -87,7 +92,11 @@ class Poly(object):
         else:
             basis = customBases
         basis_entries, dimensions = basis.shape
-        no_of_points, _ = stackOfPoints.shape
+
+        if stackOfPoints.ndim == 1:
+            no_of_points = 1
+        else:
+            no_of_points, __ = stackOfPoints.shape 
         polynomial = np.zeros((basis_entries, no_of_points))
         p = {}
 
@@ -129,8 +138,8 @@ class Poly(object):
 
         # Save time by returning if univariate!
         if dimensions == 1:
-            poly , _ =  self.parameters[0]._getOrthoPoly(stackOfPoints)
-            return poly
+            _ , dpoly =  self.parameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis) ) )
+            return dpoly
         else:
             for i in range(0, dimensions):
                 if len(stackOfPoints.shape) == 1:
@@ -171,7 +180,7 @@ class Poly(object):
         ww = [1.0]
 
         if orders is None:
-            orders = self.orders
+            orders = self.basis.orders
 
         # number of parameters
         # For loop across each dimension
@@ -209,9 +218,7 @@ class Poly(object):
             evals = self.getPolynomial(self.quadraturePoints)
             return Statistics(self.coefficients, self.basis, self.parameters, self.quadraturePoints, self.quadratureWeights, evals, max_sobol_order)
         else:
-            return Statistics(self.coefficients, self.basis, self.parameters, max_sobol_order=max_sobol_order)
-
-            
+            return Statistics(self.coefficients, self.basis, self.parameters, max_sobol_order=max_sobol_order)            
     def getQuadratureRule(self, options=None, number_of_points = None):
         """
         Generates quadrature points and weights.
@@ -240,10 +247,10 @@ class Poly(object):
             p = np.zeros((default_number_of_points, self.dimensions))
             w = 1.0/float(default_number_of_points) * np.ones((default_number_of_points))
             for i in range(0, self.dimensions):
-                p[:,i] = np.array(self.parameters[i].getSamples(m=default_number_of_points)).reshape((default_number_of_points,))
+                p[:,i] = np.array(self.parameters[i].getSamples(default_number_of_points)).reshape((default_number_of_points,))
             return p, w
 
-        if options.lower() == 'tensor grid':
+        if options.lower() == 'tensor grid' or options.lower() == 'quadrature':
             p,w = self.getTensorQuadratureRule([i for i in self.basis.orders])
             return p,w
     def evaluatePolyFit(self, stackOfPoints):

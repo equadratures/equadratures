@@ -1,11 +1,22 @@
-"""A library of convex optimizers"""
+"""A library of convex optimizers.
+
+References:
+    - Joshi, S., Boyd, S., (2009) Sensor selection via convex optimization, IEEE Transactions on Signal Processing, 57(2). `Paper <https://web.stanford.edu/~boyd/papers/pdf/sensor_selection.pdf>`_.
+    - Candes, E., Romberg, J., (2005) L1-Magic: Recovery of sparse signals via convex programming. `Paper <https://statweb.stanford.edu/~candes/l1magic/downloads/l1magic.pdf>`_.
+"""
 import numpy as np
 from scipy.linalg import det, cholesky, lstsq
-
-
 def maxdet(Amatrix, k):
     """
-    Formulation of the determinant maximization as a convex program
+    Determinant maximization routine.
+
+    :param numpy-matrix Amatrix:
+        A matrix with more columns than rows.
+    :param int k:
+        The number of column subsamples required such that the determinant of the resulting matrix is maximized.
+
+    **Notes**
+        This code is based on Newton's method as detailed in Joshi and Boyd (2009).
     """
     maxiter = 50
     n_tol = 1e-12
@@ -93,8 +104,17 @@ def maxdet(Amatrix, k):
     return zhat, L, ztilde, Utilde
 def CG_solve(A, b, max_iters, tol):
     """
-    Solves Ax = b iteratively using conjugate gradient.
-    A must be a SPD matrix
+    Solves Ax = b iteratively using conjugate gradient, assuming A is a symmetric positive definite matrix.
+
+    :param numpy-matrix A:
+        The matrix.
+    :param numpy-array b:
+        The right hand side column vector.
+    :param int max_iters:
+        Maximum number of iterations for the conjugate gradient algorithm.
+    :param double tol:
+        Tolerance for cut-off.
+
     """
     if not(np.all(np.linalg.eigvals(A) > 0)):
         raise ValueError('A is not symmetric positive definite.')
@@ -137,9 +157,18 @@ def CG_solve(A, b, max_iters, tol):
     return x.flatten(), residual, iterations
 def bp(A, b, x0 = None, cgtol = None, cgmaxiter = None, pdtol = None, pdmaxiter = None, verbose = False, use_CG = False):
     """
-    l1 minimization with equality constraint Ax = b.
-    (Noiseless basis pursuit)
-    Adapted from l1-magic, l1eq_pd.m (Candes and Romberg)
+    Solving the noiseless basis pursuit problem.
+
+    :param numpy-matrix A:
+        The matrix.
+    :param numpy-array b:
+        The right hand side column vector.
+    :param numpy-array x0:
+        Initial solution; if not provided the least norm solution is used.
+    :param double cgtol:
+        Tolerance for conjugate gradients.
+    :param int cgmaxiter:
+        Maximum number of iterations for the conjugate gradient method.
     """
 
     # Free parameters
@@ -305,9 +334,17 @@ def bp(A, b, x0 = None, cgtol = None, cgmaxiter = None, pdtol = None, pdmaxiter 
     return xp
 def bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cgmaxiter = 200, verbose = False, use_CG = False):
     """
-    l1 minimization with inequality constraint ||Ax - b||_2 <= epsilon.
-    (Basis pursuit denoising)
-    Adapted from l1-magic, l1qc_logbarrier.m (Candes and Romberg)
+    Solving the basis pursuit de-noising problem.
+
+    :param numpy-matrix A:
+        The matrix.
+    :param numpy-array b:
+        The right hand side column vector.
+    :param double epsilon:
+        The noise.
+    :param numpy-array x0:
+        Initial solution; if not provided the least norm solution is used.
+
     """
 
     newtontol = lbtol;
@@ -372,6 +409,7 @@ def bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cg
       tau *= mu
 
     return xp
+
 def l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter, verbose, use_CG):
     # line search parameters
     alpha = 0.01;

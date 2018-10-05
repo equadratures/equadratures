@@ -1,5 +1,0 @@
-Index Sets
-===========
-
-.. automodule:: equadratures.indexset
-    :members:

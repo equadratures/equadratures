@@ -1,0 +1,11 @@
+Coefficient computation
+========================
+The modules below are used for coefficient computation.
+
+.. toctree::
+   :maxdepth: 3
+
+   polyreg
+   polyint
+   polycs
+   polylsq

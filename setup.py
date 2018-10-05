@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='equadratures',
-      version='6.0',
+      version='7.0',
       description='Set of codes for polynomial approximation',
       long_description=readme(),
       classifiers=[
@@ -18,7 +18,7 @@ setup(name='equadratures',
       author='Pranay Seshadri',
       author_email='ps583@cam.ac.uk',
       license='MIT',
-      packages=['equadratures'],
+      packages=['equadratures', 'equadratures.distributions'],
       install_requires=[
           'numpy',
           'scipy >= 0.15.0',

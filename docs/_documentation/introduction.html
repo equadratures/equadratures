@@ -1,0 +1,292 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Effective Quadratures &mdash; Effective Quadratures v7.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Modules" href="modules.html" />
+    <link rel="prev" title="Sitemap" href="index.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Effective Quadratures
+          
+
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                7.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Effective Quadratures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#download-links">Download Links</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license-and-copyright">License and copyright</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Quick start guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Effective Quadratures</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Effective Quadratures</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/_documentation/introduction.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="effective-quadratures">
+<h1>Effective Quadratures<a class="headerlink" href="#effective-quadratures" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>Effective Quadratures is an open-source Python-based library that supports a wide range of utilities in <em>uncertainty quantification</em>, <em>dimension reduction</em>, <em>sensitivity analysis</em> and <em>optimisation</em>—all using polynomials. The project was initially born out of a need to replicate the results of various works within the field of polynomial chaos. It has subsequently morphed into a dedicated effort to use polynomials for a range of objectives under the broad umbrella of <strong>supervised machine learning</strong>.</p>
+<p>The primary developers are academics at the <a class="reference external" href="http://www.cam.ac.uk">University of Cambridge</a>, with advisory support from <a class="reference external" href="http://www.stanford.edu">Stanford University</a>, <a class="reference external" href="https://unica.it/unica/">Universita degli Studi di Cagliari</a>, and the <a class="reference external" href="http://www.utah.edu">University of Utah</a>. The project is under active development and we use Travis and Coveralls for testing.</p>
+<a class="reference external image-reference" href="https://travis-ci.org/Effective-Quadratures/"><img alt="https://travis-ci.org/Effective-Quadratures/Effective-Quadratures.svg?branch=master" src="https://travis-ci.org/Effective-Quadratures/Effective-Quadratures.svg?branch=master" /></a>
+<a class="reference external image-reference" href="https://coveralls.io/github/Effective-Quadratures/Effective-Quadratures?branch=master"><img alt="https://coveralls.io/repos/github/Effective-Quadratures/Effective-Quadratures/badge.svg?branch=master" src="https://coveralls.io/repos/github/Effective-Quadratures/Effective-Quadratures/badge.svg?branch=master" /></a>
+</div>
+<div class="section" id="download-links">
+<h2>Download Links<a class="headerlink" href="#download-links" title="Permalink to this headline">¶</a></h2>
+<p>To download the code, please visit <a class="reference external" href="http://www.effective-quadratures.org">www.effective-quadratures.org</a>. Click either on the <em>Fork Code</em> button or the Github link.</p>
+<p><strong>Installation:</strong>
+For installation on Mac and Linux systems, simply type the following into the terminal.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>For installation on Windows, you will need <a class="reference external" href="https://www.continuum.io/downloads#windows">Anaconda</a>; select the Python 2.7 option. Upon successful installation, open the Sypder IDE and go into the Effective-Quadratures-master directory and type the following in the command window</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>This should build the code. Just make sure you include the location of effective_quadratures folder to your python file and you should be good to go. To run this code you will require python 2.7, numpy, scipy and matplotlib.</p>
+</div>
+<div class="section" id="license-and-copyright">
+<h2>License and copyright<a class="headerlink" href="#license-and-copyright" title="Permalink to this headline">¶</a></h2>
+<p>As of version 7.0, Effective Quadratures is under an end-user license agreement (<span class="guilabel">EULA</span>). Details of this agreement can be found <a class="reference external" href="https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/LICENCE.pdf">here</a>. There are two types of licenses that may be used:</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last"><strong>For-profit license</strong>.
+The Licensee shall not modify, adapt, disassemble, reverse engineer, decompile, translate or otherwise attempt to discover the source code of the Software or permit any of these things to happen except as allowed by applicable law. The for-profit Licensee shall sign, date and return a copy of this licence to <a class="reference external" href="mailto:contact&#37;&#52;&#48;effective-quadratures&#46;org">contact<span>&#64;</span>effective-quadratures<span>&#46;</span>org</a>.</p>
+</div>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last"><strong>Not-for-profit license</strong>.
+The Licensee may correct errors, modify the Software and create derivative works.  The Licensee shall copy all error corrections promptly to the Licensor and hereby assigns copyright in them to the Licensor.  The Licensee shall own modifications and derivative works it makes of the Software but not any Software incorporated in them.  The restrictions in clause 3 shall also apply to any modification or derivative work, to the extent that it is based on or utilises the Software, unless the Licensor’s prior written consent to vary the restrictions has been obtained.  Such consent shall be subject to payment and to such other terms as may be fair and reasonable in the circumstances.</p>
+</div>
+<p>This implies that for strictly not-for-profit purposes (e.g., largely academic and research institutions), the software is free. For for-profit entities, use of the code may be subject to a license.</p>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<table class="docutils footnote" frame="void" id="id1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td>Seshadri, P., Iaccarino, G., Ghisu, T. Quadrature Strategies for Constructing Polynomial Approximations. [To appear in Springer shortly]. Preprint available: <a class="reference external" href="https://arxiv.org/abs/1805.07296">Paper</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[2]</td><td>Seshadri, P., Narayan, A., Sankaran M. Effectively Subsampled Quadratures for Least Squares Polynomial Approximations.” SIAM/ASA Journal on Uncertainty Quantification 5.1 (2017): 1003-1023. <a class="reference external" href="https://epubs.siam.org/doi/abs/10.1137/16M1057668">Paper</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[3]</td><td>Seshadri, P., Parks, G. T., Effective-Quadratures (EQ): Polynomials for Computational Engineering Studies, Journal of Open Source Software, 2(11), 166, <a class="reference external" href="http://joss.theoj.org/papers/ba651f2b3608a5d2b085af06b1108747">Paper</a></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="modules.html" class="btn btn-neutral float-right" title="Modules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Sitemap" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016-2018 by Effective Quadratures.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'v7.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

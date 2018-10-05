@@ -1,0 +1,5 @@
+Beta
+====================
+
+.. automodule:: equadratures.distributions.beta
+    :members:

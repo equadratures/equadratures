@@ -1,0 +1,5 @@
+Exponential
+====================
+
+.. automodule:: equadratures.distributions.exponential
+    :members:

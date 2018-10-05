@@ -1,4 +1,4 @@
-"""Finding coefficients via compressive sensing"""
+"""Finding coefficients via compressive sensing."""
 from .parameter import Parameter
 from .basis import Basis
 from poly import Poly
@@ -11,11 +11,12 @@ from utils import columnNormalize
 
 class Polycs(Poly):
     """
-    This class defines a Polycs (polynomial via compressive sensing) object
-    :param ndarray training_inputs: Points at which the model is evaluated.
+    This class defines a Polycs (polynomial via compressive sensing) object.
+
+    :param array training_inputs: Points at which the model is evaluated.
     :param IndexSet basis: An instance of the IndexSet class, in case the user wants to overwrite the indices that are obtained using the orders of the univariate parameters in Parameters uq_parameters. The latter corresponds to a tensor grid index set and is the default option if no basis parameter input is given.
     :param list parameters: List of instances of Parameters class.
-    :param ndarray training_outputs: Column vector of regression targets corresponding to each row of training_inputs. Either this or fun should be specified, but not both. If this is specified, training_inputs must also be specified.
+    :param array training_outputs: Column vector of regression targets corresponding to each row of training_inputs. Either this or fun should be specified, but not both. If this is specified, training_inputs must also be specified.
     :param callable fun: Function to evaluate training_inputs on to obtain regression targets automatically. Either this or fun should be specified, but not both.
     :param str sampling: Sampling method for non-data-driven model. Valid sampling methods include "standard", "asymptotic" and "dlm".
     :param str quadrature_rule: Quadrature rule. Can be 'qmc' or 'tensor grid'. Refer to documentation for poly.py for more details.
@@ -100,18 +101,20 @@ class Polycs(Poly):
         
         best_epsilon = epsilon[np.argmin(mean_errors)]
         x = bp_denoise(A, y, best_epsilon)
-#        print best_epsilon
-        #Calculate residue
         residue = np.linalg.norm(np.dot(A, x).flatten() - y.flatten())
-#        print "-----"
-#        print "overall residue (Should be within noise bound!)"
-#        print residue
-#        print "-----"
         self.coefficients = np.reshape(x, (len(x),1))
     
     def getQuadraturePointsWeights(self, points):
+        """
+        Generates quadrature points and weights.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param int number_of_points:
+            Generates a quadrature rule based on the number of points; if an integer value is provided then, QMC is used.
+        """
         if points is None:
-            points = 10000
+            points = 4000
         p, w = self.getQuadratureRule(options = self.quadrature_rule, number_of_points = points)
         super(Polycs, self).__setQuadrature__(p,w)
 

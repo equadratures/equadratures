@@ -1,0 +1,5 @@
+To build the documentation, simply type:
+sphinx-build -b html source/ docs/
+
+Also ensure that the index.html page in docs/ has the following line:
+<meta http-equiv="refresh" content="0; url=./_documentation/introduction.html" />

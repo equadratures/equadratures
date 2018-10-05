@@ -1,16 +1,36 @@
-"""Finding coefficients via least squares"""
-from parameter import Parameter
-from basis import Basis
-from poly import Poly
+"""Finding coefficients via least squares."""
+from .parameter import Parameter
+from .basis import Basis
+from .poly import Poly
 import numpy as np
 from utils import evalfunction, evalgradients, cell2matrix
 from scipy.linalg import qr, svd, lu
 from qr import solveCLSQ
 import matplotlib.pyplot as plt
 from convex import maxdet, binary2indices
+
 class Polylsq(Poly):
     """
-    This class defines a Polylsq (polynomial via least squares) object
+    This class defines a Polylsq (polynomial via least squares) object.
+
+    :param Parameter parameters: A list of parameters.
+    :param Basis basis: A basis selected for the multivariate polynomial.
+    :param string mesh: A mesh used for the sampling scheme. Options include:
+        'Tensor': A tensor grid based on the order of each parameter;
+        'Chebyshev': A chebyshev sampling over the domain;
+        'Uniform': A uniform grid over the domain, where the number of points in each direction is based on the order of the parameter;
+        'Random': A random sampling over the domain.
+    :param string optimization: The optimization strategy used for subsampling points from the underlying mesh. Options include:
+        'Greedy-QR': Subselecting points using QR column pivoting.
+        'Greedy-SVD': Subselecting points using the SVD followed by QR with column pivoting.
+        'Newton': Subselecting points via a determinant maximization heuristic, solved using Newton's method.
+    :param double oversampling: The ratio of the number of points to the number of coefficients. It can be any value above 1.0 and below a value based on the total number of samples in the mesh.
+    :param string gradients: If gradient values are provided, then select this option to 'True'; default value is 'False'.
+    
+    Attributes:
+        * **self.mesh**: 
+        * **self.optimization**: 
+        * **self.oversampling**:
     """
     def __init__(self, parameters, basis, mesh, optimization=None, oversampling=None, gradients=False):
         super(Polylsq, self).__init__(parameters, basis)
@@ -89,10 +109,10 @@ class Polylsq(Poly):
             refined_pts = pts[z_chosen]
             Pz = super(Polylsq, self).getPolynomial(refined_pts)
             wts_orig_normalized =  wts[z_chosen] / np.sum(wts[z_chosen])
-            Wz = np.mat(np.diag(wts_orig_normalized ) )
+            Wz = np.mat(np.diag( np.sqrt(wts_orig_normalized) ) )
             Az =  Wz * Pz.T
             dPcell = super(Polylsq, self).getPolynomialGradient(refined_pts)
-            dP = cell2matrix(dPcell)
+            dP = cell2matrix(dPcell, Wz)
             M = np.vstack([Az, dP])
             rank = np.linalg.matrix_rank(M)
             print 'Iterating...system rank: '+str(rank)+', and the # of rows in Az: '+str(index)
@@ -106,7 +126,7 @@ class Polylsq(Poly):
         self.Wz = np.mat(np.diag( np.sqrt(wts_orig_normalized) ) )
         self.Az =  self.Wz * Pz.T
         dPcell = super(Polylsq, self).getPolynomialGradient(refined_pts)
-        self.Cz = cell2matrix(dPcell)  
+        self.Cz = cell2matrix(dPcell, self.Wz)  
         self.quadraturePoints = refined_pts
         self.quadratureWeights = np.sqrt(wts_orig_normalized) 
     def __gradientsFalse(self, pts, wts, m_refined):
@@ -192,8 +212,32 @@ class Polylsq(Poly):
         self.quadraturePoints = points_subsampled
         self.quadratureWeights = wts_orig_normalized
     def quadraturePointsWeights(self):
+        """
+        Returns the quadrature points and weights.
+
+        :param Polylsq self:
+            An instance of the Polylsq class.
+        :return:
+            The quadrature points.
+        :return:
+            The quadrature weights.
+        """
         return self.quadraturePoints, self.quadratureWeights
     def computeCoefficients(self, func, gradfunc=None, gradientmethod=None):
+        """
+        Computes the coefficients of the polynomial via least squares.
+
+        :param Polylsq self:
+            An instance of the Polylsq class.
+        :param: callable func:
+            The function that needs to be approximated. In the absence of a callable function, the input can be the function evaluated at the quadrature points.
+        :param: callable gradfunc:
+            The gradient of the function that needs to be approximated. In the absence of a callable gradient function, the input can be a matrix of gradient evaluations at the quadrature points.
+        :param: string gradientmethod:
+            The underlying strategy used to estimate the coefficients when gradient evaluations are provided. Options include:
+            'stacked', 'constrained-DE', 'constrained-NS'.
+
+        """
         # If there are no gradients, solve via standard least squares!
         if self.gradients is False:
             p, q = self.Wz.shape
@@ -226,7 +270,7 @@ class Polylsq(Poly):
             counter = 0
             for j in range(0,q):
                 for i in range(0,p):
-                    d[counter] = grad_values[i,j]
+                    d[counter] = self.Wz[i,i] * grad_values[i,j]
                     counter = counter + 1
             self.dy = d
             del d, grad_values
@@ -238,6 +282,12 @@ class Polylsq(Poly):
         super(Polylsq, self).__setCoefficients__(self.coefficients)
         super(Polylsq, self).__setQuadrature__(self.quadraturePoints, self.quadratureWeights)
     def getDesignMatrix(self):
+        """
+        Sets the design matrix.
+
+        :param Polylsq self:
+            An instance of the Polylsq class.
+        """
         super(Polylsq, self).__setDesignMatrix__(self.Az)
 
 ################################

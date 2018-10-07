@@ -142,9 +142,10 @@ class Polyreg(Poly):
         :return:
             `Coefficient of determination / R-squared value <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_.
         """
-        t_stat = get_t_value(self.coefficients, self.A, self.y)
-        r_sq = get_R_squared(self.coefficients, self.A, self.y)
-        return t_stat, r_sq
+#        t_stat = get_t_value(self.coefficients, self.A, self.y)
+        r_sq = get_R_squared(self.y, super(Polyreg, self).evaluatePolyFit(self.x))
+#        return t_stat, r_sq
+        return r_sq
     
     def getQuadraturePointsWeights(self, points):
         if points is None:
@@ -173,22 +174,22 @@ def get_F_stat(coefficients_0, A_0, coefficients_1, A_1, y):
     # p-value is scipy.stats.f.cdf(F, n - p_1, p_1 - p_0)
     return F
 
+#TODO: What is the actual A?
+#def get_t_value(coefficients, A, y):
+#    RSS = np.linalg.norm(y - np.dot(A,coefficients))**2
+#    n,p = A.shape
+#    if n == p:
+#        return "exact"
+#    RSE = RSS/(n-p)
+#    Q, R = np.linalg.qr(A)
+#    inv_ATA = np.linalg.inv(np.dot(R.T, R))
+#    se = np.array([np.sqrt(RSE * inv_ATA[j,j]) for j in range(p)])
+#    t_stat = np.squeeze(np.asarray(coefficients)) / np.array(se)
+#    # p-value is scipy.stats.t.cdf(t_stat, n - p)
+#    return t_stat
 
-def get_t_value(coefficients, A, y):
-    RSS = np.linalg.norm(y - np.dot(A,coefficients))**2
-    n,p = A.shape
-    if n == p:
-        return "exact"
-    RSE = RSS/(n-p)
-    Q, R = np.linalg.qr(A)
-    inv_ATA = np.linalg.inv(np.dot(R.T, R))
-    se = np.array([np.sqrt(RSE * inv_ATA[j,j]) for j in range(p)])
-    t_stat = coefficients / np.reshape(se, (len(se), 1))
-    # p-value is scipy.stats.t.cdf(t_stat, n - p)
-    return t_stat
-
-def get_R_squared(alpha, A, y):
-    y_bar = scipy.mean(y) * np.ones(len(y))
+def get_R_squared(y, evals):
+    y_bar = scipy.mean(y) * np.ones((len(y),1))
     TSS = np.linalg.norm(y - y_bar)**2
-    RSS = np.linalg.norm(np.dot(A,alpha) - y)**2
+    RSS = np.linalg.norm(evals - y)**2
     return 1 - RSS/TSS

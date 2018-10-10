@@ -27,9 +27,7 @@
   
 
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
@@ -201,8 +199,8 @@
     <span class="n">e</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">argsort</span><span class="p">()[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">eigs</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-    <span class="n">eigVecs</span> <span class="o">=</span> <span class="n">W</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span></div>
-    <span class="k">return</span> <span class="n">eigs</span><span class="p">,</span> <span class="n">eigVecs</span>
+    <span class="n">eigVecs</span> <span class="o">=</span> <span class="n">W</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">eigs</span><span class="p">,</span> <span class="n">eigVecs</span></div>
 
 <div class="viewcode-block" id="linearModel"><a class="viewcode-back" href="../../_documentation/dr.html#equadratures.dr.linearModel">[docs]</a><span class="k">def</span> <span class="nf">linearModel</span><span class="p">(</span><span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">,</span><span class="n">bounds</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -219,8 +217,8 @@
     <span class="n">A</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">Xtrain</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="mi">1</span><span class="p">))),</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">ytrain</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">u</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">D</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">c</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">D</span><span class="p">]</span></div>
-    <span class="k">return</span> <span class="n">u</span><span class="p">,</span><span class="n">c</span>
+    <span class="n">c</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">D</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">u</span><span class="p">,</span><span class="n">c</span></div>
 
 <div class="viewcode-block" id="standard"><a class="viewcode-back" href="../../_documentation/dr.html#equadratures.dr.standard">[docs]</a><span class="k">def</span> <span class="nf">standard</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">bounds</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -235,8 +233,8 @@
     <span class="n">X_stnd</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">M</span><span class="p">,</span><span class="n">m</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">M</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">m</span><span class="p">):</span>
-            <span class="n">X_stnd</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">=</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">-</span><span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span></div>
-    <span class="k">return</span> <span class="n">X_stnd</span>
+            <span class="n">X_stnd</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">=</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">-</span><span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span>
+    <span class="k">return</span> <span class="n">X_stnd</span></div>
 
 <div class="viewcode-block" id="vandermonde"><a class="viewcode-back" href="../../_documentation/dr.html#equadratures.dr.vandermonde">[docs]</a><span class="k">def</span> <span class="nf">vandermonde</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -262,8 +260,8 @@
     <span class="c1">#Use the params list to establish the Poly object</span>
     <span class="n">Polybasis</span><span class="o">=</span><span class="n">Poly</span><span class="p">(</span><span class="n">params</span><span class="p">,</span><span class="n">Object</span><span class="p">)</span>
     <span class="n">V</span><span class="o">=</span><span class="n">Polybasis</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="n">eta</span><span class="p">)</span>
-    <span class="n">V</span><span class="o">=</span><span class="n">V</span><span class="o">.</span><span class="n">T</span></div>
-    <span class="k">return</span> <span class="n">V</span><span class="p">,</span><span class="n">Polybasis</span>
+    <span class="n">V</span><span class="o">=</span><span class="n">V</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">return</span> <span class="n">V</span><span class="p">,</span><span class="n">Polybasis</span></div>
 
 <div class="viewcode-block" id="jacobian"><a class="viewcode-back" href="../../_documentation/dr.html#equadratures.dr.jacobian">[docs]</a><span class="k">def</span> <span class="nf">jacobian</span><span class="p">(</span><span class="n">V</span><span class="p">,</span><span class="n">V_plus</span><span class="p">,</span><span class="n">U</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="n">Polybasis</span><span class="p">,</span><span class="n">eta</span><span class="p">,</span><span class="n">minmax</span><span class="p">,</span><span class="n">X</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -306,8 +304,8 @@
     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">m</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
             <span class="n">temp1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">multi_dot</span><span class="p">([</span><span class="n">P</span><span class="p">,</span><span class="n">dV</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,:,:],</span><span class="n">V_minus</span><span class="p">])</span>
-            <span class="n">J</span><span class="p">[:,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">((</span><span class="n">temp1</span><span class="o">+</span><span class="n">temp1</span><span class="o">.</span><span class="n">T</span><span class="p">),</span><span class="n">f</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">M</span><span class="p">,))</span><span class="c1"># Eqn 15</span></div>
-    <span class="k">return</span> <span class="n">J</span>
+            <span class="n">J</span><span class="p">[:,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">((</span><span class="n">temp1</span><span class="o">+</span><span class="n">temp1</span><span class="o">.</span><span class="n">T</span><span class="p">),</span><span class="n">f</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">M</span><span class="p">,))</span><span class="c1"># Eqn 15</span>
+    <span class="k">return</span> <span class="n">J</span></div>
 
 <div class="viewcode-block" id="variable_projection"><a class="viewcode-back" href="../../_documentation/dr.html#equadratures.dr.variable_projection">[docs]</a><span class="k">def</span> <span class="nf">variable_projection</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">gamma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">beta</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -400,15 +398,15 @@
             <span class="n">coeff_new</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">V_plus_new</span><span class="p">,</span><span class="n">f</span><span class="p">)</span>
             <span class="n">res_new</span><span class="o">=</span><span class="n">f</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">V_new</span><span class="p">,</span><span class="n">coeff_new</span><span class="p">)</span>
             <span class="n">R_new</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">res_new</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">res_new</span><span class="p">)</span><span class="o">&lt;=</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">res</span><span class="p">)</span><span class="o">+</span><span class="n">alpha</span><span class="o">*</span><span class="n">beta</span><span class="o">*</span><span class="n">t</span> <span class="ow">or</span> <span class="n">t</span><span class="o">&lt;</span><span class="mf">1e-10</span><span class="p">:</span><span class="c1">#step 21</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">res_new</span><span class="p">)</span><span class="o">&lt;=</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">res</span><span class="p">)</span><span class="o">+</span><span class="n">alpha</span><span class="o">*</span><span class="n">beta</span><span class="o">*</span><span class="n">t</span> <span class="ow">or</span> <span class="n">t</span><span class="o">&lt;</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">10</span><span class="p">:</span><span class="c1">#step 21</span>
                 <span class="k">break</span>
             <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="o">*</span><span class="n">gamma</span>
         <span class="n">U</span> <span class="o">=</span> <span class="n">U_new</span>
         <span class="n">V</span> <span class="o">=</span> <span class="n">V_new</span>
         <span class="n">coeff</span> <span class="o">=</span> <span class="n">coeff_new</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">res_new</span>
-        <span class="n">R</span> <span class="o">=</span> <span class="n">R_new</span></div>
-    <span class="k">return</span> <span class="n">U</span><span class="p">,</span><span class="n">R</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">R_new</span>
+    <span class="k">return</span> <span class="n">U</span><span class="p">,</span><span class="n">R</span></div>
 </pre></div>
 
            </div>
@@ -448,13 +446,13 @@
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

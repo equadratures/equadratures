@@ -20,7 +20,6 @@ class Custom(Distribution):
              self.std      = np.std(self.data)
              self.lower    = self.mean -(np.sqrt(self.std)*5.)
              self.upper    = self.mean +(np.sqrt(self.std)*5.)
-
              self.bounds   = np.array([self.lower, self.upper])
              self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
              self.skewness = stats.skew(self.data)
@@ -34,7 +33,7 @@ class Custom(Distribution):
             :return:
                 A string describing the Custom distribution.
         """
-        text = "A Custom distribution has been defined over a suppor from "+str(self.lower)+" to "+str(self.upper)+". It has a mean value equal to "+str(self.mean)+" and a variance equal to "+str(self.variance)+"."
+        text = "A Custom distribution has been defined over a support from "+str(self.lower)+" to "+str(self.upper)+". It has a mean value equal to "+str(self.mean)+" and a variance equal to "+str(self.variance)+"."
         return text
     
     def getPDF(self, points=None):
@@ -78,19 +77,6 @@ class Custom(Distribution):
         else:
             print 'An input array has to be given to the getCDF method.'    
 
-    def getRecurrenceCoefficients(self, order):
-        """
-        Recurrence coefficients for the custom distribution.
-
-        :param Custom self:
-            An instance of Custom class.
-        :param array order:
-            The order of the recurrence coefficients desidered.
-        :return:
-            Recurrence coefficients associated with the custom distribution.
-        """
-        print 'this method has to be completed!'
-
     def getiCDF(self, xx):
         """ 
         A custom inverse cumulative distribution function.
@@ -111,7 +97,7 @@ class Custom(Distribution):
             c.append(c[i-1]+(x[i]-x[i-1])*(y[i]+y[i-1])*.5)
         for i in range(1, len(x)):
             c[i]=c[i]/c[len(x)-1]
-        for k in range(0, len(x)):
+        for k in range(0, len(xx)):
             for i in range(0, len(x)):
                 if ((xx[k]>=c[i]) and (xx[k]<=c[i+1])):
                     value = float((xx[k]-c[i])/(c[i+1]-c[i])*(x[i+1]-x[i])+x[i])

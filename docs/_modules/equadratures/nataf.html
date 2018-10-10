@@ -27,9 +27,7 @@
   
 
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
@@ -263,8 +261,8 @@
         <span class="n">xu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span><span class="n">sU</span><span class="p">)</span>
         <span class="n">xu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">xu</span><span class="p">)</span>
         <span class="n">xu</span> <span class="o">=</span> <span class="n">xu</span><span class="o">.</span><span class="n">T</span>
-</div>
-        <span class="k">return</span> <span class="n">xu</span>
+
+        <span class="k">return</span> <span class="n">xu</span></div>
 
 <div class="viewcode-block" id="Nataf.U2C"><a class="viewcode-back" href="../../_documentation/nataf.html#equadratures.nataf.Nataf.U2C">[docs]</a>    <span class="k">def</span> <span class="nf">U2C</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Method for mapping uncorrelated variables from standard normal space</span>
@@ -296,8 +294,8 @@
                 <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">getiCDF</span><span class="p">(</span><span class="n">temporary</span><span class="p">)</span>
                 
                 <span class="n">t</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">Xc</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span> </div>
-        <span class="k">return</span> <span class="n">Xc</span>
+                <span class="n">Xc</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span> 
+        <span class="k">return</span> <span class="n">Xc</span></div>
     
 <div class="viewcode-block" id="Nataf.getUncorrelatedSamples"><a class="viewcode-back" href="../../_documentation/nataf.html#equadratures.nataf.Nataf.getUncorrelatedSamples">[docs]</a>    <span class="k">def</span> <span class="nf">getUncorrelatedSamples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Method for sampling uncorrelated data: </span>
@@ -325,8 +323,8 @@
             <span class="n">distro</span> <span class="o">=</span> <span class="n">distro</span><span class="o">.</span><span class="n">T</span>
        
         <span class="k">else</span><span class="p">:</span>
-             <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;One input must be given to &quot;get Correlated Samples&quot; method&#39;</span><span class="p">)</span>   </div>
-        <span class="k">return</span> <span class="n">distro</span>
+             <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;One input must be given to &quot;get Correlated Samples&quot; method&#39;</span><span class="p">)</span>   
+        <span class="k">return</span> <span class="n">distro</span></div>
   
 <div class="viewcode-block" id="Nataf.getCorrelatedSamples"><a class="viewcode-back" href="../../_documentation/nataf.html#equadratures.nataf.Nataf.getCorrelatedSamples">[docs]</a>    <span class="k">def</span> <span class="nf">getCorrelatedSamples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Method for sampling correlated data:</span>
@@ -364,8 +362,8 @@
             <span class="n">correlated</span> <span class="o">=</span> <span class="n">correlated</span><span class="o">.</span><span class="n">T</span>
             <span class="k">return</span> <span class="n">correlated</span>
         
-        <span class="k">else</span><span class="p">:</span></div>
-             <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;One input must be given to &quot;get Correlated Samples&quot; method: please choose between sampling N points or giving an array of uncorrelated data &#39;</span><span class="p">)</span>   
+        <span class="k">else</span><span class="p">:</span>
+             <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;One input must be given to &quot;get Correlated Samples&quot; method: please choose between sampling N points or giving an array of uncorrelated data &#39;</span><span class="p">)</span>   </div>
 
 <div class="viewcode-block" id="Nataf.CorrelationMatrix"><a class="viewcode-back" href="../../_documentation/nataf.html#equadratures.nataf.Nataf.CorrelationMatrix">[docs]</a>    <span class="k">def</span> <span class="nf">CorrelationMatrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; The following calculations check the correlation</span>
@@ -414,8 +412,8 @@
                     <span class="n">den11</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">den1</span><span class="p">)</span>
                     <span class="n">den22</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">den2</span><span class="p">)</span>
                     <span class="n">R</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">prod_n</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">den11</span><span class="o">*</span><span class="n">den22</span><span class="p">)</span>
-         </div></div>
-        <span class="k">return</span> <span class="n">R</span>
+         
+        <span class="k">return</span> <span class="n">R</span></div></div>
 </pre></div>
 
            </div>
@@ -455,13 +453,13 @@
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

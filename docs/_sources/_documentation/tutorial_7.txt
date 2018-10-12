@@ -20,19 +20,30 @@ where :math:`f(\cdot)` represents the function to be evaluated. Now if the quadr
 
 **For low dimensions**
 
-First, we discuss the *effectively subsampled approach*---also the namesake of our code---where one subsamples (deterministically) points from a tensor grid [2]. This subsampling strategy is performed via QR column pivoting. First, we examine the difference (both in syntax and execution) of a tensor grid versus this effectively subsampled approach.
+First, we discuss the *effectively subsampled approach*---also the namesake of our code---where one subsamples (deterministically) points from a tensor grid [2]. This subsampling strategy is performed via QR column pivoting. First, we examine the difference (both in syntax and execution) of a tensor grid versus this effectively subsampled approach. For this *low dimensional problem* we shall utilize `Rosenbrock's function <https://en.wikipedia.org/wiki/Rosenbrock_function>`__. 
+
+.. math::
+
+	f\left(\zeta_{1},\zeta_{2}\right)=\left(a-\zeta_{1}\right)^{2}+b\left(\zeta_{2}-\zeta_{1}^{2}\right)^{2} \\
+	\text{where} \; \; a=1 \; \; \text{and} \; \; b=100.
+
 
 .. code::
 	
 	import numpy as np
 	from equadratures import *
 	import matplotlib.pyplot as plt
+	from mpl_toolkits.mplot3d import axes3d
+	from matplotlib import cm
 
-	zeta_1 = Parameter(distribution='beta', shape_parameter_A = 1.5, shape_parameter_B = 2.0, order=3, lower= 0., upper=1.0)
-	zeta_2 = Parameter(distribution='uniform', order=3, lower=-1.0, upper=1.0)
+	zeta_1 = Parameter(distribution='uniform', order=4, lower= -2.0, upper=2.0)
+	zeta_2 = Parameter(distribution='uniform', order=4, lower=-1.0, upper=3.0)
 
 	def fun(x):
-    		return x[0]**2 + x[1]*x[0] + x[1]**2 - 3.5
+		a = 1.0
+		b = 100.0
+    		return (a - x[0])**2 + b * (x[1] - x[0]**2)**2
+
 	
 Now, we first setup the standard tensor grid
 
@@ -56,7 +67,7 @@ Opting for the QR column pivoting routine on a tensor grid and without any overs
 	myPoly2 = Polylsq([zeta_1, zeta_2], myBasis, mesh='tensor', optimization='greedy-qr', oversampling=1.0)
 	myPoly2.computeCoefficients(fun)
 	
-Let us compare the points and the accuracy of the coefficients:
+As expected, the effectively subsampled grid uses fewer points than the tensor grid.
 
 .. code::
 
@@ -78,11 +89,125 @@ Let us compare the points and the accuracy of the coefficients:
 
    Figure. A comparison of quadrature points from a tensor grid with effectively subsampled quadrature points.
 
+Next, we compare the response surfaces. 
+
+.. code::
+
+	N = 20
+	z1 = np.linspace(zeta_1.lower, zeta_1.upper, N)
+	z2 = np.linspace(zeta_2.lower, zeta_2.upper, N)
+	[Z1, Z2] = np.meshgrid(z1, z2)
+	Z1_vec = np.reshape(Z1, (N*N, 1))
+	Z2_vec = np.reshape(Z2, (N*N, 1))
+	samples = np.hstack([Z1_vec, Z2_vec])
+
+	PolyApprox2 = myPoly2.evaluatePolyFit( samples )
+	PolyApprox2 = np.reshape(PolyApprox2, (N, N))
+
+	PolyApprox = myPoly.evaluatePolyFit( samples )
+	PolyApprox = np.reshape(PolyApprox, (N, N))
+
+	# Response surfaces
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection='3d')
+	surf = ax.plot_surface(Z1, Z2, PolyApprox2, rstride=1, cstride=1, cmap=cm.gist_earth, linewidth=0, alpha=0.6, label='Tensor grid')
+	wire = ax.plot_wireframe(Z1, Z2, PolyApprox, edgecolor='red', rstride=1, cstride=1, alpha=0.6, label='Effectively subsampled')
+	ax.set_xlabel('$\zeta_1$', fontsize=15)
+	ax.set_ylabel('$\zeta_2$', fontsize=15)
+	ax.view_init(44, -129)
+	plt.savefig('Fig_007.png', dpi=200, bbox_inches='tight')
+	plt.close()
+
+.. figure:: Figures/Fig_007.png
+   :scale: 30 %
+
+   Figure. A comparison of response surfaces: the red wireframe is the approximation obtained via the effectively subsampled approach, while the surface is the approximation obtained from the tensor grid.
+
+Next, we compare the coefficients. It is important to note that the effectively subsampled strategy only seeks to approximate the coefficients associated with a total order basis.
+
+.. code::
+
+	x, y, z, max_order = twoDgrid(myPoly.coefficients, myPoly.basis.elements)
+	G = np.log10(np.abs(z))
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	cax = plt.scatter(x, y, s=480, marker='o', c=G, cmap='jet', alpha=0.8, vmax=2, vmin=-12)
+	plt.xlim(-0.5, max_order)
+	plt.ylim(-0.5, max_order)
+	adjust_spines(ax, ['left', 'bottom'])
+	ax.set_axisbelow(True)
+	plt.xlabel('$i_1$', fontsize=13)
+	plt.ylabel('$i_2$', fontsize=13)
+	cbar = plt.colorbar(extend='neither', spacing='proportional',
+                orientation='vertical', shrink=0.8, format="%.0f")
+	cbar.ax.tick_params(labelsize=13)
+	plt.savefig('Fig_008.png', dpi=200, bbox_inches='tight')
+	plt.close()
+
+	x, y, z, max_order = twoDgrid(myPoly2.coefficients, myPoly2.basis.elements)
+	G = np.log10(np.abs(z))
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	cax = plt.scatter(x, y, s=480, marker='o', c=G, cmap='jet', alpha=0.8, vmax=2, vmin=-12)
+	plt.xlim(-0.5, max_order)
+	plt.ylim(-0.5, max_order)
+	adjust_spines(ax, ['left', 'bottom'])
+	ax.set_axisbelow(True)
+	plt.xlabel('$i_1$', fontsize=13)
+	plt.ylabel('$i_2$', fontsize=13)
+	cbar = plt.colorbar(extend='neither', spacing='proportional',
+                orientation='vertical', shrink=0.8, format="%.0f")
+	cbar.ax.tick_params(labelsize=13)
+	plt.savefig('Fig_009.png', dpi=200, bbox_inches='tight')
+	plt.close()
+
+.. figure:: Figures/Fig_008.png
+   :scale: 30 %
+
+   Figure. Polynomial coefficients obtained using the tensor grid.
+
+.. figure:: Figures/Fig_009.png
+   :scale: 30 %
+
+   Figure. Polynomial coefficients obtained using the effectively subsampled approach.
+
+
+**For high dimensions**
+
+Now, we shall attempt to use a different sampling strategy, more suited for high dimensional problems. We shall try to approximate moments of a 20D function: a sum of Gaussians. We begin by defining the parameters, function and the polynomial.
+
+.. code::
+
+	dimensions = 20
+	zeta_1 = Parameter(distribution='gaussian', shape_parameter_A = 10.0, shape_parameter_B=0.5, order=1)
+	myParams = [zeta_1 for i in range(dimensions)]
+
+	def fun(x):
+    		return np.sum(x)
+
+
+	myBasis = Basis('Total order')
+	myPoly = Polylsq(parameters=myParams, basis=myBasis, mesh='tensor', optimization='random', oversampling=1.5)
+	print np.linalg.cond(myPoly.Az)
+	print myPoly.Az.shape
+
+Here we have opted for randomly subsampling points from an existing tensor grid, which doesn't require the code to store the entire Vandermonde matrix in memory. Its always a good practice to check the condition number of this matrix (see above). Here we obtain a condition number of about 7.4, which is pretty good! 
+
+Next, we compute the mean and variance...
+
+.. code::
+	
+	myPoly.computeCoefficients(fun)
+	stats = myPoly.getStatistics(light=True, max_sobol_order=1)
+	print stats.mean, stats.variance
+
+We obtain a mean of 200.0 and a variance of 10.0. This is correct as the sum of 20 Gaussians with an individual mean of 10 and variance of 0.5 will be 200 and 10 respectively. 
+
 **References**
 
 
-.. [1] Seshadri, P., Iaccarino, G., Ghisu, T. Quadrature Strategies for Constructing Polynomial Approximations. [To appear in Springer shortly]. Preprint available: `https://arxiv.org/abs/1805.07296 <https://arxiv.org/abs/1805.07296>`__
+.. [1] Seshadri, P., Iaccarino, G., Ghisu, T. Quadrature Strategies for Constructing Polynomial Approximations. [To appear in Springer shortly]. Preprint available: `Paper <https://arxiv.org/abs/1805.07296>`__.
 
-.. [2] Seshadri, P., Narayan, A., Sankaran M. Effectively Subsampled Quadratures for Least Squares Polynomial Approximations." SIAM/ASA Journal on Uncertainty Quantification 5.1 (2017): 1003-1023. `https://epubs.siam.org/doi/abs/10.1137/16M1057668 <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
+.. [2] Seshadri, P., Narayan, A., Sankaran M. Effectively Subsampled Quadratures for Least Squares Polynomial Approximations." SIAM/ASA Journal on Uncertainty Quantification 5.1 (2017): 1003-1023. `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__.
 
 

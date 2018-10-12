@@ -10,7 +10,7 @@ from basis import Basis
 from nataf import Nataf
 from pca import Pca
 import numpy as np
-from utils import evalfunction, evalgradients, meshgrid
+from utils import evalfunction, evalgradients, meshgrid, twoDgrid
 from dr import *
 import matplotlib
 params = {'legend.fontsize': 11,

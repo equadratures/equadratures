@@ -1,5 +1,9 @@
 """ Class for solving the Nataf transformation in N-Dimensional case, 
     for generic types of input  marginals.
+    
+    Input parameter: 
+    D : List of Distributions: instances of Parameter class.
+    R : Correlation matrix of distributions which belong to D.
 """
 import numpy as np
 from scipy import optimize
@@ -8,15 +12,29 @@ from polyint import Polyint
 from basis import Basis 
 from scipy import stats
 
+#import matplotlib.pyplot as plt
+
 class Nataf(object):
     """
-    The class defines a Nataf transformation: the input correlated marginals are mapped from their physical space to a new 
+    The class defines a Nataf transformation.
+    References for theory:
+        Melchers, R., E. (Robert E.), 1945- Structural reliability analysis
+        and predictions - 2nd edition - John Wiley & Sons Ltd.
+        
+    The input correlated marginals are mapped from their physical space to a new 
     standard normal space, in which points are uncorrelated.
-
+    
+    Attributes of the class:
     :param list D:
             List of parameters (distributions), interpreted here as the marginals.
     :param numpy-matrix R:
-            The correlation matrix associated with the joint distribution.      
+            The correlation matrix associated with the joint distribution.
+    :param object std:
+            A standard normal distribution
+    :param numpy-matrix A:
+            The Cholesky decomposition of Fictive matrix R0, 
+            associated with the set of normal intermediate
+            correlated distributions.        
     """
     def __init__(self, D=None, R=None):
         if D is None:
@@ -65,13 +83,22 @@ class Nataf(object):
                       bivariateNormalPDF = (1.0 / (2.0 * np.pi * np.sqrt(1.0-rho_ij**2)) * np.exp(-1.0/(2.0*(1.0 - rho_ij**2)) * (p1**2 - 2.0 * rho_ij * p1 * p2  + p2**2 )))
                       diff = np.dot(coefficientsIntegral, bivariateNormalPDF) 
                       return diff - self.R[i,j] 
-
-                  rho = optimize.newton(check_difference, self.R[i,j])
+                  
+                  if (self.D[i].name!='custom') or (self.D[j].name!='custom'):
+                    rho = optimize.newton(check_difference, self.R[i,j], maxiter=50)
+                  else: 
+                    res = optimize.least_squares(check_difference, R[i,j], bounds=(-0.999,0.999), ftol=1.e-03) 
+                    rho = res.x
+                    print 'A Custom Marginal is present'
 
                   R0[i,j] = rho
                   R0[j,i] = R0[i,j] 
 
         self.A = np.linalg.cholesky(R0) 
+        print 'The Cholesky decomposition of fictive matrix R0 is:'
+        print self.A
+        print 'The fictive matrix is:'
+        print R0
     
     def C2U(self, X):
         """  Method for mapping correlated variables to a new standard space.
@@ -86,8 +113,7 @@ class Nataf(object):
                     The transformation of each i-th input marginal is stored along 
                     the i-th column of the output matrix.
         """
-        c = X[:,0]
-
+        c = X[:,0]                
         w1 = np.zeros((len(c),len(self.D)))
         for i in range(len(self.D)):
             for j in range(len(c)):
@@ -97,6 +123,15 @@ class Nataf(object):
                 elif (w1[j,i] <= 0.0):
                     w1[j,i] = 0.0 + 10**(-10)
 
+        #-----------------------------------------------#
+        #plt.figure()
+        #plt.grid(linewidth=0.5, color='k')
+        #plt.plot(X[:,0], w1[:,0], 'ro', label='first')
+        #plt.plot(X[:,1], w1[:,1], 'bx', label='second')
+        #plt.title('from nataf class: w1 VS X input')
+        #plt.legend(loc='upper left')
+        #plt.show()
+        #-----------------------------------------------#
         sU = np.zeros((len(c),len(self.D)))
         for i in range(len(self.D)):
             for j in range(len(c)):
@@ -215,7 +250,7 @@ class Nataf(object):
     def CorrelationMatrix(self, X):
         """ The following calculations check the correlation
             matrix of input arrays and determine the covariance 
-            matrix: The input matrix must have dimensions N-by-m where
+            matrix: The input matrix mush have [Nxm] dimensions where
             m is the number of the marginals.
             
             :param X:

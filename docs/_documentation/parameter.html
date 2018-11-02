@@ -28,8 +28,6 @@
 
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Basis" href="basis.html" />
     <link rel="prev" title="Modules" href="modules.html" /> 
 
@@ -167,7 +165,7 @@
             
   <div class="section" id="parameter">
 <h1>Parameter<a class="headerlink" href="#parameter" title="Permalink to this headline">¶</a></h1>
-<p>A parameter—i.e., the definition of a univariate variable <span class="math notranslate">\(x\)</span>—is one the main building blocks in Effective Quadratures. It characterized by its distribution (and support) <span class="math notranslate">\(\rho(x)\)</span>.</p>
+<p>A parameter&#8212;i.e., the definition of a univariate variable <span class="math">\(x\)</span>&#8212;is one the main building blocks in Effective Quadratures. It characterized by its distribution (and support) <span class="math">\(\rho(x)\)</span>.</p>
 <span class="target" id="module-equadratures.parameter"></span><p>Definition of a univariate parameter.</p>
 <dl class="class">
 <dt id="equadratures.parameter.Parameter">
@@ -178,10 +176,10 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>lower</strong> (<em>double</em>) – Lower bound for the parameter.</li>
-<li><strong>upper</strong> (<em>double</em>) – Upper bound for the parameter.</li>
-<li><strong>order</strong> (<em>integer</em>) – Order of the parameter.</li>
-<li><strong>param_type</strong> (<em>string</em>) – <dl class="docutils">
+<li><strong>lower</strong> (<em>double</em>) &#8211; Lower bound for the parameter.</li>
+<li><strong>upper</strong> (<em>double</em>) &#8211; Upper bound for the parameter.</li>
+<li><strong>order</strong> (<em>integer</em>) &#8211; Order of the parameter.</li>
+<li><strong>param_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/string.html#module-string" title="(in Python v3.7)"><em>string</em></a>) &#8211; <dl class="docutils">
 <dt>The type of distribution that characterizes the parameter. Options include: </dt>
 <dd><a class="reference external" href="https://en.wikipedia.org/wiki/Arcsine_distribution">Chebyshev (arcsine)</a>, 
 <a class="reference external" href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian</a>, 
@@ -195,10 +193,10 @@
 If no string is provided, a <cite>Uniform</cite> distribution is assumed. If the user provides data, and would like to generate orthogonal polynomials (and quadrature rules) based on the data, they can set this option to be Custom.</dd>
 </dl>
 </li>
-<li><strong>shape_parameter_A</strong> (<em>double</em>) – Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a <cite>Gaussian</cite> (or <cite>TruncatedGaussian</cite>), this represents the mean. In the case of a Beta distribution this represents the alpha value. For a uniform distribution this input is not required.</li>
-<li><strong>shape_parameter_B</strong> (<em>double</em>) – This is the second shape parameter that characterizes the distribution selected. In the case of a <cite>Gaussian</cite> or <cite>TruncatedGaussian</cite>, this is the variance.</li>
-<li><strong>data</strong> – A numpy array with data values (x-y column format). Note this option is only invoked if the user uses the Custom param_type.</li>
-<li><strong>Endpoints</strong> – A boolean entry. If set to True, then the quadrature points and weights will have end-points.</li>
+<li><strong>shape_parameter_A</strong> (<em>double</em>) &#8211; Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a <cite>Gaussian</cite> (or <cite>TruncatedGaussian</cite>), this represents the mean. In the case of a Beta distribution this represents the alpha value. For a uniform distribution this input is not required.</li>
+<li><strong>shape_parameter_B</strong> (<em>double</em>) &#8211; This is the second shape parameter that characterizes the distribution selected. In the case of a <cite>Gaussian</cite> or <cite>TruncatedGaussian</cite>, this is the variance.</li>
+<li><strong>data</strong> &#8211; A numpy array with data values (x-y column format). Note this option is only invoked if the user uses the Custom param_type.</li>
+<li><strong>Endpoints</strong> &#8211; A boolean entry. If set to True, then the quadrature points and weights will have end-points.</li>
 </ul>
 </td>
 </tr>
@@ -255,13 +253,13 @@ If no string is provided, a <cite>Uniform</cite> distribution is assumed. If the
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

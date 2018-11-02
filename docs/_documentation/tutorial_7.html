@@ -28,8 +28,6 @@
 
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Polynomials via compressive sensing" href="tutorial_8.html" />
     <link rel="prev" title="Polynomial regression for data-sets" href="tutorial_6.html" /> 
 
@@ -100,7 +98,7 @@
 <li class="toctree-l2"><a class="reference internal" href="tutorial_6.html">Polynomial regression for data-sets</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Polynomial least squares approximations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_8.html">Polynomials via compressive sensing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol’ indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol&#8217; indices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_10.html">Nataf transform for correlated inputs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_11.html">Active subspaces with polynomial approximations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_12.html">Polynomial variable projection</a></li>
@@ -176,21 +174,21 @@
   <div class="section" id="polynomial-least-squares-approximations">
 <h1>Polynomial least squares approximations<a class="headerlink" href="#polynomial-least-squares-approximations" title="Permalink to this headline">¶</a></h1>
 <p>Motivated by reducing the number of samples required for constructing polynomial approximations, we recast our problem of finding suitable quadrature points, with ideas from least squares. Here, we solve</p>
-<div class="math notranslate">
+<div class="math">
 \[\text{minimize} \; \; \left\Vert \boldsymbol{Ax}-\boldsymbol{b}\right\Vert_{2}\]</div>
-<p>where entries of <span class="math notranslate">\(\boldsymbol{A}\)</span> are given by</p>
-<div class="math notranslate">
+<p>where entries of <span class="math">\(\boldsymbol{A}\)</span> are given by</p>
+<div class="math">
 \[\boldsymbol{A}(i,j) = \sqrt{w_{j}} \psi_{i}\left(\bar{\zeta}_{j}\right)\]</div>
-<p>which is the weighted <span class="math notranslate">\(i\)</span>-th orthogonal polynomial evaluated at the <span class="math notranslate">\(j\)</span>-th quadrature point. Elements of <span class="math notranslate">\(\boldsymbol{b}\)</span> are given by</p>
-<div class="math notranslate">
+<p>which is the weighted <span class="math">\(i\)</span>-th orthogonal polynomial evaluated at the <span class="math">\(j\)</span>-th quadrature point. Elements of <span class="math">\(\boldsymbol{b}\)</span> are given by</p>
+<div class="math">
 \[\boldsymbol{b}(j)=\sqrt{w_{j}} f(\bar{\zeta}_{j})\]</div>
-<p>where <span class="math notranslate">\(f(\cdot)\)</span> represents the function to be evaluated. Now if the quadrature points are weights are taken from a tensor grid, then there is equivalence between a polynomial least squares approximation and a pseudospectral approximation. However, seeing as our motivation is to reduce the number of points used, in tutorial we opt for a few different sampling strategies, based on the work in [1,2].</p>
+<p>where <span class="math">\(f(\cdot)\)</span> represents the function to be evaluated. Now if the quadrature points are weights are taken from a tensor grid, then there is equivalence between a polynomial least squares approximation and a pseudospectral approximation. However, seeing as our motivation is to reduce the number of points used, in tutorial we opt for a few different sampling strategies, based on the work in [1,2].</p>
 <p><strong>For low dimensions</strong></p>
-<p>First, we discuss the <em>effectively subsampled approach</em>—also the namesake of our code—where one subsamples (deterministically) points from a tensor grid [2]. This subsampling strategy is performed via QR column pivoting. First, we examine the difference (both in syntax and execution) of a tensor grid versus this effectively subsampled approach. For this <em>low dimensional problem</em> we shall utilize <a class="reference external" href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock’s function</a>.</p>
-<div class="math notranslate">
+<p>First, we discuss the <em>effectively subsampled approach</em>&#8212;also the namesake of our code&#8212;where one subsamples (deterministically) points from a tensor grid [2]. This subsampling strategy is performed via QR column pivoting. First, we examine the difference (both in syntax and execution) of a tensor grid versus this effectively subsampled approach. For this <em>low dimensional problem</em> we shall utilize <a class="reference external" href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock&#8217;s function</a>.</p>
+<div class="math">
 \[\begin{split}f\left(\zeta_{1},\zeta_{2}\right)=\left(a-\zeta_{1}\right)^{2}+b\left(\zeta_{2}-\zeta_{1}^{2}\right)^{2} \\
 \text{where} \; \; a=1 \; \; \text{and} \; \; b=100.\end{split}\]</div>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">equadratures</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="k">import</span> <span class="n">axes3d</span>
@@ -206,25 +204,25 @@
 </pre></div>
 </div>
 <p>Now, we first setup the standard tensor grid</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">myBasis</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;tensor grid&#39;</span><span class="p">)</span>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">myBasis</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;tensor grid&#39;</span><span class="p">)</span>
 <span class="n">myPoly</span> <span class="o">=</span> <span class="n">Polyint</span><span class="p">([</span><span class="n">zeta_1</span><span class="p">,</span> <span class="n">zeta_2</span><span class="p">],</span> <span class="n">myBasis</span><span class="p">)</span>
 <span class="n">myPoly</span><span class="o">.</span><span class="n">computeCoefficients</span><span class="p">(</span><span class="n">fun</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Followed by the polynomial least squares approximation, using the Polylsq class. Three additional inputs are required:</p>
 <ul class="simple">
-<li>the <code class="code docutils literal notranslate"><span class="pre">mesh</span></code> from which subsamples will be selected;</li>
-<li>the <code class="code docutils literal notranslate"><span class="pre">optimization</span></code> strategy used to select subsamples;</li>
-<li>the <code class="code docutils literal notranslate"><span class="pre">oversampling</span></code> ratio, which sets the ratio of the number of rows to columns.</li>
+<li>the <code class="code docutils literal"><span class="pre">mesh</span></code> from which subsamples will be selected;</li>
+<li>the <code class="code docutils literal"><span class="pre">optimization</span></code> strategy used to select subsamples;</li>
+<li>the <code class="code docutils literal"><span class="pre">oversampling</span></code> ratio, which sets the ratio of the number of rows to columns.</li>
 </ul>
 <p>Opting for the QR column pivoting routine on a tensor grid and without any oversampling (not typically recommended), we have:</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">myBasis</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;total order&#39;</span><span class="p">)</span>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">myBasis</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;total order&#39;</span><span class="p">)</span>
 <span class="n">myPoly2</span> <span class="o">=</span> <span class="n">Polylsq</span><span class="p">([</span><span class="n">zeta_1</span><span class="p">,</span> <span class="n">zeta_2</span><span class="p">],</span> <span class="n">myBasis</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="s1">&#39;tensor&#39;</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="s1">&#39;greedy-qr&#39;</span><span class="p">,</span> <span class="n">oversampling</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 <span class="n">myPoly2</span><span class="o">.</span><span class="n">computeCoefficients</span><span class="p">(</span><span class="n">fun</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>As expected, the effectively subsampled grid uses fewer points than the tensor grid.</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">myPoly</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">myPoly</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;crimson&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Tensor grid&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">myPoly2</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">myPoly2</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;navy&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Effectively subsampled&#39;</span><span class="p">)</span>
@@ -243,7 +241,7 @@
 <p class="caption"><span class="caption-text">Figure. A comparison of quadrature points from a tensor grid with effectively subsampled quadrature points.</span></p>
 </div>
 <p>Next, we compare the response surfaces.</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">N</span> <span class="o">=</span> <span class="mi">20</span>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">N</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">z1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">zeta_1</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="n">zeta_1</span><span class="o">.</span><span class="n">upper</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
 <span class="n">z2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">zeta_2</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="n">zeta_2</span><span class="o">.</span><span class="n">upper</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
 <span class="p">[</span><span class="n">Z1</span><span class="p">,</span> <span class="n">Z2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">z1</span><span class="p">,</span> <span class="n">z2</span><span class="p">)</span>
@@ -274,7 +272,7 @@
 <p class="caption"><span class="caption-text">Figure. A comparison of response surfaces: the red wireframe is the approximation obtained via the effectively subsampled approach, while the surface is the approximation obtained from the tensor grid.</span></p>
 </div>
 <p>Next, we compare the coefficients. It is important to note that the effectively subsampled strategy only seeks to approximate the coefficients associated with a total order basis.</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">max_order</span> <span class="o">=</span> <span class="n">twoDgrid</span><span class="p">(</span><span class="n">myPoly</span><span class="o">.</span><span class="n">coefficients</span><span class="p">,</span> <span class="n">myPoly</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">max_order</span> <span class="o">=</span> <span class="n">twoDgrid</span><span class="p">(</span><span class="n">myPoly</span><span class="o">.</span><span class="n">coefficients</span><span class="p">,</span> <span class="n">myPoly</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span>
 <span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
@@ -319,7 +317,7 @@
 </div>
 <p><strong>For high dimensions</strong></p>
 <p>Now, we shall attempt to use a different sampling strategy, more suited for high dimensional problems. We shall try to approximate moments of a 20D function: a sum of Gaussians. We begin by defining the parameters, function and the polynomial.</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dimensions</span> <span class="o">=</span> <span class="mi">20</span>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">dimensions</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">zeta_1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="n">shape_parameter_A</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span> <span class="n">shape_parameter_B</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">myParams</span> <span class="o">=</span> <span class="p">[</span><span class="n">zeta_1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)]</span>
 
@@ -333,9 +331,9 @@
 <span class="nb">print</span> <span class="n">myPoly</span><span class="o">.</span><span class="n">Az</span><span class="o">.</span><span class="n">shape</span>
 </pre></div>
 </div>
-<p>Here we have opted for randomly subsampling points from an existing tensor grid, which doesn’t require the code to store the entire Vandermonde matrix in memory. Its always a good practice to check the condition number of this matrix (see above). Here we obtain a condition number of about 7.4, which is pretty good!</p>
-<p>Next, we compute the mean and variance…</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">myPoly</span><span class="o">.</span><span class="n">computeCoefficients</span><span class="p">(</span><span class="n">fun</span><span class="p">)</span>
+<p>Here we have opted for randomly subsampling points from an existing tensor grid, which doesn&#8217;t require the code to store the entire Vandermonde matrix in memory. Its always a good practice to check the condition number of this matrix (see above). Here we obtain a condition number of about 7.4, which is pretty good!</p>
+<p>Next, we compute the mean and variance...</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">myPoly</span><span class="o">.</span><span class="n">computeCoefficients</span><span class="p">(</span><span class="n">fun</span><span class="p">)</span>
 <span class="n">stats</span> <span class="o">=</span> <span class="n">myPoly</span><span class="o">.</span><span class="n">getStatistics</span><span class="p">(</span><span class="n">light</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_sobol_order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">stats</span><span class="o">.</span><span class="n">variance</span>
 </pre></div>
@@ -351,7 +349,7 @@
 <table class="docutils footnote" frame="void" id="id2" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[2]</td><td>Seshadri, P., Narayan, A., Sankaran M. Effectively Subsampled Quadratures for Least Squares Polynomial Approximations.” SIAM/ASA Journal on Uncertainty Quantification 5.1 (2017): 1003-1023. <a class="reference external" href="https://epubs.siam.org/doi/abs/10.1137/16M1057668">Paper</a>.</td></tr>
+<tr><td class="label">[2]</td><td>Seshadri, P., Narayan, A., Sankaran M. Effectively Subsampled Quadratures for Least Squares Polynomial Approximations.&#8221; SIAM/ASA Journal on Uncertainty Quantification 5.1 (2017): 1003-1023. <a class="reference external" href="https://epubs.siam.org/doi/abs/10.1137/16M1057668">Paper</a>.</td></tr>
 </tbody>
 </table>
 </div>
@@ -403,13 +401,13 @@
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

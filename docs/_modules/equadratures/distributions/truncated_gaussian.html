@@ -27,9 +27,7 @@
   
 
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../search.html" /> 
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> 
 
   
   <script src="../../../_static/js/modernizr.min.js"></script>
@@ -202,8 +200,8 @@
 <span class="sd">        :return:</span>
 <span class="sd">            A string describing the truncated Gaussian.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;A truncated Gaussian distribution with a mean of &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; and a variance of &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variance</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;, and a lower bound of &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; and an upper bound of &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.&quot;</span></div>
-        <span class="k">return</span> <span class="n">text</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;A truncated Gaussian distribution with a mean of &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; and a variance of &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variance</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;, and a lower bound of &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; and an upper bound of &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.&quot;</span>
+        <span class="k">return</span> <span class="n">text</span></div>
 
 <div class="viewcode-block" id="TruncatedGaussian.getPDF"><a class="viewcode-back" href="../../../_documentation/truncated_gaussian.html#equadratures.distributions.truncated_gaussian.TruncatedGaussian.getPDF">[docs]</a>    <span class="k">def</span> <span class="nf">getPDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -220,8 +218,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">points</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span></div>
-            <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Please digit an input for getPDF method&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Please digit an input for getPDF method&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="TruncatedGaussian.getCDF"><a class="viewcode-back" href="../../../_documentation/truncated_gaussian.html#equadratures.distributions.truncated_gaussian.TruncatedGaussian.getCDF">[docs]</a>    <span class="k">def</span> <span class="nf">getCDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -238,8 +236,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">points</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>          
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span></div>
-            <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Please digit an input for getCDF method&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Please digit an input for getCDF method&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="TruncatedGaussian.getiCDF"><a class="viewcode-back" href="../../../_documentation/truncated_gaussian.html#equadratures.distributions.truncated_gaussian.TruncatedGaussian.getiCDF">[docs]</a>    <span class="k">def</span> <span class="nf">getiCDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xx</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A truncated gaussian inverse cumulative density function,</span>
@@ -249,8 +247,8 @@
 <span class="sd">            A matrix of points at which the inverse of cumulative density function needs to be evaluated.</span>
 <span class="sd">        :return:</span>
 <span class="sd">            Inverse cumulative density function values of the Truncated Gaussian distributuion.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="TruncatedGaussian.getSamples"><a class="viewcode-back" href="../../../_documentation/truncated_gaussian.html#equadratures.distributions.truncated_gaussian.TruncatedGaussian.getSamples">[docs]</a>    <span class="k">def</span> <span class="nf">getSamples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Generates samples from the Truncated-Gaussian distribution.</span>
@@ -265,8 +263,8 @@
         <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
            <span class="n">number</span> <span class="o">=</span> <span class="n">m</span>
         <span class="k">else</span><span class="p">:</span>
-           <span class="n">number</span> <span class="o">=</span> <span class="mi">500000</span></div></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">number</span><span class="p">)</span>
+           <span class="n">number</span> <span class="o">=</span> <span class="mi">500000</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">number</span><span class="p">)</span></div></div>
 </pre></div>
 
            </div>
@@ -306,13 +304,13 @@
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="../../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

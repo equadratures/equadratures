@@ -27,9 +27,7 @@
   
 
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
@@ -207,8 +205,8 @@
 <span class="sd">            stats = Statistics(coeffcients, basis)</span>
 <span class="sd">            fosi = stats.getSobol(1)        </span>
 <span class="sd">        </span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-        <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sobol</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="n">order</span><span class="p">}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sobol</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="n">order</span><span class="p">}</span></div>
         
         
 <div class="viewcode-block" id="Statistics.getCondSkewness"><a class="viewcode-back" href="../../_documentation/stats.html#equadratures.stats.Statistics.getCondSkewness">[docs]</a>    <span class="k">def</span> <span class="nf">getCondSkewness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
@@ -227,8 +225,8 @@
 <span class="sd">            stats = Statistics(coeffcients, basis)</span>
 <span class="sd">            first_order_skewness = stats.getCondSkewness(1)        </span>
 <span class="sd">        </span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-        <span class="k">return</span> <span class="n">CondSkewness</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quad_wts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_evals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">skewness</span><span class="p">)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">CondSkewness</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quad_wts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_evals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">skewness</span><span class="p">)</span></div>
 <div class="viewcode-block" id="Statistics.getCondKurtosis"><a class="viewcode-back" href="../../_documentation/stats.html#equadratures.stats.Statistics.getCondKurtosis">[docs]</a>    <span class="k">def</span> <span class="nf">getCondKurtosis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get conditional kurtosis indices at specified order. </span>
@@ -245,8 +243,8 @@
 <span class="sd">            stats = Statistics(coeffcients, basis)</span>
 <span class="sd">            first_order_kurtosis = stats.getCondKurtosis(1)        </span>
 <span class="sd">        </span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-        <span class="k">return</span> <span class="n">CondKurtosis</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quad_wts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_evals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kurtosis</span><span class="p">)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">CondKurtosis</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quad_wts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_evals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kurtosis</span><span class="p">)</span></div>
     
     <span class="c1">#Calculates the total sensitivity based on list of input dicts</span>
     <span class="c1">#Assumes they are ordered so that the first element is the first order indices!</span>
@@ -259,8 +257,8 @@
                 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">list_of_indices_dicts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                     <span class="k">if</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">k</span><span class="p">:</span>
                         <span class="n">TSI</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">TSI</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">list_of_indices_dicts</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span>
-                        </div>
-        <span class="k">return</span> <span class="n">TSI</span>
+                        
+        <span class="k">return</span> <span class="n">TSI</span></div>
         
 <span class="c1"># Private functions!</span>
 <span class="k">def</span> <span class="nf">getMean</span><span class="p">(</span><span class="n">coefficients</span><span class="p">):</span>
@@ -299,7 +297,7 @@
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_zero_entries</span><span class="p">)</span> <span class="o">==</span> <span class="n">order</span><span class="p">:</span> <span class="c1">#neglect entries that should actually be zero (what constitutes as zero?)</span>
                     <span class="n">combo_index</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">non_zero_entries</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">combo_index</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">non_zero_entries</span><span class="p">)]</span> <span class="o">+</span> <span class="n">coefficients</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">variance</span><span class="p">)</span>
         <span class="n">check_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">combo_index</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">check_sum</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">1e-2</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">check_sum</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">2</span><span class="p">):</span>
             <span class="nb">print</span> <span class="s2">&quot;Possible discrepancy in calculation, sum of indices = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">check_sum</span><span class="p">)</span> 
         
         <span class="k">return</span> <span class="n">combo_index</span>
@@ -631,13 +629,13 @@
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

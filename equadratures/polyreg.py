@@ -120,6 +120,7 @@ class Polyreg(Poly):
             An instance of the Polyreg class.
         """
         Pz = super(Polyreg, self).getPolynomial(self.x)
+        self.PzT = Pz.T
         wts =  1.0/np.sum( Pz**2 , 0)
         wts_normalized = wts * 1.0/np.sum(wts)
         self.Wz = np.mat(np.diag( np.sqrt(wts_normalized) ) )
@@ -142,8 +143,8 @@ class Polyreg(Poly):
         :return:
             `Coefficient of determination / R-squared value <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_.
         """
-        t_stat = get_t_value(self.coefficients, self.A, self.y)
-        r_sq = get_R_squared(self.coefficients, self.A, self.y)
+        t_stat = get_t_value(self.coefficients, self.PzT, self.y)
+        r_sq = get_R_squared(self.y, super(Polyreg, self).evaluatePolyFit(self.x))
         return t_stat, r_sq
     
     def getQuadraturePointsWeights(self, points):
@@ -152,7 +153,6 @@ class Polyreg(Poly):
         p, w = self.getQuadratureRule(options = self.quadrature_rule, number_of_points = points)
         super(Polyreg, self).__setQuadrature__(p,w)
 
-@staticmethod
 def get_F_stat(coefficients_0, A_0, coefficients_1, A_1, y):
     assert len(coefficients_0) != len(coefficients_1)
     assert A_0.shape[0] == A_1.shape[0]
@@ -173,22 +173,21 @@ def get_F_stat(coefficients_0, A_0, coefficients_1, A_1, y):
     # p-value is scipy.stats.f.cdf(F, n - p_1, p_1 - p_0)
     return F
 
+def get_t_value(coefficients, PzT, y):
+   RSS = np.linalg.norm(y - np.dot(PzT,coefficients))**2
+   n,p = PzT.shape
+   if n == p:
+       return "exact"
+   RSE = RSS/(n-p)
+   Q, R = np.linalg.qr(PzT)
+   inv_ATA = np.linalg.inv(np.dot(R.T, R))
+   se = np.array([np.sqrt(RSE * inv_ATA[j,j]) for j in range(p)])
+   t_stat = np.squeeze(np.asarray(coefficients)) / np.array(se)
+   # p-value is scipy.stats.t.sf(np.abs(t_stat), n - p)
+   return t_stat
 
-def get_t_value(coefficients, A, y):
-    RSS = np.linalg.norm(y - np.dot(A,coefficients))**2
-    n,p = A.shape
-    if n == p:
-        return "exact"
-    RSE = RSS/(n-p)
-    Q, R = np.linalg.qr(A)
-    inv_ATA = np.linalg.inv(np.dot(R.T, R))
-    se = np.array([np.sqrt(RSE * inv_ATA[j,j]) for j in range(p)])
-    t_stat = coefficients / np.reshape(se, (len(se), 1))
-    # p-value is scipy.stats.t.cdf(t_stat, n - p)
-    return t_stat
-
-def get_R_squared(alpha, A, y):
-    y_bar = scipy.mean(y) * np.ones(len(y))
+def get_R_squared(y, evals):
+    y_bar = scipy.mean(y) * np.ones((len(y),1))
     TSS = np.linalg.norm(y - y_bar)**2
-    RSS = np.linalg.norm(np.dot(A,alpha) - y)**2
+    RSS = np.linalg.norm(evals - y)**2
     return 1 - RSS/TSS

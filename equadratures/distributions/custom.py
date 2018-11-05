@@ -138,7 +138,48 @@ class Custom(Distribution):
         :return:
             Recurrence coefficients associated with the custom distribution.
         """
-        print 'this method has to be completed!'
+        x = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
+        w = self.getPDF(points = x)
+        # Allocate memory for recurrence coefficients
+        order = int(order)+1
+        w = w / np.sum(w)
+        ab = np.zeros((order+1,2))
+    
+        # Negate "zero" components
+        nonzero_indices = []
+        for i in range(0, len(x)):
+            if w[i] != 0:
+                nonzero_indices.append(i)
+    
+        ncap = len(nonzero_indices)
+        x = x[nonzero_indices] # only keep entries at the non-zero indices!
+        w = w[nonzero_indices]
+        s = np.sum(w)
+    
+        temp = w/s
+        ab[0,0] = np.dot(x, temp.T)
+        ab[0,1] = s
+    
+    
+        if order == 1:
+            return ab
+    
+        p1 = np.zeros((1, ncap))
+        p2 = np.ones((1, ncap))
+    
+        for j in range(0, order):
+            p0 = p1
+            p1 = p2
+            p2 = ( x - ab[j,0] ) * p1 - ab[j,1] * p0
+            p2_squared = p2**2
+            s1 = np.dot(w, p2_squared.T)
+            inner = w * p2_squared
+            s2 = np.dot(x, inner.T)
+            ab[j+1,0] = s2/s1
+            ab[j+1,1] = s1/s
+            s = s1
+    
+        return ab
 
     def getiCDF(self, xx):
         """ 

@@ -21,9 +21,9 @@ class Poly(object):
         self.basis = basis
         self.dimensions = len(parameters)
         self.orders = []
+        for i in range(0, self.dimensions):
+            self.orders.append(self.parameters[i].order)
         if not self.basis.orders :
-            for i in range(0, self.dimensions):
-                self.orders.append(self.parameters[i].order)
             self.basis.setOrders(self.orders)
 
     def __setCoefficients__(self, coefficients):

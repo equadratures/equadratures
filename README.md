@@ -26,9 +26,6 @@ This should build the code. Just make sure you include the location of effective
 # Documentation
 We use Sphinx for code documentation;  [click here for documentation](http://effective-quadratures.github.io/Effective-Quadratures/). 
 
-# License
-We use an EULA license; please refer to the documentation for license particulars. Succinctly stated, the code is free for use in not-for-profit institutes. This includes academia and a larger number of research organizations. Licenses for for-profit organizations are available through the University of Cambridge's entrepreneurship arm, Cambridge Enterprise. 
-
 # Community guidelines
 If you have contributions, questions, or feedback use either the Github repository, or contact:<br>
 <br>

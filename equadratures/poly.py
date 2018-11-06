@@ -78,14 +78,14 @@ class Poly(object):
         return type(self)(self.parameters, self.basis)
     def getPolynomial(self, stackOfPoints, customBases=None):
         """
-        Evaluates the multivariate polynomial at a set of points.
+        Evaluates the value of each polynomial basis function at a set of points.
 
         :param Poly self:
             An instance of the Poly class.
         :param matrix stackOfPoints:
-            A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.
+            A N-by-d matrix of points along which the multivariate (in d-dimensions) polynomial basis functions must be evaluated.
         :return:
-            A N-by-1 matrix of polynomial evaluations at the stackOfPoints.
+            A P-by-N matrix of polynomial basis function evaluations at the stackOfPoints, where P is the cardinality of the basis.
         """
         if customBases is None:
             basis = self.basis.elements
@@ -120,14 +120,17 @@ class Poly(object):
         return polynomial
     def getPolynomialGradient(self, stackOfPoints):
         """
-        Evaluates the gradient of the multivariate polynomial at a set of points.
+        Evaluates the gradient for each of the polynomial basis functions at a set of points,
+        with respect to each input variable.
 
         :param Poly self:
             An instance of the Poly class.
         :param matrix stackOfPoints:
-            A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.
+            A N-by-d matrix of points along which the gradient of the multivariate (in d-dimensions) polynomial basis
+            functions must be evaluated.
         :return:
-            A list with d elements, each with a N-by-1 matrix of polynomial evaluations at the stackOfPoints.
+            A list with d elements, each with a P-by-N matrix of polynomial evaluations at the stackOfPoints,
+            where P is the cardinality of the basis.
         """
         # "Unpack" parameters from "self"
         basis = self.basis.elements

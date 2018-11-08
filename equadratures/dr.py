@@ -52,7 +52,6 @@ class dr(object):
         else:
             X = samples
             M, _ = X.shape
-            X = samples
 
         # Gradient matrix!
         polygrad = poly.evaluatePolyGradFit(X)
@@ -112,78 +111,6 @@ class dr(object):
             self.training_input = X_stnd.copy()
         return X_stnd
 
-    @staticmethod
-    def vandermonde(eta,p):
-        """
-        Internal function to variable_projection
-        Calculates the Vandermonde matrix using polynomial basis functions
-
-        :param eta: ndarray, the affine transformed projected values of inputs in active subspace
-        :param p: int, the maximum degree of polynomials
-        :return:
-            * **V (numpy array)**: The resulting Vandermode matrix
-            * **Polybasis (Poly object)**: An instance of Poly object containing the polynomial basis derived
-        """
-        _,n=eta.shape
-        listing=[]
-        for i in range(0,n):
-            listing.append(p)
-        Object=Basis('Total order',listing)
-        #Establish n Parameter objects
-        params=[]
-        P=Parameter(order=p,lower=-1,upper=1,distribution='uniform')
-        for i in range(0,n):
-            params.append(P)
-        #Use the params list to establish the Poly object
-        Polybasis=Poly(params,Object)
-        V=Polybasis.getPolynomial(eta)
-        V=V.T
-        return V,Polybasis
-
-    @staticmethod
-    def jacobian(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
-        """
-        Internal function to variable_projection
-        Calculates the Jacobian tensor using polynomial basis functions
-
-        :param V: ndarray, the affine transfored outputs
-        :param V_plus: ndarray, psuedoinverse matrix
-        :param U: ndarray, the active subspace directions
-        :param y: array, the untransformed projected values of inputs in active subspace
-        :param f: array, the untransfored outputs
-        :param Polybasis: Poly object, an instance of Poly class
-        :param eta: ndarray, the affine transformed projected values of inputs in active subspace
-        :param minmax: ndarray, the upper and lower bounds of input projections in each dimension
-        :param X: ndarray, the input
-        :return:
-            * **J (ndarray)**: The Jacobian tensor
-        """
-        M,N=V.shape
-        m,n=U.shape
-        Gradient=Polybasis.getPolynomialGradient(eta)
-        sub=(minmax[1,:]-minmax[0,:]).T# n*1 array
-        vectord=np.reshape(2.0/sub,(n,1))
-        #Initialize the tensor
-        J=np.zeros((M,m,n))
-        #Obtain the derivative of this tensor
-        dV=np.zeros((m,n,M,N))
-        for k in range(0,m):
-            for l in range(0,n):
-                for i in range(0,M):
-                    for j in range(0,N):
-                        current=Gradient[l].T
-                        if n==1:
-                            current=Gradient.T
-                        dV[k,l,i,j]=np.asscalar(vectord[l])*np.asscalar(X[i,k])*np.asscalar(current[i,j])#Eqn 16 17
-        #Get the P matrix
-        P=np.identity(M)-np.matmul(V,V_plus)
-        V_minus=scipy.linalg.pinv(V)
-        #Calculate entries for the tensor
-        for j in range(0,m):
-            for k in range(0,n):
-                temp1=np.linalg.multi_dot([P,dV[j,k,:,:],V_minus])
-                J[:,j,k]=(-np.matmul((temp1+temp1.T),f)).reshape((M,))# Eqn 15
-        return J
 
     def variable_projection(self,n,p,X=None,f=None,gamma=None,beta=None,tol=None,maxiter=1000):
         """
@@ -226,7 +153,7 @@ class dr(object):
                 eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
 
         #Construct the Vandermonde matrix step 6
-        V,Polybasis=self.vandermonde(eta,p)
+        V,Polybasis=vandermonde(eta,p)
         V_plus=np.linalg.pinv(V)
         coeff=np.dot(V_plus,f)
         res=f-np.dot(V,coeff)
@@ -234,7 +161,7 @@ class dr(object):
         #TODO: convergence criterion??
         for iteration in range(0,maxiter):
             #Construct the Jacobian step 9
-            J=self.jacobian(V,V_plus,U,y,f,Polybasis,eta,minmax,X)
+            J=jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X)
             #Calculate the gradient of Jacobian #step 10
             G=np.zeros((m,n))
             for i in range(0,M):
@@ -296,3 +223,121 @@ class dr(object):
                 if R < tol:
                     break
         return U,R
+
+    def vector_AS(self, list_of_polys, samples=None):
+        # Find AS directions to vector val func
+        # analogous to computeActiveSubspace
+        # Since we are dealing with *one* vector val func we should have just one input space
+        # Take the first of the polys.
+        poly = list_of_polys[0]
+        if samples is None:
+            d = poly.dimensions
+            # if alpha is None:
+            #     alpha = 4
+            # if k is None or k > d:
+            #     k = d
+            # M = alpha * k * np.log(d)
+            M = 300
+            X = np.zeros((M, d))
+            for j in range(0, d):
+                X[:, j] = np.reshape(poly.parameters[j].getSamples(M), M)
+        else:
+            X = samples
+            M, _ = X.shape
+        J = jacobian_vec(list_of_polys,X)
+        J_new = np.transpose(J,[2,0,1])
+        JtJ = np.matmul(np.transpose(J_new,[0,2,1]), J_new)
+        H = np.mean(JtJ,axis=0)
+
+        # Compute P_r by solving generalized eigenvalue problem...
+        # Assume sigma = identity for now
+        e, W = np.linalg.eigh(H)
+        eigs = np.flipud(e)
+        eigVecs = np.fliplr(W)
+        return eigs,eigVecs
+
+def vandermonde(eta,p):
+    """
+    Internal function to variable_projection
+    Calculates the Vandermonde matrix using polynomial basis functions
+
+    :param eta: ndarray, the affine transformed projected values of inputs in active subspace
+    :param p: int, the maximum degree of polynomials
+    :return:
+        * **V (numpy array)**: The resulting Vandermode matrix
+        * **Polybasis (Poly object)**: An instance of Poly object containing the polynomial basis derived
+    """
+    _,n=eta.shape
+    listing=[]
+    for i in range(0,n):
+        listing.append(p)
+    Object=Basis('Total order',listing)
+    #Establish n Parameter objects
+    params=[]
+    P=Parameter(order=p,lower=-1,upper=1,distribution='uniform')
+    for i in range(0,n):
+        params.append(P)
+    #Use the params list to establish the Poly object
+    Polybasis=Poly(params,Object)
+    V=Polybasis.getPolynomial(eta)
+    V=V.T
+    return V,Polybasis
+
+def jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
+    """
+    Internal function to variable_projection
+    Calculates the Jacobian tensor using polynomial basis functions
+
+    :param V: ndarray, the affine transformed outputs
+    :param V_plus: ndarray, psuedoinverse matrix
+    :param U: ndarray, the active subspace directions
+    :param y: array, the untransformed projected values of inputs in active subspace
+    :param f: array, the untransformed outputs
+    :param Polybasis: Poly object, an instance of Poly class
+    :param eta: ndarray, the affine transformed projected values of inputs in active subspace
+    :param minmax: ndarray, the upper and lower bounds of input projections in each dimension
+    :param X: ndarray, the input
+    :return:
+        * **J (ndarray)**: The Jacobian tensor
+    """
+    M,N=V.shape
+    m,n=U.shape
+    Gradient=Polybasis.getPolynomialGradient(eta)
+    sub=(minmax[1,:]-minmax[0,:]).T# n*1 array
+    vectord=np.reshape(2.0/sub,(n,1))
+    #Initialize the tensor
+    J=np.zeros((M,m,n))
+    #Obtain the derivative of this tensor
+    dV=np.zeros((m,n,M,N))
+    for k in range(0,m):
+        for l in range(0,n):
+            for i in range(0,M):
+                for j in range(0,N):
+                    current=Gradient[l].T
+                    if n==1:
+                        current=Gradient.T
+                    dV[k,l,i,j]=np.asscalar(vectord[l])*np.asscalar(X[i,k])*np.asscalar(current[i,j])#Eqn 16 17
+    #Get the P matrix
+    P=np.identity(M)-np.matmul(V,V_plus)
+    V_minus=scipy.linalg.pinv(V)
+    #Calculate entries for the tensor
+    for j in range(0,m):
+        for k in range(0,n):
+            temp1=np.linalg.multi_dot([P,dV[j,k,:,:],V_minus])
+            J[:,j,k]=(-np.matmul((temp1+temp1.T),f)).reshape((M,))# Eqn 15
+    return J
+
+def jacobian_vec(list_of_poly, X):
+    """
+    Evaluates the Jacobian tensor for a list of polynomials.
+    :param list_of_poly: list. Contains all m polynomials.
+    :param X: ndarray, input points. N-by-d where N is the number of points, d the input dimension.
+    :return:
+        * **J (ndarray)**: The Jacobian tensor, m-by-d-by-N, where J[a,b,c] = dP_a/dx_c_b (b-th dimension of P_a's gradient at x_c)
+    """
+    m = len(list_of_poly)
+    [N,d] = X.shape
+    J = np.zeros((m,d,N))
+    for p in range(len(list_of_poly)):
+        J[p,:,:] = list_of_poly[p].evaluatePolyGradFit(X)
+    return J

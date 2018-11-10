@@ -28,6 +28,8 @@
 
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Polynomial variable projection" href="tutorial_12.html" />
     <link rel="prev" title="Nataf transform for correlated inputs" href="tutorial_10.html" /> 
 
@@ -98,7 +100,7 @@
 <li class="toctree-l2"><a class="reference internal" href="tutorial_6.html">Polynomial regression for data-sets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_7.html">Polynomial least squares approximations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_8.html">Polynomials via compressive sensing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol&#8217; indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol’ indices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_10.html">Nataf transform for correlated inputs</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Active subspaces with polynomial approximations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_12.html">Polynomial variable projection</a></li>
@@ -175,72 +177,72 @@
 <h1>Active subspaces with polynomial approximations<a class="headerlink" href="#active-subspaces-with-polynomial-approximations" title="Permalink to this headline">¶</a></h1>
 <p><strong>Active Subspaces</strong></p>
 <p>The active subspace is defined as follows:</p>
-<p>Let <span class="math">\(f(\mathbf{x})\)</span> be a scalar valued function <span class="math">\(\mathbb{R}^n \rightarrow \mathbb{R}\)</span> with <span class="math">\(\mathbf{x} \in \mathbb{R}^{n}\)</span>. Here <span class="math">\(f(\mathbf{x})\)</span> represents the chosen quantity of interest and <span class="math">\(\mathbf{x}\)</span> represents the design parameters. Consider the approximation</p>
-<div class="math">
+<p>Let <span class="math notranslate">\(f(\mathbf{x})\)</span> be a scalar valued function <span class="math notranslate">\(\mathbb{R}^n \rightarrow \mathbb{R}\)</span> with <span class="math notranslate">\(\mathbf{x} \in \mathbb{R}^{n}\)</span>. Here <span class="math notranslate">\(f(\mathbf{x})\)</span> represents the chosen quantity of interest and <span class="math notranslate">\(\mathbf{x}\)</span> represents the design parameters. Consider the approximation</p>
+<div class="math notranslate">
 \[\begin{equation}
 f(\mathbf{x}) \approx g( \mathbf{U}^T \mathbf{x}),
 \label{equ_active}
 \end{equation}\]</div>
-<p>where <span class="math">\(\mathbf{U} \in \mathbb{R}^{k \times n}\)</span>, with <span class="math">\(k &lt;&lt; n\)</span>. Ideally we would like <span class="math">\(k = 1\)</span> or <span class="math">\(2\)</span> for facilitating subsequent visualisation. The matrix <span class="math">\(\mathbf{U}\)</span> represents the <em>active subspace</em> and its null space represents the <em>inactive subspace</em>. Essentially, the function tends to be well approximated via the map <span class="math">\(g\)</span> on the active subspace.</p>
-<p>Numerous ideas for finding active subspaces in computer experiments can be found in the work of Constantine [1]. The idea is to express the kernel matrix as the expectation of the outer product of gradients of <span class="math">\(f\)</span></p>
-<div class="math">
+<p>where <span class="math notranslate">\(\mathbf{U} \in \mathbb{R}^{k \times n}\)</span>, with <span class="math notranslate">\(k &lt;&lt; n\)</span>. Ideally we would like <span class="math notranslate">\(k = 1\)</span> or <span class="math notranslate">\(2\)</span> for facilitating subsequent visualisation. The matrix <span class="math notranslate">\(\mathbf{U}\)</span> represents the <em>active subspace</em> and its null space represents the <em>inactive subspace</em>. Essentially, the function tends to be well approximated via the map <span class="math notranslate">\(g\)</span> on the active subspace.</p>
+<p>Numerous ideas for finding active subspaces in computer experiments can be found in the work of Constantine [1]. The idea is to express the kernel matrix as the expectation of the outer product of gradients of <span class="math notranslate">\(f\)</span></p>
+<div class="math notranslate">
 \[\begin{equation}
 \textbf{K}=\int \nabla_{\mathbf{x}} f(\mathbf{x})\nabla_{\mathbf{x}} f(\mathbf{x})^{T} \rho (\mathbf{x}) d \mathbf{x} ,
 \label{equ_as}
 \end{equation}\]</div>
-<p>where <span class="math">\(\rho(\mathbf{x})\)</span> is the density of the inputs <span class="math">\(\mathbf{x}\)</span> over its parameter space. A heuristic for estimating the kernel via finite point samples <span class="math">\(N\)</span> is described below:</p>
+<p>where <span class="math notranslate">\(\rho(\mathbf{x})\)</span> is the density of the inputs <span class="math notranslate">\(\mathbf{x}\)</span> over its parameter space. A heuristic for estimating the kernel via finite point samples <span class="math notranslate">\(N\)</span> is described below:</p>
 <ol class="arabic simple">
-<li>For <span class="math">\(N\)</span> samples drawn randomly from a distribution <span class="math">\(\rho(\mathbf{x})\)</span> calculate the sample kernel matrix:</li>
+<li>For <span class="math notranslate">\(N\)</span> samples drawn randomly from a distribution <span class="math notranslate">\(\rho(\mathbf{x})\)</span> calculate the sample kernel matrix:</li>
 </ol>
-<div class="math">
+<div class="math notranslate">
 \[\begin{equation}
 \hat{\textbf{K}}=\frac{1}{N} \sum_{i=1}^{N}(\nabla_{\mathbf{x}} f(\mathbf{x}_i))(\nabla_{\mathbf{x}} f(\mathbf{x}_i)^{T})\,;
 \end{equation}\]</div>
 <ol class="arabic simple" start="2">
-<li>Compute the eigendecomposition of <span class="math">\(\hat{\textbf{K}}\)</span> and select the eigenvectors with largest eigenvalues to form a matrix <span class="math">\(\mathbf{U}\)</span> with orthogonal columns.</li>
+<li>Compute the eigendecomposition of <span class="math notranslate">\(\hat{\textbf{K}}\)</span> and select the eigenvectors with largest eigenvalues to form a matrix <span class="math notranslate">\(\mathbf{U}\)</span> with orthogonal columns.</li>
 </ol>
 <p><strong>Polynomial Active Subspaces</strong></p>
 <p>In many cases gradient information is not available. Therefore, assumptions on the model are necessary to overcome this obstacle. A good assumption would be that the model is a polynomial, as the polynomials are easy to calculate and their gradients can be derived analytically. One can express a polynomial as a linear combination of a number of polynomial basis terms</p>
-<div class="math">
+<div class="math notranslate">
 \[\begin{equation}
 f(\mathbf{x}) \approx h(\mathbf{x})=\sum_{j=1}^N a_j \phi_j(\mathbf{x})\,,
 \end{equation}\]</div>
-<p>where <span class="math">\(\phi_j(\mathbf{x})\)</span> is a multivariate polynomial basis term of a certain mixed degree and <span class="math">\(a_j\)</span> is the corresponding coefficient. Then the gradient can be expressed as the sum of the derivatives of the polynomials.</p>
-<div class="math">
+<p>where <span class="math notranslate">\(\phi_j(\mathbf{x})\)</span> is a multivariate polynomial basis term of a certain mixed degree and <span class="math notranslate">\(a_j\)</span> is the corresponding coefficient. Then the gradient can be expressed as the sum of the derivatives of the polynomials.</p>
+<div class="math notranslate">
 \[\begin{equation}
 \nabla_{\mathbf{x}}f(\mathbf{x}) \approx \nabla_{\mathbf{x}}h(\mathbf{x})=\sum_{j=1}^N a_j \phi_j'(\mathbf{x})\,.
 \end{equation}\]</div>
-<p>To construct the polynomial basis terms <span class="math">\(\phi(\mathbf{x})\)</span> , one only needs to know the number of dimensions and the polynomial degree.</p>
+<p>To construct the polynomial basis terms <span class="math notranslate">\(\phi(\mathbf{x})\)</span> , one only needs to know the number of dimensions and the polynomial degree.</p>
 <p><strong>A 2-degree Polynomial Model for Dimension Reduction</strong></p>
-<p>If the polynomial degree is set as 2, then the polynomial bases would include all linear terms <span class="math">\(\phi(\mathbf{x})=x_i\)</span>, all squared terms <span class="math">\(\phi(\mathbf{x})=x_i^2\)</span> and all cross terms <span class="math">\(\phi(\mathbf{x})=x_i x_j\)</span>.</p>
-<p>One can fit a polynomial to the dataset using least squares with sample input/output pairs. This idea was leveraged in [2] to find <span class="math">\(\mathbf{U}\)</span> and is detailed below. The goal here is to use least squares to fit the dataset to the following form</p>
-<div class="math">
+<p>If the polynomial degree is set as 2, then the polynomial bases would include all linear terms <span class="math notranslate">\(\phi(\mathbf{x})=x_i\)</span>, all squared terms <span class="math notranslate">\(\phi(\mathbf{x})=x_i^2\)</span> and all cross terms <span class="math notranslate">\(\phi(\mathbf{x})=x_i x_j\)</span>.</p>
+<p>One can fit a polynomial to the dataset using least squares with sample input/output pairs. This idea was leveraged in [2] to find <span class="math notranslate">\(\mathbf{U}\)</span> and is detailed below. The goal here is to use least squares to fit the dataset to the following form</p>
+<div class="math notranslate">
 \[\begin{equation}
 y=f(\mathbf{x})=\frac{1}{2}\mathbf{x} ^{T} \mathbf{A}\mathbf{x} + \textbf{c}^{T}\mathbf{x} +d\,,
 \label{quadraticeqn}
 \end{equation}\]</div>
 <p>therefore the gradient of the function can be expressed as</p>
-<div class="math">
+<div class="math notranslate">
 \[\begin{equation}
 \nabla_{\mathbf{x}}f(\mathbf{x})= \mathbf{A} \mathbf{x}+\textbf{c}\,.
 \end{equation}\]</div>
 <p>Then a set of equations can be formulated using each data point:</p>
-<div class="math">
+<div class="math notranslate">
 \[\begin{equation}
 \frac{1}{2} \sum_{i=1,j=1}^{m,m}a_{ij}x_ix_j+\sum_{j=1}^{m}c_jx_j+d=y\,;
 \end{equation}\]</div>
-<p>All <span class="math">\(a_{ij}\)</span> along with <span class="math">\(\textbf{c}\)</span> and <span class="math">\(d\)</span> are obtained by solving for the least squares solution, where <span class="math">\(a_{ij}\)</span> are the entries of the matrix <span class="math">\(\mathbf{A}\)</span> and <span class="math">\(c_j\)</span> are the entries of the vector <span class="math">\(\textbf{c}\)</span>. Finally, the estimated kernel is given by</p>
-<div class="math">
+<p>All <span class="math notranslate">\(a_{ij}\)</span> along with <span class="math notranslate">\(\textbf{c}\)</span> and <span class="math notranslate">\(d\)</span> are obtained by solving for the least squares solution, where <span class="math notranslate">\(a_{ij}\)</span> are the entries of the matrix <span class="math notranslate">\(\mathbf{A}\)</span> and <span class="math notranslate">\(c_j\)</span> are the entries of the vector <span class="math notranslate">\(\textbf{c}\)</span>. Finally, the estimated kernel is given by</p>
+<div class="math notranslate">
 \[\begin{equation}
 \hat{\textbf{K}}=\frac{1}{N}\sum_{i=1}^N(A\mathbf{x}_i+\textbf{c})(A\mathbf{x}_i+\textbf{c})^{T}\,.
 \end{equation}\]</div>
 <p>The last step of selecting eigenvectors is done by carrying out an eigendecomposition on the kernel matrix (symmetric).</p>
-<div class="math">
+<div class="math notranslate">
 \[\begin{equation}
 \hat{\mathbf{K}}= \mathbf{W \Lambda W}^{T},
 \end{equation}\]</div>
-<p>where <span class="math">\(\mathbf{W}\)</span> contains all eigenvectors and <span class="math">\(\Lambda\)</span> is the diagonal matrix of all corresponding eigenvalues, which are assumed to be sorted in descending order. The eigenvectors and eigenvalues can then be partitioned</p>
-<div class="math">
+<p>where <span class="math notranslate">\(\mathbf{W}\)</span> contains all eigenvectors and <span class="math notranslate">\(\Lambda\)</span> is the diagonal matrix of all corresponding eigenvalues, which are assumed to be sorted in descending order. The eigenvectors and eigenvalues can then be partitioned</p>
+<div class="math notranslate">
 \[\begin{split}\begin{equation}
 \mathbf{W}=\left[\begin{array}{cc}
 \mathbf{U}_{\text{active}} &amp; \mathbf{U}_{\text{inactive}}\end{array}\right] \; \; \; \mathbf{\Lambda}=\left[\begin{array}{cc}
@@ -248,31 +250,31 @@ y=f(\mathbf{x})=\frac{1}{2}\mathbf{x} ^{T} \mathbf{A}\mathbf{x} + \textbf{c}^{T}
  &amp; \mathbf{\Lambda_{\text{inactive}} }
 \end{array}\right]
 \end{equation}\end{split}\]</div>
-<p>based on a <em>suitable cut-off criterion</em> &#8212;usually the magnitude of the eigenvalues.</p>
-<p>As most of the variation in <span class="math">\(f\)</span> happens with changes in <span class="math">\(\mathbf{U}_{active}^T \mathbf{x}\)</span>,</p>
-<div class="math">
+<p>based on a <em>suitable cut-off criterion</em> —usually the magnitude of the eigenvalues.</p>
+<p>As most of the variation in <span class="math notranslate">\(f\)</span> happens with changes in <span class="math notranslate">\(\mathbf{U}_{active}^T \mathbf{x}\)</span>,</p>
+<div class="math notranslate">
 \[\begin{equation}
 f \left(\mathbf{x}\right) \approx g\left(\mathbf{U}_\text{active}^T\mathbf{x} \right)\text{ while }f\left( \mathbf{U}_\text{inactive} \mathbf{U}_\text{inactive}^T \mathbf{x} \right) \approx 0,
 \end{equation}\]</div>
-<p>where <span class="math">\(g\)</span> is a lower dimensional function.</p>
+<p>where <span class="math notranslate">\(g\)</span> is a lower dimensional function.</p>
 <p><strong>Code Implementation</strong></p>
 <p>We look at a compressor fan design problem. The 25 design variables can be viewed as inputs to the function, where the CFD efficiency of the blade design is seen as the output. Now we attempt to use a 2-degree polynomial active subspace model to reach dimension reduction and find a 2D active subspace.</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy</span>
 <span class="kn">from</span> <span class="nn">equadratures</span> <span class="k">import</span> <span class="o">*</span>
 </pre></div>
 </div>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;X.dat&#39;</span><span class="p">)</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;X.dat&#39;</span><span class="p">)</span>
 <span class="n">fX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;Y.dat&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This dataset contains 554 pairs of inputs (designs of blades) and outputs (CFD-evaluataed efficiency). The dimension of inputs is 25 (25D design space). Using variable projection, we wish to find a surrogate model for this relationship in 2D. All input vectors are put in X.dat, while the outputs are in Y.dat. They are stored as variables X and fX respectively.</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">n</span><span class="o">=</span><span class="mi">2</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n</span><span class="o">=</span><span class="mi">2</span>
 <span class="n">p</span><span class="o">=</span><span class="mi">2</span>
 </pre></div>
 </div>
-<p><span class="math">\(n\)</span> stands for the dimensionality of the active subspace. This indicates the active subspace <span class="math">\(\mathbf{U}\)</span> found would be of <span class="math">\(25\times 2\)</span>. <span class="math">\(p\)</span> stands for the degree of polynomial basis terms.</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">listing</span><span class="o">=</span><span class="p">[]</span>
+<p><span class="math notranslate">\(n\)</span> stands for the dimensionality of the active subspace. This indicates the active subspace <span class="math notranslate">\(\mathbf{U}\)</span> found would be of <span class="math notranslate">\(25\times 2\)</span>. <span class="math notranslate">\(p\)</span> stands for the degree of polynomial basis terms.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">listing</span><span class="o">=</span><span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
     <span class="n">listing</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
 <span class="n">Object</span><span class="o">=</span><span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Total order&#39;</span><span class="p">,</span><span class="n">listing</span><span class="p">)</span>
@@ -289,7 +291,7 @@ f \left(\mathbf{x}\right) \approx g\left(\mathbf{U}_\text{active}^T\mathbf{x} \r
 </pre></div>
 </div>
 <p>When the eigenvectors are calculated we can obtain the active subspace and use it for data visualisation.</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">U</span><span class="o">=</span><span class="p">[[</span> <span class="mf">0.00516216</span><span class="p">,</span>  <span class="mf">0.04112609</span><span class="p">],</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">U</span><span class="o">=</span><span class="p">[[</span> <span class="mf">0.00516216</span><span class="p">,</span>  <span class="mf">0.04112609</span><span class="p">],</span>
    <span class="p">[</span> <span class="mf">0.03252687</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.051099</span>  <span class="p">],</span>
    <span class="p">[</span> <span class="mf">0.00581692</span><span class="p">,</span>  <span class="mf">0.07217146</span><span class="p">],</span>
    <span class="p">[</span><span class="o">-</span><span class="mf">0.00987772</span><span class="p">,</span>  <span class="mf">0.03119806</span><span class="p">],</span>
@@ -316,11 +318,11 @@ f \left(\mathbf{x}\right) \approx g\left(\mathbf{U}_\text{active}^T\mathbf{x} \r
    <span class="p">[</span> <span class="mf">0.05573985</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.04064798</span><span class="p">]]</span>
 </pre></div>
 </div>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">active1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">X</span> <span class="p">,</span> <span class="n">U</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="p">)</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">active1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">X</span> <span class="p">,</span> <span class="n">U</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="p">)</span>
 <span class="n">active2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">X</span> <span class="p">,</span> <span class="n">U</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="p">)</span>
 </pre></div>
 </div>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib.mlab</span> <span class="k">import</span> <span class="n">griddata</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib.mlab</span> <span class="k">import</span> <span class="n">griddata</span>
 <span class="k">def</span> <span class="nf">grid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">resX</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">resY</span><span class="o">=</span><span class="mi">40</span><span class="p">):</span>
     <span class="s2">&quot;Convert 3 column data to matplotlib grid&quot;</span>
     <span class="n">xi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">resX</span><span class="p">)</span>
@@ -409,13 +411,13 @@ f \left(\mathbf{x}\right) \approx g\left(\mathbf{U}_\text{active}^T\mathbf{x} \r
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

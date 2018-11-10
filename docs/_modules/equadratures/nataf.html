@@ -27,7 +27,9 @@
   
 
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
@@ -153,6 +155,10 @@
   <h1>Source code for equadratures.nataf</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot; Class for solving the Nataf transformation in N-Dimensional case, </span>
 <span class="sd">    for generic types of input  marginals.</span>
+<span class="sd">    </span>
+<span class="sd">    Input parameter: </span>
+<span class="sd">    D : List of Distributions: instances of Parameter class.</span>
+<span class="sd">    R : Correlation matrix of distributions which belong to D.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">optimize</span>
@@ -161,15 +167,29 @@
 <span class="kn">from</span> <span class="nn">basis</span> <span class="k">import</span> <span class="n">Basis</span> 
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">stats</span>
 
+<span class="c1">#import matplotlib.pyplot as plt</span>
+
 <div class="viewcode-block" id="Nataf"><a class="viewcode-back" href="../../_documentation/nataf.html#equadratures.nataf.Nataf">[docs]</a><span class="k">class</span> <span class="nc">Nataf</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The class defines a Nataf transformation: the input correlated marginals are mapped from their physical space to a new </span>
+<span class="sd">    The class defines a Nataf transformation.</span>
+<span class="sd">    References for theory:</span>
+<span class="sd">        Melchers, R., E. (Robert E.), 1945- Structural reliability analysis</span>
+<span class="sd">        and predictions - 2nd edition - John Wiley &amp; Sons Ltd.</span>
+<span class="sd">        </span>
+<span class="sd">    The input correlated marginals are mapped from their physical space to a new </span>
 <span class="sd">    standard normal space, in which points are uncorrelated.</span>
-
+<span class="sd">    </span>
+<span class="sd">    Attributes of the class:</span>
 <span class="sd">    :param list D:</span>
 <span class="sd">            List of parameters (distributions), interpreted here as the marginals.</span>
 <span class="sd">    :param numpy-matrix R:</span>
-<span class="sd">            The correlation matrix associated with the joint distribution.      </span>
+<span class="sd">            The correlation matrix associated with the joint distribution.</span>
+<span class="sd">    :param object std:</span>
+<span class="sd">            A standard normal distribution</span>
+<span class="sd">    :param numpy-matrix A:</span>
+<span class="sd">            The Cholesky decomposition of Fictive matrix R0, </span>
+<span class="sd">            associated with the set of normal intermediate</span>
+<span class="sd">            correlated distributions.        </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">D</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">D</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -218,13 +238,22 @@
                       <span class="n">bivariateNormalPDF</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="n">rho_ij</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">rho_ij</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">p1</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">rho_ij</span> <span class="o">*</span> <span class="n">p1</span> <span class="o">*</span> <span class="n">p2</span>  <span class="o">+</span> <span class="n">p2</span><span class="o">**</span><span class="mi">2</span> <span class="p">)))</span>
                       <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">coefficientsIntegral</span><span class="p">,</span> <span class="n">bivariateNormalPDF</span><span class="p">)</span> 
                       <span class="k">return</span> <span class="n">diff</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> 
-
-                  <span class="n">rho</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">newton</span><span class="p">(</span><span class="n">check_difference</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
+                  
+                  <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="o">!=</span><span class="s1">&#39;custom&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="o">!=</span><span class="s1">&#39;custom&#39;</span><span class="p">):</span>
+                    <span class="n">rho</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">newton</span><span class="p">(</span><span class="n">check_difference</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">],</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+                  <span class="k">else</span><span class="p">:</span> 
+                    <span class="n">res</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">least_squares</span><span class="p">(</span><span class="n">check_difference</span><span class="p">,</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">],</span> <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.999</span><span class="p">,</span><span class="mf">0.999</span><span class="p">),</span> <span class="n">ftol</span><span class="o">=</span><span class="mf">1.e-03</span><span class="p">)</span> 
+                    <span class="n">rho</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span>
+                    <span class="nb">print</span> <span class="s1">&#39;A Custom Marginal is present&#39;</span>
 
                   <span class="n">R0</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">rho</span>
                   <span class="n">R0</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">R0</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="n">R0</span><span class="p">)</span> 
+        <span class="nb">print</span> <span class="s1">&#39;The Cholesky decomposition of fictive matrix R0 is:&#39;</span>
+        <span class="nb">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span>
+        <span class="nb">print</span> <span class="s1">&#39;The fictive matrix is:&#39;</span>
+        <span class="nb">print</span> <span class="n">R0</span>
     
 <div class="viewcode-block" id="Nataf.C2U"><a class="viewcode-back" href="../../_documentation/nataf.html#equadratures.nataf.Nataf.C2U">[docs]</a>    <span class="k">def</span> <span class="nf">C2U</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;  Method for mapping correlated variables to a new standard space.</span>
@@ -239,8 +268,7 @@
 <span class="sd">                    The transformation of each i-th input marginal is stored along </span>
 <span class="sd">                    the i-th column of the output matrix.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">c</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
-
+        <span class="n">c</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>                
         <span class="n">w1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)))</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)):</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)):</span>
@@ -250,6 +278,15 @@
                 <span class="k">elif</span> <span class="p">(</span><span class="n">w1</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">):</span>
                     <span class="n">w1</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">+</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">)</span>
 
+        <span class="c1">#-----------------------------------------------#</span>
+        <span class="c1">#plt.figure()</span>
+        <span class="c1">#plt.grid(linewidth=0.5, color=&#39;k&#39;)</span>
+        <span class="c1">#plt.plot(X[:,0], w1[:,0], &#39;ro&#39;, label=&#39;first&#39;)</span>
+        <span class="c1">#plt.plot(X[:,1], w1[:,1], &#39;bx&#39;, label=&#39;second&#39;)</span>
+        <span class="c1">#plt.title(&#39;from nataf class: w1 VS X input&#39;)</span>
+        <span class="c1">#plt.legend(loc=&#39;upper left&#39;)</span>
+        <span class="c1">#plt.show()</span>
+        <span class="c1">#-----------------------------------------------#</span>
         <span class="n">sU</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)))</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)):</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)):</span>
@@ -261,8 +298,8 @@
         <span class="n">xu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span><span class="n">sU</span><span class="p">)</span>
         <span class="n">xu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">xu</span><span class="p">)</span>
         <span class="n">xu</span> <span class="o">=</span> <span class="n">xu</span><span class="o">.</span><span class="n">T</span>
-
-        <span class="k">return</span> <span class="n">xu</span></div>
+</div>
+        <span class="k">return</span> <span class="n">xu</span>
 
 <div class="viewcode-block" id="Nataf.U2C"><a class="viewcode-back" href="../../_documentation/nataf.html#equadratures.nataf.Nataf.U2C">[docs]</a>    <span class="k">def</span> <span class="nf">U2C</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Method for mapping uncorrelated variables from standard normal space</span>
@@ -294,8 +331,8 @@
                 <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">getiCDF</span><span class="p">(</span><span class="n">temporary</span><span class="p">)</span>
                 
                 <span class="n">t</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">Xc</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span> 
-        <span class="k">return</span> <span class="n">Xc</span></div>
+                <span class="n">Xc</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span> </div>
+        <span class="k">return</span> <span class="n">Xc</span>
     
 <div class="viewcode-block" id="Nataf.getUncorrelatedSamples"><a class="viewcode-back" href="../../_documentation/nataf.html#equadratures.nataf.Nataf.getUncorrelatedSamples">[docs]</a>    <span class="k">def</span> <span class="nf">getUncorrelatedSamples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Method for sampling uncorrelated data: </span>
@@ -323,8 +360,8 @@
             <span class="n">distro</span> <span class="o">=</span> <span class="n">distro</span><span class="o">.</span><span class="n">T</span>
        
         <span class="k">else</span><span class="p">:</span>
-             <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;One input must be given to &quot;get Correlated Samples&quot; method&#39;</span><span class="p">)</span>   
-        <span class="k">return</span> <span class="n">distro</span></div>
+             <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;One input must be given to &quot;get Correlated Samples&quot; method&#39;</span><span class="p">)</span>   </div>
+        <span class="k">return</span> <span class="n">distro</span>
   
 <div class="viewcode-block" id="Nataf.getCorrelatedSamples"><a class="viewcode-back" href="../../_documentation/nataf.html#equadratures.nataf.Nataf.getCorrelatedSamples">[docs]</a>    <span class="k">def</span> <span class="nf">getCorrelatedSamples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Method for sampling correlated data:</span>
@@ -362,13 +399,13 @@
             <span class="n">correlated</span> <span class="o">=</span> <span class="n">correlated</span><span class="o">.</span><span class="n">T</span>
             <span class="k">return</span> <span class="n">correlated</span>
         
-        <span class="k">else</span><span class="p">:</span>
-             <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;One input must be given to &quot;get Correlated Samples&quot; method: please choose between sampling N points or giving an array of uncorrelated data &#39;</span><span class="p">)</span>   </div>
+        <span class="k">else</span><span class="p">:</span></div>
+             <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;One input must be given to &quot;get Correlated Samples&quot; method: please choose between sampling N points or giving an array of uncorrelated data &#39;</span><span class="p">)</span>   
 
 <div class="viewcode-block" id="Nataf.CorrelationMatrix"><a class="viewcode-back" href="../../_documentation/nataf.html#equadratures.nataf.Nataf.CorrelationMatrix">[docs]</a>    <span class="k">def</span> <span class="nf">CorrelationMatrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; The following calculations check the correlation</span>
 <span class="sd">            matrix of input arrays and determine the covariance </span>
-<span class="sd">            matrix: The input matrix must have dimensions N-by-m where</span>
+<span class="sd">            matrix: The input matrix mush have [Nxm] dimensions where</span>
 <span class="sd">            m is the number of the marginals.</span>
 <span class="sd">            </span>
 <span class="sd">            :param X:</span>
@@ -412,8 +449,8 @@
                     <span class="n">den11</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">den1</span><span class="p">)</span>
                     <span class="n">den22</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">den2</span><span class="p">)</span>
                     <span class="n">R</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">prod_n</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">den11</span><span class="o">*</span><span class="n">den22</span><span class="p">)</span>
-         
-        <span class="k">return</span> <span class="n">R</span></div></div>
+         </div></div>
+        <span class="k">return</span> <span class="n">R</span>
 </pre></div>
 
            </div>
@@ -453,13 +490,13 @@
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

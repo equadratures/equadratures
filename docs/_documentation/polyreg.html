@@ -28,6 +28,8 @@
 
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Quadrature rules" href="polyint.html" />
     <link rel="prev" title="Coefficient computation" href="polychildren.html" /> 
 
@@ -192,11 +194,11 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>basis</strong> (<a class="reference internal" href="basis.html#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) &#8211; A basis selected for the multivariate polynomial.</li>
-<li><strong>training_inputs</strong> (<em>matrix</em>) &#8211; A N-by-d matrix of input training points.</li>
-<li><strong>training_outputs</strong> (<em>matrix</em>) &#8211; A N-by-1 matrix of output training points.</li>
-<li><strong>training_grads</strong> (<em>matrix</em>) &#8211; A N-by-d matrix of gradient evaluations.</li>
-<li><strong>fun</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#callable" title="(in Python v3.7)"><em>callable</em></a>) &#8211; Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.</li>
+<li><strong>basis</strong> (<a class="reference internal" href="basis.html#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) – A basis selected for the multivariate polynomial.</li>
+<li><strong>training_inputs</strong> (<em>matrix</em>) – A N-by-d matrix of input training points.</li>
+<li><strong>training_outputs</strong> (<em>matrix</em>) – A N-by-1 matrix of output training points.</li>
+<li><strong>training_grads</strong> (<em>matrix</em>) – A N-by-d matrix of gradient evaluations.</li>
+<li><strong>fun</strong> (<em>callable</em>) – Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.</li>
 </ul>
 </td>
 </tr>
@@ -205,7 +207,7 @@
 <dl class="method">
 <dt id="equadratures.polyreg.Polyreg.computeCoefficients">
 <code class="descname">computeCoefficients</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/polyreg.html#Polyreg.computeCoefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.polyreg.Polyreg.computeCoefficients" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function computes the coefficients using least squares. To access the coefficients simply use the class&#8217;s attribute self.coefficients.
+<dd><p>This function computes the coefficients using least squares. To access the coefficients simply use the class’s attribute self.coefficients.
 :param Polyreg self:</p>
 <blockquote>
 <div>An instance of the Polyreg class.</div></blockquote>
@@ -220,8 +222,8 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.polyreg.Polyreg" title="equadratures.polyreg.Polyreg"><em>Polyreg</em></a>) &#8211; An instance of the Polyreg class.</li>
-<li><strong>folds</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) &#8211; The number of cross validation folds; default value is 5.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.polyreg.Polyreg" title="equadratures.polyreg.Polyreg"><em>Polyreg</em></a>) – An instance of the Polyreg class.</li>
+<li><strong>folds</strong> (<em>int</em>) – The number of cross validation folds; default value is 5.</li>
 </ul>
 </td>
 </tr>
@@ -308,13 +310,13 @@
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

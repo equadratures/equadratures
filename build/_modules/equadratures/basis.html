@@ -241,12 +241,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span>
 
         <span class="c1">## Don&#39;t sort a sparse grid index set, because the order is tied to the coefficients!</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span><span class="s2">&quot;Hyperbolic basis&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Euclidean degree&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Total order&quot;</span><span class="p">:</span></div>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        if avoid_sorting is False:</span>
+<span class="sd">            if name ==&quot;Hyperbolic basis&quot;:</span>
+<span class="sd">                self.sort()</span>
+<span class="sd">            elif name == &quot;Euclidean degree&quot;:</span>
+<span class="sd">                self.sort()</span>
+<span class="sd">            elif name == &quot;Total order&quot;:</span>
+<span class="sd">                self.sort()</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Basis.prune"><a class="viewcode-back" href="../../_documentation/basis.html#equadratures.basis.Basis.prune">[docs]</a>    <span class="k">def</span> <span class="nf">prune</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number_of_elements_to_delete</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

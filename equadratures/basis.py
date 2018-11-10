@@ -86,12 +86,15 @@ class Basis(object):
         self.cardinality = len(basis)
 
         ## Don't sort a sparse grid index set, because the order is tied to the coefficients!
-        if name =="Hyperbolic basis":
-            self.sort()
-        elif name == "Euclidean degree":
-            self.sort()
-        elif name == "Total order":
-            self.sort()
+        """
+        if avoid_sorting is False:
+            if name =="Hyperbolic basis":
+                self.sort()
+            elif name == "Euclidean degree":
+                self.sort()
+            elif name == "Total order":
+                self.sort()
+        """
 
     def prune(self, number_of_elements_to_delete):
         """

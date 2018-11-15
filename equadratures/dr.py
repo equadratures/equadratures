@@ -94,7 +94,8 @@ class dr(object):
         Standardize the inputs before Dimension Reduction
 
         :param X: ndarray, the undimensioned input values
-        :param bounds: ndarray, the upper and lower bounds for input values in each dimension
+        :param bounds: ndarray, M-by-2 array, where the first column contains the lower bounds of
+        the M variables, the second column the upper bounds.
         :return:
             * **X_stnd (numpy array)**: Standardized input values
         """

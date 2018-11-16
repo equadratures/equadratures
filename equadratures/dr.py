@@ -24,7 +24,7 @@ class dr(object):
         if training_output is not None:
             self.training_output = training_output
 
-    def computeActiveSubspaces(self, poly=None, samples=None, alpha=None, k=None):
+    def computeActiveSubspaces(self, poly=None, samples=None, alpha=None, k=None, bootstrap=False, bs_trials = 50):
         """
         Computes the eigenvalues and corresponding eigenvectors for the high dimensional kernel matrix via polynomial model.
 
@@ -51,7 +51,7 @@ class dr(object):
                 X[:, j] =  np.reshape(poly.parameters[j].getSamples(M), M)
         else:
             X = samples
-            M, _ = X.shape
+            M, d = X.shape
 
         # Gradient matrix!
         polygrad = poly.evaluatePolyGradFit(X)
@@ -64,7 +64,25 @@ class dr(object):
         idx = e.argsort()[::-1]
         eigs = e[idx]
         eigVecs = W[:, idx]
-        return eigs, eigVecs
+        if bootstrap:
+            all_bs_eigs = np.zeros((bs_trials, d))
+            # all_bs_W = np.zeros((bs_trials, d, d))
+            for t in range(bs_trials):
+                bs_samples = X[np.random.randint(0, M, size=M), :]
+                polygrad_bs = poly.evaluatePolyGradFit(bs_samples)
+                weights_bs = np.ones((M, 1)) / M
+                R_bs = polygrad_bs.transpose() * weights_bs
+                C_bs = np.dot(polygrad_bs, R_bs)
+
+                e_bs, W_bs = np.linalg.eigh(C_bs)
+                all_bs_eigs[t,:] = np.flipud(e_bs)
+                # eigVecs_bs = np.fliplr(W_bs)
+
+            eigs_bs_lower = np.min(all_bs_eigs, axis = 0)
+            eigs_bs_upper = np.max(all_bs_eigs, axis = 0)
+            return eigs,eigVecs,eigs_bs_lower,eigs_bs_upper
+        else:
+            return eigs,eigVecs
 
     def linearModel(self, training_input=None, training_output=None):
         """
@@ -225,7 +243,7 @@ class dr(object):
                     break
         return U,R
 
-    def vector_AS(self, list_of_polys, samples=None):
+    def vector_AS(self, list_of_polys, samples=None, bootstrap=False, bs_trials = 50):
         # Find AS directions to vector val func
         # analogous to computeActiveSubspace
         # Since we are dealing with *one* vector val func we should have just one input space
@@ -244,7 +262,7 @@ class dr(object):
                 X[:, j] = np.reshape(poly.parameters[j].getSamples(M), M)
         else:
             X = samples
-            M, _ = X.shape
+            M, d = X.shape
         J = jacobian_vec(list_of_polys,X)
         J_new = np.transpose(J,[2,0,1])
         JtJ = np.matmul(np.transpose(J_new,[0,2,1]), J_new)
@@ -255,7 +273,27 @@ class dr(object):
         e, W = np.linalg.eigh(H)
         eigs = np.flipud(e)
         eigVecs = np.fliplr(W)
-        return eigs,eigVecs
+        if bootstrap:
+            all_bs_eigs = np.zeros((bs_trials, d))
+            # all_bs_W = np.zeros((bs_trials, d, d))
+            for t in range(bs_trials):
+                bs_samples = X[np.random.randint(0,M,size=M), :]
+                J_bs = jacobian_vec(list_of_polys, bs_samples)
+                J_new_bs = np.transpose(J_bs, [2, 0, 1])
+                JtJ_bs = np.matmul(np.transpose(J_new_bs, [0, 2, 1]), J_new_bs)
+                H_bs = np.mean(JtJ_bs, axis=0)
+
+                # Compute P_r by solving generalized eigenvalue problem...
+                # Assume sigma = identity for now
+                e_bs, W_bs = np.linalg.eigh(H_bs)
+                all_bs_eigs[t,:] = np.flipud(e_bs)
+                # eigVecs_bs = np.fliplr(W_bs)
+
+            eigs_bs_lower = np.min(all_bs_eigs, axis = 0)
+            eigs_bs_upper = np.max(all_bs_eigs, axis = 0)
+            return eigs,eigVecs,eigs_bs_lower,eigs_bs_upper
+        else:
+            return eigs,eigVecs
 
 def vandermonde(eta,p):
     """

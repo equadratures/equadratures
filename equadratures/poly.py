@@ -78,14 +78,14 @@ class Poly(object):
         return type(self)(self.parameters, self.basis)
     def getPolynomial(self, stackOfPoints, customBases=None):
         """
-        Evaluates the multivariate polynomial at a set of points.
+        Evaluates the value of each polynomial basis function at a set of points.
 
         :param Poly self:
             An instance of the Poly class.
         :param matrix stackOfPoints:
-            A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.
+            A N-by-d matrix of points along which the multivariate (in d-dimensions) polynomial basis functions must be evaluated.
         :return:
-            A N-by-1 matrix of polynomial evaluations at the stackOfPoints.
+            A P-by-N matrix of polynomial basis function evaluations at the stackOfPoints, where P is the cardinality of the basis.
         """
         if customBases is None:
             basis = self.basis.elements
@@ -96,8 +96,7 @@ class Poly(object):
         if stackOfPoints.ndim == 1:
             no_of_points = 1
         else:
-            no_of_points, __ = stackOfPoints.shape 
-        polynomial = np.zeros((basis_entries, no_of_points))
+            no_of_points, __ = stackOfPoints.shape
         p = {}
 
         # Save time by returning if univariate!
@@ -111,23 +110,25 @@ class Poly(object):
                 p[i] , _ = self.parameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i])) )
 
         # One loop for polynomials
-        for i in range(0, basis_entries):
-            temp = np.ones((1, no_of_points))
-            for k in range(0, dimensions):
-                polynomial[i,:] = p[k][int(basis[i,k])] * temp
-                temp = polynomial[i,:]
+        polynomial = np.ones((basis_entries, no_of_points))
+        for k in range(dimensions):
+            basis_entries_this_dim = basis[:, k].astype(int)
+            polynomial *= p[k][basis_entries_this_dim]
 
         return polynomial
-    def getPolynomialGradient(self, stackOfPoints):
+    def getPolynomialGradient(self, stackOfPoints, dim_index = None):
         """
-        Evaluates the gradient of the multivariate polynomial at a set of points.
+        Evaluates the gradient for each of the polynomial basis functions at a set of points,
+        with respect to each input variable.
 
         :param Poly self:
             An instance of the Poly class.
         :param matrix stackOfPoints:
-            A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.
+            A N-by-d matrix of points along which the gradient of the multivariate (in d-dimensions) polynomial basis
+            functions must be evaluated.
         :return:
-            A list with d elements, each with a N-by-1 matrix of polynomial evaluations at the stackOfPoints.
+            A list with d elements, each with a P-by-N matrix of polynomial evaluations at the stackOfPoints,
+            where P is the cardinality of the basis.
         """
         # "Unpack" parameters from "self"
         basis = self.basis.elements
@@ -144,22 +145,24 @@ class Poly(object):
             for i in range(0, dimensions):
                 if len(stackOfPoints.shape) == 1:
                     stackOfPoints = np.array([stackOfPoints])
-                p[i] , dp[i] = self.parameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i]) + 1 ) )
+                p[i] , dp[i] = self.parameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i])) )
 
         # One loop for polynomials
         R = []
-        for v in range(0, dimensions):
-            gradDirection = v
-            polynomialgradient = np.zeros((basis_entries, no_of_points))
-            for i in range(0, basis_entries):
-                temp = np.ones((1, no_of_points))
-                for k in range(0, dimensions):
-                    if k == gradDirection:
-                        polynomialgradient[i,:] = dp[k][int(basis[i,k])] * temp
+        if dim_index is None:
+            dim_index = range(dimensions)
+        for v in range(dimensions):
+            if not(v in dim_index):
+                R.append(np.zeros((basis_entries, no_of_points)))
+            else:
+                polynomialgradient = np.ones((basis_entries, no_of_points))
+                for k in range(dimensions):
+                    basis_entries_this_dim = basis[:,k].astype(int)
+                    if k==v:
+                        polynomialgradient *= dp[k][basis_entries_this_dim]
                     else:
-                        polynomialgradient[i,:] = p[k][int(basis[i,k])] * temp
-                    temp = polynomialgradient[i,:]
-            R.append(polynomialgradient)
+                        polynomialgradient *= p[k][basis_entries_this_dim]
+                R.append(polynomialgradient)
 
         return R
     def getTensorQuadratureRule(self, orders=None):

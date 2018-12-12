@@ -148,6 +148,8 @@ class Polyreg(Poly):
         return t_stat, r_sq
     
     def getQuadraturePointsWeights(self, points):
+        if points == 0:
+            return
         if points is None:
             points = 10000
         p, w = self.getQuadratureRule(options = self.quadrature_rule, number_of_points = points)

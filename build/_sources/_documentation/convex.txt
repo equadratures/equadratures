@@ -1,5 +1,0 @@
-Convex optimization utilities  
-================================
-
-.. automodule:: equadratures.convex
-    :members:

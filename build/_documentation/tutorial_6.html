@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Polynomial regression for data-sets &mdash; Effective Quadratures v7.0 documentation</title>
+  <title>Polynomial regression for time varying data &mdash; Effective Quadratures v7.0 documentation</title>
   
 
   
@@ -31,7 +31,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Polynomial least squares approximations" href="tutorial_7.html" />
-    <link rel="prev" title="Sparse and tensor grid quadrature rules" href="tutorial_5.html" /> 
+    <link rel="prev" title="Polynomial regression" href="tutorial_6a.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -97,13 +97,15 @@
 <li class="toctree-l2"><a class="reference internal" href="tutorial_4.html">Computing moments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_4b.html">Multi-index sets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_5.html">Sparse and tensor grid quadrature rules</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Polynomial regression for data-sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_6a.html">Polynomial regression</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Polynomial regression for time varying data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_7.html">Polynomial least squares approximations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_8.html">Polynomials via compressive sensing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol’ indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol’ (sensitivity) indices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_10.html">Nataf transform for correlated inputs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_11.html">Active subspaces with polynomial approximations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_12.html">Polynomial variable projection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_13.html">Optimizing using polynomials</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
@@ -154,7 +156,7 @@
         
           <li><a href="tutorials.html">Quick start guide</a> &raquo;</li>
         
-      <li>Polynomial regression for data-sets</li>
+      <li>Polynomial regression for time varying data</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -173,8 +175,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="polynomial-regression-for-data-sets">
-<h1>Polynomial regression for data-sets<a class="headerlink" href="#polynomial-regression-for-data-sets" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="polynomial-regression-for-time-varying-data">
+<h1>Polynomial regression for time varying data<a class="headerlink" href="#polynomial-regression-for-time-varying-data" title="Permalink to this headline">¶</a></h1>
 <p>In this tutorial we show an example of using Effective Quadratures on a regression problem for a data set. We are going to use the <a class="reference external" href="https://www.kaggle.com/neuromusic/avocado-prices">Avocado Prices</a>, and fit an autoregressive model to the time series data of total organic avocado volume sold in the US against time. An autoregressive (AR) model treats the time series as a wide sense stationary random process. The value at one time instant depends on some previous values linearly, plus some Gaussian noise. An order P AR process is defined as:</p>
 <div class="math notranslate">
 \[Y_{t} = \sum_{i=1}^{P} a_i Y_{t-i} + \epsilon_t,\]</div>
@@ -296,7 +298,7 @@
         <a href="tutorial_7.html" class="btn btn-neutral float-right" title="Polynomial least squares approximations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="tutorial_5.html" class="btn btn-neutral" title="Sparse and tensor grid quadrature rules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="tutorial_6a.html" class="btn btn-neutral" title="Polynomial regression" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

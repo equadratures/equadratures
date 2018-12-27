@@ -177,7 +177,45 @@
             
   <div class="section" id="generating-univariate-quadrature-rules">
 <h1>Generating univariate quadrature rules<a class="headerlink" href="#generating-univariate-quadrature-rules" title="Permalink to this headline">¶</a></h1>
-<p>There is an intimate relationship between orthogonal polynomials and quadrature points. Effective Quadratures</p>
+<p>There is an intimate relationship between orthogonal polynomials and quadrature points. In this tutorial, we demonstrate how one can use Effective Quadratures to compute univariate quadrature rules. For multivariate quadrature points and weights, please check out the tutorials on <em>Sparse and tensor grid quadrature rules</em>.</p>
+<p>Consider the task of integrating the function</p>
+<div class="math notranslate">
+\[I = \int_{-1}^{-1} f\left( x \right) \rho \left( x \right) dx\]</div>
+<p>where the measure <span class="math notranslate">\(\rho \left( x \right)\)</span> is the uniform measure over <span class="math notranslate">\([-1,1]\)</span>. Our task is to numerically approximate this integral using a quadrature rule, i.e.,</p>
+<div class="math notranslate">
+\[I \approx \sum_{i=1}^{N} f\left( \chi_{i} \right) \omega_i\]</div>
+<p>where the pair <span class="math notranslate">\(\left\{ \chi_{i} , \omega_i  \right\}_{i=1}^{N}\)</span> represents an N-point quadrature rule. To obtain such points in Effective Quadratures, one uses the following commands.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">equadratures</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">order</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">myParameter</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">lower</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">)</span>
+<span class="n">myBasis</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Univariate&#39;</span><span class="p">)</span>
+<span class="n">myPoly</span> <span class="o">=</span> <span class="n">Polyint</span><span class="p">(</span><span class="n">myParameter</span><span class="p">,</span> <span class="n">myBasis</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">myPoly</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="n">myPoly</span><span class="o">.</span><span class="n">quadratureWeights</span>
+</pre></div>
+</div>
+<p>The above quadrature rule is known as <em>Gauss-Legendre</em>; in our codes all the weights are normalized to sum to unity. In practice if one wishes to evaluate an integral, the weights must be scaled depending on the domain of integration. Let <span class="math notranslate">\(f(x) = x^7 - 3x^6 + x^5 - 10x^4 + 4\)</span> be our function of choice, defined over the domain <span class="math notranslate">\([-1,1]\)</span>. The analytical integral for this function is 22/7. Now using our 5-point Gauss-Legendre quadrature rule, we obtain</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">function</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">7</span> <span class="o">-</span> <span class="mf">3.0</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">6</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">5</span> <span class="o">-</span> <span class="mf">10.0</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">4</span> <span class="o">+</span><span class="mf">4.0</span>
+
+<span class="n">integral</span> <span class="o">=</span> <span class="mi">2</span>  <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">myPoly</span><span class="o">.</span><span class="n">quadratureWeights</span> <span class="p">,</span> <span class="n">evalfunction</span><span class="p">(</span><span class="n">myPoly</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="n">function</span><span class="p">)</span> <span class="p">)</span>
+<span class="nb">print</span> <span class="n">integral</span>
+<span class="o">&gt;&gt;</span> <span class="p">[</span><span class="mf">3.14285714</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>which is equivalent to 22/7. Note that the constant 2 arises because we are integrating over <span class="math notranslate">\([-1,1]\)</span> which has length 2.</p>
+<p>Now, in addition to standard Gauss-Christoffel quadrature rules (i.e., substitute different distributions in the definition of myParameter), Effective Quadratures also has Gauss-Christoffel-Lobatto rules, which feature end-points. As an example, consider the following</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">myParameter2</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">lower</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">myBasis2</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Univariate&#39;</span><span class="p">)</span>
+<span class="n">myPoly2</span> <span class="o">=</span> <span class="n">Polyint</span><span class="p">(</span><span class="n">myParameter2</span><span class="p">,</span> <span class="n">myBasis2</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">myPoly2</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="n">myPoly2</span><span class="o">.</span><span class="n">quadratureWeights</span>
+</pre></div>
+</div>
+<div class="figure" id="id1">
+<a class="reference internal image-reference" href="../_images/Figure_compare_quadratures.png"><img alt="../_images/Figure_compare_quadratures.png" src="../_images/Figure_compare_quadratures.png" style="width: 318.9px; height: 272.7px;" /></a>
+<p class="caption"><span class="caption-text">Figure. A comparison of order 4 Gauss-Legendre quadrature points (circles) with order 4 Gauss-Legendre-Lobatto points (squares).</span></p>
+</div>
 </div>
 
 

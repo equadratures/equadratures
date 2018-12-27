@@ -1,0 +1,76 @@
+Higher order Sobol' indices
+========================================
+
+In certain cases, higher order output statistical indices may need to be estimated given input PDF. While first order statistics give the fractional variance conditioned on one variable at a time, the interactions between subsets of variables are neglected. Higher order Sobol' indices address this particular issue.
+
+**Theory**
+
+Variances give the spread of the data away from the mean, but does not account for the direction of the spread and the relative weight of the tail of the distribution (the "peakiness"). The skewness and kurtosis address precisely these concerns. These measures can also be decomposed in a similar fashion to Sobol' indices, giving rise to conditional skewness and kurtosis. Individual components to the skewness and kurtosis with respect to each input variable or groups of such may be computed using the new methods in the Statistics class. 
+
+The computation of Sobol' indices is intuitive when considering the computation of the global variance using an orthogonal polynomial approximation of the function. Due to orthogonality of the basis polynomials, the global variance is computed as:
+
+.. math::
+
+	\textrm{Var}[f(x)] = \sum_{i=1}^{P} \beta_i^2
+
+where :math:`\beta_i`'s are PC expansion coefficients, associated with a certain polynomial. A Sobol' index simply sums up the squares of coefficients corresponding to contributing polynomials (i.e. polynomials with a non-zero order in the variables concerned). Conditional skewness/kurtosis indices follow the same principle.
+
+Skewness and kurtosis are defined as the third and fourth central standardized moment. For instance, the skewness is:
+
+.. math::
+
+	\mu^{3} = \int_S (f(x) - \mu)^{3} \rho ds = \int_S \left(\sum_{i=1}^P \beta_i \pi_i(x)\right)^{3} \rho ds,
+
+where :math:`\rho` is the input PDF, defined over :math:`S`, the support. In practice, Gauss quadrature is used to evaluate the integral numerically, and two approaches can be taken. First, one can sum the polynomial evaluations, each weighted by the corresponding coefficient at the quadrature points, resulting in a "total evaluation" at each quadrature point. Then, cube/fourth the results and compute the integral by forming the inner product with a quadrature weight vector. This approach is :math:`O(Pd)` where :math:`P` is the number of basis terms and :math:`d` is the input dimension. This is satisfactory for computing the global skewness/kurtosis.
+
+However, to compute conditional indices, it is necessary to expand the inner sum using the multinomial theorem first, as only by doing so will the result be interpretable as a sum of contributions from each  (group of) basis term(s) (effectively integral-before-sum). The details of such expansion is given in Geraci et al [1]. With computing the variance-based Sobol' indices, the cross term conveniently cancels with orthogonality. However, with skewness and kurtosis the cross terms do not necessarily cancel. This necessitates an :math:`O(P^3d)` operation for skewness and :math:`O(P^4d)` operation for kurtosis, resulting in forbiddingly long computational times. 
+
+However, all is not lost, and some saving may be achieved with low order conditional skewness/kurtosis terms. First, Geraci et al.[1] details some conditions where the integral in the sum need not be computed as they are zero. Secondly, as only cross term integrals that result in the variables we are interested in need to be computed, some basis terms can be eliminated a priori. For instance, when computing first order indices, it is not necessary to consider any basis term that has total order larger than 1, since any integral with such a basis term will only increase the number of participating variables, and certainly will not contribute to the first order index at the end. This reduces the complexity to :math:`O(n^3d)` for skewness, for example, where :math:`n << P` is the highest order of the polynomial in any dimension.
+
+**Example**
+
+Let's see the methods in action. First we define a test function. Taking the quadratic G-function [1] as an example: 
+
+.. math::
+
+	f(x_0, x_1, x_2, x_3) = \prod_{i=1}^4 \frac{|4x_i - 2| + i^2}{1+i^2}.
+
+
+.. code::
+
+	def G_fun(x):
+    		f = 1.0
+    		for i in range(4):
+        		t = (np.abs(4*x[i] - 2) + i**2.0) * 1.0/(1 + i**2.0)
+        		f = f * t
+    		return f
+
+Let's use a degree 5 tensor grid as the index set and the following input PDF:
+
+.. math::
+
+	x_0, x_1, x_2, x_3 \sim \mathcal{U}(0,1)^4.
+
+.. code::
+
+	degree = 5
+	x0 = Parameter(param_type="Uniform", lower=0.0, upper=1.0, order=degree)
+	x1 = Parameter(param_type="Uniform", lower=0.0, upper=1.0, order=degree)
+	x2 = Parameter(param_type="Uniform", lower=0.0, upper=1.0, order=degree)
+	x3 = Parameter(param_type="Uniform", lower=0.0, upper=1.0, order=degree)
+	parameters = [x0,x1,x2,x3]
+
+Calculate the polynomial coefficients and initiate Statistics class:
+
+.. code::
+
+	basis = Basis('Tensor grid')
+	uqProblem = Polyint(parameters,basis)
+	uqProblem.computeCoefficients(G_fun)
+	stats = uqProblem.getStatistics()
+
+
+
+**References**
+
+.. [1] Geraci, G., Congedo, P. M., Abgrall, R., Iaccarino, G. (2016). High-order statistics in global sensitivity analysis: decomposition and model reduction. Computer Methods in Applied Mechanics and Engineering, 301, 80-115.

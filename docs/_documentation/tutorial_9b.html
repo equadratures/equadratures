@@ -1,0 +1,299 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Higher order Sobol’ indices &mdash; Effective Quadratures v7.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Nataf transform for correlated inputs" href="tutorial_10.html" />
+    <link rel="prev" title="Computing Sobol’ (sensitivity) indices" href="tutorial_9.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Effective Quadratures
+          
+
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                7.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Effective Quadratures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="tutorials.html">Quick start guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="tutorial_1.html">Defining a parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_2.html">Generating univariate quadrature rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_3.html">Constructing orthogonal polynomials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_4.html">Computing moments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_4b.html">Multi-index sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_5.html">Sparse and tensor grid quadrature rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_6a.html">Polynomial regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_6.html">Polynomial regression for time varying data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_7.html">Polynomial least squares approximations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_8.html">Polynomials via compressive sensing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol’ (sensitivity) indices</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Higher order Sobol’ indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_10.html">Nataf transform for correlated inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_11.html">Active subspaces with polynomial approximations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_12.html">Polynomial variable projection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_13.html">Optimizing using polynomials</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Effective Quadratures</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="tutorials.html">Quick start guide</a> &raquo;</li>
+        
+      <li>Higher order Sobol’ indices</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/_documentation/tutorial_9b.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="higher-order-sobol-indices">
+<h1>Higher order Sobol’ indices<a class="headerlink" href="#higher-order-sobol-indices" title="Permalink to this headline">¶</a></h1>
+<p>In certain cases, higher order output statistical indices may need to be estimated given input PDF. While first order statistics give the fractional variance conditioned on one variable at a time, the interactions between subsets of variables are neglected. Higher order Sobol’ indices address this particular issue.</p>
+<p><strong>Theory</strong></p>
+<p>Variances give the spread of the data away from the mean, but does not account for the direction of the spread and the relative weight of the tail of the distribution (the “peakiness”). The skewness and kurtosis address precisely these concerns. These measures can also be decomposed in a similar fashion to Sobol’ indices, giving rise to conditional skewness and kurtosis. Individual components to the skewness and kurtosis with respect to each input variable or groups of such may be computed using the new methods in the Statistics class.</p>
+<p>The computation of Sobol’ indices is intuitive when considering the computation of the global variance using an orthogonal polynomial approximation of the function. Due to orthogonality of the basis polynomials, the global variance is computed as:</p>
+<div class="math notranslate">
+\[\textrm{Var}[f(x)] = \sum_{i=1}^{P} \beta_i^2\]</div>
+<p>where <span class="math notranslate">\(\beta_i\)</span>‘s are PC expansion coefficients, associated with a certain polynomial. A Sobol’ index simply sums up the squares of coefficients corresponding to contributing polynomials (i.e. polynomials with a non-zero order in the variables concerned). Conditional skewness/kurtosis indices follow the same principle.</p>
+<p>Skewness and kurtosis are defined as the third and fourth central standardized moment. For instance, the skewness is:</p>
+<div class="math notranslate">
+\[\mu^{3} = \int_S (f(x) - \mu)^{3} \rho ds = \int_S \left(\sum_{i=1}^P \beta_i \pi_i(x)\right)^{3} \rho ds,\]</div>
+<p>where <span class="math notranslate">\(\rho\)</span> is the input PDF, defined over <span class="math notranslate">\(S\)</span>, the support. In practice, Gauss quadrature is used to evaluate the integral numerically, and two approaches can be taken. First, one can sum the polynomial evaluations, each weighted by the corresponding coefficient at the quadrature points, resulting in a “total evaluation” at each quadrature point. Then, cube/fourth the results and compute the integral by forming the inner product with a quadrature weight vector. This approach is <span class="math notranslate">\(O(Pd)\)</span> where <span class="math notranslate">\(P\)</span> is the number of basis terms and <span class="math notranslate">\(d\)</span> is the input dimension. This is satisfactory for computing the global skewness/kurtosis.</p>
+<p>However, to compute conditional indices, it is necessary to expand the inner sum using the multinomial theorem first, as only by doing so will the result be interpretable as a sum of contributions from each  (group of) basis term(s) (effectively integral-before-sum). The details of such expansion is given in Geraci et al [1]. With computing the variance-based Sobol’ indices, the cross term conveniently cancels with orthogonality. However, with skewness and kurtosis the cross terms do not necessarily cancel. This necessitates an <span class="math notranslate">\(O(P^3d)\)</span> operation for skewness and <span class="math notranslate">\(O(P^4d)\)</span> operation for kurtosis, resulting in forbiddingly long computational times.</p>
+<p>However, all is not lost, and some saving may be achieved with low order conditional skewness/kurtosis terms. First, Geraci et al.[1] details some conditions where the integral in the sum need not be computed as they are zero. Secondly, as only cross term integrals that result in the variables we are interested in need to be computed, some basis terms can be eliminated a priori. For instance, when computing first order indices, it is not necessary to consider any basis term that has total order larger than 1, since any integral with such a basis term will only increase the number of participating variables, and certainly will not contribute to the first order index at the end. This reduces the complexity to <span class="math notranslate">\(O(n^3d)\)</span> for skewness, for example, where <span class="math notranslate">\(n &lt;&lt; P\)</span> is the highest order of the polynomial in any dimension.</p>
+<p><strong>Example</strong></p>
+<p>Let’s see the methods in action. First we define a test function. Taking the quadratic G-function [1] as an example:</p>
+<div class="math notranslate">
+\[f(x_0, x_1, x_2, x_3) = \prod_{i=1}^4 \frac{|4x_i - 2| + i^2}{1+i^2}.\]</div>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">G_fun</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">i</span><span class="o">**</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i</span><span class="o">**</span><span class="mf">2.0</span><span class="p">)</span>
+                <span class="n">f</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="n">t</span>
+        <span class="k">return</span> <span class="n">f</span>
+</pre></div>
+</div>
+<p>Let’s use a degree 5 tensor grid as the index set and the following input PDF:</p>
+<div class="math notranslate">
+\[x_0, x_1, x_2, x_3 \sim \mathcal{U}(0,1)^4.\]</div>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">degree</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">param_type</span><span class="o">=</span><span class="s2">&quot;Uniform&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
+<span class="n">x1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">param_type</span><span class="o">=</span><span class="s2">&quot;Uniform&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
+<span class="n">x2</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">param_type</span><span class="o">=</span><span class="s2">&quot;Uniform&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
+<span class="n">x3</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">param_type</span><span class="o">=</span><span class="s2">&quot;Uniform&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
+<span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">x0</span><span class="p">,</span><span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="p">,</span><span class="n">x3</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Calculate the polynomial coefficients and initiate Statistics class:</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">basis</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Tensor grid&#39;</span><span class="p">)</span>
+<span class="n">uqProblem</span> <span class="o">=</span> <span class="n">Polyint</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span><span class="n">basis</span><span class="p">)</span>
+<span class="n">uqProblem</span><span class="o">.</span><span class="n">computeCoefficients</span><span class="p">(</span><span class="n">G_fun</span><span class="p">)</span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">uqProblem</span><span class="o">.</span><span class="n">getStatistics</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>References</strong></p>
+<table class="docutils footnote" frame="void" id="id1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td>Geraci, G., Congedo, P. M., Abgrall, R., Iaccarino, G. (2016). High-order statistics in global sensitivity analysis: decomposition and model reduction. Computer Methods in Applied Mechanics and Engineering, 301, 80-115.</td></tr>
+</tbody>
+</table>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tutorial_10.html" class="btn btn-neutral float-right" title="Nataf transform for correlated inputs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tutorial_9.html" class="btn btn-neutral" title="Computing Sobol’ (sensitivity) indices" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016-2018 by Effective Quadratures.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'v7.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

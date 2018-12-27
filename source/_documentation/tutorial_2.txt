@@ -1,3 +1,58 @@
 Generating univariate quadrature rules
 ========================================
-There is an intimate relationship between orthogonal polynomials and quadrature points. Effective Quadratures 
+There is an intimate relationship between orthogonal polynomials and quadrature points. In this tutorial, we demonstrate how one can use Effective Quadratures to compute univariate quadrature rules. For multivariate quadrature points and weights, please check out the tutorials on *Sparse and tensor grid quadrature rules*. 
+
+
+Consider the task of integrating the function
+
+.. math::
+
+	I = \int_{-1}^{-1} f\left( x \right) \rho \left( x \right) dx
+
+where the measure :math:`\rho \left( x \right)` is the uniform measure over :math:`[-1,1]`. Our task is to numerically approximate this integral using a quadrature rule, i.e.,
+
+.. math::
+
+	I \approx \sum_{i=1}^{N} f\left( \chi_{i} \right) \omega_i 
+
+where the pair :math:`\left\{ \chi_{i} , \omega_i  \right\}_{i=1}^{N}` represents an N-point quadrature rule. To obtain such points in Effective Quadratures, one uses the following commands.
+
+.. code::
+
+	from equadratures import *
+	import numpy as np
+
+	order = 4
+	myParameter = Parameter(lower=-1, upper=1, order=order, distribution='Uniform')
+	myBasis = Basis('Univariate')
+	myPoly = Polyint(myParameter, myBasis)
+	print myPoly.quadraturePoints, myPoly.quadratureWeights
+
+The above quadrature rule is known as *Gauss-Legendre*; in our codes all the weights are normalized to sum to unity. In practice if one wishes to evaluate an integral, the weights must be scaled depending on the domain of integration. Let :math:`f(x) = x^7 - 3x^6 + x^5 - 10x^4 + 4` be our function of choice, defined over the domain :math:`[-1,1]`. The analytical integral for this function is 22/7. Now using our 5-point Gauss-Legendre quadrature rule, we obtain
+
+.. code::
+
+	def function(x):
+    		return x[0]**7 - 3.0*x[0]**6 + x[0]**5 - 10.0*x[0]**4 +4.0
+
+	integral = 2  * np.dot( myPoly.quadratureWeights , evalfunction(myPoly.quadraturePoints, function) )
+	print integral 
+	>> [3.14285714]
+
+
+which is equivalent to 22/7. Note that the constant 2 arises because we are integrating over :math:`[-1,1]` which has length 2. 
+
+Now, in addition to standard Gauss-Christoffel quadrature rules (i.e., substitute different distributions in the definition of myParameter), Effective Quadratures also has Gauss-Christoffel-Lobatto rules, which feature end-points. As an example, consider the following
+
+.. code::
+	
+	myParameter2 = Parameter(lower=-1, upper=1, order=order, distribution='Uniform', endpoints=True)
+	myBasis2 = Basis('Univariate')
+	myPoly2 = Polyint(myParameter2, myBasis2)
+	print myPoly2.quadraturePoints, myPoly2.quadratureWeights
+	
+
+.. figure:: Figures/Figure_compare_quadratures.png
+   :scale: 30 %
+
+   Figure. A comparison of order 4 Gauss-Legendre quadrature points (circles) with order 4 Gauss-Legendre-Lobatto points (squares). 

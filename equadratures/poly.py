@@ -1,6 +1,10 @@
 """The polynomial parent class."""
 import numpy as np
 from .stats import Statistics
+from lxml import etree as tree
+import time
+import numpy as np
+VERSION_NUMBER = 7.6
 
 class Poly(object):
     """
@@ -25,7 +29,6 @@ class Poly(object):
             self.orders.append(self.parameters[i].order)
         if not self.basis.orders :
             self.basis.setOrders(self.orders)
-
     def __setCoefficients__(self, coefficients):
         """
         Sets the coefficients for polynomial. This function will be called by the children of Poly
@@ -268,7 +271,6 @@ class Poly(object):
             A 1-by-N matrix of the polynomial approximation.
         """
         return self.getPolynomial(stackOfPoints).T *  np.mat(self.coefficients)
-
     def evaluatePolyGradFit(self, stackOfPoints):
         """
         Evaluates the gradient of the polynomial approximation of a function (or model data) at prescribed points.
@@ -338,3 +340,28 @@ class Poly(object):
                     plotting_pts[j, i] = univariate_samples[j]
         samples = self.evaluatePolyFit(plotting_pts)
         return plotting_pts, samples
+    def savePolynomial(self, filename):
+        """
+        Saves the polynomial as an xml file.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param string filename:
+            Path location and filename.
+
+        """
+        root = tree.Element("polynomial")
+        polydoc = tree.SubElement(root, "equadratures")
+        tree.SubElement(polydoc, "version_number").text = str(VERSION_NUMBER)
+        tree.SubElement(polydoc, "date").text = str(time.strftime("%d/%m/%Y"))
+
+        polydoc_basis = tree.SubElement(root, "multi-index")
+        tree.SubElement(polydoc_basis, "basis_type").text = str(self.basis.basis_type)
+        tree.SubElement(polydoc_basis, "maximum_orders").text = str(self.basis.orders)
+
+        polydoc_coefficients = tree.SubElement(root, "coefficients")
+        tree.SubElement(polydoc_coefficients, "coefficients").text = str(self.coefficients)
+        tree.SubElement(polydoc_coefficients, "index_set").text = str(self.basis.elements)
+
+        polynomialobject = tree.ElementTree(root)
+        polynomialobject.write(filename, pretty_print=True)

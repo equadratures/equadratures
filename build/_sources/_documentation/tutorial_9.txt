@@ -1,0 +1,182 @@
+Computing Sobol' (sensitivity) indices
+========================================
+
+In many computational problems there are a few key inputs that actually dictate the state of the output. Computing the Sobol indices of the inputs is one approach to determine which inputs are the *drivers*. Typically computation of the Sobol indices involves a large number of samples -- significantly more than required to get the variance in the data. However as shown in Blatman et al. [1], using orthogonal polynomials these can be computed with relative ease. In this notebook we demonstrate how we can compute these indices using effective quadratures. 
+
+We consider the well-known piston problem from Kenett et al. [2] that is a non-linear, seven-dimensional problem that outputs the piston cycle time given various piston parameters. These parameters and their bounds are shown in the table below.
+
+.. list-table:: Model input parameters for the piston problem.
+   :widths: 25 25 50
+   :header-rows: 1
+
+   * - Variable
+     - Range
+     - Description
+   * - M
+     - [30, 60]
+     - Piston weight 
+   * - S
+     - [0.005, 0.0020]
+     - Surface area 
+   * - V_0
+     - [0.002, 0.010]
+     - Initial gas volume
+   * - k
+     - [1000,5000]
+     - Spring coefficient
+   * - P_0
+     - [90000, 110000]
+     - Atmospheric pressure
+   * - T_a
+     - [290, 296]
+     - Ambient temperature
+   * - T_0
+     - [340, 360]
+     - Filling gas temperature
+
+The cycle time for the piston is given by
+
+.. math::
+
+	C=2\pi\sqrt{\frac{M}{k+S^{2}\frac{P_{0}V_{0}T_{a}}{T_{0}V^{2}}}},
+
+where
+
+.. math::
+
+	V=\frac{S}{2k}\left(\sqrt{A^{2}+4k\frac{P_{0}V_{0}}{T_{0}}T_{a}}-A\right),
+
+and :math:`A=P_{0}S+19.62M-\frac{kV_{0}}{S}`. The estimated *normalized* Sobol indices from Owen et al. [3] are given to be:
+
+.. list-table:: Normalized Sobol' indices (see [3] for further details).
+   :widths: 30 15 15 15 15 15 15 15
+   :header-rows: 1
+
+   * - 
+     - M
+     - S
+     - V_0
+     - k
+     - P_0
+     - T_a
+     - T_0
+   * - :math:`10^2 \tau^{(2)} \; \text{indices}`
+     - 0.073
+     - 1.088
+     - 0.626
+     - 0.040
+     - 0.001
+     - -0.002
+     - -0.002
+
+Note that these values are effectively the Sobol index multiplied by the variance. See [3] for further details.
+
+.. code::
+	
+	from equadratures import *
+	import numpy as np
+	import matplotlib.pyplot as plt
+
+As before, we begin by defining each parameter and its range using four points for each variable.
+
+.. code::
+
+	order_parameters = 3
+        mass = Parameter(distribution='uniform', lower=30.0, upper=60.0, order=order_parameters)
+        area = Parameter(distribution='uniform', lower=0.005, upper=0.020, order=order_parameters)
+        volume = Parameter(distribution='uniform', lower=0.002, upper=0.010, order=order_parameters)
+        spring = Parameter(distribution='uniform', lower=1000., upper=5000., order=order_parameters)
+        pressure = Parameter(distribution='uniform', lower=90000., upper=110000., order=order_parameters)
+        ambtemp = Parameter(distribution='uniform', lower=290., upper=296., order=order_parameters)
+        gastemp = Parameter(distribution='uniform', lower=340., upper=360., order=order_parameters)
+        parameters = [mass, area, volume, spring, pressure, ambtemp, gastemp]
+
+	def piston(x):
+    		mass, area, volume, spring, pressure, ambtemp, gastemp = x[0], x[1], x[2], x[3], x[4], x[5], x[6]
+    		A = pressure * area + 19.62*mass - (spring * volume)/(1.0 * area)
+    		V = (area/(2*spring)) * ( np.sqrt(A**2 + 4*spring * pressure * volume * ambtemp/gastemp) - A)
+    		C = 2 * np.pi * np.sqrt(mass/(spring + area**2 * pressure * volume * ambtemp/(gastemp * V**2)))
+    		return C
+
+We will opt for a total order basis set with effective quadrature subsampling!
+
+.. code::
+
+	mybasis = Basis('Total order')
+	Pleastsquares = Polylsq(parameters, mybasis, mesh='tensor', optimization='greedy-qr', oversampling=1.0)
+
+Now (and this is the important part), we wish to ascertain how many model evaluations will be required for computing these sensitivities. The objective is for these to be orders of magnitude lower than other methods for computing Sobol' indices.
+
+.. code::
+	
+	print mybasis.cardinality
+	>> 120
+
+Excellent! So the number of model evaluations we will require is 120! Now lets compute the coefficients and ascertain which of the variables above are the most important. P
+
+.. code::
+
+	Pleastsquares.computeCoefficients(piston)
+	Sleastsquares = Pleastsquares.getStatistics()
+
+Printing the output to the screen, we obtain
+
+.. code::
+
+	data = Sleastsquares.getSobol(1).values()
+	for i in range(0, len(parameters)):
+    		print float(data[i]) * 10**2 * Sleastsquares.variance
+
+	>> 0.0790729230512
+	>> 1.04006909416
+	>> 0.570479600289
+	>> 0.047655149298
+	>> 0.00307211809197
+	>> 5.74465327578e-05
+	>> 0.00180048511613
+
+which are similar to the values obtained by Owen. To generate a plot, one simply uses the code below.
+
+.. code::
+
+	fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+        data_1 = np.arange(7) - 0.10 + 1
+        for i in range(0, len(data)):
+            plt.bar(i+1, data[i], color='steelblue',linewidth=1.5)
+        ax.set_axisbelow(True)
+        adjust_spines(ax, ['left', 'bottom'])
+        plt.xlabel(r'Parameters', fontsize=16)
+        plt.ylabel(r'First order Sobol indices', fontsize=16)
+        xTickMarks = [r'$M$', r'$S$', r'$V_0$', r'$k$', r'$P_0$', r'$T_a$', r'$T_0$']
+        ax.set_xticks(data_1+0.10)
+        xtickNames = ax.set_xticklabels(xTickMarks)
+        plt.setp(xtickNames, rotation=45, fontsize=16)
+        plt.tight_layout()
+        plt.savefig('Sobol.png', dpi=300, bbox_inches='tight')
+
+
+.. figure:: Figures/Sobol.png
+   :scale: 40 %
+
+   Figure. First order Sobol' indices for the piston problem.
+
+
+
+More generally, if one wanted to obtain higher order Sobol' indices, one can use the following code.
+
+.. code::
+
+	sobol_info = Sleastsquares.getSobol(2)
+        for key, value in sobol_info.iteritems():
+            print str('Parameter numbers: ')+str(key)+', Sobol index value: '+str(value)
+
+This concludes this notebook on the computation of Sobol' indices.
+
+**References**
+
+.. [1] Blatman, G., and Bruno S., (2011) Adaptive sparse polynomial chaos expansion based on least angle regression. Journal of Computational Physics 230.6 (2011): 2345-2367.
+
+.. [2] Kenett, R., Shelemyahu Z., and Daniele A., (2013) Modern Industrial Statistics: with applications in R, MINITAB and JMP. John Wiley & Sons.
+
+.. [3] Owen, A. B., Dick, J. and Chen, S., (2014) Higher order Sobol' indices. Information and Inference 3.1 (2014): 59-81.

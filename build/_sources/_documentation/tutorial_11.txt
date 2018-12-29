@@ -1,0 +1,238 @@
+Active subspaces with polynomial approximations
+=================================================
+
+**Active Subspaces**
+
+The active subspace is defined as follows: 
+
+Let :math:`f(\mathbf{x})` be a scalar valued function :math:`\mathbb{R}^n \rightarrow \mathbb{R}` with :math:`\mathbf{x} \in \mathbb{R}^{n}`. Here :math:`f(\mathbf{x})` represents the chosen quantity of interest and :math:`\mathbf{x}` represents the design parameters. Consider the approximation
+
+.. math::
+
+        \begin{equation}
+        f(\mathbf{x}) \approx g( \mathbf{U}^T \mathbf{x}),
+        \label{equ_active}
+        \end{equation}
+
+where :math:`\mathbf{U} \in \mathbb{R}^{k \times n}`, with :math:`k << n`. Ideally we would like :math:`k = 1` or :math:`2` for facilitating subsequent visualisation. The matrix :math:`\mathbf{U}` represents the *active subspace* and its null space represents the *inactive subspace*. Essentially, the function tends to be well approximated via the map :math:`g` on the active subspace.
+
+Numerous ideas for finding active subspaces in computer experiments can be found in the work of Constantine [1]. The idea is to express the kernel matrix as the expectation of the outer product of gradients of :math:`f`
+
+.. math::
+
+        \begin{equation}
+        \textbf{K}=\int \nabla_{\mathbf{x}} f(\mathbf{x})\nabla_{\mathbf{x}} f(\mathbf{x})^{T} \rho (\mathbf{x}) d \mathbf{x} ,
+        \label{equ_as}
+        \end{equation}
+
+where :math:`\rho(\mathbf{x})` is the density of the inputs :math:`\mathbf{x}` over its parameter space. A heuristic for estimating the kernel via finite point samples :math:`N` is described below:
+
+1.  For :math:`N` samples drawn randomly from a distribution :math:`\rho(\mathbf{x})` calculate the sample kernel matrix:
+
+.. math::
+
+        \begin{equation}
+        \hat{\textbf{K}}=\frac{1}{N} \sum_{i=1}^{N}(\nabla_{\mathbf{x}} f(\mathbf{x}_i))(\nabla_{\mathbf{x}} f(\mathbf{x}_i)^{T})\,;
+        \end{equation}
+
+2. Compute the eigendecomposition of :math:`\hat{\textbf{K}}` and select the eigenvectors with largest eigenvalues to form a matrix :math:`\mathbf{U}` with orthogonal columns.
+
+**Polynomial Active Subspaces**
+
+In many cases gradient information is not available. Therefore, assumptions on the model are necessary to overcome this obstacle. A good assumption would be that the model is a polynomial, as the polynomials are easy to calculate and their gradients can be derived analytically. One can express a polynomial as a linear combination of a number of polynomial basis terms
+
+.. math::
+
+        \begin{equation}
+        f(\mathbf{x}) \approx h(\mathbf{x})=\sum_{j=1}^N a_j \phi_j(\mathbf{x})\,,
+        \end{equation}
+
+where :math:`\phi_j(\mathbf{x})` is a multivariate polynomial basis term of a certain mixed degree and :math:`a_j` is the corresponding coefficient. Then the gradient can be expressed as the sum of the derivatives of the polynomials.
+
+.. math::
+
+        \begin{equation}
+        \nabla_{\mathbf{x}}f(\mathbf{x}) \approx \nabla_{\mathbf{x}}h(\mathbf{x})=\sum_{j=1}^N a_j \phi_j'(\mathbf{x})\,.
+        \end{equation}
+
+To construct the polynomial basis terms :math:`\phi(\mathbf{x})` , one only needs to know the number of dimensions and the polynomial degree. 
+
+**A 2-degree Polynomial Model for Dimension Reduction**
+
+If the polynomial degree is set as 2, then the polynomial bases would include all linear terms :math:`\phi(\mathbf{x})=x_i`, all squared terms :math:`\phi(\mathbf{x})=x_i^2` and all cross terms :math:`\phi(\mathbf{x})=x_i x_j`.
+
+One can fit a polynomial to the dataset using least squares with sample input/output pairs. This idea was leveraged in [2] to find :math:`\mathbf{U}` and is detailed below. The goal here is to use least squares to fit the dataset to the following form
+
+.. math::
+
+        \begin{equation}
+        y=f(\mathbf{x})=\frac{1}{2}\mathbf{x} ^{T} \mathbf{A}\mathbf{x} + \textbf{c}^{T}\mathbf{x} +d\,,
+        \label{quadraticeqn}
+        \end{equation}
+
+therefore the gradient of the function can be expressed as
+
+.. math::
+
+        \begin{equation}
+        \nabla_{\mathbf{x}}f(\mathbf{x})= \mathbf{A} \mathbf{x}+\textbf{c}\,.
+        \end{equation}
+
+Then a set of equations can be formulated using each data point:
+
+.. math::
+
+        \begin{equation}
+        \frac{1}{2} \sum_{i=1,j=1}^{m,m}a_{ij}x_ix_j+\sum_{j=1}^{m}c_jx_j+d=y\,;
+        \end{equation}
+
+All :math:`a_{ij}` along with :math:`\textbf{c}` and :math:`d` are obtained by solving for the least squares solution, where :math:`a_{ij}` are the entries of the matrix :math:`\mathbf{A}` and :math:`c_j` are the entries of the vector :math:`\textbf{c}`. Finally, the estimated kernel is given by
+
+.. math::
+    
+        \begin{equation}
+        \hat{\textbf{K}}=\frac{1}{N}\sum_{i=1}^N(A\mathbf{x}_i+\textbf{c})(A\mathbf{x}_i+\textbf{c})^{T}\,.
+        \end{equation}
+
+The last step of selecting eigenvectors is done by carrying out an eigendecomposition on the kernel matrix (symmetric).
+
+.. math::
+
+        \begin{equation}
+        \hat{\mathbf{K}}= \mathbf{W \Lambda W}^{T},
+        \end{equation}
+
+where :math:`\mathbf{W}` contains all eigenvectors and :math:`\Lambda` is the diagonal matrix of all corresponding eigenvalues, which are assumed to be sorted in descending order. The eigenvectors and eigenvalues can then be partitioned
+
+.. math::
+
+        \begin{equation}
+        \mathbf{W}=\left[\begin{array}{cc}
+        \mathbf{U}_{\text{active}} & \mathbf{U}_{\text{inactive}}\end{array}\right] \; \; \; \mathbf{\Lambda}=\left[\begin{array}{cc}
+        \mathbf{\Lambda_{\text{active}} }\\
+         & \mathbf{\Lambda_{\text{inactive}} }
+        \end{array}\right]
+        \end{equation}
+
+based on a *suitable cut-off criterion* ---usually the magnitude of the eigenvalues.
+
+As most of the variation in :math:`f` happens with changes in :math:`\mathbf{U}_{active}^T \mathbf{x}`, 
+
+.. math::
+
+        \begin{equation}
+        f \left(\mathbf{x}\right) \approx g\left(\mathbf{U}_\text{active}^T\mathbf{x} \right)\text{ while }f\left( \mathbf{U}_\text{inactive} \mathbf{U}_\text{inactive}^T \mathbf{x} \right) \approx 0,
+        \end{equation}
+
+where :math:`g` is a lower dimensional function.
+
+**Code Implementation**
+
+We look at a compressor fan design problem. The 25 design variables can be viewed as inputs to the function, where the CFD efficiency of the blade design is seen as the output. Now we attempt to use a 2-degree polynomial active subspace model to reach dimension reduction and find a 2D active subspace.
+
+.. code::
+
+        import numpy as np
+        import scipy
+        from equadratures import *
+
+.. code::
+
+        X = np.loadtxt('X.dat')
+        fX = np.loadtxt('Y.dat')
+
+This dataset contains 554 pairs of inputs (designs of blades) and outputs (CFD-evaluataed efficiency). The dimension of inputs is 25 (25D design space). Using variable projection, we wish to find a surrogate model for this relationship in 2D. All input vectors are put in X.dat, while the outputs are in Y.dat. They are stored as variables X and fX respectively.
+
+.. code::
+
+        n=2
+        p=2
+
+:math:`n` stands for the dimensionality of the active subspace. This indicates the active subspace :math:`\mathbf{U}` found would be of :math:`25\times 2`. :math:`p` stands for the degree of polynomial basis terms.
+
+.. code::
+
+        listing=[]
+        for i in range(0,n):
+            listing.append(p)
+        Object=Basis('Total order',listing)
+
+        #Establish n Parameter objects
+        params=[]
+        P=Parameter(order=p,distribution='uniform',lower=-1,upper=1)
+        for i in range(0,n):
+            params.append(P)
+
+        #Use the params list to establish the Poly object
+        Polybasis=Poly(params,Object)
+        [eigs, eigVecs]=computeActiveSubspaces(poly, samples=None)
+
+When the eigenvectors are calculated we can obtain the active subspace and use it for data visualisation.
+
+.. code::
+
+    U=[[ 0.00516216,  0.04112609],
+       [ 0.03252687, -0.051099  ],
+       [ 0.00581692,  0.07217146],
+       [-0.00987772,  0.03119806],
+       [-0.05858704, -0.03244601],
+       [-0.01428118, -0.05230511],
+       [-0.1623095 ,  0.2072276 ],
+       [-0.3283939 ,  0.40349012],
+       [-0.6241481 ,  0.25910419],
+       [-0.54341045, -0.00826396],
+       [-0.00473819, -0.08955527],
+       [-0.06157155, -0.03425097],
+       [-0.10538732, -0.10090391],
+       [-0.23248244, -0.46835899],
+       [-0.30954273, -0.66814152],
+       [ 0.02354317,  0.04322685],
+       [ 0.00773911,  0.03261493],
+       [ 0.00163526,  0.09699416],
+       [ 0.00643778,  0.01850486],
+       [-0.00950668, -0.03398397],
+       [ 0.02127018,  0.03193002],
+       [ 0.03069474, -0.07206712],
+       [ 0.03907251,  0.00717337],
+       [ 0.06740341, -0.0766393 ],
+       [ 0.05573985, -0.04064798]]
+
+.. code::
+
+        active1 = np.dot( X , U[:,0] ) 
+        active2 = np.dot( X , U[:,1] )
+
+.. code::
+
+        from matplotlib.mlab import griddata
+        def grid(x, y, z, resX=40, resY=40):
+            "Convert 3 column data to matplotlib grid"
+            xi = np.linspace(min(x), max(x), resX)
+            yi = np.linspace(min(y), max(y), resY)
+            Z = griddata(x, y, z, xi, yi, interp='linear')
+            X, Y = np.meshgrid(xi, yi)
+            return X, Y, Z
+        
+        X, Y, Z = grid(active1, active2, fX)
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+        cax = plt.contourf(X, Y, Z, 20, vmin=-1, vmax=0.5)
+        cax = ax.scatter(active1, active2,c=fX, marker='o', s=30)
+        cbar = plt.colorbar(cax, extend='neither', spacing='proportional', orientation='vertical', shrink=0.8)
+        ax.set_xlabel('Active variable 1, $\mathbf{XU_{1}}$')
+        ax.set_ylabel('Active variable 2, $\mathbf{XU_{2}}$')
+        plt.xlim([-2.0, 2.0])
+        plt.ylim([-2.0, 2.0])
+        adjust_spines(ax, ['left', 'bottom'])
+        ax.set_title('Efficiency along $\mathbf{U_{1}}$ and $\mathbf{U_{2}}$')
+        plt.show()
+
+.. figure:: Figures/DR.png
+   :scale: 100 %
+
+**References**
+
+.. [1]  Constantine, P. G. (2015) Active subspaces: Emerging ideas for dimension reduction in parameter studies, Volume 2, SIAM, 2015.
+
+.. [2] Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery active subspace performance maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__
+

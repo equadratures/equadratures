@@ -1,0 +1,287 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Generating univariate quadrature rules &mdash; Effective Quadratures v7.6 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Constructing orthogonal polynomials" href="tutorial_3.html" />
+    <link rel="prev" title="Defining a parameter" href="tutorial_1.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Effective Quadratures
+          
+
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                7.6
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Effective Quadratures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="tutorials.html">Quick start guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="tutorial_1.html">Defining a parameter</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Generating univariate quadrature rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_3.html">Constructing orthogonal polynomials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_4.html">Computing moments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_4b.html">Multi-index sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_5.html">Sparse and tensor grid quadrature rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_6a.html">Polynomial regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_6.html">Polynomial regression for time varying data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_7.html">Polynomial least squares approximations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_8.html">Polynomials via compressive sensing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol’ (sensitivity) indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_9b.html">Higher order Sobol’ indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_10.html">Nataf transform for correlated inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_11.html">Active subspaces with polynomial approximations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_12.html">Polynomial variable projection</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Effective Quadratures</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="tutorials.html">Quick start guide</a> &raquo;</li>
+        
+      <li>Generating univariate quadrature rules</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/_documentation/tutorial_2.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="generating-univariate-quadrature-rules">
+<h1>Generating univariate quadrature rules<a class="headerlink" href="#generating-univariate-quadrature-rules" title="Permalink to this headline">¶</a></h1>
+<p>There is an intimate relationship between orthogonal polynomials and quadrature points. In this tutorial, we demonstrate how one can use Effective Quadratures to compute univariate quadrature rules. For multivariate quadrature points and weights, please check out the tutorials on <em>Sparse and tensor grid quadrature rules</em>.</p>
+<p>Consider the task of integrating the function</p>
+<div class="math notranslate">
+\[I = \int_{-1}^{-1} f\left( x \right) \rho \left( x \right) dx\]</div>
+<p>where the measure <span class="math notranslate">\(\rho \left( x \right)\)</span> is the uniform measure over <span class="math notranslate">\([-1,1]\)</span>. Our task is to numerically approximate this integral using a quadrature rule, i.e.,</p>
+<div class="math notranslate">
+\[I \approx \sum_{i=1}^{N} f\left( \chi_{i} \right) \omega_i\]</div>
+<p>where the pair <span class="math notranslate">\(\left\{ \chi_{i} , \omega_i  \right\}_{i=1}^{N}\)</span> represents an N-point quadrature rule. To obtain such points in Effective Quadratures, one uses the following commands.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">equadratures</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">order</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">myParameter</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">lower</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">)</span>
+<span class="n">myBasis</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Univariate&#39;</span><span class="p">)</span>
+<span class="n">myPoly</span> <span class="o">=</span> <span class="n">Polyint</span><span class="p">(</span><span class="n">myParameter</span><span class="p">,</span> <span class="n">myBasis</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">myPoly</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="n">myPoly</span><span class="o">.</span><span class="n">quadratureWeights</span>
+</pre></div>
+</div>
+<p>The above quadrature rule is known as <em>Gauss-Legendre</em>; in our codes all the weights are normalized to sum to unity. In practice if one wishes to evaluate an integral, the weights must be scaled depending on the domain of integration. Let <span class="math notranslate">\(f(x) = x^7 - 3x^6 + x^5 - 10x^4 + 4\)</span> be our function of choice, defined over the domain <span class="math notranslate">\([-1,1]\)</span>. The analytical integral for this function is 22/7. Now using our 5-point Gauss-Legendre quadrature rule, we obtain</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">function</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">7</span> <span class="o">-</span> <span class="mf">3.0</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">6</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">5</span> <span class="o">-</span> <span class="mf">10.0</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">4</span> <span class="o">+</span><span class="mf">4.0</span>
+
+<span class="n">integral</span> <span class="o">=</span> <span class="mi">2</span>  <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">myPoly</span><span class="o">.</span><span class="n">quadratureWeights</span> <span class="p">,</span> <span class="n">evalfunction</span><span class="p">(</span><span class="n">myPoly</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="n">function</span><span class="p">)</span> <span class="p">)</span>
+<span class="nb">print</span> <span class="n">integral</span>
+<span class="o">&gt;&gt;</span> <span class="p">[</span><span class="mf">3.14285714</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>which is equivalent to 22/7. Note that the constant 2 arises because we are integrating over <span class="math notranslate">\([-1,1]\)</span> with the uniform measure, which has a density of 1/2.</p>
+<p>Now, in addition to standard Gauss-Christoffel quadrature rules (i.e., substitute different distributions in the definition of myParameter), Effective Quadratures also has Gauss-Christoffel-Lobatto rules, which feature end-points. As an example, consider the following</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">myParameter2</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">lower</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">myBasis2</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Univariate&#39;</span><span class="p">)</span>
+<span class="n">myPoly2</span> <span class="o">=</span> <span class="n">Polyint</span><span class="p">(</span><span class="n">myParameter2</span><span class="p">,</span> <span class="n">myBasis2</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">myPoly2</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="n">myPoly2</span><span class="o">.</span><span class="n">quadratureWeights</span>
+</pre></div>
+</div>
+<div class="figure" id="id1">
+<a class="reference internal image-reference" href="../_images/Figure_compare_quadratures.png"><img alt="../_images/Figure_compare_quadratures.png" src="../_images/Figure_compare_quadratures.png" style="width: 318.9px; height: 272.7px;" /></a>
+<p class="caption"><span class="caption-text">Figure. A comparison of order 4 Gauss-Legendre quadrature points (circles) with order 4 Gauss-Legendre-Lobatto points (squares).</span></p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tutorial_3.html" class="btn btn-neutral float-right" title="Constructing orthogonal polynomials" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tutorial_1.html" class="btn btn-neutral" title="Defining a parameter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016-2019 by Effective Quadratures.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'v7.6',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

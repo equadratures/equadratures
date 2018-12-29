@@ -24,9 +24,9 @@ copyright = u'2016-2019 by Effective Quadratures'
 author = u'Pranay Seshadri, Nicholas Wong, Henry Yuchi, Irene Vidris'
 
 # The short X.Y version
-version = u'7.5'
+version = u'7.6'
 # The full version, including alpha/beta/rc tags
-release = u'v7.5'
+release = u'v7.6'
 
 
 # -- General configuration ---------------------------------------------------

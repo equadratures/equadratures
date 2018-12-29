@@ -1,0 +1,343 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Statistics utilities &mdash; Effective Quadratures v7.6 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Matrix factorization utilities" href="qr.html" />
+    <link rel="prev" title="Convex optimization utilities" href="convex.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Effective Quadratures
+          
+
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                7.6
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Effective Quadratures</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="parameter.html">Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basis.html">Basis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="poly.html">Polynomials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distributions.html">Distributions</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="utilities.html">Utilities</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dr.html">Dimension reduction utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="convex.html">Convex optimization utilities</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Statistics utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="qr.html">Matrix factorization utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nataf.html">Nataf utilities</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Quick start guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Effective Quadratures</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">Modules</a> &raquo;</li>
+        
+          <li><a href="utilities.html">Utilities</a> &raquo;</li>
+        
+      <li>Statistics utilities</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/_documentation/stats.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-equadratures.stats">
+<span id="statistics-utilities"></span><h1>Statistics utilities<a class="headerlink" href="#module-equadratures.stats" title="Permalink to this headline">¶</a></h1>
+<p>Computing statistics from polynomial expansions.</p>
+<dl class="class">
+<dt id="equadratures.stats.Statistics">
+<em class="property">class </em><code class="descclassname">equadratures.stats.</code><code class="descname">Statistics</code><span class="sig-paren">(</span><em>coefficients</em>, <em>basis</em>, <em>parameters</em>, <em>quadrature_points=None</em>, <em>quadrature_weights=None</em>, <em>polynomial_evals=None</em>, <em>max_sobol_order=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/stats.html#Statistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.stats.Statistics" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>coefficients</strong> (<em>numpy-matrix</em>) – Coefficients from a polynomial expansion. Can be computed using any technique.</li>
+<li><strong>basis</strong> (<a class="reference internal" href="basis.html#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) – Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd><ul class="first last simple">
+<li><strong>self.mean</strong>: (double) Mean of the polynomial expansion.</li>
+<li><strong>self.variance</strong>: (double) Variance of the polynomial expansion.</li>
+<li><strong>self.sobol</strong>:(dict) Sobol’ indices of order up to number of dimensions.</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="equadratures.stats.Statistics.getCondKurtosis">
+<code class="descname">getCondKurtosis</code><span class="sig-paren">(</span><em>order=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/stats.html#Statistics.getCondKurtosis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.stats.Statistics.getCondKurtosis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get conditional kurtosis indices at specified order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>int</strong> (<em>order</em>) – The order at which conditional kurtosis indices are computed. By default, computes first order conditional kurtosis.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">indices: Dictionary where keys specify non-zero dimensions and values represent conditional kurtosis indices.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample usage:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stats</span> <span class="o">=</span> <span class="n">Statistics</span><span class="p">(</span><span class="n">coeffcients</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+<span class="n">first_order_kurtosis</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getCondKurtosis</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>        
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.stats.Statistics.getCondSkewness">
+<code class="descname">getCondSkewness</code><span class="sig-paren">(</span><em>order=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/stats.html#Statistics.getCondSkewness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.stats.Statistics.getCondSkewness" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get conditional skewness indices at specified order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>int</strong> (<em>order</em>) – The order at which conditional skewness indices are computed. By default, computes first order conditional skewness.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">indices: Dictionary where keys specify non-zero dimensions and values represent conditional skewness indices.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample usage:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stats</span> <span class="o">=</span> <span class="n">Statistics</span><span class="p">(</span><span class="n">coeffcients</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+<span class="n">first_order_skewness</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getCondSkewness</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>        
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.stats.Statistics.getSobol">
+<code class="descname">getSobol</code><span class="sig-paren">(</span><em>order=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/stats.html#Statistics.getSobol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.stats.Statistics.getSobol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Sobol’ indices at specified order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>int</strong> (<em>order</em>) – The order at which Sobol’ indices are computed. By default, computes first order Sobol’ indices.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">indices: Dictionary where keys specify non-zero dimensions and values represent Sobol’ indices.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample usage:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stats</span> <span class="o">=</span> <span class="n">Statistics</span><span class="p">(</span><span class="n">coeffcients</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+<span class="n">fosi</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getSobol</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>        
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="qr.html" class="btn btn-neutral float-right" title="Matrix factorization utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="convex.html" class="btn btn-neutral" title="Convex optimization utilities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016-2019 by Effective Quadratures.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'v7.6',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

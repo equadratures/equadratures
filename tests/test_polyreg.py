@@ -14,10 +14,11 @@ class TestPolyreg(TestCase):
         y_train = np.mat([6.8053,-1.5184,1.6416,6.3543,14.3442,16.4426,18.1953,28.9913,27.2246,40.3759,55.3726,72.0], dtype='float64')
         x_train = np.reshape(x_train, (M, 1))
         y_train = np.reshape(y_train, (M, 1))
-        print len(x_train), len(y_train)
         myBasis = Basis('Univariate')
         poly = Polyreg(myParameters, myBasis, training_inputs=x_train, training_outputs=y_train)
-        print poly.getfitStatistics()
+        t_stat, R2 =  poly.getfitStatistics()
+        np.testing.assert_almost_equal( R2, 0.846, decimal=1, err_msg = "Difference greated than imposed tolerance for mean value")
+        
 
 
 if __name__== '__main__':

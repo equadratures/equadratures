@@ -22,4 +22,3 @@ Below we provide some introductory tutorials to give you an idea of what Effecti
    tutorial_10
    tutorial_11
    tutorial_12
-   tutorial_13

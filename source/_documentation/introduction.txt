@@ -18,7 +18,6 @@ To download and install the code please use the python package index command:
 	
 	pip install equadratures
 
-
 Alternatively you can visit our `GitHub page <https://github.com/Effective-Quadratures/Effective-Quadratures>`__ and click either on the *Fork Code* button or *Clone or download*. For installation on Mac and Linux systems, simply type the following into the terminal. 
 
 .. code::

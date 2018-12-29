@@ -10,24 +10,21 @@ Code status
 	:target: https://coveralls.io/github/Effective-Quadratures/Effective-Quadratures?branch=master
 
 
-Download Links
----------------
-To download the code, please visit our `GitHub page <https://github.com/Effective-Quadratures/Effective-Quadratures>`__. Click either on the *Fork Code* button or *Clone or download*. 
+Download and installation
+-----------------------------
+To download and install the code please use the python package index command:
 
-**Installation:**
-For installation on Mac and Linux systems, simply type the following into the terminal. 
+.. code::
+	
+	pip install equadratures
+
+Alternatively you can visit our `GitHub page <https://github.com/Effective-Quadratures/Effective-Quadratures>`__ and click either on the *Fork Code* button or *Clone or download*. For installation on Mac and Linux systems, simply type the following into the terminal. 
 
 .. code::
 	
 	sudo python setup.py install
 
-For installation on Windows, you will need `Anaconda <https://www.continuum.io/downloads#windows>`__; select the Python 2.7 option. Upon successful installation, open the Sypder IDE and go into the Effective-Quadratures-master directory and type the following in the command window
-
-.. code::
-
-	python setup.py install
-
-This should build the code. Just make sure you include the location of effective_quadratures folder to your python file and you should be good to go. To run this code you will require python 2.7, numpy, scipy and matplotlib. 
+For installation on Windows, you will need `Anaconda <https://www.continuum.io/downloads#windows>`__; select the Python 2.7 option. Upon successful installation, open the Sypder IDE and go into the Effective-Quadratures-master directory and type the above in the command window. This should build the code. Just make sure you include the location of effective_quadratures folder to your python file and you should be good to go. To run this code you will require python 2.7, numpy, scipy and matplotlib. 
 
 
 References

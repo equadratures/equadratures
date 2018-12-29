@@ -10,6 +10,13 @@ def piston(x):
     C = 2 * np.pi * np.sqrt(mass/(spring + area**2 * pressure * volume * ambtemp/(gastemp * V**2)))
     return C
 
+def G_fun(x):
+    f = 1.0
+    for i in range(4):
+        t = (np.abs(4*x[i] - 2) + i**2.0) * 1.0/(1 + i**2.0)
+        f = f * t
+    return f
+
 class TestStats(TestCase):
 
     def test_sobol(self):
@@ -35,6 +42,34 @@ class TestStats(TestCase):
         sobol_info = Sleastsquares.getSobol(2)
         for key, value in sobol_info.iteritems():
             print str('Parameter numbers: ')+str(key)+', Sobol index value: '+str(value)
-                                          
+    
+    def test_higher_order(self):
+        degree = 5
+        x0 = Parameter(distribution="Uniform", lower=0.0, upper=1.0, order=degree)
+        x1 = Parameter(distribution="Uniform", lower=0.0, upper=1.0, order=degree)
+        x2 = Parameter(distribution="Uniform", lower=0.0, upper=1.0, order=degree)
+        x3 = Parameter(distribution="Uniform", lower=0.0, upper=1.0, order=degree)
+        parameters = [x0,x1,x2,x3]
+
+        basis = Basis('Tensor grid')
+        uqProblem = Polyint(parameters,basis)
+        uqProblem.computeCoefficients(G_fun)
+        stats = uqProblem.getStatistics()
+
+        np.testing.assert_almost_equal(stats.mean, 1.03619468893, decimal=6, err_msg = "Difference greated than imposed tolerance for mean value")
+        np.testing.assert_almost_equal(stats.variance, 0.423001291441, decimal=6, err_msg = "Difference greated than imposed tolerance for variance value")
+        np.testing.assert_almost_equal(stats.skewness, 0.874198787521, decimal=6, err_msg = "Difference greated than imposed tolerance for skewness value")
+        np.testing.assert_almost_equal(stats.kurtosis, 3.03775388049, decimal=6, err_msg = "Difference greated than imposed tolerance for kurtosis value")
+        
+        s1 = stats.getCondSkewness(1)
+        s2 = stats.getCondSkewness(2)
+        #k1 = stats.getCondKurtosis(1)
+        #k2 = stats.getCondKurtosis(2)
+
+        #print sum(v1.values()) + sum(v2.values())
+        print sum(s1.values()) + sum(s2.values())
+        #print sum(k1.values()) + sum(k2.values())
+
+
 if __name__== '__main__':
     unittest.main()

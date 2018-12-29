@@ -1,7 +1,7 @@
 ![EFFECTIVE-QUADRATURES](https://static.wixstatic.com/media/dad873_3938470ea83849db8b53716c94dd20e8~mv2.png/v1/fill/w_269,h_66,al_c,usm_0.66_1.00_0.01/dad873_3938470ea83849db8b53716c94dd20e8~mv2.png)
 
 # Effective Quadratures
-**Version 7.0**
+**Version 7.5**
 
 **What is Effective Quadratures?**
 Effective Quadratures is a suite of tools for constructing polynomials for approximation, uncertainty quantification (UQ), optimization, dimension reduction and sensitivity analysis.

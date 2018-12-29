@@ -191,15 +191,45 @@
         <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
 </pre></div>
 </div>
-<p>Next, we set the number of evaluation points in each direction. Lets opt for 4 points in the first direction and 7 points in the second direction. Using a tensor grid, this results in 28 points.</p>
+<p>Next, we set the number of evaluation points in each direction. Lets opt for 7 points along each direction—more than sufficient to approximate the function exactly.</p>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mu</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">sigma</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="n">variance</span> <span class="o">=</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span>
-<span class="n">x1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span><span class="o">=</span><span class="s2">&quot;Gaussian&quot;</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="n">mu</span><span class="p">,</span> <span class="n">shape_parameter_B</span><span class="o">=</span><span class="n">variance</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">x1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span><span class="o">=</span><span class="s2">&quot;Gaussian&quot;</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="n">mu</span><span class="p">,</span> <span class="n">shape_parameter_B</span><span class="o">=</span><span class="n">variance</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 <span class="n">x2</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span><span class="o">=</span><span class="s2">&quot;Gaussian&quot;</span><span class="p">,</span> <span class="n">shape_parameter_A</span><span class="o">=</span><span class="n">mu</span><span class="p">,</span> <span class="n">shape_parameter_B</span><span class="o">=</span><span class="n">variance</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">]</span>
 </pre></div>
 </div>
+<p>Now, we can set the problem up, compute the coefficients, and then ask Effective Quadratures to output the mean and the variance.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">]</span>
+<span class="n">basis</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Tensor grid&#39;</span><span class="p">)</span>
+<span class="n">uqProblem</span> <span class="o">=</span> <span class="n">Polyint</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+<span class="n">uqProblem</span><span class="o">.</span><span class="n">computeCoefficients</span><span class="p">(</span><span class="n">rosenbrock_fun</span><span class="p">)</span>
+<span class="n">myStats</span> <span class="o">=</span> <span class="n">uqProblem</span><span class="o">.</span><span class="n">getStatistics</span><span class="p">()</span>
+<span class="nb">print</span> <span class="n">myStats</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">myStats</span><span class="o">.</span><span class="n">variance</span>
+
+<span class="o">&gt;&gt;</span> <span class="mf">6804.0</span> <span class="mf">476659232.0</span>
+</pre></div>
+</div>
+<p>Now, we compare these results with Monte Carlo.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">large_number</span> <span class="o">=</span> <span class="mi">1000000</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">large_number</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">mu</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">large_number</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">large_number</span><span class="p">):</span>
+    <span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">rosenbrock_fun</span><span class="p">([</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
+<span class="nb">print</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;</span> <span class="mf">6825.114</span><span class="p">,</span> <span class="mf">4727315412.89</span>
+</pre></div>
+</div>
+<p>The results are very close!</p>
+<p><strong>References</strong></p>
+<table class="docutils footnote" frame="void" id="id1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td>Xiu, D., and Karniadakis, G. E., (2002) The Wiener–Askey polynomial chaos for stochastic differential equations. SIAM journal on scientific computing 24.2: 619-644.</td></tr>
+</tbody>
+</table>
 </div>
 
 

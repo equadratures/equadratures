@@ -21,14 +21,46 @@ where we will assume that :math:`x_1` and :math:`x_2` are two uncertainties. We 
 	def rosenbrock_fun(x):
     		return (1 - x[0])**2 + 100*(x[1] - x[0]**2)**2
 
-Next, we set the number of evaluation points in each direction. Lets opt for 4 points in the first direction and 7 points in the second direction. Using a tensor grid, this results in 28 points.
+Next, we set the number of evaluation points in each direction. Lets opt for 7 points along each direction---more than sufficient to approximate the function exactly.
 
 .. code::
 
 	mu = 1
 	sigma = 2
 	variance = sigma**2
-	x1 = Parameter(distribution="Gaussian", shape_parameter_A=mu, shape_parameter_B=variance, order=3)
+	x1 = Parameter(distribution="Gaussian", shape_parameter_A=mu, shape_parameter_B=variance, order=6)
 	x2 = Parameter(distribution="Gaussian", shape_parameter_A=mu, shape_parameter_B=variance, order=6)
 	parameters = [x1, x2]
 
+Now, we can set the problem up, compute the coefficients, and then ask Effective Quadratures to output the mean and the variance.
+
+.. code::
+
+	parameters = [x1, x2]
+        basis = Basis('Tensor grid')
+        uqProblem = Polyint(parameters, basis)
+        uqProblem.computeCoefficients(rosenbrock_fun)
+        myStats = uqProblem.getStatistics()
+	print myStats.mean, myStats.variance
+		
+	>> 6804.0 476659232.0
+
+Now, we compare these results with Monte Carlo.
+
+.. code::
+
+        large_number = 1000000
+        s = sigma * np.random.randn(large_number,2) + mu
+        f = np.zeros((large_number,1))
+        for i in range(0, large_number):
+            f[i,0] = rosenbrock_fun([s[i,0], s[i,1]])
+	print np.mean(f), np.var(f)
+
+	>> 6825.114, 4727315412.89
+
+The results are very close!
+
+
+**References**
+
+.. [1] Xiu, D., and Karniadakis, G. E., (2002) The Wiener--Askey polynomial chaos for stochastic differential equations. SIAM journal on scientific computing 24.2: 619-644.

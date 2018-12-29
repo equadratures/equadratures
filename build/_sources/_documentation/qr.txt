@@ -1,5 +1,0 @@
-Matrix factorization utilities
-===========================================
-
-.. automodule:: equadratures.qr
-    :members:

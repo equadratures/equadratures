@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Dimension reduction utilities &mdash; Effective Quadratures v7.0 documentation</title>
+  <title>Dimension reduction utilities &mdash; Effective Quadratures v7.5 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                7.0
+                7.5
               </div>
             
           
@@ -191,6 +191,78 @@
 </ul>
 </dd>
 </dl>
+<dl class="function">
+<dt id="equadratures.dr.jacobian_vec">
+<code class="descclassname">equadratures.dr.</code><code class="descname">jacobian_vec</code><span class="sig-paren">(</span><em>list_of_poly</em>, <em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/dr.html#jacobian_vec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.dr.jacobian_vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the Jacobian tensor for a list of polynomials.
+:param list_of_poly: list. Contains all m polynomials.
+:param X: ndarray, input points. N-by-d where N is the number of points, d the input dimension.
+:return:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>J (ndarray)</strong>: The Jacobian tensor, m-by-d-by-N, where J[a,b,c] = dP_a/dx_c_b (b-th dimension of P_a’s gradient at x_c)</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="equadratures.dr.jacobian_vp">
+<code class="descclassname">equadratures.dr.</code><code class="descname">jacobian_vp</code><span class="sig-paren">(</span><em>V</em>, <em>V_plus</em>, <em>U</em>, <em>y</em>, <em>f</em>, <em>Polybasis</em>, <em>eta</em>, <em>minmax</em>, <em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/dr.html#jacobian_vp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.dr.jacobian_vp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal function to variable_projection
+Calculates the Jacobian tensor using polynomial basis functions</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>V</strong> – ndarray, the affine transformed outputs</li>
+<li><strong>V_plus</strong> – ndarray, psuedoinverse matrix</li>
+<li><strong>U</strong> – ndarray, the active subspace directions</li>
+<li><strong>y</strong> – array, the untransformed projected values of inputs in active subspace</li>
+<li><strong>f</strong> – array, the untransformed outputs</li>
+<li><strong>Polybasis</strong> – Poly object, an instance of Poly class</li>
+<li><strong>eta</strong> – ndarray, the affine transformed projected values of inputs in active subspace</li>
+<li><strong>minmax</strong> – ndarray, the upper and lower bounds of input projections in each dimension</li>
+<li><strong>X</strong> – ndarray, the input</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>J (ndarray)</strong>: The Jacobian tensor</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="equadratures.dr.vandermonde">
+<code class="descclassname">equadratures.dr.</code><code class="descname">vandermonde</code><span class="sig-paren">(</span><em>eta</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/dr.html#vandermonde"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.dr.vandermonde" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal function to variable_projection
+Calculates the Vandermonde matrix using polynomial basis functions</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>eta</strong> – ndarray, the affine transformed projected values of inputs in active subspace</li>
+<li><strong>p</strong> – int, the maximum degree of polynomials</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>V (numpy array)</strong>: The resulting Vandermode matrix</li>
+<li><strong>Polybasis (Poly object)</strong>: An instance of Poly object containing the polynomial basis derived</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 
 
@@ -213,7 +285,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2018 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures.
 
     </p>
   </div>
@@ -235,7 +307,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'v7.0',
+            VERSION:'v7.5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Nataf transform for correlated inputs &mdash; Effective Quadratures v7.0 documentation</title>
+  <title>Nataf transform for correlated inputs &mdash; Effective Quadratures v7.5 documentation</title>
   
 
   
@@ -31,7 +31,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Active subspaces with polynomial approximations" href="tutorial_11.html" />
-    <link rel="prev" title="Computing Sobol’ indices" href="tutorial_9.html" /> 
+    <link rel="prev" title="Higher order Sobol’ indices" href="tutorial_9b.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                7.0
+                7.5
               </div>
             
           
@@ -97,13 +97,16 @@
 <li class="toctree-l2"><a class="reference internal" href="tutorial_4.html">Computing moments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_4b.html">Multi-index sets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_5.html">Sparse and tensor grid quadrature rules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_6.html">Polynomial regression for data-sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_6a.html">Polynomial regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_6.html">Polynomial regression for time varying data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_7.html">Polynomial least squares approximations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_8.html">Polynomials via compressive sensing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol’ indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol’ (sensitivity) indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_9b.html">Higher order Sobol’ indices</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Nataf transform for correlated inputs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_11.html">Active subspaces with polynomial approximations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_12.html">Polynomial variable projection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_13.html">Optimizing using polynomials</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
@@ -331,7 +334,7 @@ Here the Cholesky factor <span class="math notranslate">\(\mathbf{L}\)</span> of
         <a href="tutorial_11.html" class="btn btn-neutral float-right" title="Active subspaces with polynomial approximations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="tutorial_9.html" class="btn btn-neutral" title="Computing Sobol’ indices" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="tutorial_9b.html" class="btn btn-neutral" title="Higher order Sobol’ indices" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -340,7 +343,7 @@ Here the Cholesky factor <span class="math notranslate">\(\mathbf{L}\)</span> of
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2018 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures.
 
     </p>
   </div>
@@ -362,7 +365,7 @@ Here the Cholesky factor <span class="math notranslate">\(\mathbf{L}\)</span> of
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'v7.0',
+            VERSION:'v7.5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

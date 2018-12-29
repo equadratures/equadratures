@@ -20,13 +20,13 @@
 # -- Project information -----------------------------------------------------
 
 project = u'Effective Quadratures'
-copyright = u'2016-2018 by Effective Quadratures'
+copyright = u'2016-2019 by Effective Quadratures'
 author = u'Pranay Seshadri, Nicholas Wong, Henry Yuchi, Irene Vidris'
 
 # The short X.Y version
-version = u'7.0'
+version = u'7.5'
 # The full version, including alpha/beta/rc tags
-release = u'v7.0'
+release = u'v7.5'
 
 
 # -- General configuration ---------------------------------------------------

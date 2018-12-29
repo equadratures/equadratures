@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Higher order Sobol’ indices &mdash; Effective Quadratures v7.0 documentation</title>
+  <title>Higher order Sobol’ indices &mdash; Effective Quadratures v7.5 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                7.0
+                7.5
               </div>
             
           
@@ -207,20 +207,86 @@
 <div class="math notranslate">
 \[x_0, x_1, x_2, x_3 \sim \mathcal{U}(0,1)^4.\]</div>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">degree</span> <span class="o">=</span> <span class="mi">5</span>
-<span class="n">x0</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">param_type</span><span class="o">=</span><span class="s2">&quot;Uniform&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
-<span class="n">x1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">param_type</span><span class="o">=</span><span class="s2">&quot;Uniform&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
-<span class="n">x2</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">param_type</span><span class="o">=</span><span class="s2">&quot;Uniform&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
-<span class="n">x3</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">param_type</span><span class="o">=</span><span class="s2">&quot;Uniform&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span><span class="o">=</span><span class="s2">&quot;Uniform&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
+<span class="n">x1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span> <span class="o">=</span><span class="s2">&quot;Uniform&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
+<span class="n">x2</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span> <span class="o">=</span><span class="s2">&quot;Uniform&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
+<span class="n">x3</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span> <span class="o">=</span><span class="s2">&quot;Uniform&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
 <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">x0</span><span class="p">,</span><span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="p">,</span><span class="n">x3</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Calculate the polynomial coefficients and initiate Statistics class:</p>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">basis</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Tensor grid&#39;</span><span class="p">)</span>
-<span class="n">uqProblem</span> <span class="o">=</span> <span class="n">Polyint</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span><span class="n">basis</span><span class="p">)</span>
+<span class="n">uqProblem</span> <span class="o">=</span> <span class="n">Polyint</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
 <span class="n">uqProblem</span><span class="o">.</span><span class="n">computeCoefficients</span><span class="p">(</span><span class="n">G_fun</span><span class="p">)</span>
 <span class="n">stats</span> <span class="o">=</span> <span class="n">uqProblem</span><span class="o">.</span><span class="n">getStatistics</span><span class="p">()</span>
 </pre></div>
 </div>
+<p>By default, global indices (mean, variance, skewness and kurtosis) are already computed at initialization. They can be viewed through printing the corresponding class variables.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">mean</span>
+<span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">variance</span>
+<span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">skewness</span>
+<span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">kurtosis</span>
+
+<span class="o">&gt;&gt;</span> <span class="mf">1.03619468893</span>
+<span class="o">&gt;&gt;</span> <span class="mf">0.423001291441</span>
+<span class="o">&gt;&gt;</span> <span class="mf">0.874198787521</span>
+<span class="o">&gt;&gt;</span> <span class="mf">3.03775388049</span>
+</pre></div>
+</div>
+<p>Now sample the output distribution with Monte Carlo and compute the statistics:</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x0_samples</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">getSamples</span><span class="p">(</span><span class="mi">100000</span><span class="p">)</span>
+<span class="n">x1_samples</span> <span class="o">=</span> <span class="n">x1</span><span class="o">.</span><span class="n">getSamples</span><span class="p">(</span><span class="mi">100000</span><span class="p">)</span>
+<span class="n">x2_samples</span> <span class="o">=</span> <span class="n">x2</span><span class="o">.</span><span class="n">getSamples</span><span class="p">(</span><span class="mi">100000</span><span class="p">)</span>
+<span class="n">x3_samples</span> <span class="o">=</span> <span class="n">x3</span><span class="o">.</span><span class="n">getSamples</span><span class="p">(</span><span class="mi">100000</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">100000</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100000</span><span class="p">):</span>
+        <span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">G_fun</span><span class="p">([</span><span class="n">x0_samples</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">x1_samples</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">x2_samples</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">x3_samples</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]])</span>
+
+<span class="nb">print</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="nb">print</span> <span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">skew</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+<span class="nb">print</span> <span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">kurtosis</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">fisher</span> <span class="o">=</span> <span class="kc">False</span><span class="p">))</span>
+
+<span class="o">&gt;&gt;</span> <span class="mf">1.0003033832</span>
+<span class="o">&gt;&gt;</span> <span class="mf">0.471885570482</span>
+<span class="o">&gt;&gt;</span> <span class="mf">0.688292325516</span>
+<span class="o">&gt;&gt;</span> <span class="mf">2.92393148972</span>
+</pre></div>
+</div>
+<p>As seen, the agreement is not bad. Now, let’s calculate the first two orders of conditional indices.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">v1</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getSobol</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">v2</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getSobol</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">s1</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getCondSkewness</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">s2</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getCondSkewness</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">k1</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getCondKurtosis</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">k2</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getCondKurtosis</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="nb">print</span> <span class="nb">sum</span><span class="p">(</span><span class="n">v1</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">v2</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<span class="nb">print</span> <span class="nb">sum</span><span class="p">(</span><span class="n">s1</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">s2</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<span class="nb">print</span> <span class="nb">sum</span><span class="p">(</span><span class="n">k1</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">k2</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+<span class="o">&gt;&gt;</span> <span class="mf">0.999175600763</span>
+<span class="o">&gt;&gt;</span> <span class="mf">0.962874587829</span>
+<span class="o">&gt;&gt;</span> <span class="mf">0.89419000212</span>
+</pre></div>
+</div>
+<p>As seen, the sums are close to one, so we don’t miss much by not evaluating the rest of the indices (which could take a long time). We may put these values in more context by calculating the Total Sensitivity Index [1] of each dimension:</p>
+<div class="math notranslate">
+\[\textrm{TSI}^a_j = \sum_{\textbf{m}\in V_j} s^{SI}_\textbf{m}\]</div>
+<p>where <span class="math notranslate">\(V_j\)</span> denotes the set of multi-indices <span class="math notranslate">\(\textbf{m}\)</span> that contains the dimension concerned, <span class="math notranslate">\(j\)</span>. This can be applied to variance (<span class="math notranslate">\(a=v\)</span>), skewness (<span class="math notranslate">\(a=s\)</span>) and kurtosis (<span class="math notranslate">\(a=k\)</span>). In our case, for example, we approximate:</p>
+<div class="math notranslate">
+\[\textrm{TSI}^v_0 = \texttt{v1[(0)] + v2[(0,1)] + v2[(0,2)] + v2[(0,3)] }\]</div>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">calc_TSI</span><span class="p">([</span><span class="n">v1</span><span class="p">,</span><span class="n">v2</span><span class="p">])</span>
+<span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">calc_TSI</span><span class="p">([</span><span class="n">s1</span><span class="p">,</span><span class="n">s2</span><span class="p">])</span>
+<span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">calc_TSI</span><span class="p">([</span><span class="n">k1</span><span class="p">,</span><span class="n">k2</span><span class="p">])</span>
+
+<span class="o">&gt;&gt;</span> <span class="p">[</span> <span class="mf">0.77715308</span>  <span class="mf">0.23639978</span>  <span class="mf">0.04004516</span>  <span class="mf">0.01008302</span><span class="p">]</span>
+<span class="o">&gt;&gt;</span> <span class="p">[</span> <span class="mf">0.90833698</span>  <span class="mf">0.66941268</span>  <span class="mf">0.12475714</span>  <span class="mf">0.03166169</span><span class="p">]</span>
+<span class="o">&gt;&gt;</span> <span class="p">[</span> <span class="mf">0.85915885</span>  <span class="mf">0.54439872</span>  <span class="mf">0.08897176</span>  <span class="mf">0.02198146</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The results agree with the fact about the G-function, that the larger <span class="math notranslate">\(i\)</span> is the lower the conditional index will be, and offers a quantitative measure of how important the variable is: the higher the index, the more important it is. This type of analysis can be applied to dimensional reduction applications to prune unnecessary variables. They also agree somewhat with Geraci et al. [1], but with some discrepancies (possibly due to the index set used).</p>
 <p><strong>References</strong></p>
 <table class="docutils footnote" frame="void" id="id1" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
@@ -250,7 +316,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2018 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures.
 
     </p>
   </div>
@@ -272,7 +338,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'v7.0',
+            VERSION:'v7.5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

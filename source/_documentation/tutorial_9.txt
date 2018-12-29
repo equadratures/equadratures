@@ -159,6 +159,9 @@ which are similar to the values obtained by Owen. To generate a plot, one simply
 .. figure:: Figures/Sobol.png
    :scale: 40 %
 
+   Figure. First order Sobol' indices for the piston problem.
+
+
 
 More generally, if one wanted to obtain higher order Sobol' indices, one can use the following code.
 

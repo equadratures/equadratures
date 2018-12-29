@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>equadratures.stats &mdash; Effective Quadratures v7.0 documentation</title>
+  <title>equadratures.stats &mdash; Effective Quadratures v7.5 documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                7.0
+                7.5
               </div>
             
           
@@ -337,8 +337,8 @@
 <span class="c1">#        if sum(i) != order:</span>
 <span class="c1">#            continue</span>
 <span class="c1">#        combo_index[i] = 0.0   </span>
-        <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span>
-        <span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">index</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">combo_index</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">index</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
     
     <span class="c1">#1st term</span>
@@ -426,8 +426,8 @@
 <span class="c1">#            if sum(i) != order:</span>
 <span class="c1">#                continue</span>
 <span class="c1">#            combo_index[i] = 0.0</span>
-        <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span>
-        <span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">index</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">combo_index</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">index</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="c1">#1st term</span>
     <span class="n">fourth_evals</span> <span class="o">=</span> <span class="n">weighted_evals</span><span class="o">**</span><span class="mi">4</span>
@@ -604,7 +604,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2018 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures.
 
     </p>
   </div>
@@ -626,7 +626,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'v7.0',
+            VERSION:'v7.5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Base polynomial &mdash; Effective Quadratures v7.0 documentation</title>
+  <title>Base polynomial &mdash; Effective Quadratures v7.5 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                7.0
+                7.5
               </div>
             
           
@@ -309,18 +309,18 @@ gradient values are at prescribed points.</p>
 <dl class="method">
 <dt id="equadratures.poly.Poly.getPolynomial">
 <code class="descname">getPolynomial</code><span class="sig-paren">(</span><em>stackOfPoints</em>, <em>customBases=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.getPolynomial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.getPolynomial" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluates the multivariate polynomial at a set of points.</p>
+<dd><p>Evaluates the value of each polynomial basis function at a set of points.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
-<li><strong>stackOfPoints</strong> (<em>matrix</em>) – A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.</li>
+<li><strong>stackOfPoints</strong> (<em>matrix</em>) – A N-by-d matrix of points along which the multivariate (in d-dimensions) polynomial basis functions must be evaluated.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A N-by-1 matrix of polynomial evaluations at the stackOfPoints.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A P-by-N matrix of polynomial basis function evaluations at the stackOfPoints, where P is the cardinality of the basis.</p>
 </td>
 </tr>
 </tbody>
@@ -329,19 +329,22 @@ gradient values are at prescribed points.</p>
 
 <dl class="method">
 <dt id="equadratures.poly.Poly.getPolynomialGradient">
-<code class="descname">getPolynomialGradient</code><span class="sig-paren">(</span><em>stackOfPoints</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.getPolynomialGradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.getPolynomialGradient" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluates the gradient of the multivariate polynomial at a set of points.</p>
+<code class="descname">getPolynomialGradient</code><span class="sig-paren">(</span><em>stackOfPoints</em>, <em>dim_index=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.getPolynomialGradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.getPolynomialGradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the gradient for each of the polynomial basis functions at a set of points,
+with respect to each input variable.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
-<li><strong>stackOfPoints</strong> (<em>matrix</em>) – A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.</li>
+<li><strong>stackOfPoints</strong> (<em>matrix</em>) – A N-by-d matrix of points along which the gradient of the multivariate (in d-dimensions) polynomial basis
+functions must be evaluated.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A list with d elements, each with a N-by-1 matrix of polynomial evaluations at the stackOfPoints.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A list with d elements, each with a P-by-N matrix of polynomial evaluations at the stackOfPoints,
+where P is the cardinality of the basis.</p>
 </td>
 </tr>
 </tbody>
@@ -442,7 +445,7 @@ gradient values are at prescribed points.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2018 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures.
 
     </p>
   </div>
@@ -464,7 +467,7 @@ gradient values are at prescribed points.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'v7.0',
+            VERSION:'v7.5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

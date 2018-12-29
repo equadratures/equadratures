@@ -40,7 +40,7 @@ The above quadrature rule is known as *Gauss-Legendre*; in our codes all the wei
 	>> [3.14285714]
 
 
-which is equivalent to 22/7. Note that the constant 2 arises because we are integrating over :math:`[-1,1]` which has length 2. 
+which is equivalent to 22/7. Note that the constant 2 arises because we are integrating over :math:`[-1,1]` with the uniform measure, which has a density of 1/2. 
 
 Now, in addition to standard Gauss-Christoffel quadrature rules (i.e., substitute different distributions in the definition of myParameter), Effective Quadratures also has Gauss-Christoffel-Lobatto rules, which feature end-points. As an example, consider the following
 

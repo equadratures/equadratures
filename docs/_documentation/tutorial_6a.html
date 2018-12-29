@@ -178,7 +178,111 @@
             
   <div class="section" id="polynomial-regression">
 <h1>Polynomial regression<a class="headerlink" href="#polynomial-regression" title="Permalink to this headline">¶</a></h1>
-<p>In this tutorial we show an example of using</p>
+<p>So you have some data, and you’d like to get a “best-fit” curve through the data. No problem. That’s pretty much what this guide seeks to do. So let’s get started; consider the data set below.</p>
+<table border="1" class="colwidths-given docutils" id="id1">
+<caption><span class="caption-text">Sample data for regression.</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">X</th>
+<th class="head">Y</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>6.8053</td>
+</tr>
+<tr class="row-odd"><td>0.0714</td>
+<td>-1.5184</td>
+</tr>
+<tr class="row-even"><td>0.1429</td>
+<td>1.6416</td>
+</tr>
+<tr class="row-odd"><td>0.2857</td>
+<td>6.3543</td>
+</tr>
+<tr class="row-even"><td>0.3571</td>
+<td>14.3442</td>
+</tr>
+<tr class="row-odd"><td>0.4286</td>
+<td>16.4426</td>
+</tr>
+<tr class="row-even"><td>0.5714</td>
+<td>18.1953</td>
+</tr>
+<tr class="row-odd"><td>0.6429</td>
+<td>28.9913</td>
+</tr>
+<tr class="row-even"><td>0.7143</td>
+<td>27.2246</td>
+</tr>
+<tr class="row-odd"><td>0.7857</td>
+<td>40.3759</td>
+</tr>
+<tr class="row-even"><td>0.9286</td>
+<td>55.3726</td>
+</tr>
+<tr class="row-odd"><td>1.0000</td>
+<td>72.0</td>
+</tr>
+</tbody>
+</table>
+<p>Our goal is to compute the best fit a polynomial approximation through this data set. We begin by calling two classes from the code. The first class is the Parameter class, that handles all the information regarding the independent variable, or parameter. The second class is the Polyreg class, which actually generates the “best-fit” curve using the information in the parameter. To begin, lets load the data.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">equadratures</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">dimensions</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">M</span> <span class="o">=</span> <span class="mi">12</span>
+<span class="n">param</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">myParameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">param</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)]</span> <span class="c1"># one-line for loop for parameters</span>
+<span class="n">x_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.0714</span><span class="p">,</span><span class="mf">0.1429</span><span class="p">,</span><span class="mf">0.2857</span><span class="p">,</span><span class="mf">0.3571</span><span class="p">,</span><span class="mf">0.4286</span><span class="p">,</span><span class="mf">0.5714</span><span class="p">,</span><span class="mf">0.6429</span><span class="p">,</span><span class="mf">0.7143</span><span class="p">,</span><span class="mf">0.7857</span><span class="p">,</span><span class="mf">0.9286</span><span class="p">,</span><span class="mf">1.0000</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">([</span><span class="mf">6.8053</span><span class="p">,</span><span class="o">-</span><span class="mf">1.5184</span><span class="p">,</span><span class="mf">1.6416</span><span class="p">,</span><span class="mf">6.3543</span><span class="p">,</span><span class="mf">14.3442</span><span class="p">,</span><span class="mf">16.4426</span><span class="p">,</span><span class="mf">18.1953</span><span class="p">,</span><span class="mf">28.9913</span><span class="p">,</span><span class="mf">27.2246</span><span class="p">,</span><span class="mf">40.3759</span><span class="p">,</span><span class="mf">55.3726</span><span class="p">,</span><span class="mf">72.0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+<span class="n">x_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y_train</span><span class="p">,</span> <span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Now we use the univariate basis in the polyreg class.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">myBasis</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Univariate&#39;</span><span class="p">)</span>
+<span class="n">poly</span> <span class="o">=</span> <span class="n">Polyreg</span><span class="p">(</span><span class="n">myParameters</span><span class="p">,</span> <span class="n">myBasis</span><span class="p">,</span> <span class="n">training_inputs</span><span class="o">=</span><span class="n">x_train</span><span class="p">,</span> <span class="n">training_outputs</span><span class="o">=</span><span class="n">y_train</span><span class="p">)</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">x_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="c1"># Plot the results</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">M</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_train</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">y_train</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;tomato&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_test</span><span class="p">,</span> <span class="n">poly</span><span class="o">.</span><span class="n">evaluatePolyFit</span><span class="p">(</span><span class="n">x_test</span><span class="p">),</span> <span class="s1">&#39;k-&#39;</span><span class="p">)</span>
+<span class="n">adjust_spines</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;bottom&#39;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$X$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;$Y$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;Figure_regression.png&#39;</span> <span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">,</span> <span class="n">pad_inches</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="figure" id="id2">
+<a class="reference internal image-reference" href="../_images/Figure_regression.png"><img alt="../_images/Figure_regression.png" src="../_images/Figure_regression.png" style="width: 481.6px; height: 363.6px;" /></a>
+<p class="caption"><span class="caption-text">Figure. A linear model fit (-) for the data (o).</span></p>
+</div>
+<p>Now, we repeat the same experiment, but increase the order of the polynomial!</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">myBasis</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Univariate&#39;</span><span class="p">)</span>
+<span class="n">param</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">myParameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">param</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)]</span> <span class="c1"># one-line for loop for parameters</span>
+<span class="n">poly</span> <span class="o">=</span> <span class="n">Polyreg</span><span class="p">(</span><span class="n">myParameters</span><span class="p">,</span> <span class="n">myBasis</span><span class="p">,</span> <span class="n">training_inputs</span><span class="o">=</span><span class="n">x_train</span><span class="p">,</span> <span class="n">training_outputs</span><span class="o">=</span><span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="figure" id="id3">
+<a class="reference internal image-reference" href="../_images/Figure_regression2.png"><img alt="../_images/Figure_regression2.png" src="../_images/Figure_regression2.png" style="width: 469.2px; height: 363.6px;" /></a>
+<p class="caption"><span class="caption-text">Figure. A quadratic model fit (-) for the data (o).</span></p>
+</div>
+<p>One can now compute the T-statistic and the coefficient of determination (R-squared) value of the fit via:</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">poly</span><span class="o">.</span><span class="n">getfitStatistics</span><span class="p">()</span>
+<span class="o">&gt;&gt;</span> <span class="p">(</span><span class="n">array</span><span class="p">([</span><span class="mf">8.08549007</span><span class="p">,</span> <span class="mf">7.18374769</span><span class="p">]),</span> <span class="mf">0.8464062747620524</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 
 

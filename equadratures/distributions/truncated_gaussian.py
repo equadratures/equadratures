@@ -1,8 +1,8 @@
 """The Truncated Gaussian distribution."""
 import numpy as np
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
-from distribution import Distribution
-from gaussian import *
+from equadratures.distributions.template import Distribution
+from equadratures.distributions.gaussian import *
 from scipy.stats import truncnorm
 RECURRENCE_PDF_SAMPLES = 8000
 

@@ -1,10 +1,10 @@
 """Operations involving multivariate polynomials (without gradients) via numerical quadrature.
 """
-from parameter import Parameter
-from basis import Basis
-from basis import sparse_grid_basis
-from utils import find_repeated_elements, evalfunction
-from poly import Poly
+from .parameter import Parameter
+from .basis import Basis
+from .basis import sparse_grid_basis
+from .utils import find_repeated_elements, evalfunction
+from .poly import Poly
 import numpy as np
 
 class Polyint(Poly):

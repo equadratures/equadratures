@@ -5,11 +5,11 @@
     R : Correlatation Matrix of Distributions which belong to D.
 """
 import numpy as np
-from parameter import Parameter
+from .parameter import Parameter
 from numpy import linalg as LA
 from numpy.linalg import inv
-from polyint import Polyint
-from basis import Basis
+from .polyint import Polyint
+from .basis import Basis
 
 class Pca(object):
     """ The class defines a Principal Component Analysis with a Whitening Method.
@@ -58,7 +58,7 @@ class Pca(object):
         # step 2: definition of covariance matrix S 
         #S = self.CovarianceMatrix(R)
         S = np.cov(XT)
-        print 'from pca class: S covariance of transpose X-mean is', S
+        print('from pca class: S covariance of transpose X-mean is', S)
         
         # step 3: calculation of Eigenvalues from covariance matrix
         w, v = LA.eig(S)
@@ -139,7 +139,7 @@ class Pca(object):
         # S = L L.T, where L.T is the transpose matrix of L
          
         S = self.CovarianceMatrix(self.R)       
-        print 'from pca class: covariance matrix starting from the self.correlation matrix is:', S
+        print('from pca class: covariance matrix starting from the self.correlation matrix is:', S )
         L  = np.linalg.cholesky(S)
         #for i in range(number_of_distro):
         #    for j in range(rows_of_distro):
@@ -150,7 +150,7 @@ class Pca(object):
         for i in range(number_of_distro):
             for j in range(rows_of_distro):
                 XC[j,i] = XC[j,i] - np.mean(XC[:,i])
-            print 'from pca clas: mean of ', i, 'marginal:' , np.mean(XC[:,i])
+            print('from pca clas: mean of ', i, 'marginal:' , np.mean(XC[:,i]) )
         distro = distro.T
         return XC, distro
 
@@ -169,8 +169,8 @@ class Pca(object):
         #R = self.CorrelationMatrix(X)
         R = self.R
         S = self.CovarianceMatrix(R)
-        print 'from pca class: covariance matrix:'
-        print S
+        print('from pca class: covariance matrix:')
+        print(S)
         w, v = LA.eig(S)
         Rot = v
         Scl = np.zeros((len(w), len(w)))

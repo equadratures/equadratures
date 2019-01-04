@@ -9,10 +9,10 @@ References:
 """
 import numpy as np
 import scipy
-from parameter import Parameter
-from poly import Poly
+from .parameter import Parameter
+from .poly import Poly
 import scipy.io
-from basis import Basis
+from .basis import Basis
 from scipy.linalg import orth
 
 class dr(object):

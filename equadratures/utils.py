@@ -70,7 +70,7 @@ def columnNormalize(A):
     G = np.dot(A.T, A)
     col_norms = np.sqrt(np.diag(G))
     if np.any(col_norms <= 0):
-        print "Warning: A singular at columnNormalize"
+        print("Warning: A singular at columnNormalize")
         col_norms[col_norms == 0] = 1
     return A/col_norms
 

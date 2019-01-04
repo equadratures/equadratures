@@ -37,11 +37,11 @@ class TestStats(TestCase):
 
         data = Sleastsquares.getSobol(1).values()
         for i in range(0, len(parameters)):
-            print float(data[i]) * 10**2 * Sleastsquares.variance
+            print( float(data[i]) * 10**2 * Sleastsquares.variance )
 
         sobol_info = Sleastsquares.getSobol(2)
         for key, value in sobol_info.iteritems():
-            print str('Parameter numbers: ')+str(key)+', Sobol index value: '+str(value)
+            print( str('Parameter numbers: ')+str(key)+', Sobol index value: '+str(value) )
     
     def test_higher_order(self):
         degree = 5
@@ -67,7 +67,7 @@ class TestStats(TestCase):
         #k2 = stats.getCondKurtosis(2)
 
         #print sum(v1.values()) + sum(v2.values())
-        print sum(s1.values()) + sum(s2.values())
+        print( sum(s1.values()) + sum(s2.values()) )
         #print sum(k1.values()) + sum(k2.values())
 
 

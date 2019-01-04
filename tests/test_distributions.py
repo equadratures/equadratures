@@ -56,15 +56,6 @@ class Test_Distributions(TestCase):
        plot(x, f_X, a, b, samples, xo.name)
        xi = np.random.gamma(k,theta, (N,1))
        yi = evalfunction(np.reshape(xi, (N, 1) ), blackbox)
-       
-       print xo.name, xo.shape_parameter_A, xo.shape_parameter_B
-       print 'Effective quadrature mean: ', myStats.mean#, myStats.variance
-       print 'Effective quadrature variance:' , myStats.variance
-       print 'Monte Carlo mean:', np.mean(yi)
-       print 'Monte Carlo variance:', np.var(yi)
-       print 'Analytical mean :', xo.mean 
-       print 'Analytical variance :', xo.variance
-       print '\n'
        eq_m = float('%.4f' %myStats.mean)
        mc_m = float('%.4f' %np.mean(yi))
        error_mean = np.testing.assert_almost_equal(eq_m, mc_m, decimal=2, err_msg="difference greater than imposed tolerance for mean value")
@@ -95,15 +86,6 @@ class Test_Distributions(TestCase):
        b = xo.getPDF(a)
        samples = xo.getSamples(m=1000)
        plot(x, f_X, a, b, samples, xo.name)
-       
-       print xo.name, xo.shape_parameter_A, xo.shape_parameter_B
-       print 'Effective quadrature mean: ', myStats.mean#, myStats.variance
-       print 'Effective quadrature variance:' , myStats.variance
-       print 'Monte Carlo mean:', np.mean(yi)
-       print 'Monte Carlo variance:', np.var(yi)
-       print 'Analytical mean :', xo.mean 
-       print 'Analytical variance :', xo.variance
-       print '\n'
        eq_m = float('%.4f' %myStats.mean)
        mc_m = float('%.4f' %np.mean(yi))
        error_mean = np.testing.assert_almost_equal(eq_m, mc_m, decimal=2, err_msg="difference greater than imposed tolerance for mean value")
@@ -130,16 +112,6 @@ class Test_Distributions(TestCase):
        a = x
        b = xo.getPDF(a)
        samples = xo.getSamples(m=1000)
-       plot(x, f_X, a, b, samples, xo.name)
-       
-       print xo.name, xo.shape_parameter_A, xo.shape_parameter_B
-       print 'Effective quadrature mean: ', myStats.mean#, myStats.variance
-       print 'Effective quadrature variance:' , myStats.variance
-       print 'Monte Carlo mean:', np.mean(yi)
-       print 'Monte Carlo variance:', np.var(yi)
-       print 'Analytical mean :', xo.mean 
-       print 'Analytical variance :', xo.variance
-       print '\n'
        eq_m = float('%.4f' %myStats.mean)
        mc_m = float('%.4f' %np.mean(yi))
        error_mean = np.testing.assert_almost_equal(eq_m, mc_m, decimal=2, err_msg="difference greater than imposed tolerance for mean value")
@@ -185,16 +157,6 @@ class Test_Distributions(TestCase):
       b = xo.getPDF(a) # analytical!
       samples = xo.getSamples(m=3000)
       yi = samples
-      plot(x, f_X, a, b, samples, xo.name)
-      
-      print xo.name, xo.shape_parameter_A, xo.shape_parameter_B, xo.lower, xo.upper
-      print 'Effective quadrature mean: ', myStats.mean#, myStats.variance
-      print 'Effective quadrature variance:' , myStats.variance
-      print 'Analytical mean :', xo.mean 
-      print 'Analytical variance :', xo.variance
-      print 'Monte Carlo mean:', np.mean(yi)
-      print 'Monte Carlo variance:', np.var(yi)
-      print '\n'
       eq_m = float('%.4f' %myStats.mean)
       mc_m = float('%.4f' %np.mean(yi))
       error_mean = np.testing.assert_almost_equal(eq_m, xo.mean, decimal=1, err_msg="difference greater than imposed tolerance for mean value")
@@ -209,7 +171,6 @@ class Test_Distributions(TestCase):
       mean_1 = (a+b)/2.0 
       variance_1 = (1.0/8.0)*(b-a)**2
       f_X= np.zeros(len(x))
-
       for i in range(0,len(x)):
         if x[i] == a :
            f_X[i] =  1.0/(np.pi* np.sqrt(((x[i]+0.000000001 )- a)*(b - (x[i]-0.000000001)) ))
@@ -217,7 +178,6 @@ class Test_Distributions(TestCase):
            f_X[i] =  1.0/(np.pi* np.sqrt(((x[i]+0.000000001 )- a)*(b - (x[i]-0.000000001)) ))
         else: 
            f_X[i] = 1.0/(np.pi* np.sqrt((x[i] - a)*(b - x[i])) )
-      
       xo = Parameter(order=1, distribution='Chebyshev',lower =0.001, upper=0.99)
       myBasis = Basis('univariate')
       myPoly = Polyint([xo], myBasis)
@@ -227,16 +187,6 @@ class Test_Distributions(TestCase):
       b = xo.getPDF(a) # analytical!
       samples = xo.getSamples(m=3000)
       yi = samples
-      plot(x, f_X, a, b, samples, xo.name, ylims=[0., 3.])
-      
-      print xo.name, xo.shape_parameter_A, xo.shape_parameter_B, xo.lower, xo.upper
-      print 'Effective quadrature mean: ', myStats.mean#, myStats.variance
-      print 'Effective quadrature variance:' , myStats.variance
-      print 'Analytical mean :', xo.mean 
-      print 'Analytical variance :', xo.variance
-      print 'Monte Carlo mean:', np.mean(yi)
-      print 'Monte Carlo variance:', np.var(yi)
-      print '\n'
       eq_m = float('%.4f' %myStats.mean)
       mc_m = float('%.4f' %np.mean(yi))
       error_mean = np.testing.assert_almost_equal(eq_m, xo.mean, decimal=1, err_msg="difference greater than imposed tolerance for mean value")
@@ -261,16 +211,6 @@ class Test_Distributions(TestCase):
       b = xo.getPDF(a)
       samples = xo.getSamples(m=1000)
       yi = samples
-      plot(x, f_X, a, b, samples, xo.name, ylims=[0., 0.8])
-      
-      print xo.name, xo.shape_parameter_A, xo.shape_parameter_B
-      print 'Effective quadrature mean: ', myStats.mean#, myStats.variance
-      print 'Effective quadrature variance:' , myStats.variance
-      print 'Monte Carlo mean:', np.mean(yi)
-      print 'Monte Carlo variance:', np.var(yi)
-      print 'Analytical mean :', xo.mean 
-      print 'Analytical variance :', xo.variance
-      print '\n'
 
 if __name__ == '__main__':
     unittest.main()

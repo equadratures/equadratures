@@ -1,7 +1,7 @@
 """The Gaussian / Normal distribution."""
 import numpy as np
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
-from distribution import Distribution
+from equadratures.distributions.template import Distribution
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 RECURRENCE_PDF_SAMPLES = 8000

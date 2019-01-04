@@ -1,12 +1,12 @@
 """Finding coefficients via compressive sensing."""
 from .parameter import Parameter
 from .basis import Basis
-from poly import Poly
+from .poly import Poly
 import numpy as np
-from stats import Statistics, getAllSobol
-from convex import *
+from .stats import Statistics, getAllSobol
+from .convex import *
 import scipy
-from utils import columnNormalize
+from .utils import columnNormalize
 
 
 class Polycs(Poly):

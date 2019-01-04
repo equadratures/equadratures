@@ -1,7 +1,7 @@
 """The Cauchy distribution."""
 import numpy as np
-from distribution import Distribution
-from recurrence_utils import custom_recurrence_coefficients
+from equadratures.distributions.template import Distribution
+from equadratures.distributions.recurrence_utils import custom_recurrence_coefficients
 from scipy.stats import cauchy
 RECURRENCE_PDF_SAMPLES = 8000
 
@@ -18,15 +18,15 @@ class Cauchy(Distribution):
         self.location = location
         self.scale = scale
         self.bounds = np.array([-np.inf, np.inf])    
-        #self.mean = np.nan
+        #self.mean = np.nan 
         #self.variance = np.nan
         self.skewness = np.nan
         self.kurtosis = np.nan
-	if self.scale is not None:
-        	self.x_range_for_pdf = np.linspace(-15*self.scale, 15*self.scale, RECURRENCE_PDF_SAMPLES)
-                self.parent = cauchy(loc=self.location, scale=self.scale)
-                self.mean = np.mean(self.getSamples(m=1000))
-                self.variance = np.var(self.getSamples(m=1000))
+        if self.scale is not None:
+            self.x_range_for_pdf = np.linspace(-15*self.scale, 15*self.scale, RECURRENCE_PDF_SAMPLES)
+            self.parent = cauchy(loc=self.location, scale=self.scale)
+            self.mean = np.mean(self.getSamples(m=1000))
+            self.variance = np.var(self.getSamples(m=1000))
                 
     
     def getDescription(self):

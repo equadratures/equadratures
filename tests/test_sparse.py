@@ -25,15 +25,11 @@ class TestSparse(TestCase):
 
         np.testing.assert_almost_equal(float(c1[0]), float(c2[0]), decimal=7, err_msg = "Difference greated than imposed tolerance for mean value")
 
-        print c1 
-        print c2
-    
     def test_spam2(self):
         x = Parameter(distribution='uniform', lower=-1., upper=1., order=4)
         sparse = Basis('Sparse grid', level=7, growth_rule='exponential')
         myPolySparse = Polyint([x,x], sparse)
         multi_indices = sparse.elements
-        print np.max(multi_indices)
         np.testing.assert_almost_equal(np.max(multi_indices), 128, decimal=7, err_msg = "Difference greated than imposed tolerance for mean value")
                                           
 if __name__== '__main__':

@@ -16,14 +16,12 @@ setup(name='equadratures',
       keywords='polynomial chaos effective quadratures polynomial approximations gradients',
       url='https://github.com/Effective-Quadratures/Effective-Quadratures',
       author='Pranay Seshadri, Nicholas Wong, Irene Virdis',
-      author_email='contact@effective-quadratures.org',
       license='LPGL-2.1',
       packages=['equadratures', 'equadratures.distributions'],
       install_requires=[
           'numpy',
           'scipy >= 0.15.0',
-          'matplotlib',
-          'lxml'
+          'matplotlib'
       ],
       test_suite='nose.collector',
       tests_require=['nose'],

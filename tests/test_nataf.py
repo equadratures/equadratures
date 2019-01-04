@@ -37,13 +37,6 @@ class Test_Nataf(TestCase):
 
           myPoly.computeCoefficients(f_p)
           myStats = myPoly.getStatistics()
-
-          print '----MONTE CARLO----'
-          print np.mean(f_mc), np.var(f_mc), skew(f_mc)
-
-          print '----POLYNOMIALS-----'
-          print myStats.mean, myStats.variance, myStats.skewness      
-
           np.testing.assert_almost_equal(np.mean(f_mc)*0.01, myStats.mean*0.01, decimal=1, err_msg = "Difference greated than imposed tolerance")
           np.testing.assert_almost_equal(np.var(f_mc)*0.000001, myStats.variance*0.000001, decimal=2, err_msg = "Difference greated than imposed tolerance")
           np.testing.assert_almost_equal( skew(f_mc)*0.1, myStats.skewness*0.1, decimal=1, err_msg = "Difference greated than imposed tolerance")

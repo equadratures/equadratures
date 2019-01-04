@@ -43,37 +43,12 @@ class Test_Custom(TestCase):
             data1 = np.array(D[i].getSamples(m=500))
             data1 = np.reshape(data1, (500,1)) 
             custom = Parameter(order=3, distribution='custom', data=data1)
-            #cdf  = np.array(custom.getCDF(data1))
-            #g_cdf = np.array(D[i].getCDF(data1))
-
-            #plt.figure()
-            #plt.grid(linewidth = 0.4, color = 'k')
-            #plt.plot(data1, cdf, 'bo', label='cdf of Custom Class')
-            #plt.plot(data1, g_cdf, 'ro', label= D[i].name)
-            #plt.legend(loc='upper left')
-            #plt.show()
 
         for i in range(len(D)):
             data1 = D[i].getSamples(m=500) 
             custom = Parameter(order=3, distribution='custom', data=data1)
-        
-            #icdf = custom.getiCDF(cdf)
-            #g_icdf = D[i].getiCDF(g_cdf)
-        
-            #plt.figure()
-            #plt.grid(linewidth = 0.4, color = 'k')
-            #plt.plot(cdf, icdf, 'bo', label='icdf of Custom Class')
-            #plt.plot(g_cdf, g_icdf, 'ro', label= D[i].name)
-            #plt.legend(loc='upper left')
-            #plt.show()
-        
 
     def testCustomNataf(self):
-        """ this method tests the Nataf transformation in 2 dimensions using the custom class
-            defined by the user.
-        """
-        print 'second method commented'
-     
         source1 = Parameter(distribution='uniform', order=5, lower=0.0, upper =1.0)
         source2 = Parameter(distribution='gaussian', order=5, shape_parameter_A = 10., shape_parameter_B=1.)
         
@@ -89,11 +64,7 @@ class Test_Custom(TestCase):
         
         corr = obj.getCorrelatedSamples(N=400)
         direct_transf  = obj.C2U(corr)
-        #print 'direct transformation:'
-        #print direct_transf
         inverse_transf = obj.U2C(direct_transf)
-        #print 'inverse transformation:'
-        #print inverse_transf
 
         plt.figure()
         plt.grid(linewidth=0.5, color='k')

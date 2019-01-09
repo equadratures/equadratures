@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>equadratures.parameter &mdash; Effective Quadratures v7.0 documentation</title>
+  <title>equadratures.parameter &mdash; Effective Quadratures v7.6 documentation</title>
   
 
   
@@ -27,7 +27,9 @@
   
 
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
@@ -59,7 +61,7 @@
             
             
               <div class="version">
-                7.0
+                7.6
               </div>
             
           
@@ -307,7 +309,7 @@
 		<span class="k">return</span> <span class="n">JacobiMatrix</span>
 
 	<span class="k">def</span> <span class="nf">_getOrthoPoly</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-		<span class="n">eps</span> <span class="o">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">15</span>
+		<span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-15</span>
 		<span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 			<span class="n">order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span>
 		<span class="k">else</span><span class="p">:</span>
@@ -361,8 +363,8 @@
 			<span class="k">return</span> <span class="n">getlocalquadrature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
 		<span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
 			<span class="k">return</span> <span class="n">getlocalquadraturelobatto</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
-		<span class="k">else</span><span class="p">:</span>
-			<span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;_getLocalQuadrature:: Error with Endpoints entry!&#39;</span><span class="p">)</span></div>
+		<span class="k">else</span><span class="p">:</span></div>
+			<span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;_getLocalQuadrature:: Error with Endpoints entry!&#39;</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">getlocalquadrature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="c1"># Check for extra input argument!</span>
@@ -395,7 +397,7 @@
         <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">):</span>
             <span class="n">w</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">ab</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">i</span><span class="p">[</span><span class="n">u</span><span class="p">]]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># replace weights with right value</span>
             <span class="n">p</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">local_points</span><span class="p">[</span><span class="n">u</span><span class="p">]</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">16</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">16</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">1e-16</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="o">-</span><span class="mf">1e-16</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">0</span><span class="p">]):</span>
                 <span class="n">p</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">p</span><span class="p">,</span> <span class="n">w</span>   
 
@@ -450,7 +452,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2018 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures.
 
     </p>
   </div>
@@ -472,18 +474,18 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'v7.0',
+            VERSION:'v7.6',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

@@ -1,6 +1,6 @@
 """The Chi-squared distribution."""
 import numpy as np
-from distribution import Distribution
+from equadratures.distributions.template import Distribution
 from scipy.special import erf, erfinv, gamma, gammainc
 from scipy.stats import chi2
 RECURRENCE_PDF_SAMPLES = 8000
@@ -14,17 +14,18 @@ class Chisquared(Distribution):
     """
     def __init__(self, dofs):
         self.dofs = dofs
-        if self.dofs == 1:
-            self.bounds = np.array([1e-15, np.inf])
-        else:
-            self.bounds = np.array([0.0, np.inf])
-        if self.dofs >= 1:
-            self.mean = float(self.dofs)
-            self.variance = 2 * self.mean
-            self.skewness = np.sqrt(8.0 / self.mean)
-            self.kurtosis = 12.0/self.mean + 3.0
-            self.x_range_for_pdf = np.linspace(0.0, 10.0*self.mean,RECURRENCE_PDF_SAMPLES)
-            self.parent = chi2(self.dofs)
+        if self.dofs is not None:
+            if self.dofs == 1:
+                self.bounds = np.array([1e-15, np.inf])
+            else:
+                self.bounds = np.array([0.0, np.inf])
+            if self.dofs >= 1:
+                self.mean = float(self.dofs)
+                self.variance = 2 * self.mean
+                self.skewness = np.sqrt(8.0 / self.mean)
+                self.kurtosis = 12.0/self.mean + 3.0
+                self.x_range_for_pdf = np.linspace(0.0, 10.0*self.mean,RECURRENCE_PDF_SAMPLES)
+                self.parent = chi2(self.dofs)
     
     def getDescription(self):
         """

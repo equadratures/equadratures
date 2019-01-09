@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Polynomial regression for data-sets &mdash; Effective Quadratures v7.0 documentation</title>
+  <title>Polynomial regression for time varying data &mdash; Effective Quadratures v7.6 documentation</title>
   
 
   
@@ -28,8 +28,10 @@
 
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Polynomial least squares approximations" href="tutorial_7.html" />
-    <link rel="prev" title="Sparse and tensor grid quadrature rules" href="tutorial_5.html" /> 
+    <link rel="prev" title="Polynomial regression" href="tutorial_6a.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -61,7 +63,7 @@
             
             
               <div class="version">
-                7.0
+                7.6
               </div>
             
           
@@ -95,10 +97,12 @@
 <li class="toctree-l2"><a class="reference internal" href="tutorial_4.html">Computing moments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_4b.html">Multi-index sets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_5.html">Sparse and tensor grid quadrature rules</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Polynomial regression for data-sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_6a.html">Polynomial regression</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Polynomial regression for time varying data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_7.html">Polynomial least squares approximations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_8.html">Polynomials via compressive sensing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol&#8217; indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_9.html">Computing Sobol’ (sensitivity) indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_9b.html">Higher order Sobol’ indices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_10.html">Nataf transform for correlated inputs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_11.html">Active subspaces with polynomial approximations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_12.html">Polynomial variable projection</a></li>
@@ -152,7 +156,7 @@
         
           <li><a href="tutorials.html">Quick start guide</a> &raquo;</li>
         
-      <li>Polynomial regression for data-sets</li>
+      <li>Polynomial regression for time varying data</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -171,19 +175,19 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="polynomial-regression-for-data-sets">
-<h1>Polynomial regression for data-sets<a class="headerlink" href="#polynomial-regression-for-data-sets" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="polynomial-regression-for-time-varying-data">
+<h1>Polynomial regression for time varying data<a class="headerlink" href="#polynomial-regression-for-time-varying-data" title="Permalink to this headline">¶</a></h1>
 <p>In this tutorial we show an example of using Effective Quadratures on a regression problem for a data set. We are going to use the <a class="reference external" href="https://www.kaggle.com/neuromusic/avocado-prices">Avocado Prices</a>, and fit an autoregressive model to the time series data of total organic avocado volume sold in the US against time. An autoregressive (AR) model treats the time series as a wide sense stationary random process. The value at one time instant depends on some previous values linearly, plus some Gaussian noise. An order P AR process is defined as:</p>
-<div class="math">
+<div class="math notranslate">
 \[Y_{t} = \sum_{i=1}^{P} a_i Y_{t-i} + \epsilon_t,\]</div>
-<p>where <span class="math">\(\epsilon_t \sim \mathcal{N} (0,\sigma)\)</span> is an additive zero mean white Gaussian noise. To estimate the parameters <span class="math">\({a_i, \sigma}\)</span>, we can use maximum likelihood. It can be shown that under this model, the AR coefficients <span class="math">\({a_i}\)</span> can be found via least squares,</p>
-<div class="math">
+<p>where <span class="math notranslate">\(\epsilon_t \sim \mathcal{N} (0,\sigma)\)</span> is an additive zero mean white Gaussian noise. To estimate the parameters <span class="math notranslate">\({a_i, \sigma}\)</span>, we can use maximum likelihood. It can be shown that under this model, the AR coefficients <span class="math notranslate">\({a_i}\)</span> can be found via least squares,</p>
+<div class="math notranslate">
 \[\text{minimize} \qquad \left\Vert \mathbf{\Phi a} - \boldsymbol{b} \right\Vert_2,\]</div>
-<p>where <span class="math">\(\mathbf{b}\)</span> contains the time series data, <span class="math">\(\phi_i\)</span>, the <span class="math">\(i^{th}\)</span> column of <span class="math">\(\Phi\)</span>, contains the time series shifted by <span class="math">\(i\)</span> time steps, and <span class="math">\(\mathbf{a}\)</span> contains the AR coefficients. Once we find the maximum likelihood estimate of <span class="math">\(\mathbf{a}\)</span>, we can find the optimal <span class="math">\(\sigma\)</span>:</p>
-<div class="math">
+<p>where <span class="math notranslate">\(\mathbf{b}\)</span> contains the time series data, <span class="math notranslate">\(\phi_i\)</span>, the <span class="math notranslate">\(i^{th}\)</span> column of <span class="math notranslate">\(\Phi\)</span>, contains the time series shifted by <span class="math notranslate">\(i\)</span> time steps, and <span class="math notranslate">\(\mathbf{a}\)</span> contains the AR coefficients. Once we find the maximum likelihood estimate of <span class="math notranslate">\(\mathbf{a}\)</span>, we can find the optimal <span class="math notranslate">\(\sigma\)</span>:</p>
+<div class="math notranslate">
 \[\sigma^* = \frac{\left\Vert \mathbf{\Phi a^*} - \boldsymbol{b} \right\Vert_2^2}{T-1+P},\]</div>
-<p>where <span class="math">\(T\)</span> is the total length of the time series. The least squares problem can be solved via EQ by the Polyreg module. To start, we first import the required modules and data.</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">equadratures</span> <span class="k">import</span> <span class="o">*</span>
+<p>where <span class="math notranslate">\(T\)</span> is the total length of the time series. The least squares problem can be solved via EQ by the Polyreg module. To start, we first import the required modules and data.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">equadratures</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -196,18 +200,18 @@
 </pre></div>
 </div>
 <p>We then convert the input values from date strings to sorted, numerically indexed data.</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">tt</span> <span class="o">=</span> <span class="n">input_vals</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tt</span> <span class="o">=</span> <span class="n">input_vals</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">input_vals</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
     <span class="n">tt</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">input_vals</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">value</span>
 
-<span class="n">tt</span> <span class="o">=</span> <span class="p">(</span><span class="n">tt</span> <span class="o">/</span> <span class="mi">1</span><span class="n">e11</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">tt</span> <span class="o">/</span> <span class="mi">1</span><span class="n">e11</span><span class="p">))</span> <span class="o">/</span> <span class="mi">6048</span>
+<span class="n">tt</span> <span class="o">=</span> <span class="p">(</span><span class="n">tt</span> <span class="o">/</span> <span class="mf">1e11</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">tt</span> <span class="o">/</span> <span class="mf">1e11</span><span class="p">))</span> <span class="o">/</span> <span class="mi">6048</span>
 <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">tt</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
 <span class="n">tt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">tt</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Then, we standardize the volume values to zero mean and unit variance.</p>
 <p>We can visualize the time series by plotting yy against tt.</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">tt</span><span class="p">,</span> <span class="n">yy</span><span class="p">)</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">tt</span><span class="p">,</span> <span class="n">yy</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time index&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Normalized volume&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -218,7 +222,7 @@
 <p class="caption"><span class="caption-text">Figure. Time series data</span></p>
 </div>
 <p>Since the time series depends linearly on its history, the appropriate polynomial degree is 1 in every variable. Using an isotropic total order basis allows us to conform to the setup specified above. In this application, the distribution of the parameters is not critical, so we will use a uniform distribution in each variable, covering all the range of the data. The following code sets up the model for P = 1.</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">p_order</span> <span class="o">=</span> <span class="mi">1</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">p_order</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">ar_order</span> <span class="o">=</span> <span class="mi">1</span>
 
 <span class="n">yy_fit</span> <span class="o">=</span> <span class="n">yy</span><span class="p">[</span><span class="n">ar_order</span><span class="p">:]</span>
@@ -235,16 +239,16 @@
 </pre></div>
 </div>
 <p>Running this calculates our AR coefficients. To ensure that we are getting something sensible, we can check the condition number of the design matrix.</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">poly</span><span class="o">.</span><span class="n">cond</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">poly</span><span class="o">.</span><span class="n">cond</span>
 </pre></div>
 </div>
 <p>This should not be too high. Next, we calculate the estimate of the noise variance.</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">residue</span> <span class="o">=</span> <span class="n">yy_fit</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">poly</span><span class="o">.</span><span class="n">evaluatePolyFit</span><span class="p">(</span><span class="n">xx_fit</span><span class="p">)))</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">residue</span> <span class="o">=</span> <span class="n">yy_fit</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">poly</span><span class="o">.</span><span class="n">evaluatePolyFit</span><span class="p">(</span><span class="n">xx_fit</span><span class="p">)))</span>
 <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">residue</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tt</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">ar_order</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Finally, we can use the estimated coefficients to predict future sales. We will predict 50 time steps ahead, and estimate the standard errors of the predictions (<span class="math">\(\sqrt{n\sigma}\)</span> n steps ahead).</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">prediction_length</span> <span class="o">=</span> <span class="mi">50</span>
+<p>Finally, we can use the estimated coefficients to predict future sales. We will predict 50 time steps ahead, and estimate the standard errors of the predictions (<span class="math notranslate">\(\sqrt{n\sigma}\)</span> n steps ahead).</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">prediction_length</span> <span class="o">=</span> <span class="mi">50</span>
 <span class="n">tt_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">tt</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">tt</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:])</span> <span class="o">+</span> <span class="n">prediction_length</span><span class="p">,</span> <span class="n">num</span> <span class="o">=</span> <span class="n">prediction_length</span><span class="p">)</span>
 <span class="n">last_tt</span> <span class="o">=</span> <span class="n">tt</span><span class="p">[:</span><span class="o">-</span><span class="n">ar_order</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
 <span class="n">last_yy</span> <span class="o">=</span> <span class="n">yy</span><span class="p">[:</span><span class="o">-</span><span class="n">ar_order</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
@@ -264,7 +268,7 @@
 </pre></div>
 </div>
 <p>We can then visualize the predictions.</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">tt</span><span class="p">,</span> <span class="n">yy</span><span class="p">)</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">tt</span><span class="p">,</span> <span class="n">yy</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">tt_pred</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">yy_errors</span><span class="p">,</span> <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;ro&#39;</span><span class="p">,</span> <span class="n">elinewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time index&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Normalized volume&#39;</span><span class="p">)</span>
@@ -294,7 +298,7 @@
         <a href="tutorial_7.html" class="btn btn-neutral float-right" title="Polynomial least squares approximations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="tutorial_5.html" class="btn btn-neutral" title="Sparse and tensor grid quadrature rules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="tutorial_6a.html" class="btn btn-neutral" title="Polynomial regression" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -303,7 +307,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2018 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures.
 
     </p>
   </div>
@@ -325,18 +329,18 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'v7.0',
+            VERSION:'v7.6',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

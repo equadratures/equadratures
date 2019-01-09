@@ -1,5 +1,0 @@
-Truncated-Gaussian
-====================
-
-.. automodule:: equadratures.distributions.truncated_gaussian
-    :members:

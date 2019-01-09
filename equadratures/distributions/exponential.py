@@ -1,7 +1,7 @@
 """The Exponential distribution."""
 import numpy as np
-from distribution import Distribution
-from recurrence_utils import custom_recurrence_coefficients
+from equadratures.distributions.template import Distribution
+from equadratures.distributions.recurrence_utils import custom_recurrence_coefficients
 from scipy.stats import expon
 RECURRENCE_PDF_SAMPLES = 8000
 

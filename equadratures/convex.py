@@ -263,7 +263,7 @@ def bp(A, b, x0 = None, cgtol = None, cgmaxiter = None, pdtol = None, pdmaxiter 
             cgres = np.linalg.norm(np.dot(H11p, dv).flatten() - w1p.flatten()) / np.linalg.norm(w1p)
             cgiter = -1
         if cgres > .5:
-            print cgres
+            print(cgres)
             raise ValueError('Matrix ill-conditioned.  Returning previous iterate.');
             xp = x.copy()
             return xp
@@ -302,7 +302,7 @@ def bp(A, b, x0 = None, cgtol = None, cgmaxiter = None, pdtol = None, pdmaxiter 
             backiter = backiter + 1;
             if backiter > 32:
                 if verbose:
-                    print 'Stuck backtracking, returning last iterate.'
+                    print('Stuck backtracking, returning last iterate.')
                 xp = x.copy()
                 return xp
 
@@ -326,10 +326,10 @@ def bp(A, b, x0 = None, cgtol = None, cgmaxiter = None, pdtol = None, pdmaxiter 
 
         done = (sdg < pdtol) | (pditer >= pdmaxiter);
         if verbose:
-            print "Iteration = " + str(pditer) + ", tau = " + str(tau) + ", Primal = " + str(sum(u)) + ", PDGap = " + str(sdg) \
-                + ", Dual res = " + str(np.linalg.norm(r_dual)) + ", Primal res = " + str(np.linalg.norm(r_pri))
+            print("Iteration = " + str(pditer) + ", tau = " + str(tau) + ", Primal = " + str(sum(u)) + ", PDGap = " + str(sdg) \
+                + ", Dual res = " + str(np.linalg.norm(r_dual)) + ", Primal res = " + str(np.linalg.norm(r_pri)) )
 
-            print "CG Res = " + str(cgres) + "CG Iter" + str(cgiter)
+            print("CG Res = " + str(cgres) + "CG Iter" + str(cgiter) )
 
     return xp
 def bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cgmaxiter = 200, verbose = False, use_CG = False):
@@ -356,7 +356,7 @@ def bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cg
     if not(x0 is None):
         if (np.linalg.norm(np.dot(A,x0) - b) > epsilon):
             if verbose:
-                print 'Starting point infeasible; using x0 = At*inv(AAt)*y.'
+                print('Starting point infeasible; using x0 = At*inv(AAt)*y.')
             if use_CG:
                 w, cgres, cgiter = CG_solve(np.dot(A,A.T),b,cgmaxiter,cgtol)
             else:
@@ -365,14 +365,14 @@ def bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cg
                 cgiter = -1
             if cgres > .5:
               if verbose:
-                    print "cgres = " + str(cgres)
-                    print 'A*At is ill-conditioned: cannot find starting point'
+                    print("cgres = " + str(cgres) )
+                    print('A*At is ill-conditioned: cannot find starting point' )
               xp = x0.copy();
               return xp
             x0 = np.dot(A.T, w);
     else:
         if verbose:
-            print 'No x0. Using x0 = At*inv(AAt)*y.'
+            print('No x0. Using x0 = At*inv(AAt)*y.')
         if use_CG:
             w, cgres, cgiter = CG_solve(np.dot(A,A.T),b,cgmaxiter,cgtol)
         else:
@@ -381,8 +381,8 @@ def bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cg
             cgiter = -1
         if cgres > .5:
               if verbose:
-                    print "cgres = " + str(cgres)
-                    print 'A*At is ill-conditioned: cannot find starting point'
+                    print("cgres = " + str(cgres) )
+                    print('A*At is ill-conditioned: cannot find starting point' )
         x0 = np.dot(A.T, w);
 
     x = x0.copy();
@@ -390,19 +390,19 @@ def bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cg
     N = len(x0);
     u = (0.95)*np.abs(x0) + (0.10)*np.max(np.abs(x0));    #arbitrary u starting point?
     if verbose:
-        print 'Original l1 norm = ' + str(np.sum(np.abs(x0))) + ', original functional = ' + str(np.sum(u))
+        print('Original l1 norm = ' + str(np.sum(np.abs(x0))) + ', original functional = ' + str(np.sum(u)) )
     tau = np.max([(2.0*N+1)/np.sum(np.abs(x0)), 1.0])
 
     lbiter = int(np.ceil((np.log(2.0*N+1) - np.log(lbtol) - np.log(tau)) / np.log(mu)))
     if verbose:
-        print 'Number of log barrier iterations = ' + str(lbiter)
+        print('Number of log barrier iterations = ' + str(lbiter) )
     totaliter = 0;
     for ii in range(lbiter+1):
       xp, up, ntiter = l1qc_newton(x, u, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter, verbose, use_CG);
       totaliter += ntiter;
       if verbose:
-          print 'Log barrier iter = ' + str(ii) + ', l1 = ' + str(np.sum(np.abs(xp))) + ', functional = ' + str(np.sum(up)) + \
-          ', tau = ' + str(tau) + ', total newton iter = ' + str(totaliter)
+          print('Log barrier iter = ' + str(ii) + ', l1 = ' + str(np.sum(np.abs(xp))) + ', functional = ' + str(np.sum(up)) + \
+          ', tau = ' + str(tau) + ', total newton iter = ' + str(totaliter))
 
       x = xp.copy();
       u = up.copy();
@@ -448,8 +448,8 @@ def l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgm
           cgiter = -1
       if (cgres > 0.5):
           if verbose:
-              print "cgres = " + str(cgres)
-              print 'Cannot solve system.  Returning previous iterate.'
+              print("cgres = " + str(cgres) )
+              print('Cannot solve system.  Returning previous iterate.' )
           xp = x.flatten()
           up = u.flatten()
           return xp, up, 0
@@ -489,7 +489,7 @@ def l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgm
         backiter = backiter + 1;
         if (backiter > 32):
           if verbose:  
-              print 'Stuck on backtracking line search, returning previous iterate.';
+              print('Stuck on backtracking line search, returning previous iterate.')
           xp = x.copy();
           up = u.copy();
           return xp,up,niter
@@ -504,16 +504,12 @@ def l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgm
       f = fp.copy();
 
       lambda2 = -(np.dot(gradf, np.hstack([dx, du])));
-#      print "lambda2"
-#      print lambda2
-#      print "f"
-#      print f
       stepsize = s*np.linalg.norm(np.hstack([dx, du]));
       niter = niter + 1;
       done = (lambda2/2 < newtontol) | (niter >= newtonmaxiter);
       if verbose:
-          print 'Newton iter = ' + str(niter) + ', Functional = ' + str(f) + ', Newton decrement = ' + str(lambda2/2) + ', Stepsize = ' + str(stepsize);
-          print '                CG Res = ' + str(cgres) + ', CG Iter = ' + str(cgiter);
+          print('Newton iter = ' + str(niter) + ', Functional = ' + str(f) + ', Newton decrement = ' + str(lambda2/2) + ', Stepsize = ' + str(stepsize))
+          print('                CG Res = ' + str(cgres) + ', CG Iter = ' + str(cgiter))
     return xp, up, niter
 
 def binary2indices(zhat):

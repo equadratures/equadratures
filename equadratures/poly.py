@@ -4,6 +4,9 @@ from .stats import Statistics
 import pickle
 from parameter import Parameter
 from basis import Basis
+import time
+import numpy as np
+VERSION_NUMBER = 7.6
 
 class Poly(object):
     """
@@ -28,7 +31,6 @@ class Poly(object):
             self.orders.append(self.parameters[i].order)
         if not self.basis.orders :
             self.basis.setOrders(self.orders)
-
     def __setCoefficients__(self, coefficients):
         """
         Sets the coefficients for polynomial. This function will be called by the children of Poly
@@ -305,7 +307,7 @@ class Poly(object):
             A callable function.
 
         """
-        return lambda (x): self.getPolynomial(x).T *  np.mat(self.coefficients)
+        return lambda x: self.getPolynomial(x).T *  np.mat(self.coefficients)
     def getPolyGradFitFunction(self):
         """
         Returns a callable for the gradients of the polynomial approximation of a function (or model data).
@@ -316,7 +318,7 @@ class Poly(object):
             A callable function.
 
         """
-        return lambda (x) : self.evaluatePolyGradFit(x)
+        return lambda x : self.evaluatePolyGradFit(x)
     def getFunctionSamples(self, number_of_samples):
         """
         Returns a set of function samples; useful for computing probabilities.

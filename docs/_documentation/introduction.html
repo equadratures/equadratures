@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Effective Quadratures &mdash; Effective Quadratures v7.0 documentation</title>
+  <title>Effective Quadratures &mdash; Effective Quadratures v7.6 documentation</title>
   
 
   
@@ -28,6 +28,8 @@
 
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Modules" href="modules.html" />
     <link rel="prev" title="Sitemap" href="index.html" /> 
 
@@ -61,7 +63,7 @@
             
             
               <div class="version">
-                7.0
+                7.6
               </div>
             
           
@@ -87,9 +89,8 @@
             
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Effective Quadratures</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#download-links">Download Links</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#license-and-copyright">License and copyright</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#code-status">Code status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#download-and-installation">Download and installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
 </ul>
 </li>
@@ -162,60 +163,53 @@
             
   <div class="section" id="effective-quadratures">
 <h1>Effective Quadratures<a class="headerlink" href="#effective-quadratures" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>Effective Quadratures is an open-source Python-based library that supports a wide range of utilities in <em>uncertainty quantification</em>, <em>dimension reduction</em>, <em>sensitivity analysis</em> and <em>optimisation</em>&#8212;all using polynomials. The project was initially born out of a need to replicate the results of various works within the field of polynomial chaos. It has subsequently morphed into a dedicated effort to use polynomials for a range of objectives under the broad umbrella of <strong>supervised machine learning</strong>.</p>
-<p>The primary developers are academics at the <a class="reference external" href="http://www.cam.ac.uk">University of Cambridge</a>, with advisory support from <a class="reference external" href="http://www.stanford.edu">Stanford University</a>, <a class="reference external" href="https://unica.it/unica/">Universita degli Studi di Cagliari</a>, and the <a class="reference external" href="http://www.utah.edu">University of Utah</a>. The project is under active development and we use Travis and Coveralls for testing.</p>
+<div class="section" id="code-status">
+<h2>Code status<a class="headerlink" href="#code-status" title="Permalink to this headline">¶</a></h2>
 <a class="reference external image-reference" href="https://travis-ci.org/Effective-Quadratures/"><img alt="https://travis-ci.org/Effective-Quadratures/Effective-Quadratures.svg?branch=master" src="https://travis-ci.org/Effective-Quadratures/Effective-Quadratures.svg?branch=master" /></a>
 <a class="reference external image-reference" href="https://coveralls.io/github/Effective-Quadratures/Effective-Quadratures?branch=master"><img alt="https://coveralls.io/repos/github/Effective-Quadratures/Effective-Quadratures/badge.svg?branch=master" src="https://coveralls.io/repos/github/Effective-Quadratures/Effective-Quadratures/badge.svg?branch=master" /></a>
 </div>
-<div class="section" id="download-links">
-<h2>Download Links<a class="headerlink" href="#download-links" title="Permalink to this headline">¶</a></h2>
-<p>To download the code, please visit <a class="reference external" href="http://www.effective-quadratures.org">www.effective-quadratures.org</a>. Click either on the <em>Fork Code</em> button or the Github link.</p>
-<p><strong>Installation:</strong>
-For installation on Mac and Linux systems, simply type the following into the terminal.</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+<div class="section" id="download-and-installation">
+<h2>Download and installation<a class="headerlink" href="#download-and-installation" title="Permalink to this headline">¶</a></h2>
+<p>To download and install the code please use the python package index command:</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">equadratures</span>
 </pre></div>
 </div>
-<p>For installation on Windows, you will need <a class="reference external" href="https://www.continuum.io/downloads#windows">Anaconda</a>; select the Python 2.7 option. Upon successful installation, open the Sypder IDE and go into the Effective-Quadratures-master directory and type the following in the command window</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+<p>Alternatively you can visit our <a class="reference external" href="https://github.com/Effective-Quadratures/Effective-Quadratures">GitHub page</a> and click either on the <em>Fork Code</em> button or <em>Clone or download</em>. For installation on Mac and Linux systems, simply type the following into the terminal.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>
-<p>This should build the code. Just make sure you include the location of effective_quadratures folder to your python file and you should be good to go. To run this code you will require python 2.7, numpy, scipy and matplotlib.</p>
-</div>
-<div class="section" id="license-and-copyright">
-<h2>License and copyright<a class="headerlink" href="#license-and-copyright" title="Permalink to this headline">¶</a></h2>
-<p>As of version 7.0, Effective Quadratures is under an end-user license agreement (<span class="guilabel">EULA</span>). Details of this agreement can be found <a class="reference external" href="https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/LICENCE.pdf">here</a>. There are two types of licenses that may be used:</p>
-<div class="admonition important">
-<p class="first admonition-title">Important</p>
-<p class="last"><strong>For-profit license</strong>.
-The Licensee shall not modify, adapt, disassemble, reverse engineer, decompile, translate or otherwise attempt to discover the source code of the Software or permit any of these things to happen except as allowed by applicable law. The for-profit Licensee shall sign, date and return a copy of this licence to <a class="reference external" href="mailto:contact&#37;&#52;&#48;effective-quadratures&#46;org">contact<span>&#64;</span>effective-quadratures<span>&#46;</span>org</a>.</p>
-</div>
-<div class="admonition important">
-<p class="first admonition-title">Important</p>
-<p class="last"><strong>Not-for-profit license</strong>.
-The Licensee may correct errors, modify the Software and create derivative works.  The Licensee shall copy all error corrections promptly to the Licensor and hereby assigns copyright in them to the Licensor.  The Licensee shall own modifications and derivative works it makes of the Software but not any Software incorporated in them.  The restrictions in clause 3 shall also apply to any modification or derivative work, to the extent that it is based on or utilises the Software, unless the Licensor’s prior written consent to vary the restrictions has been obtained.  Such consent shall be subject to payment and to such other terms as may be fair and reasonable in the circumstances.</p>
-</div>
-<p>This implies that for strictly not-for-profit purposes (e.g., largely academic and research institutions), the software is free. For for-profit entities, use of the code may be subject to a license.</p>
+<p>For installation on Windows, you will need <a class="reference external" href="https://www.continuum.io/downloads#windows">Anaconda</a>; select the Python 2.7 option. Upon successful installation, open the Sypder IDE and go into the Effective-Quadratures-master directory and type the above in the command window. This should build the code. Just make sure you include the location of effective_quadratures folder to your python file and you should be good to go. To run this code you will require python 2.7, numpy, scipy and matplotlib.</p>
 </div>
 <div class="section" id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
 <table class="docutils footnote" frame="void" id="id1" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[1]</td><td>Seshadri, P., Iaccarino, G., Ghisu, T. Quadrature Strategies for Constructing Polynomial Approximations. [To appear in Springer shortly]. Preprint available: <a class="reference external" href="https://arxiv.org/abs/1805.07296">Paper</a></td></tr>
+<tr><td class="label">[1]</td><td>Seshadri, P., Iaccarino, G., Ghisu, T., (2018) Quadrature Strategies for Constructing Polynomial Approximations. [To appear in Springer shortly]. Preprint available: <a class="reference external" href="https://arxiv.org/abs/1805.07296">Paper</a></td></tr>
 </tbody>
 </table>
 <table class="docutils footnote" frame="void" id="id2" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[2]</td><td>Seshadri, P., Narayan, A., Sankaran M. Effectively Subsampled Quadratures for Least Squares Polynomial Approximations.&#8221; SIAM/ASA Journal on Uncertainty Quantification 5.1 (2017): 1003-1023. <a class="reference external" href="https://epubs.siam.org/doi/abs/10.1137/16M1057668">Paper</a></td></tr>
+<tr><td class="label">[2]</td><td>Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations.” SIAM/ASA Journal on Uncertainty Quantification 5.1 : 1003-1023. <a class="reference external" href="https://epubs.siam.org/doi/abs/10.1137/16M1057668">Paper</a></td></tr>
 </tbody>
 </table>
 <table class="docutils footnote" frame="void" id="id3" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[3]</td><td>Seshadri, P., Parks, G. T., Effective-Quadratures (EQ): Polynomials for Computational Engineering Studies, Journal of Open Source Software, 2(11), 166, <a class="reference external" href="http://joss.theoj.org/papers/ba651f2b3608a5d2b085af06b1108747">Paper</a></td></tr>
+<tr><td class="label">[3]</td><td>Seshadri, P., Parks, G. T., (2017) Effective-Quadratures (EQ): Polynomials for Computational Engineering Studies, Journal of Open Source Software, 2(11), 166, <a class="reference external" href="http://joss.theoj.org/papers/ba651f2b3608a5d2b085af06b1108747">Paper</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[4]</td><td>Kalra, T. S., Aretxabaleta, A., Seshadri, P., Ganju, N. K., Beudin, A. (2017). Sensitivity analysis of a coupled hydrodynamic-vegetation model using the effectively subsampled quadratures method (ESQM v5. 2). Geoscientific Model Development, 10(12), 4511. <a class="reference external" href="https://www.repository.cam.ac.uk/bitstream/handle/1810/270655/Kalra_et_al-2017-Geoscientific_Model_Development_Discussions-VoR.pdf?sequence=4">Paper</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[5]</td><td>Yuchi, S., Seshadri, P., Parks, G., Shahpar, S. (2018). Supporting Multi-point Turbomachinery Dimension Reduction via Polynomial-based Variable Projection. <a class="reference external" href="https://www.researchgate.net/profile/Pranay_Seshadri2/publication/327834325_Supporting_Multi-point_Turbomachinery_Dimension_Reduction_via_Polynomial-based_Variable_Projection/links/5ba92b25299bf13e60491010/Supporting-Multi-point-Turbomachinery-Dimension-Reduction-via-Polynomial-based-Variable-Projection.pdf?_sg%5B0%5D=GNpWiy44veQRzVAjw36-60ApnTDxTmRLndBc7MBRbppf4mFbtU2dK4aVstKgyzNFLqH9SR2kLeSXtN-afwfTqw.dYPlA6OYa8DVSirZ5LEQdS24eY5Bdsc26jHI0kTrFUSPews_Maf_e46ascPk-R0RnOJkCAnFqpZxSzG9kBms6A&amp;_sg%5B1%5D=fUBhjUquc22Brn47-2OyfsMV2MS8fOdk1lpfCGSEFIF9EvB1FI4aky63beecXenxVqscb1vEscqA0fXgWxc39eDM71yMwamGS_GtMUx3diXq.dYPlA6OYa8DVSirZ5LEQdS24eY5Bdsc26jHI0kTrFUSPews_Maf_e46ascPk-R0RnOJkCAnFqpZxSzG9kBms6A&amp;_iepl=">Pre-print</a></td></tr>
 </tbody>
 </table>
 </div>
@@ -241,7 +235,7 @@ The Licensee may correct errors, modify the Software and create derivative works
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2018 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures.
 
     </p>
   </div>
@@ -263,18 +257,18 @@ The Licensee may correct errors, modify the Software and create derivative works
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'v7.0',
+            VERSION:'v7.6',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

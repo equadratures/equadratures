@@ -1,6 +1,6 @@
 """The Rayleigh distribution."""
 import numpy as np
-from distribution import Distribution
+from equadratures.distributions.template import Distribution
 from scipy.stats import rayleigh
 RECURRENCE_PDF_SAMPLES = 8000
 
@@ -14,12 +14,13 @@ class Rayleigh(Distribution):
     def __init__(self, scale):
         self.scale = scale
         self.bounds = np.array([0.0, np.inf])
-        if self.scale > 0:
-            self.mean = self.scale * np.sqrt(np.pi / 2.0)
-            self.variance = self.scale**2 * (4.0 - np.pi)/ 2.0 
-            self.skewness = 2.0 * np.sqrt(np.pi) * (np.pi - 3.0) / ((4.0 - np.pi)**(1.5))
-            self.kurtosis = -(6 * np.pi**2 - 24 * np.pi + 16.0 )/( (4 - np.pi)**(1.5)) + 3.0 
-            self.x_range_for_pdf = np.linspace(0.0, 8.0 * self.scale, RECURRENCE_PDF_SAMPLES)
+        if self.scale is not None:
+            if self.scale > 0:
+                self.mean = self.scale * np.sqrt(np.pi / 2.0)
+                self.variance = self.scale**2 * (4.0 - np.pi)/ 2.0 
+                self.skewness = 2.0 * np.sqrt(np.pi) * (np.pi - 3.0) / ((4.0 - np.pi)**(1.5))
+                self.kurtosis = -(6 * np.pi**2 - 24 * np.pi + 16.0 )/( (4 - np.pi)**(1.5)) + 3.0 
+                self.x_range_for_pdf = np.linspace(0.0, 8.0 * self.scale, RECURRENCE_PDF_SAMPLES)
     
     def getiCDF(self, xx):
         """

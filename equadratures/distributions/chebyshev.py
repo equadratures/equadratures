@@ -1,7 +1,7 @@
 """The Chebyshev / Arcsine distribution."""
 import numpy as np
-from distribution import Distribution
-from recurrence_utils import jacobi_recurrence_coefficients
+from equadratures.distributions.template import Distribution
+from equadratures.distributions.recurrence_utils import jacobi_recurrence_coefficients
 from scipy.stats import arcsine
 RECURRENCE_PDF_SAMPLES = 8000
 

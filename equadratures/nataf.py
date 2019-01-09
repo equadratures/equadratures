@@ -7,9 +7,9 @@
 """
 import numpy as np
 from scipy import optimize
-from parameter import Parameter
-from polyint import Polyint 
-from basis import Basis 
+from .parameter import Parameter
+from .polyint import Polyint 
+from .basis import Basis 
 from scipy import stats
 
 #import matplotlib.pyplot as plt
@@ -89,16 +89,16 @@ class Nataf(object):
                   else: 
                     res = optimize.least_squares(check_difference, R[i,j], bounds=(-0.999,0.999), ftol=1.e-03) 
                     rho = res.x
-                    print 'A Custom Marginal is present'
+                    print('A Custom Marginal is present')
 
                   R0[i,j] = rho
                   R0[j,i] = R0[i,j] 
 
         self.A = np.linalg.cholesky(R0) 
-        print 'The Cholesky decomposition of fictive matrix R0 is:'
-        print self.A
-        print 'The fictive matrix is:'
-        print R0
+        print('The Cholesky decomposition of fictive matrix R0 is:')
+        print(self.A)
+        print('The fictive matrix is:')
+        print(R0)
     
     def C2U(self, X):
         """  Method for mapping correlated variables to a new standard space.

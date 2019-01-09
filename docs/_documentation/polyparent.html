@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Base polynomial &mdash; Effective Quadratures v7.0 documentation</title>
+  <title>Base polynomial &mdash; Effective Quadratures v7.6 documentation</title>
   
 
   
@@ -28,6 +28,8 @@
 
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Coefficient computation" href="polychildren.html" />
     <link rel="prev" title="Polynomials" href="poly.html" /> 
 
@@ -61,7 +63,7 @@
             
             
               <div class="version">
-                7.0
+                7.6
               </div>
             
           
@@ -181,8 +183,8 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>parameters</strong> (<a class="reference internal" href="parameter.html#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) &#8211; A list of parameters.</li>
-<li><strong>basis</strong> (<a class="reference internal" href="basis.html#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) &#8211; A basis selected for the multivariate polynomial.</li>
+<li><strong>parameters</strong> (<a class="reference internal" href="parameter.html#equadratures.parameter.Parameter" title="equadratures.parameter.Parameter"><em>Parameter</em></a>) – A list of parameters.</li>
+<li><strong>basis</strong> (<a class="reference internal" href="basis.html#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) – A basis selected for the multivariate polynomial.</li>
 </ul>
 </td>
 </tr>
@@ -196,7 +198,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A clone of the Poly object.</td>
 </tr>
@@ -213,8 +215,8 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>stackOfPoints</strong> (<em>matrix</em>) &#8211; A N-by-d matrix of points (can be unscaled) at which the polynomial gradient must be evaluated at.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>stackOfPoints</strong> (<em>matrix</em>) – A N-by-d matrix of points (can be unscaled) at which the polynomial gradient must be evaluated at.</li>
 </ul>
 </td>
 </tr>
@@ -234,8 +236,8 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>stackOfPoints</strong> (<em>matrix</em>) &#8211; A N-by-d matrix of points (can be unscaled) at which the polynomial gradient must be evaluated at.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>stackOfPoints</strong> (<em>matrix</em>) – A N-by-d matrix of points (can be unscaled) at which the polynomial gradient must be evaluated at.</li>
 </ul>
 </td>
 </tr>
@@ -258,10 +260,10 @@ gradient values are at prescribed points.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>function</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#callable" title="(in Python v3.7)"><em>callable</em></a>) &#8211; A callable function (or evaluations of the function at the prerequisite quadrature points).</li>
-<li><strong>coefficients</strong> (<a class="reference external" href="https://docs.python.org/3/library/array.html#module-array" title="(in Python v3.7)"><em>array</em></a>) &#8211; A numpy array of the coefficients</li>
-<li><strong>indexset</strong> (<em>matrix</em>) &#8211; A K-by-d matrix of the index set.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>function</strong> (<em>callable</em>) – A callable function (or evaluations of the function at the prerequisite quadrature points).</li>
+<li><strong>coefficients</strong> (<em>array</em>) – A numpy array of the coefficients</li>
+<li><strong>indexset</strong> (<em>matrix</em>) – A K-by-d matrix of the index set.</li>
 </ul>
 </td>
 </tr>
@@ -280,7 +282,7 @@ gradient values are at prescribed points.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A callable function.</td>
 </tr>
@@ -296,7 +298,7 @@ gradient values are at prescribed points.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A callable function.</td>
 </tr>
@@ -307,18 +309,18 @@ gradient values are at prescribed points.</p>
 <dl class="method">
 <dt id="equadratures.poly.Poly.getPolynomial">
 <code class="descname">getPolynomial</code><span class="sig-paren">(</span><em>stackOfPoints</em>, <em>customBases=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.getPolynomial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.getPolynomial" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluates the multivariate polynomial at a set of points.</p>
+<dd><p>Evaluates the value of each polynomial basis function at a set of points.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>stackOfPoints</strong> (<em>matrix</em>) &#8211; A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>stackOfPoints</strong> (<em>matrix</em>) – A N-by-d matrix of points along which the multivariate (in d-dimensions) polynomial basis functions must be evaluated.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A N-by-1 matrix of polynomial evaluations at the stackOfPoints.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A P-by-N matrix of polynomial basis function evaluations at the stackOfPoints, where P is the cardinality of the basis.</p>
 </td>
 </tr>
 </tbody>
@@ -327,19 +329,22 @@ gradient values are at prescribed points.</p>
 
 <dl class="method">
 <dt id="equadratures.poly.Poly.getPolynomialGradient">
-<code class="descname">getPolynomialGradient</code><span class="sig-paren">(</span><em>stackOfPoints</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.getPolynomialGradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.getPolynomialGradient" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluates the gradient of the multivariate polynomial at a set of points.</p>
+<code class="descname">getPolynomialGradient</code><span class="sig-paren">(</span><em>stackOfPoints</em>, <em>dim_index=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/poly.html#Poly.getPolynomialGradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.poly.Poly.getPolynomialGradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the gradient for each of the polynomial basis functions at a set of points,
+with respect to each input variable.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>stackOfPoints</strong> (<em>matrix</em>) &#8211; A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>stackOfPoints</strong> (<em>matrix</em>) – A N-by-d matrix of points along which the gradient of the multivariate (in d-dimensions) polynomial basis
+functions must be evaluated.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A list with d elements, each with a N-by-1 matrix of polynomial evaluations at the stackOfPoints.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A list with d elements, each with a P-by-N matrix of polynomial evaluations at the stackOfPoints,
+where P is the cardinality of the basis.</p>
 </td>
 </tr>
 </tbody>
@@ -355,9 +360,9 @@ gradient values are at prescribed points.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>options</strong> (<a class="reference external" href="https://docs.python.org/3/library/string.html#module-string" title="(in Python v3.7)"><em>string</em></a>) &#8211; Two options exist for this string. The user can use &#8216;qmc&#8217; for a distribution specific Monte Carlo (QMC) or they can use &#8216;tensor grid&#8217; for standard tensor product grid. Typically, if the number of dimensions is less than 8, the tensor grid is the default option selected.</li>
-<li><strong>number_of_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) &#8211; If QMC is chosen, specifies the number of quadrature points in each direction. Otherwise, this is ignored.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>options</strong> (<em>string</em>) – Two options exist for this string. The user can use ‘qmc’ for a distribution specific Monte Carlo (QMC) or they can use ‘tensor grid’ for standard tensor product grid. Typically, if the number of dimensions is less than 8, the tensor grid is the default option selected.</li>
+<li><strong>number_of_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – If QMC is chosen, specifies the number of quadrature points in each direction. Otherwise, this is ignored.</li>
 </ul>
 </td>
 </tr>
@@ -380,8 +385,8 @@ gradient values are at prescribed points.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>quadratureRule</strong> (<a class="reference external" href="https://docs.python.org/3/library/string.html#module-string" title="(in Python v3.7)"><em>string</em></a>) &#8211; Two options exist for this string. The user can use &#8216;qmc&#8217; for a distribution specific Monte Carlo (QMC) or they can use &#8216;tensor grid&#8217; for standard tensor product grid. Typically, if the number of dimensions is less than 8, the tensor grid is the default option selected.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>quadratureRule</strong> (<em>string</em>) – Two options exist for this string. The user can use ‘qmc’ for a distribution specific Monte Carlo (QMC) or they can use ‘tensor grid’ for standard tensor product grid. Typically, if the number of dimensions is less than 8, the tensor grid is the default option selected.</li>
 </ul>
 </td>
 </tr>
@@ -401,8 +406,8 @@ gradient values are at prescribed points.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) &#8211; An instance of the Poly class.</li>
-<li><strong>orders</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) &#8211; A list of the highest polynomial orders along each dimension.</li>
+<li><strong>self</strong> (<a class="reference internal" href="#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – An instance of the Poly class.</li>
+<li><strong>orders</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – A list of the highest polynomial orders along each dimension.</li>
 </ul>
 </td>
 </tr>
@@ -440,7 +445,7 @@ gradient values are at prescribed points.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2018 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures.
 
     </p>
   </div>
@@ -462,18 +467,18 @@ gradient values are at prescribed points.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'v7.0',
+            VERSION:'v7.6',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

@@ -182,8 +182,8 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
 #        if sum(i) != order:
 #            continue
 #        combo_index[i] = 0.0   
-        index = np.zeros(dimensions)
-        index[i] = 1
+        index = np.zeros(dimensions).astype(int)
+        index[list(i)] = 1
         combo_index[tuple(index)] = 0.0
     
     #1st term
@@ -271,8 +271,8 @@ def CondKurtosis(order, quad_wts, weighted_evals, basis, variance, kurtosis):
 #            if sum(i) != order:
 #                continue
 #            combo_index[i] = 0.0
-        index = np.zeros(dimensions)
-        index[i] = 1
+        index = np.zeros(dimensions).astype(int)
+        index[list(i)] = 1
         combo_index[tuple(index)] = 0.0
     #1st term
     fourth_evals = weighted_evals**4

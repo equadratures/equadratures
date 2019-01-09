@@ -1,6 +1,9 @@
 """The polynomial parent class."""
 import numpy as np
 from .stats import Statistics
+import pickle
+from parameter import Parameter
+from basis import Basis
 
 class Poly(object):
     """
@@ -269,7 +272,7 @@ class Poly(object):
         """
         return self.getPolynomial(stackOfPoints).T *  np.mat(self.coefficients)
 
-    def evaluatePolyGradFit(self, stackOfPoints):
+    def evaluatePolyGradFit(self, stackOfPoints, dim_index = None):
         """
         Evaluates the gradient of the polynomial approximation of a function (or model data) at prescribed points.
 
@@ -285,8 +288,10 @@ class Poly(object):
         This function should not be confused with getPolynomialGradient(). The latter is only concerned with approximating what the multivariate polynomials
         gradient values are at prescribed points.
         """
-        H = self.getPolynomialGradient(stackOfPoints)
+        H = self.getPolynomialGradient(stackOfPoints, dim_index=dim_index)
         grads = np.zeros((self.dimensions, len(stackOfPoints) ) )
+        if self.dimensions == 1:
+            return np.mat(self.coefficients).T * H
         for i in range(0, self.dimensions):
             grads[i,:] = np.mat(self.coefficients).T * H[i]
         return grads
@@ -338,3 +343,90 @@ class Poly(object):
                     plotting_pts[j, i] = univariate_samples[j]
         samples = self.evaluatePolyFit(plotting_pts)
         return plotting_pts, samples
+
+    def savePoly(self, filename, full = False):
+        """
+        Saves the poly object to a pickle file (.pkl)
+        :param filename: Filename to save to
+        :param full: If False, only saves some attributes of the class to minimize file size
+        :return:
+        """
+        poly_minimal = Poly_minimal(self)
+        if full:
+            with open(filename, 'wb') as f:
+                pickle.dump(self, f)
+        else:
+            with open(filename, 'wb') as f:
+                pickle.dump(poly_minimal,f)
+
+    @staticmethod
+    def convert2Full(poly_minimal):
+        """
+        Converts a Poly_minimal object to a full Poly object, running through the constructor.
+        This gives some basic functionalities such as evaluating the polynomial fit and gradients.
+        Note: This method is not compliant with the EQ v8.0 philosophy, and is just temporary.
+        :param poly_minimal: A Poly_minimal object
+        :return:
+        """
+        basis = Basis(poly_minimal.basis_type, poly_minimal.basis_orders, poly_minimal.basis_level,
+                      poly_minimal.basis_growth_rule, poly_minimal.basis_q)
+        num_params = len(poly_minimal.orders)
+        parameters = []
+        for i in range(num_params):
+            parameters.append(Parameter(poly_minimal.orders[i], poly_minimal.distributions[i],
+                                        endpoints = poly_minimal.endpoints[i],
+                                        shape_parameter_A = poly_minimal.shape_parameter_As[i],
+                                        shape_parameter_B = poly_minimal.shape_parameter_Bs[i],
+                                        lower = poly_minimal.lowers[i],
+                                        upper = poly_minimal.uppers[i],
+                                        data = poly_minimal.datas[i]))
+        poly = Poly(parameters, basis)
+        if hasattr(poly_minimal,'coefficients'):
+            poly.__setCoefficients__(poly_minimal.coefficients)
+        if hasattr(poly_minimal,'quadraturePoints'):
+            poly.__setQuadrature__(poly_minimal.quadraturePoints, poly_minimal.quadratureWeights)
+        return poly
+
+class Poly_minimal(object):
+    """Stores the bare minimum of a Poly object, which is to be reinstantiated upon loading."""
+    def __init__(self, poly):
+        #self, order, distribution, endpoints = False, shape_parameter_A = None, shape_parameter_B = None, lower = None, upper = None, data = None
+        self.orders = []
+        self.distributions = []
+        self.endpoints = []
+        self.shape_parameter_As = []
+        self.shape_parameter_Bs = []
+        self.lowers = []
+        self.uppers = []
+        self.datas = []
+        for p in poly.parameters:
+            self.orders.append(p.order)
+            self.distributions.append(p.name)
+            self.endpoints.append(p.endpoints)
+            self.shape_parameter_As.append(p.shape_parameter_A)
+            self.shape_parameter_Bs.append(p.shape_parameter_B)
+            self.lowers.append(p.lower)
+            self.uppers.append(p.upper)
+            self.datas.append(p.data)
+
+        #basis_type, orders = None, level = None, growth_rule = None, q = None
+        self.basis_type = poly.basis.basis_type
+        self.basis_orders = poly.basis.orders
+        self.basis_level = poly.basis.level
+        self.basis_growth_rule = poly.basis.growth_rule
+        self.basis_q = poly.basis.q
+        # self.basis = poly.basis
+
+        try:
+            self.coefficients = poly.coefficients
+        except AttributeError:
+            pass
+        # try:
+        #     self.quadraturePoints = poly.quadraturePoints
+        #     self.quadratureWeights = poly.quadratureWeights
+        # except AttributeError:
+        #     pass
+        # try:
+        #     self.designMatrix = poly.designMatrix
+        # except AttributeError:
+        #     pass

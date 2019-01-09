@@ -30,6 +30,8 @@ class Polyreg(Poly):
         super(Polyreg, self).__init__(parameters, basis)
         if not(training_inputs is None):
             self.x = training_inputs
+            if len(self.x.shape) == 1:
+                self.x = np.reshape(self.x,(len(self.x),1))
             assert self.x.shape[1] == len(self.parameters) # Check that x is in the correct shape
 
         if not((training_outputs is None) ^ (fun is None)):

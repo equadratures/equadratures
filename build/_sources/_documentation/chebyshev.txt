@@ -1,5 +1,0 @@
-Chebyshev
-====================
-
-.. automodule:: equadratures.distributions.chebyshev
-    :members:

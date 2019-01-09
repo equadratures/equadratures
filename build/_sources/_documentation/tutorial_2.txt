@@ -1,3 +1,0 @@
-Generating univariate quadrature rules
-========================================
-There is an intimate relationship between orthogonal polynomials and quadrature points. 

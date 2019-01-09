@@ -1,8 +1,8 @@
 """The Beta distribution."""
 import numpy as np
-from distribution import Distribution
+from equadratures.distributions.template import Distribution
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
-from recurrence_utils import jacobi_recurrence_coefficients
+from equadratures.distributions.recurrence_utils import jacobi_recurrence_coefficients
 from scipy.stats import beta
 RECURRENCE_PDF_SAMPLES = 8000
 
@@ -24,15 +24,16 @@ class Beta(Distribution):
         self.shape_B = shape_B
         self.lower = lower
         self.upper = upper
-        if self.shape_A >= 1. and self.shape_B >= 1.0:
-            self.mean = (self.shape_A) / (self.shape_A + self.shape_B)
-            self.variance = (self.shape_A * self.shape_B) / ( (self.shape_A + self.shape_B)**2 * (self.shape_A + self.shape_B + 1.0) )
-            self.skewness = 2.0 * (self.shape_B - self.shape_A) * np.sqrt(self.shape_A + self.shape_B + 1.0) / ( (self.shape_A + self.shape_B + 2.0) * np.sqrt(self.shape_A * self.shape_B) ) 
-            self.kurtosis = 6.0 * ((self.shape_A - self.shape_B)**2 * (self.shape_A + self.shape_B + 1.0) - self.shape_A * self.shape_B * (self.shape_A + self.shape_B + 2.0)  ) /( (self.shape_A * self.shape_B) * (self.shape_A + self.shape_B + 2.0) * (self.shape_A + self.shape_B + 3.0)) + 3.0   
-            self.bounds = np.array([0, 1])
-            self.shape_parameter_A = self.shape_B - 1.0
-            self.shape_parameter_B = self.shape_A - 1.0
-            self.parent = beta(self.shape_A, self.shape_B)
+        if (self.shape_A is not None) and (self.shape_B is not None):
+            if self.shape_A >= 1. and self.shape_B >= 1.0:
+                self.mean = (self.shape_A) / (self.shape_A + self.shape_B)
+                self.variance = (self.shape_A * self.shape_B) / ( (self.shape_A + self.shape_B)**2 * (self.shape_A + self.shape_B + 1.0) )
+                self.skewness = 2.0 * (self.shape_B - self.shape_A) * np.sqrt(self.shape_A + self.shape_B + 1.0) / ( (self.shape_A + self.shape_B + 2.0) * np.sqrt(self.shape_A * self.shape_B) ) 
+                self.kurtosis = 6.0 * ((self.shape_A - self.shape_B)**2 * (self.shape_A + self.shape_B + 1.0) - self.shape_A * self.shape_B * (self.shape_A + self.shape_B + 2.0)  ) /( (self.shape_A * self.shape_B) * (self.shape_A + self.shape_B + 2.0) * (self.shape_A + self.shape_B + 3.0)) + 3.0   
+                self.bounds = np.array([0, 1])
+                self.shape_parameter_A = self.shape_B - 1.0
+                self.shape_parameter_B = self.shape_A - 1.0
+                self.parent = beta(self.shape_A, self.shape_B)
         if (self.lower is not None) and (self.upper is not None):
             self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
        

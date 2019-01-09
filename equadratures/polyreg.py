@@ -1,12 +1,12 @@
 """Finding coefficients via regression."""
-from parameter import Parameter
-from basis import Basis
-from poly import Poly
+from .parameter import Parameter
+from .basis import Basis
+from .poly import Poly
 import numpy as np
-from stats import Statistics, getAllSobol
+from .stats import Statistics, getAllSobol
 import scipy
-from qr import solveCLSQ
-from utils import cell2matrix
+from .qr import solveCLSQ
+from .utils import cell2matrix
 from scipy.stats import linregress
 
 class Polyreg(Poly):

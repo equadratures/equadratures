@@ -1,0 +1,3 @@
+Optimizing using polynomials
+========================================
+In 

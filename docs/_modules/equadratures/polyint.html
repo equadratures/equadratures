@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>equadratures.polyint &mdash; Effective Quadratures v7.0 documentation</title>
+  <title>equadratures.polyint &mdash; Effective Quadratures v7.6 documentation</title>
   
 
   
@@ -27,7 +27,9 @@
   
 
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
@@ -59,7 +61,7 @@
             
             
               <div class="version">
-                7.0
+                7.6
               </div>
             
           
@@ -174,7 +176,7 @@
 <span class="sd">        Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">basis</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Polyint</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Polyint</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__computeQuadraturePoints</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">__computeQuadraturePoints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -222,8 +224,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span> <span class="o">=</span> <span class="n">evaled_pts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">quadratureWeights</span> <span class="o">=</span> <span class="n">weights</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Polyint</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setCoefficients__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Polyint</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setQuadrature__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quadratureWeights</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Polyint</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setBasis__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">)</span></div></div>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Polyint</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setQuadrature__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quadratureWeights</span><span class="p">)</span></div></div>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Polyint</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setBasis__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">)</span>
 
 
 <span class="c1">#--------------------------------------------------------------------------------------------------------------</span>
@@ -562,7 +564,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2018 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures.
 
     </p>
   </div>
@@ -584,18 +586,18 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'v7.0',
+            VERSION:'v7.6',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

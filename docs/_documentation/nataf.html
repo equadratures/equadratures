@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Nataf utilities &mdash; Effective Quadratures v7.0 documentation</title>
+  <title>Nataf utilities &mdash; Effective Quadratures v7.6 documentation</title>
   
 
   
@@ -28,6 +28,8 @@
 
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Quick start guide" href="tutorials.html" />
     <link rel="prev" title="Matrix factorization utilities" href="qr.html" /> 
 
@@ -61,7 +63,7 @@
             
             
               <div class="version">
-                7.0
+                7.6
               </div>
             
           
@@ -176,18 +178,33 @@
 <span id="nataf-utilities"></span><h1>Nataf utilities<a class="headerlink" href="#module-equadratures.nataf" title="Permalink to this headline">¶</a></h1>
 <p>Class for solving the Nataf transformation in N-Dimensional case, 
 for generic types of input  marginals.</p>
+<p>Input parameter: 
+D : List of Distributions: instances of Parameter class.
+R : Correlation matrix of distributions which belong to D.</p>
 <dl class="class">
 <dt id="equadratures.nataf.Nataf">
 <em class="property">class </em><code class="descclassname">equadratures.nataf.</code><code class="descname">Nataf</code><span class="sig-paren">(</span><em>D=None</em>, <em>R=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/nataf.html#Nataf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.nataf.Nataf" title="Permalink to this definition">¶</a></dt>
-<dd><p>The class defines a Nataf transformation: the input correlated marginals are mapped from their physical space to a new 
+<dd><p>The class defines a Nataf transformation.
+References for theory:</p>
+<blockquote>
+<div>Melchers, R., E. (Robert E.), 1945- Structural reliability analysis
+and predictions - 2nd edition - John Wiley &amp; Sons Ltd.</div></blockquote>
+<p>The input correlated marginals are mapped from their physical space to a new 
 standard normal space, in which points are uncorrelated.</p>
+<p>Attributes of the class:
+:param list D:</p>
+<blockquote>
+<div>List of parameters (distributions), interpreted here as the marginals.</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>D</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) &#8211; List of parameters (distributions), interpreted here as the marginals.</li>
-<li><strong>R</strong> (<em>numpy-matrix</em>) &#8211; The correlation matrix associated with the joint distribution.</li>
+<li><strong>R</strong> (<em>numpy-matrix</em>) – The correlation matrix associated with the joint distribution.</li>
+<li><strong>std</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) – A standard normal distribution</li>
+<li><strong>A</strong> (<em>numpy-matrix</em>) – The Cholesky decomposition of Fictive matrix R0, 
+associated with the set of normal intermediate
+correlated distributions.</li>
 </ul>
 </td>
 </tr>
@@ -203,7 +220,7 @@ of correlated marginals.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>numpy-matrix</em>) &#8211; A N-by-M Matrix where input marginals are organized along columns
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>numpy-matrix</em>) – A N-by-M Matrix where input marginals are organized along columns
 M represents the number of correlated marginals</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A N-by-M Matrix which contains standardized uncorrelated data.
@@ -219,16 +236,16 @@ the i-th column of the output matrix.</td>
 <code class="descname">CorrelationMatrix</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/nataf.html#Nataf.CorrelationMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.nataf.Nataf.CorrelationMatrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>The following calculations check the correlation
 matrix of input arrays and determine the covariance 
-matrix: The input matrix must have dimensions N-by-m where
+matrix: The input matrix mush have [Nxm] dimensions where
 m is the number of the marginals.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>X</strong> &#8211; Matrix of correlated data</li>
-<li><strong>D</strong> &#8211; diagonal matrix which cointains the variances</li>
-<li><strong>S</strong> &#8211; covariance matrix</li>
+<li><strong>X</strong> – Matrix of correlated data</li>
+<li><strong>D</strong> – diagonal matrix which cointains the variances</li>
+<li><strong>S</strong> – covariance matrix</li>
 </ul>
 </td>
 </tr>
@@ -249,7 +266,7 @@ Input matrix must have [mxN] dimension, where m is the number of input marginals
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>numpy-matrix</em>) &#8211; A Matrix of M-by-N dimensions, in which uncorrelated marginals
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>numpy-matrix</em>) – A Matrix of M-by-N dimensions, in which uncorrelated marginals
 are organized along rows.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A N-by-M matrix in which the result of the inverse transformation
@@ -268,7 +285,7 @@ of the ouput matrix.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>N</strong> (<em>integer</em>) &#8211; represents the number of the samples inside a range
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>N</strong> (<em>integer</em>) – represents the number of the samples inside a range
 points represents the array we want to correlate.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A N-by-M matrix in which correlated samples are organized
@@ -288,7 +305,7 @@ along the i-th column of the output matrix.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>N</strong> (<em>integer</em>) &#8211; represents the number of the samples inside a range</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>N</strong> (<em>integer</em>) – represents the number of the samples inside a range</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A N-by-M matrix, each i-th column contains the points
 which belong to the i-th distribution stored into list D.</td>
@@ -321,7 +338,7 @@ which belong to the i-th distribution stored into list D.</td>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2018 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures.
 
     </p>
   </div>
@@ -343,18 +360,18 @@ which belong to the i-th distribution stored into list D.</td>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'v7.0',
+            VERSION:'v7.6',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

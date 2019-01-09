@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>equadratures.poly &mdash; Effective Quadratures v7.0 documentation</title>
+  <title>equadratures.poly &mdash; Effective Quadratures v7.6 documentation</title>
   
 
   
@@ -27,7 +27,9 @@
   
 
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
@@ -59,7 +61,7 @@
             
             
               <div class="version">
-                7.0
+                7.6
               </div>
             
           
@@ -174,9 +176,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="n">basis</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">orders</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">orders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">orders</span> <span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">orders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">setOrders</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orders</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__setCoefficients__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">):</span>
@@ -227,18 +229,18 @@
 <span class="sd">            An instance of the Poly class.</span>
 <span class="sd">        :return:</span>
 <span class="sd">            A clone of the Poly object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">)</span></div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">)</span>
 <div class="viewcode-block" id="Poly.getPolynomial"><a class="viewcode-back" href="../../_documentation/polyparent.html#equadratures.poly.Poly.getPolynomial">[docs]</a>    <span class="k">def</span> <span class="nf">getPolynomial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stackOfPoints</span><span class="p">,</span> <span class="n">customBases</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Evaluates the multivariate polynomial at a set of points.</span>
+<span class="sd">        Evaluates the value of each polynomial basis function at a set of points.</span>
 
 <span class="sd">        :param Poly self:</span>
 <span class="sd">            An instance of the Poly class.</span>
 <span class="sd">        :param matrix stackOfPoints:</span>
-<span class="sd">            A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.</span>
+<span class="sd">            A N-by-d matrix of points along which the multivariate (in d-dimensions) polynomial basis functions must be evaluated.</span>
 <span class="sd">        :return:</span>
-<span class="sd">            A N-by-1 matrix of polynomial evaluations at the stackOfPoints.</span>
+<span class="sd">            A P-by-N matrix of polynomial basis function evaluations at the stackOfPoints, where P is the cardinality of the basis.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">customBases</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">basis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">elements</span>
@@ -249,8 +251,7 @@
         <span class="k">if</span> <span class="n">stackOfPoints</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">no_of_points</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">no_of_points</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="n">stackOfPoints</span><span class="o">.</span><span class="n">shape</span> 
-        <span class="n">polynomial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">basis_entries</span><span class="p">,</span> <span class="n">no_of_points</span><span class="p">))</span>
+            <span class="n">no_of_points</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="n">stackOfPoints</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">p</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="c1"># Save time by returning if univariate!</span>
@@ -264,23 +265,25 @@
                 <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_getOrthoPoly</span><span class="p">(</span><span class="n">stackOfPoints</span><span class="p">[:,</span><span class="n">i</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">basis</span><span class="p">[:,</span><span class="n">i</span><span class="p">]))</span> <span class="p">)</span>
 
         <span class="c1"># One loop for polynomials</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">basis_entries</span><span class="p">):</span>
-            <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">no_of_points</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">):</span>
-                <span class="n">polynomial</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">basis</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">])]</span> <span class="o">*</span> <span class="n">temp</span>
-                <span class="n">temp</span> <span class="o">=</span> <span class="n">polynomial</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
-
-        <span class="k">return</span> <span class="n">polynomial</span></div>
-<div class="viewcode-block" id="Poly.getPolynomialGradient"><a class="viewcode-back" href="../../_documentation/polyparent.html#equadratures.poly.Poly.getPolynomialGradient">[docs]</a>    <span class="k">def</span> <span class="nf">getPolynomialGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stackOfPoints</span><span class="p">):</span>
+        <span class="n">polynomial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">basis_entries</span><span class="p">,</span> <span class="n">no_of_points</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimensions</span><span class="p">):</span>
+            <span class="n">basis_entries_this_dim</span> <span class="o">=</span> <span class="n">basis</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">polynomial</span> <span class="o">*=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">basis_entries_this_dim</span><span class="p">]</span>
+</div>
+        <span class="k">return</span> <span class="n">polynomial</span>
+<div class="viewcode-block" id="Poly.getPolynomialGradient"><a class="viewcode-back" href="../../_documentation/polyparent.html#equadratures.poly.Poly.getPolynomialGradient">[docs]</a>    <span class="k">def</span> <span class="nf">getPolynomialGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stackOfPoints</span><span class="p">,</span> <span class="n">dim_index</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Evaluates the gradient of the multivariate polynomial at a set of points.</span>
+<span class="sd">        Evaluates the gradient for each of the polynomial basis functions at a set of points,</span>
+<span class="sd">        with respect to each input variable.</span>
 
 <span class="sd">        :param Poly self:</span>
 <span class="sd">            An instance of the Poly class.</span>
 <span class="sd">        :param matrix stackOfPoints:</span>
-<span class="sd">            A N-by-d matrix of points along which the multivarite (in d-dimensions) polynomial must be evaluated.</span>
+<span class="sd">            A N-by-d matrix of points along which the gradient of the multivariate (in d-dimensions) polynomial basis</span>
+<span class="sd">            functions must be evaluated.</span>
 <span class="sd">        :return:</span>
-<span class="sd">            A list with d elements, each with a N-by-1 matrix of polynomial evaluations at the stackOfPoints.</span>
+<span class="sd">            A list with d elements, each with a P-by-N matrix of polynomial evaluations at the stackOfPoints,</span>
+<span class="sd">            where P is the cardinality of the basis.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># &quot;Unpack&quot; parameters from &quot;self&quot;</span>
         <span class="n">basis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">elements</span>
@@ -297,24 +300,26 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">):</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stackOfPoints</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">stackOfPoints</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">stackOfPoints</span><span class="p">])</span>
-                <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">,</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_getOrthoPoly</span><span class="p">(</span><span class="n">stackOfPoints</span><span class="p">[:,</span><span class="n">i</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">basis</span><span class="p">[:,</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">)</span> <span class="p">)</span>
+                <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">,</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_getOrthoPoly</span><span class="p">(</span><span class="n">stackOfPoints</span><span class="p">[:,</span><span class="n">i</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">basis</span><span class="p">[:,</span><span class="n">i</span><span class="p">]))</span> <span class="p">)</span>
 
         <span class="c1"># One loop for polynomials</span>
         <span class="n">R</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">):</span>
-            <span class="n">gradDirection</span> <span class="o">=</span> <span class="n">v</span>
-            <span class="n">polynomialgradient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">basis_entries</span><span class="p">,</span> <span class="n">no_of_points</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">basis_entries</span><span class="p">):</span>
-                <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">no_of_points</span><span class="p">))</span>
-                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">gradDirection</span><span class="p">:</span>
-                        <span class="n">polynomialgradient</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">basis</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">])]</span> <span class="o">*</span> <span class="n">temp</span>
+        <span class="k">if</span> <span class="n">dim_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dim_index</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimensions</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">v</span> <span class="ow">in</span> <span class="n">dim_index</span><span class="p">):</span>
+                <span class="n">R</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">basis_entries</span><span class="p">,</span> <span class="n">no_of_points</span><span class="p">)))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">polynomialgradient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">basis_entries</span><span class="p">,</span> <span class="n">no_of_points</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimensions</span><span class="p">):</span>
+                    <span class="n">basis_entries_this_dim</span> <span class="o">=</span> <span class="n">basis</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">k</span><span class="o">==</span><span class="n">v</span><span class="p">:</span>
+                        <span class="n">polynomialgradient</span> <span class="o">*=</span> <span class="n">dp</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">basis_entries_this_dim</span><span class="p">]</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">polynomialgradient</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">basis</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">])]</span> <span class="o">*</span> <span class="n">temp</span>
-                    <span class="n">temp</span> <span class="o">=</span> <span class="n">polynomialgradient</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
-            <span class="n">R</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">polynomialgradient</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">R</span></div>
+                        <span class="n">polynomialgradient</span> <span class="o">*=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">basis_entries_this_dim</span><span class="p">]</span>
+                <span class="n">R</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">polynomialgradient</span><span class="p">)</span>
+</div>
+        <span class="k">return</span> <span class="n">R</span>
 <div class="viewcode-block" id="Poly.getTensorQuadratureRule"><a class="viewcode-back" href="../../_documentation/polyparent.html#equadratures.poly.Poly.getTensorQuadratureRule">[docs]</a>    <span class="k">def</span> <span class="nf">getTensorQuadratureRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orders</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates a tensor grid quadrature rule based on the parameters in Poly.</span>
@@ -354,8 +359,8 @@
         <span class="n">points</span> <span class="o">=</span> <span class="n">pp</span><span class="p">[:,</span><span class="mi">1</span><span class="p">::]</span>
         <span class="n">weights</span> <span class="o">=</span> <span class="n">ww</span>
 
-        <span class="c1"># Return tensor grid quad-points and weights</span>
-        <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">weights</span></div>
+        <span class="c1"># Return tensor grid quad-points and weights</span></div>
+        <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">weights</span>
 <div class="viewcode-block" id="Poly.getStatistics"><a class="viewcode-back" href="../../_documentation/polyparent.html#equadratures.poly.Poly.getStatistics">[docs]</a>    <span class="k">def</span> <span class="nf">getStatistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">light</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_sobol_order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Creates an instance of the Statistics class.</span>
@@ -370,8 +375,8 @@
         <span class="k">if</span> <span class="n">light</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">evals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">Statistics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quadraturePoints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quadratureWeights</span><span class="p">,</span> <span class="n">evals</span><span class="p">,</span> <span class="n">max_sobol_order</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">Statistics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">max_sobol_order</span><span class="o">=</span><span class="n">max_sobol_order</span><span class="p">)</span>            </div>
+        <span class="k">else</span><span class="p">:</span></div>
+            <span class="k">return</span> <span class="n">Statistics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">max_sobol_order</span><span class="o">=</span><span class="n">max_sobol_order</span><span class="p">)</span>            
 <div class="viewcode-block" id="Poly.getQuadratureRule"><a class="viewcode-back" href="../../_documentation/polyparent.html#equadratures.poly.Poly.getQuadratureRule">[docs]</a>    <span class="k">def</span> <span class="nf">getQuadratureRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">number_of_points</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates quadrature points and weights.</span>
@@ -404,8 +409,8 @@
             <span class="k">return</span> <span class="n">p</span><span class="p">,</span> <span class="n">w</span>
 
         <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;tensor grid&#39;</span> <span class="ow">or</span> <span class="n">options</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;quadrature&#39;</span><span class="p">:</span>
-            <span class="n">p</span><span class="p">,</span><span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getTensorQuadratureRule</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">orders</span><span class="p">])</span>
-            <span class="k">return</span> <span class="n">p</span><span class="p">,</span><span class="n">w</span></div>
+            <span class="n">p</span><span class="p">,</span><span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getTensorQuadratureRule</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">orders</span><span class="p">])</span></div>
+            <span class="k">return</span> <span class="n">p</span><span class="p">,</span><span class="n">w</span>
 <div class="viewcode-block" id="Poly.evaluatePolyFit"><a class="viewcode-back" href="../../_documentation/polyparent.html#equadratures.poly.Poly.evaluatePolyFit">[docs]</a>    <span class="k">def</span> <span class="nf">evaluatePolyFit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stackOfPoints</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Evaluates the the polynomial approximation of a function (or model data) at prescribed points.</span>
@@ -416,8 +421,8 @@
 <span class="sd">            A N-by-d matrix of points (can be unscaled) at which the polynomial gradient must be evaluated at.</span>
 <span class="sd">        :return:</span>
 <span class="sd">            A 1-by-N matrix of the polynomial approximation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="n">stackOfPoints</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span>  <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">)</span></div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="n">stackOfPoints</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span>  <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Poly.evaluatePolyGradFit"><a class="viewcode-back" href="../../_documentation/polyparent.html#equadratures.poly.Poly.evaluatePolyGradFit">[docs]</a>    <span class="k">def</span> <span class="nf">evaluatePolyGradFit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stackOfPoints</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -438,8 +443,8 @@
         <span class="n">H</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getPolynomialGradient</span><span class="p">(</span><span class="n">stackOfPoints</span><span class="p">)</span>
         <span class="n">grads</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">stackOfPoints</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">):</span>
-            <span class="n">grads</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">H</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">grads</span></div>
+            <span class="n">grads</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">H</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="n">grads</span>
 <div class="viewcode-block" id="Poly.getPolyFitFunction"><a class="viewcode-back" href="../../_documentation/polyparent.html#equadratures.poly.Poly.getPolyFitFunction">[docs]</a>    <span class="k">def</span> <span class="nf">getPolyFitFunction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a callable polynomial approximation of a function (or model data).</span>
@@ -449,8 +454,8 @@
 <span class="sd">        :return:</span>
 <span class="sd">            A callable function.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="k">lambda</span> <span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span>  <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">)</span></div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="k">lambda</span> <span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">getPolynomial</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span>  <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">)</span>
 <div class="viewcode-block" id="Poly.getPolyGradFitFunction"><a class="viewcode-back" href="../../_documentation/polyparent.html#equadratures.poly.Poly.getPolyGradFitFunction">[docs]</a>    <span class="k">def</span> <span class="nf">getPolyGradFitFunction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a callable for the gradients of the polynomial approximation of a function (or model data).</span>
@@ -460,8 +465,8 @@
 <span class="sd">        :return:</span>
 <span class="sd">            A callable function.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="k">lambda</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluatePolyGradFit</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="k">lambda</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluatePolyGradFit</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <div class="viewcode-block" id="Poly.getFunctionSamples"><a class="viewcode-back" href="../../_documentation/polyparent.html#equadratures.poly.Poly.getFunctionSamples">[docs]</a>    <span class="k">def</span> <span class="nf">getFunctionSamples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number_of_samples</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a set of function samples; useful for computing probabilities.</span>
@@ -486,8 +491,8 @@
                 <span class="n">univariate_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">getSamples</span><span class="p">(</span><span class="n">number_of_samples</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">number_of_samples</span><span class="p">):</span>
                     <span class="n">plotting_pts</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">univariate_samples</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
-        <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluatePolyFit</span><span class="p">(</span><span class="n">plotting_pts</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">plotting_pts</span><span class="p">,</span> <span class="n">samples</span></div></div>
+        <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluatePolyFit</span><span class="p">(</span><span class="n">plotting_pts</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">plotting_pts</span><span class="p">,</span> <span class="n">samples</span>
 </pre></div>
 
            </div>
@@ -500,7 +505,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2018 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures.
 
     </p>
   </div>
@@ -522,18 +527,18 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'v7.0',
+            VERSION:'v7.6',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

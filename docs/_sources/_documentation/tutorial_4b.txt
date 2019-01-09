@@ -1,2 +1,133 @@
 Multi-index sets
 ========================================
+
+This notebook covers multi-indices: a key ingredient in constructing multivariate polynomials. There are five different types of index sets in Effective Quadratures:
+
+
+.. list-table:: Multi-index sets in Effective Quadratures.
+   :widths: 10 25 60
+   :header-rows: 1
+
+   * - Option
+     - Index set
+     - Parameters
+   * - 1
+     - Tensor grid
+     - List of max. individual orders
+   * - 2
+     - Total order
+     - List of max. individual orders
+   * - 3
+     - Sparse grid
+     - Growth rule and level parameter
+   * - 4
+     - Hyperbolic basis
+     - List of max. individual orders and a truncation parameter
+   * - 5
+     - Euclidean degree
+     - List of max. individual orders
+
+In what follows, we will briefly demonstrate how we construct them and plot them.
+
+.. code::
+	
+	from equadratures import *
+	import numpy as np 
+
+We begin by defining a tensor grid index set in three dimensions:
+	
+.. code::
+	
+	tensor = IndexSet('Tensor grid', [4,4,4]) 
+	elements = tensor.elements
+
+	# Plot!
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection='3d')
+	ax.scatter(elements[:,0], elements[:,1], elements[:,2],  marker='s', s=80, color='crimson')
+	ax.set_xlabel('$i_i$')
+	ax.set_ylabel('$i_2$')
+	ax.set_zlabel('$i_3$')
+	plt.savefig('Basis_tensor.png' , dpi=200, bbox_inches='tight', pad_inches=0.1)
+
+.. figure:: Figures/Basis_tensor.png
+   :scale: 40 %
+
+    Figure. Tensor multi-index set.
+
+
+It is readily apparent that the tensor grid index set has virtually every element within the order [4,4,4] cube. Lets suppose that one does not want to afford :math:`4^3` computations, necessary to approximate all the coefficients associated with a tensor index set multivariate polynomial. One can then opt for a sparse grid, which are select linear combination of select tensor products. In Effective Quadratures, they can be declared as follows:
+
+.. code:
+
+	sparse = Basis('Sparse grid', level=2, growth_rule='linear')
+        sparse.dimension = 3
+        a, b, c = sparse.getBasis()
+        print a
+
+	>> [[0. 0. 2.]
+ 	[0. 0. 3.]
+ 	[0. 0. 4.]
+ 	[0. 1. 1.]
+ 	[0. 1. 2.]
+ 	[0. 1. 3.]
+ 	[0. 2. 0.]
+ 	[0. 2. 1.]
+ 	[0. 2. 2.]
+ 	[0. 3. 0.]
+ 	[0. 3. 1.]
+ 	[0. 4. 0.]
+ 	[1. 0. 1.]
+ 	[1. 0. 2.]
+ 	[1. 0. 3.]
+ 	[1. 1. 0.]
+ 	[1. 1. 1.]
+ 	[1. 1. 2.]
+ 	[1. 2. 0.]
+ 	[1. 2. 1.]
+ 	[1. 3. 0.]
+ 	[2. 0. 0.]
+ 	[2. 0. 1.]
+ 	[2. 0. 2.]
+ 	[2. 1. 0.]
+ 	[2. 1. 1.]
+ 	[2. 2. 0.]
+	[3. 0. 0.]
+ 	[3. 0. 1.]
+ 	[3. 1. 0.]
+ 	[4. 0. 0.]]
+
+Here :math:`a` are the select tensor product grids used, and :math:`b` are the linear coefficients used when combining the tensor product grids. While the code can perform integrations and coefficient approximation using sparse grids, we recommend users to stick to the effective subsampling approach that uses least squares. In both theory and practice, the results are identical. We now move on to the three other index sets: Total order, Euclidean and a Hyperbolic basis.
+
+.. code::
+	
+	tensor = IndexSet('Euclidean degree', [4,4,4]) 
+
+.. figure:: Figures/Basis_euclid.png
+   :scale: 40 %
+
+   Figure. Euclidean degree multi-index set.
+
+
+.. code::
+	
+	tensor = IndexSet('Total order', [4,4,4]) 
+
+.. figure:: Figures/Basis_total.png
+   :scale: 40 %
+
+   Figure. Total order multi-index set.
+
+And finally the hyperbolic one:
+
+
+.. code::
+	
+	tensor = IndexSet('Hyperbolic basis', [4,4,4], q=0.5) 
+
+.. figure:: Figures/Basis_hyper.png
+   :scale: 40 %
+
+   Figure. Hyperbolic basis multi-index set.
+
+The hyperbolic basis takes in a q value, which varies between 0.1 and 1.0. Feel free to play around with this parameter and see what the effect on the total number of basis terms are. This is known as the cardinality of the index set.

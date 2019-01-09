@@ -1,8 +1,8 @@
 """ The Custom distribution"""
 import numpy as np
-from distribution import Distribution
+from equadratures.distributions.template import Distribution
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
-from recurrence_utils import jacobi_recurrence_coefficients
+from equadratures.distributions.recurrence_utils import jacobi_recurrence_coefficients
 import scipy.stats as stats
 RECURRENCE_PDF_SAMPLES = 8000
 
@@ -71,7 +71,7 @@ class Custom(Distribution):
                 wts    = wts_v[1]
                 return wts
         else:
-            print 'An input array have to be given to the getPDF method.'
+            print('An input array have to be given to the getPDF method.')
 
     """def getCDF(self, points=None):
         # A cumulative density function associated with a given data set.

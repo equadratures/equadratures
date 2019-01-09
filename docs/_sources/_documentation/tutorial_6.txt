@@ -1,5 +1,5 @@
-Polynomial regression for data-sets
-========================================
+Polynomial regression for time varying data
+==============================================
 
 In this tutorial we show an example of using Effective Quadratures on a regression problem for a data set. We are going to use the `Avocado Prices <https://www.kaggle.com/neuromusic/avocado-prices>`__, and fit an autoregressive model to the time series data of total organic avocado volume sold in the US against time. An autoregressive (AR) model treats the time series as a wide sense stationary random process. The value at one time instant depends on some previous values linearly, plus some Gaussian noise. An order P AR process is defined as:
 

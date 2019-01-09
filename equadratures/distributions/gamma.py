@@ -1,6 +1,6 @@
 """The Gamma distribution."""
 import numpy as np
-from distribution import Distribution
+from equadratures.distributions.template import Distribution
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 from scipy.stats import gamma
 RECURRENCE_PDF_SAMPLES = 8000

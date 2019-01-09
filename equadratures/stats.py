@@ -53,7 +53,7 @@ class Statistics(object):
             fosi = stats.getSobol(1)        
         
         """
-        return {key: value for key, value in self.sobol.iteritems() if len(key) == order}
+        return {key: value for key, value in self.sobol.items() if len(key) == order}
         
         
     def getCondSkewness(self, order = 1):
@@ -145,7 +145,7 @@ def getAllSobol(coefficients, basis, max_order):
                     combo_index[tuple(non_zero_entries)] = float(combo_index[tuple(non_zero_entries)] + coefficients[i]**2 / variance)
         check_sum = sum(combo_index.values())
         if (abs(check_sum - 1.0) >= 1e-2):
-            print "Possible discrepancy in calculation, sum of indices = " + str(check_sum) 
+            print("Possible discrepancy in calculation, sum of indices = " + str(check_sum))
         
         return combo_index
 

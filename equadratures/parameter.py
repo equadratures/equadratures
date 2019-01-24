@@ -116,7 +116,7 @@ class Parameter(object):
 			if order == 1:
 				V = [1.0]
 		else:
-			D,V = np.linalg.eig(JacobiMat)
+			D,V = np.linalg.eig(self.jacobiMatrix(order))
 			V = np.mat(V) # convert to matrix
 			i = np.argsort(D) # get the sorted indices
 			i = np.array(i) # convert to array

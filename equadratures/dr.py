@@ -13,7 +13,7 @@ from .parameter import Parameter
 from .poly import Poly
 import scipy.io
 from .basis import Basis
-from scipy.linalg import orth
+from scipy.linalg import orth, sqrtm
 
 class dr(object):
     def __init__(self, poly=None, training_input=None, training_output=None):
@@ -45,7 +45,7 @@ class dr(object):
                 alpha = 4
             if k is None or k > d:
                 k = d
-            M = alpha * k * np.log(d)
+            M = int(alpha * k * np.log(d))
             X = np.zeros((M, d))
             for j in range(0, d):
                 X[:, j] =  np.reshape(poly.parameters[j].getSamples(M), M)
@@ -84,7 +84,7 @@ class dr(object):
         else:
             return eigs,eigVecs
 
-    def linearModel(self, training_input=None, training_output=None):
+    def linearModel(self, training_input=None, training_output=None, r=False):
         """
         Computes the coefficients for a linear model between inputs and outputs
 
@@ -102,9 +102,12 @@ class dr(object):
             raise Exception('training data missing!')
         N,D=training_input.shape
         A=np.concatenate((training_input,np.ones((N,1))),axis=1)
-        x=np.linalg.lstsq(A,training_output)[0]
-        u=x[0:D-1]
+        x,residual=np.linalg.lstsq(A,training_output)[:2]
+        u=x[:D]
         c=x[D]
+        if r:
+            r2 = 1-residual/(training_output.size * training_output.var())
+            return u,c,r2
         return u,c
 
     def standard(self,bounds,X=None):
@@ -224,7 +227,7 @@ class dr(object):
                 for i in range(0,M):
                     for j in range(0,n):
                         eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
-                V_new,Polybasis=self.vandermonde(eta,p)
+                V_new,Polybasis=vandermonde(eta,p)
                 V_plus_new=np.linalg.pinv(V_new)
                 coeff_new=np.dot(V_plus_new,f)
                 res_new=f-np.dot(V_new,coeff_new)
@@ -243,7 +246,8 @@ class dr(object):
                     break
         return U,R
 
-    def vector_AS(self, list_of_polys, samples=None, bootstrap=False, bs_trials = 50):
+    def vector_AS(self, list_of_polys, R = None, alpha=None, k=None, samples=None, bootstrap=False, bs_trials = 50
+                  , J = None, save_path = None):
         # Find AS directions to vector val func
         # analogous to computeActiveSubspace
         # Since we are dealing with *one* vector val func we should have just one input space
@@ -251,20 +255,29 @@ class dr(object):
         poly = list_of_polys[0]
         if samples is None:
             d = poly.dimensions
-            # if alpha is None:
-            #     alpha = 4
-            # if k is None or k > d:
-            #     k = d
-            # M = alpha * k * np.log(d)
-            M = 300
+            if alpha is None:
+                alpha = 4
+            if k is None or k > d:
+                k = d
+            M = int(alpha * k * np.log(d))
             X = np.zeros((M, d))
             for j in range(0, d):
                 X[:, j] = np.reshape(poly.parameters[j].getSamples(M), M)
         else:
             X = samples
             M, d = X.shape
-        J = jacobian_vec(list_of_polys,X)
-        J_new = np.transpose(J,[2,0,1])
+        n = len(list_of_polys) # number of outputs
+        if R is None:
+            R = np.eye(n)
+        elif len(R.shape) == 1:
+            R = np.diag(R)
+        if J is None:
+            J = jacobian_vec(list_of_polys,X)
+            if not(save_path is None):
+                np.save(save_path,J)
+
+
+        J_new = np.matmul(sqrtm(R), np.transpose(J,[2,0,1]))
         JtJ = np.matmul(np.transpose(J_new,[0,2,1]), J_new)
         H = np.mean(JtJ,axis=0)
 
@@ -275,11 +288,12 @@ class dr(object):
         eigVecs = np.fliplr(W)
         if bootstrap:
             all_bs_eigs = np.zeros((bs_trials, d))
-            # all_bs_W = np.zeros((bs_trials, d, d))
+            all_bs_W = []
             for t in range(bs_trials):
+                print("Starting bootstrap trial %d"%t)
                 bs_samples = X[np.random.randint(0,M,size=M), :]
                 J_bs = jacobian_vec(list_of_polys, bs_samples)
-                J_new_bs = np.transpose(J_bs, [2, 0, 1])
+                J_new_bs = np.matmul(sqrtm(R), np.transpose(J_bs,[2,0,1]))
                 JtJ_bs = np.matmul(np.transpose(J_new_bs, [0, 2, 1]), J_new_bs)
                 H_bs = np.mean(JtJ_bs, axis=0)
 
@@ -287,11 +301,12 @@ class dr(object):
                 # Assume sigma = identity for now
                 e_bs, W_bs = np.linalg.eigh(H_bs)
                 all_bs_eigs[t,:] = np.flipud(e_bs)
-                # eigVecs_bs = np.fliplr(W_bs)
+                eigVecs_bs = np.fliplr(W_bs)
+                all_bs_W.append(eigVecs_bs)
 
             eigs_bs_lower = np.min(all_bs_eigs, axis = 0)
             eigs_bs_upper = np.max(all_bs_eigs, axis = 0)
-            return eigs,eigVecs,eigs_bs_lower,eigs_bs_upper
+            return eigs,eigVecs,eigs_bs_lower,eigs_bs_upper, all_bs_W
         else:
             return eigs,eigVecs
 

@@ -113,10 +113,13 @@ class Polycs(Poly):
         :param int number_of_points:
             Generates a quadrature rule based on the number of points; if an integer value is provided then, QMC is used.
         """
+        if points == 0:
+            return
         if points is None:
-            points = 4000
+            points = 10000
         p, w = self.getQuadratureRule(options = self.quadrature_rule, number_of_points = points)
         super(Polycs, self).__setQuadrature__(p,w)
+
 
 #Generates the projection and preconditoning matrices for the given sampling method.
 def samplingMethod(parameters, basis, sampling, no_of_points):
@@ -174,7 +177,6 @@ def coherence(A):
     G = np.dot(norm_A.T, norm_A)
     np.fill_diagonal(G, np.nan)
     return np.nanmax(G)
-
 
 
 

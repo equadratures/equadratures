@@ -290,7 +290,7 @@ class dr(object):
             all_bs_eigs = np.zeros((bs_trials, d))
             all_bs_W = []
             for t in range(bs_trials):
-                print "Starting bootstrap trial %d"%t
+                print("Starting bootstrap trial %d"%t)
                 bs_samples = X[np.random.randint(0,M,size=M), :]
                 J_bs = jacobian_vec(list_of_polys, bs_samples)
                 J_new_bs = np.matmul(sqrtm(R), np.transpose(J_bs,[2,0,1]))

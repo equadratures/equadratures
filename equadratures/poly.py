@@ -2,7 +2,7 @@
 import numpy as np
 from .stats import Statistics
 import pickle
-from parameter import Parameter
+from .parameter import Parameter
 from basis import Basis
 import time
 import numpy as np

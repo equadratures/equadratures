@@ -1,10 +1,8 @@
 """The polynomial parent class."""
-import numpy as np
 from .stats import Statistics
 import pickle
 from .parameter import Parameter
-from basis import Basis
-import time
+from .basis import Basis
 import numpy as np
 VERSION_NUMBER = 7.6
 

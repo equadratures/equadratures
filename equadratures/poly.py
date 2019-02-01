@@ -366,7 +366,7 @@ class Poly(object):
         This gives some basic functionalities such as evaluating the polynomial fit and gradients.
         Note: This method is not compliant with the EQ v8.0 philosophy, and is just temporary.
         :param poly_minimal: A Poly_minimal object
-        :return:
+        :return: poly object
         """
         basis = Basis(poly_minimal.basis_type, poly_minimal.basis_orders, poly_minimal.basis_level,
                       poly_minimal.basis_growth_rule, poly_minimal.basis_q)
@@ -386,6 +386,13 @@ class Poly(object):
         if hasattr(poly_minimal,'quadraturePoints'):
             poly.__setQuadrature__(poly_minimal.quadraturePoints, poly_minimal.quadratureWeights)
         return poly
+
+    def convert2Min(self):
+        """
+        Converts self to a Poly_minimal instance
+        :return: poly_min: A Poly_minimal object
+        """
+        return Poly_minimal(self)
 
 class Poly_minimal(object):
     """Stores the bare minimum of a Poly object, which is to be reinstantiated upon loading."""
@@ -421,11 +428,11 @@ class Poly_minimal(object):
             self.coefficients = poly.coefficients
         except AttributeError:
             pass
-        # try:
-        #     self.quadraturePoints = poly.quadraturePoints
-        #     self.quadratureWeights = poly.quadratureWeights
-        # except AttributeError:
-        #     pass
+        try:
+            self.quadraturePoints = poly.quadraturePoints
+            self.quadratureWeights = poly.quadratureWeights
+        except AttributeError:
+            pass
         # try:
         #     self.designMatrix = poly.designMatrix
         # except AttributeError:

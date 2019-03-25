@@ -14,6 +14,7 @@ from .poly import Poly
 import scipy.io
 from .basis import Basis
 from scipy.linalg import orth, sqrtm
+from time import time
 
 class dr(object):
     def __init__(self, poly=None, training_input=None, training_output=None):
@@ -149,6 +150,7 @@ class dr(object):
             * **U (ndarray)**: The active subspace found
             * **R (double)**: Cost of deviation in fitting
         """
+
         if gamma is None:
             gamma=0.1
         if beta is None:
@@ -162,7 +164,7 @@ class dr(object):
         M,m=X.shape
         Z=np.random.randn(m,n)
         U,_=np.linalg.qr(Z)
-
+        ti = time()
         y=np.dot(X,U)
         minmax=np.zeros((2,n))
         for i in range(0,n):
@@ -181,39 +183,72 @@ class dr(object):
         res=f-np.dot(V,coeff)
         R=np.linalg.norm(res)
         #TODO: convergence criterion??
+
         for iteration in range(0,maxiter):
+            time_index = 0
+
+
             #Construct the Jacobian step 9
             J=jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X)
+
+            # print time_index
+            # print time() - ti
+            # ti = time()
+            # time_index += 1
+
             #Calculate the gradient of Jacobian #step 10
             G=np.zeros((m,n))
             for i in range(0,M):
                 G=G+res[i]*J[i,:,:]
+
+
+
             #conduct the SVD for J_vec
-            vec_J=np.zeros((M,(m*n)))
-            for i in range(0,M):
-                for j in range(0,m):
-                    for k in range(0,n):
-                        vec_J[i,j*n+k]=J[i,j,k]
+            # vec_J=np.zeros((M,(m*n)))
+            # for i in range(0,M):
+            #     for j in range(0,m):
+            #         for k in range(0,n):
+            #             vec_J[i,j*n+k]=J[i,j,k]
+            vec_J = np.reshape(J,(M,m*n))
             Y,S,Z=np.linalg.svd(vec_J,full_matrices=False)#step 11
+
+            # print time_index
+            # print time() - ti
+            # ti = time()
+            # time_index += 1
+
             #obtain delta
             delta = np.dot(Y[:,:-n**2].T, res)
             delta = np.dot(np.diag(1/S[:-n**2]), delta)
             delta = -np.dot(Z[:-n**2,:].T, delta).reshape(U.shape)
+
+
+
             #carry out Gauss-Newton step
             vec_delta=delta.flatten()# step 12
+
+
+
             #vectorize G step 13
             vec_G=G.flatten()
             alpha=np.dot(vec_G.T,vec_delta)
             norm_G=np.dot(vec_G.T,vec_G)
+
+
+
             #check alpha step 14
             if alpha>=0:
                 delta=-G
                 alpha=-norm_G
 
+
             #SVD on delta step 17
             Y,S,Z=np.linalg.svd(delta,full_matrices=False)
             UZ=np.dot(U,Z.T)
             t=1
+
+
+
             for iter2 in range(0,50):
                 U_new=np.dot(UZ, np.diag(np.cos(S*t))) + np.dot(Y, np.diag(np.sin(S*t)))#step 19
                 U_new=orth(U_new)
@@ -235,6 +270,9 @@ class dr(object):
                 if np.linalg.norm(res_new)<=np.linalg.norm(res)+alpha*beta*t or t<1e-10:#step 21
                     break
                 t=t*gamma
+
+            dist_change = subspace_dist(U, U_new)
+            # print dist_change
             U = U_new
             V = V_new
             coeff = coeff_new
@@ -242,7 +280,8 @@ class dr(object):
             R = R_new
 
             if not(tol is None):
-                if R < tol:
+                if dist_change < tol:
+                    print("VP finished with %d iterations" % iteration)
                     break
         return U,R
 
@@ -354,6 +393,10 @@ def jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
     :return:
         * **J (ndarray)**: The Jacobian tensor
     """
+    time_index = 0
+    ti = time()
+
+
     M,N=V.shape
     m,n=U.shape
     Gradient=Polybasis.getPolynomialGradient(eta)
@@ -363,22 +406,28 @@ def jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
     J=np.zeros((M,m,n))
     #Obtain the derivative of this tensor
     dV=np.zeros((m,n,M,N))
-    for k in range(0,m):
-        for l in range(0,n):
-            for i in range(0,M):
-                for j in range(0,N):
-                    current=Gradient[l].T
-                    if n==1:
-                        current=Gradient.T
-                    dV[k,l,i,j]=np.asscalar(vectord[l])*np.asscalar(X[i,k])*np.asscalar(current[i,j])#Eqn 16 17
+
+    for l in range(0,n):
+        for j in range(0,N):
+            current=Gradient[l].T
+            if n==1:
+                current=Gradient.T
+            dV[:,l,:,j]=np.asscalar(vectord[l])*(X.T*current[:,j])#Eqn 16 17
+
     #Get the P matrix
     P=np.identity(M)-np.matmul(V,V_plus)
+
     V_minus=scipy.linalg.pinv(V)
+
+
+
     #Calculate entries for the tensor
     for j in range(0,m):
         for k in range(0,n):
             temp1=np.linalg.multi_dot([P,dV[j,k,:,:],V_minus])
             J[:,j,k]=(-np.matmul((temp1+temp1.T),f)).reshape((M,))# Eqn 15
+
+
     return J
 
 def jacobian_vec(list_of_poly, X):
@@ -395,3 +444,9 @@ def jacobian_vec(list_of_poly, X):
     for p in range(len(list_of_poly)):
         J[p,:,:] = list_of_poly[p].evaluatePolyGradFit(X)
     return J
+
+def subspace_dist(U, V):
+    if len(U.shape) == 1:
+        return np.linalg.norm(np.outer(U, U) - np.outer(V, V), ord=2)
+    else:
+        return np.linalg.norm(np.dot(U, U.T) - np.dot(V, V.T), ord=2)

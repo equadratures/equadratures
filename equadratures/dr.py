@@ -135,7 +135,7 @@ class dr(object):
         return X_stnd
 
 
-    def variable_projection(self,n,p,X=None,f=None,gamma=None,beta=None,tol=None,maxiter=1000):
+    def variable_projection(self,n,p,X=None,f=None,gamma=None,beta=None,tol=None,maxiter=1000,U0=None):
         """
         Variable Projection function to obtain an active subspace in inputs design space
 
@@ -162,8 +162,11 @@ class dr(object):
         if X is None or f is None:
             raise Exception('Missing training data!')
         M,m=X.shape
-        Z=np.random.randn(m,n)
-        U,_=np.linalg.qr(Z)
+        if U0 is None:
+            Z=np.random.randn(m,n)
+            U,_=np.linalg.qr(Z)
+        else:
+            U = orth(U0)
         ti = time()
         y=np.dot(X,U)
         minmax=np.zeros((2,n))
@@ -176,8 +179,11 @@ class dr(object):
             for j in range(0,n):
                 eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
 
+        # print eta[:3]
+
         #Construct the Vandermonde matrix step 6
         V,Polybasis=vandermonde(eta,p)
+        # print V[:3]
         V_plus=np.linalg.pinv(V)
         coeff=np.dot(V_plus,f)
         res=f-np.dot(V,coeff)
@@ -186,21 +192,13 @@ class dr(object):
 
         for iteration in range(0,maxiter):
             time_index = 0
-
-
             #Construct the Jacobian step 9
             J=jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X)
-
-            # print time_index
-            # print time() - ti
-            # ti = time()
-            # time_index += 1
-
+            # print J[0]
             #Calculate the gradient of Jacobian #step 10
             G=np.zeros((m,n))
             for i in range(0,M):
                 G=G+res[i]*J[i,:,:]
-
 
 
             #conduct the SVD for J_vec
@@ -212,10 +210,6 @@ class dr(object):
             vec_J = np.reshape(J,(M,m*n))
             Y,S,Z=np.linalg.svd(vec_J,full_matrices=False)#step 11
 
-            # print time_index
-            # print time() - ti
-            # ti = time()
-            # time_index += 1
 
             #obtain delta
             delta = np.dot(Y[:,:-n**2].T, res)
@@ -245,12 +239,10 @@ class dr(object):
             #SVD on delta step 17
             Y,S,Z=np.linalg.svd(delta,full_matrices=False)
             UZ=np.dot(U,Z.T)
-            t=1
-
-
-
+            t = 1
             for iter2 in range(0,50):
                 U_new=np.dot(UZ, np.diag(np.cos(S*t))) + np.dot(Y, np.diag(np.sin(S*t)))#step 19
+
                 U_new=orth(U_new)
                 #Update the values with the new U matrix
                 y=np.dot(X,U_new)
@@ -262,11 +254,14 @@ class dr(object):
                 for i in range(0,M):
                     for j in range(0,n):
                         eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
+
+
                 V_new,Polybasis=vandermonde(eta,p)
                 V_plus_new=np.linalg.pinv(V_new)
                 coeff_new=np.dot(V_plus_new,f)
                 res_new=f-np.dot(V_new,coeff_new)
                 R_new=np.linalg.norm(res_new)
+
                 if np.linalg.norm(res_new)<=np.linalg.norm(res)+alpha*beta*t or t<1e-10:#step 21
                     break
                 t=t*gamma
@@ -276,9 +271,9 @@ class dr(object):
             U = U_new
             V = V_new
             coeff = coeff_new
+            V_plus = V_plus_new
             res = res_new
             R = R_new
-
             if not(tol is None):
                 if dist_change < tol:
                     print("VP finished with %d iterations" % iteration)

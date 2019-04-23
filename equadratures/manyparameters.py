@@ -63,26 +63,26 @@ class Manyparameters(object):
                     if self.correlation_matrix[i,j] == 0:
                         R0[i,j] = 0.0
                     else: 
-                    tp11 = -(np.array(self.list_of_parameters[i].getiCDF(self.std.getCDF(points=p1))) - self.list_of_parameters[i].mean ) / np.sqrt( self.list_of_parameters[i].variance ) 
-                    tp22 = -(np.array(self.list_of_parameters[j].getiCDF(self.std.getCDF(points=p2))) -  self.list_of_parameters[j].mean)/np.sqrt( self.list_of_parameters[j].variance )
+                        tp11 = -(np.array(self.list_of_parameters[i].getiCDF(self.std.getCDF(points=p1))) - self.list_of_parameters[i].mean ) / np.sqrt( self.list_of_parameters[i].variance ) 
+                        tp22 = -(np.array(self.list_of_parameters[j].getiCDF(self.std.getCDF(points=p2))) -  self.list_of_parameters[j].mean)/np.sqrt( self.list_of_parameters[j].variance )
                     
-                    rho_ij = self.correlation_matrix[i,j]
-                    bivariateNormalPDF = (1.0 / (2.0 * np.pi * np.sqrt(1.0-rho_ij**2)) * np.exp(-1.0/(2.0*(1.0 - rho_ij**2)) * (p1**2 - 2.0 * rho_ij * p1 * p2  + p2**2 )))
-                    coefficientsIntegral = np.flipud(tp11*tp22 * w)
-
-                    def check_difference(rho_ij):
+                        rho_ij = self.correlation_matrix[i,j]
                         bivariateNormalPDF = (1.0 / (2.0 * np.pi * np.sqrt(1.0-rho_ij**2)) * np.exp(-1.0/(2.0*(1.0 - rho_ij**2)) * (p1**2 - 2.0 * rho_ij * p1 * p2  + p2**2 )))
-                        diff = np.dot(coefficientsIntegral, bivariateNormalPDF) 
-                        return diff - self.correlation_matrix[i,j] 
-                    
-                    if (self.list_of_parameters[i].name!='custom') or (self.list_of_parameters[j].name!='custom'):
-                        rho = optimize.newton(check_difference, self.correlation_matrix[i,j], maxiter=50)
-                    else: 
-                        res = optimize.least_squares(check_difference, R[i,j], bounds=(-0.999,0.999), ftol=1.e-03) 
-                        rho = res.x
+                        coefficientsIntegral = np.flipud(tp11*tp22 * w)
 
-                    R0[i,j] = rho
-                    R0[j,i] = R0[i,j] 
+                        def check_difference(rho_ij):
+                            bivariateNormalPDF = (1.0 / (2.0 * np.pi * np.sqrt(1.0-rho_ij**2)) * np.exp(-1.0/(2.0*(1.0 - rho_ij**2)) * (p1**2 - 2.0 * rho_ij * p1 * p2  + p2**2 )))
+                            diff = np.dot(coefficientsIntegral, bivariateNormalPDF) 
+                            return diff - self.correlation_matrix[i,j] 
+                    
+                        if (self.list_of_parameters[i].name!='custom') or (self.list_of_parameters[j].name!='custom'):
+                            rho = optimize.newton(check_difference, self.correlation_matrix[i,j], maxiter=50)
+                        else: 
+                            res = optimize.least_squares(check_difference, R[i,j], bounds=(-0.999,0.999), ftol=1.e-03) 
+                            rho = res.x
+
+                        R0[i,j] = rho
+                        R0[j,i] = R0[i,j] 
 
             self.A = np.linalg.cholesky(R0) 
     
@@ -160,7 +160,7 @@ class Manyparameters(object):
         Method for generating normalized samples. For a uniform distribution
 
         """
-        
+
     def getUncorrelatedSamples(self, N=None):
         """ Method for sampling uncorrelated data: 
 

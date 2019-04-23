@@ -122,10 +122,9 @@ class Polyreg(Poly):
             An instance of the Polyreg class.
         """
         Pz = super(Polyreg, self).getPolynomial(self.x)
-        self.PzT = Pz.T
-        wts =  1.0/np.sum( Pz**2 , 0)
-        wts_normalized = wts * 1.0/np.sum(wts)
-        self.Wz = np.mat(np.diag( np.sqrt(wts_normalized) ) )
+        wts =  1.0/(np.sum( super(Polyreg, self).getPolynomial(self.x)**2 , 0) )**2
+        wts = wts * 1.0/np.sum(wts)
+        self.Wz = np.mat(np.diag( np.sqrt(wts) ) )
         self.A =  self.Wz * Pz.T
         if self.training_grads is not None:
             dPcell = super(Polyreg, self).getPolynomialGradient(self.x)

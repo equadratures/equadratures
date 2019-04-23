@@ -64,7 +64,7 @@ class Polyint(Poly):
             self.function_evaluations = function
             rows, cols = self.quadraturePoints.shape
             no_of_fun_evals = len(self.function_evaluations)
-            if rows ~= no_of_fun_evals:
+            if rows != no_of_fun_evals:
                 raise(ValueError, 'polyint:computeCoefficients: Mismatch between the number of rows in the number of quadrature points '+str(rows)+' vs. '+str(no_of_fun_evals))
         method = self.basis.basis_type
         if method.lower() == 'sparse grid':

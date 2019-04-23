@@ -29,9 +29,15 @@ class Poly(object):
             self.orders.append(self.parameters[i].order)
         if not self.basis.orders :
             self.basis.setOrders(self.orders)
+    def __setFunctionEvaluations__(self, function_evaluations):
+        """
+        Sets the function evaluations for the polynomial. This function can be called by the children of Poly.
+
+        """
+        self.function_evaluations = function_evaluations
     def __setCoefficients__(self, coefficients):
         """
-        Sets the coefficients for polynomial. This function will be called by the children of Poly
+        Sets the coefficients for polynomial. This function will be called by the children of Poly.
 
         :param Poly self:
             An instance of the Poly class.

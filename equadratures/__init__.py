@@ -1,5 +1,6 @@
 #from . distributions import parameter, poly, polycs, polyint, polyreg, polylsq, basis, stats, nataf
 from .parameter import Parameter 
+from .manyparameters import Manyparameters
 from .polyreg import Polyreg #
 from .polylsq import Polylsq
 from .polyint import Polyint 

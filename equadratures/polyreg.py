@@ -25,7 +25,6 @@ class Polyreg(Poly):
     :param callable fun:
         Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.
     """
-    # Constructor
     def __init__(self, parameters, basis, training_inputs = None, fun=None, training_outputs=None, training_grads=None, quadrature_rule = None, no_of_quad_points = None, gradmethod=None):
         super(Polyreg, self).__init__(parameters, basis)
         if not(training_inputs is None):
@@ -53,8 +52,6 @@ class Polyreg(Poly):
         self.computeCoefficients()
         self.quadrature_rule = quadrature_rule
         self.getQuadraturePointsWeights(no_of_quad_points)
-
-    # Solve for coefficients using ordinary least squares
     def computeCoefficients(self):
         """
         This function computes the coefficients using least squares. To access the coefficients simply use the class's attribute self.coefficients.
@@ -64,7 +61,7 @@ class Polyreg(Poly):
         p = len(self.y)
         if self.training_grads is None:
             self.bz = np.dot( self.Wz ,  np.reshape(self.y, (p,1)) )
-            alpha = np.linalg.lstsq(self.A, self.bz) # Opted for numpy's standard version because of speed!
+            alpha = np.linalg.lstsq(self.A, np.reshape(self.y, (p,1))) # Opted for numpy's standard version because of speed!
             self.coefficients = alpha[0]
             super(Polyreg, self).__setCoefficients__(self.coefficients)
         else:
@@ -80,9 +77,7 @@ class Polyreg(Poly):
             del d
             coefficients, cond = solveCLSQ(self.A, self.bz, self.C, self.dy, self.gradmethod)
             self.coefficients = coefficients
-            super(Polyreg, self).__setCoefficients__(self.coefficients)
-            
-            
+            super(Polyreg, self).__setCoefficients__(self.coefficients)           
     def cross_validation(self, folds = 5):
         """
         This function carries out a cross validation procedure on the polynomial.
@@ -112,9 +107,7 @@ class Polyreg(Poly):
              
             R_sq[n] = r**2.0
         
-        return np.mean(R_sq)
-             
-             
+        return np.mean(R_sq)   
     def setDesignMatrix(self):
         """
         Sets the design matrix using the polynomials defined in the basis.
@@ -122,9 +115,10 @@ class Polyreg(Poly):
             An instance of the Polyreg class.
         """
         Pz = super(Polyreg, self).getPolynomial(self.x)
-        wts =  1.0/(np.sum( super(Polyreg, self).getPolynomial(self.x)**2 , 0) )**2
-        wts = wts * 1.0/np.sum(wts)
-        self.Wz = np.mat(np.diag( np.sqrt(wts) ) )
+        self.PzT = Pz.T
+        wts =  1.0/np.sum( super(Polyreg, self).getPolynomial(self.x)**2 , 0)
+        wts_normalized = wts * 1.0/np.sum(wts)
+        self.Wz = np.mat(np.diag( np.sqrt(wts_normalized) ) )
         self.A =  self.Wz * Pz.T
         if self.training_grads is not None:
             dPcell = super(Polyreg, self).getPolynomialGradient(self.x)

@@ -152,9 +152,8 @@ class Parameter(object):
 			JacobiMatrix[order-1, order-2] = np.sqrt(ab[order-1,1])
 
 		return JacobiMatrix
-
+    
 	def _getOrthoPoly(self, points, order=None):
-		eps = 1e-15
 		if order is None:
 			order = self.order + 1
 		else:
@@ -167,6 +166,7 @@ class Parameter(object):
 
 		orthopoly = np.zeros((order, len(gridPoints))) # create a matrix full of zeros
 		derivative_orthopoly = np.zeros((order, len(gridPoints)))
+		dderivative_orthopoly = np.zeros((order, len(gridPoints)))
 
 		# Convert the grid points to a numpy array -- simplfy life!
 		gridPointsII = np.zeros((len(gridPoints), 1))
@@ -176,11 +176,11 @@ class Parameter(object):
 
 		# Cases
 		if order == 1: #CHANGED 2/2/18
-			return orthopoly, derivative_orthopoly
+			return orthopoly, derivative_orthopoly, dderivative_orthopoly
 		orthopoly[1,:] = ((gridPointsII[:,0] - ab[0,0]) * orthopoly[0,:] ) * (1.0)/(1.0 * np.sqrt(ab[1,1]) )
 		derivative_orthopoly[1,:] = orthopoly[0,:] / (np.sqrt(ab[1,1]))
 		if order == 2: #CHANGED 2/2/18
-			return orthopoly, derivative_orthopoly
+			return orthopoly, derivative_orthopoly, dderivative_orthopoly
 
 		if order >= 3: #CHANGED 2/2/18
 			for u in range(2,order): #CHANGED 2/2/18
@@ -189,8 +189,11 @@ class Parameter(object):
 			for u in range(2, order): #CHANGED 2/2/18
 				# Four-term recurrence formula for derivatives of orthogonal polynomials!
 				derivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
+			for u in range(2,order):
+				# Four-term recurrence formula for second derivatives of orthogonal polynomials!
+				dderivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * dderivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * dderivative_orthopoly[u-2,:] ) +  2.0 * derivative_orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
 		
-		return orthopoly, derivative_orthopoly
+		return orthopoly, derivative_orthopoly, dderivative_orthopoly
 		
 	def _getLocalQuadrature(self, order=None):
 		"""

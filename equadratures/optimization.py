@@ -19,10 +19,10 @@ class Optimization:
     
     def addNonLinearIneqCon(self,conDict): 
         assert 'bounds' in conDict
+        bounds = conDict['bounds']
         assert 'poly' or 'function' in conDict
         if 'poly' in conDict:
             Poly = conDict['poly']
-            bounds = conDict['bounds']
             g = Poly.getPolyFitFunction()
             if self.method == 'trust-constr':
                 jac = Poly.getPolyGradFitFunction()
@@ -70,7 +70,8 @@ class Optimization:
             if self.method == 'trust-constr':
                 self.constraints.append(optimize.NonlinearConstraint(con,bounds[0],bounds[1],jac=jac,hess=hess))
             else:
-                self.constraints.append({'type':'eq', 'fun': con, 'jac': jac, 'hess': hess})
+                self.constraints.append({'type':'ineq', 'fun': lambda x: con(x)-bounds[0], 'jac': jac, 'hess': hess})
+                self.constraints.append({'type':'ineq', 'fun': lambda x: -con(x)+bounds[1], 'jac': jac, 'hess': hess})
         return None
     
     def addLinearEqCon(self,A,b):

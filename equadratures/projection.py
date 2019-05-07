@@ -24,8 +24,13 @@ class Projection:
         opt.addNonLinearIneqCon({'poly':self.poly,'bounds':self.bounds,'subspace':self.subspace})
         self.opt = opt
         return None
-    def addDistCons(self,v):
-        pass
+#    def addDistCons(self,v,dist):
+#        function = lambda x: x.dot(self.subspace).dot(self.subspace.T).dot(x) - v.dot(self.subspace.T).dot(x) - x.dot(self.subspace).dot(v) + v.dot(v)
+#        jacFunction = lambda x: 2.0*self.subspace.dot(self.subspace.T).dot(x) - v.dot(self.subspace.T)
+#        hessFunction = lambda x,v: 2.0*self.subspace.dot(self.subspace.T)
+#        conDict = {'function':function,'jacFunction':jacFunction,'hessFunction':hessFunction,'bounds':[0.0,dist]}
+#        self.opt.addNonLinearIneqCon(conDict)
+#        return None
     def maxDirectionOpt(self,direction,U):
         n = U.shape[0]
         c = U.dot(direction)
@@ -38,7 +43,7 @@ class Projection:
         n, d = W.shape
         X = np.zeros((1,n))
         OK = 0
-        MaxIter = 10
+        MaxIter = 5
         cnt = 0
         
         while not OK:
@@ -67,6 +72,7 @@ class Projection:
                 x = self.maxDirectionOpt(direction,W)
                 cnt += 1
                 v = np.dot(x,W)
+#                self.addDistCons(v,0.01)
                 X = np.vstack((X,x))
                 V = np.vstack((V,v))
                 V,ind = np.unique(V.round(decimals=4),return_index=True,axis=0)
@@ -75,7 +81,5 @@ class Projection:
             if P1['vertV'].shape == P2['vertV'].shape:
                 if np.allclose(P1['vertV'],P2['vertV']):
                     OK = 1
-            X = P2['vertX']
-            V = P2['vertV']
             P1 = P2
         return P1

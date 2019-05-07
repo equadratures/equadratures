@@ -2,6 +2,7 @@
 from .parameter import Parameter
 from .basis import Basis
 from .poly import Poly
+from .projectedpoly import Projectedpoly
 import numpy as np
 from .stats import Statistics, getAllSobol
 import scipy
@@ -9,7 +10,7 @@ from .qr import solveCLSQ
 from .utils import cell2matrix
 from scipy.stats import linregress
 
-class Polyreg(Poly):
+class Polyreg(Projectedpoly):
     """
     The class defines a Polyreg object. It is the child of Poly.
     :param Parameter parameters:
@@ -25,8 +26,8 @@ class Polyreg(Poly):
     :param callable fun:
         Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.
     """
-    def __init__(self, parameters, basis, training_inputs = None, fun=None, training_outputs=None, training_grads=None, quadrature_rule = None, no_of_quad_points = None, gradmethod=None):
-        super(Polyreg, self).__init__(parameters, basis)
+    def __init__(self, parameters, basis, training_inputs = None, fun=None, training_outputs=None, training_grads=None, quadrature_rule = None, no_of_quad_points = None, gradmethod=None, subspace=None):
+        super(Polyreg, self).__init__(parameters, basis, subspace)
         if not(training_inputs is None):
             self.x = training_inputs
             if len(self.x.shape) == 1:
@@ -52,6 +53,7 @@ class Polyreg(Poly):
         self.computeCoefficients()
         self.quadrature_rule = quadrature_rule
         self.getQuadraturePointsWeights(no_of_quad_points)
+        self.subspace = subspace
     def computeCoefficients(self):
         """
         This function computes the coefficients using least squares. To access the coefficients simply use the class's attribute self.coefficients.

@@ -12,6 +12,8 @@ from .nataf import Nataf
 import numpy as np
 from .utils import evalfunction, evalgradients, meshgrid
 from .dr import *
+from .optimization import Optimization
+from .projectedpoly import Projectedpoly
 import matplotlib
 params = {'legend.fontsize': 11,
           'font.size' : 10.0,

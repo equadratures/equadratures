@@ -173,7 +173,7 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
     
     dimensions = basis.elements.shape[1]
     norm_ind = basis.elements.copy()
-    norm_ind = map(tuple,(norm_ind > 0).astype(int))
+    norm_ind = list(map(tuple,(norm_ind > 0).astype(int)))
     
     combo_index = {}
 #    for tot_order in range(1,dimensions+1): #loop over order          
@@ -254,7 +254,7 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
                 combo_index[summed_norm_index] = combo_index[summed_norm_index] + 6 * integral3 /(variance**1.5* skewness)
     
 #    print combo_index            
-    combo_index = {tuple(np.nonzero(key)[0]): value for key, value in combo_index.iteritems()}
+    combo_index = {tuple(np.nonzero(key)[0]): value for key, value in combo_index.items()}
     return combo_index
 
 # Return conditional kurtosis of specified order, in dictionary format similar to Sobol' indices
@@ -262,7 +262,7 @@ def CondKurtosis(order, quad_wts, weighted_evals, basis, variance, kurtosis):
     #Get all polynomials evaluated at the quad. pts and corresponding wts
     dimensions = basis.elements.shape[1]
     norm_ind = basis.elements.copy()
-    norm_ind = map(tuple,(norm_ind > 0).astype(int))
+    norm_ind = list(map(tuple,(norm_ind > 0).astype(int)))
     
     combo_index = {}
 #    for tot_order in range(1,dimensions+1): #loop over order            
@@ -369,7 +369,7 @@ def CondKurtosis(order, quad_wts, weighted_evals, basis, variance, kurtosis):
                     integral5 = np.dot(evals5, quad_wts)
                     summed_norm_index = tuple(np.logical_or(np.logical_or(np.logical_or(norm_ind[p], norm_ind[q]), norm_ind[r]), norm_ind[t]).astype(int))
                     combo_index[summed_norm_index] = combo_index[summed_norm_index] + 24 * integral5 /(variance**2 * kurtosis)
-    combo_index = {tuple(np.nonzero(key)[0]): value for key, value in combo_index.iteritems()}
+    combo_index = {tuple(np.nonzero(key)[0]): value for key, value in combo_index.items()}
 #    print combo_index
     return combo_index
     

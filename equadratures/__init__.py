@@ -8,6 +8,7 @@ from .poly import Poly
 from .stats import Statistics
 from .basis import Basis 
 from .nataf import Nataf
+from .polynet import Polynet
 import numpy as np
 from .utils import evalfunction, evalgradients, meshgrid
 from .dr import *

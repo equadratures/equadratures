@@ -36,7 +36,7 @@ class dr(object):
             * **eigVecs (numpy array)**: Eigenvectors obtained
         """
         if not(hasattr(self,'poly')) and poly is None:
-            raise Exception('Must declare poly!')
+            raise(Exception('Must declare poly!'))
         elif poly is None:
             poly = self.poly
 
@@ -154,7 +154,7 @@ class dr(object):
         if gamma is None:
             gamma=0.1
         if beta is None:
-            beta=0.1
+            beta=1e-4
         if X is None:
             X = self.training_input
         if f is None:
@@ -167,7 +167,8 @@ class dr(object):
             U,_=np.linalg.qr(Z)
         else:
             U = orth(U0)
-        ti = time()
+        if tol is None:
+            tol = 1e-7
         y=np.dot(X,U)
         minmax=np.zeros((2,n))
         for i in range(0,n):

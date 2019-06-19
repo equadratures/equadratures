@@ -39,7 +39,7 @@ class Poly(object):
             An array of the coefficients computed using either integration, least squares or compressive sensing routines.
 
         """
-        self.coefficients = coefficients
+        self.coefficients = np.array(coefficients)
     def __setBasis__(self, basisNew):
         """
         Sets the basis
@@ -136,6 +136,8 @@ class Poly(object):
         # "Unpack" parameters from "self"
         basis = self.basis.elements
         basis_entries, dimensions = basis.shape
+        if len(stackOfPoints.shape) == 1:
+            stackOfPoints = np.reshape(stackOfPoints, (len(stackOfPoints),1))
         no_of_points, _ = stackOfPoints.shape
         p = {}
         dp = {}

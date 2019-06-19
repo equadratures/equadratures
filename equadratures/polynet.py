@@ -75,9 +75,9 @@ class Polynet(object):
     def evaluate_fit(self, x, train=False):
         # evaluate nn
         # if train, update with training data and also updates Z
-        Z = self.Z.copy()
-        Y = self.Y.copy()
-        W = self.W.copy()
+        Z = self.Z[:]
+        Y = self.Y[:]
+        W = self.W[:]
         Z[0] = np.dot(W[0], x.T)
         n_points = x.shape[0]
 
@@ -93,8 +93,8 @@ class Polynet(object):
                                              (Z[self.num_layers - 1][i])))
         Y[self.num_layers - 1] = y_final
         if train:
-            self.Z = Z.copy()
-            self.Y = Y.copy()
+            self.Z = Z[:]
+            self.Y = Y[:]
         return np.sum(y_final, axis=0)
 
     def update_delta(self):
@@ -116,8 +116,8 @@ class Polynet(object):
 
         for k in range(self.num_layers - 2, -1, -1):
             delta[k] = act_mat[k] * np.dot(W[k+1].T, delta[k+1])
-        self.delta = delta.copy()
-        self.act_mat = act_mat.copy()
+        self.delta = delta[:]
+        self.act_mat = act_mat[:]
 
     def update_phi(self):
         # update matrix of basis function evaluations. If Z is updated for train, update this as well
@@ -132,16 +132,16 @@ class Polynet(object):
             for i in range(num_ridges[k]):
                 current_poly = self.poly_array[k,i]
                 phi[k][i,:,:] = np.squeeze(current_poly.getPolynomial(Z[k][i]))
-        self.phi = phi.copy()
+        self.phi = phi[:]
 
 
     def fit(self):
         n_data = self.training_input.shape[0]
-        W_change = self.W.copy()
+        W_change = self.W[:]
         for t in range(self.max_iters):
-            W_new = self.W.copy()
-            coeffs_new = self.coeffs.copy()
-            prev_gradWs = self.W.copy()
+            W_new = self.W[:]
+            coeffs_new = self.coeffs[:]
+            prev_gradWs = self.W[:]
             self.update_delta()
             self.update_phi()
             for k in range(self.num_layers):
@@ -168,8 +168,8 @@ class Polynet(object):
                 W_change[k] = W_new[k] - self.W[k]
 
             prev_loss = self.loss()
-            self.W = W_new.copy()
-            self.coeffs = coeffs_new.copy()
+            self.W = W_new[:]
+            self.coeffs = coeffs_new[:]
             self.update_coeffs()
 
             if t % 100 == 0 and self.verbose:

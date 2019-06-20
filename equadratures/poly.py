@@ -4,7 +4,7 @@ import pickle
 from .parameter import Parameter
 from .basis import Basis
 import numpy as np
-VERSION_NUMBER = 7.6
+VERSION_NUMBER = 8.0
 
 class Poly(object):
     """

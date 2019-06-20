@@ -110,6 +110,7 @@
 <li class="toctree-l2"><a class="reference internal" href="tutorial_11.html">Active subspaces with polynomial approximations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_12.html">Polynomial variable projection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_14.html">Vector-valued dimension reduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_15.html">Polynomial neural networks</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
@@ -224,7 +225,7 @@
 </pre></div>
 </div>
 <p>We begin by defining a tensor grid index set in three dimensions:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span> <span class="o">=</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Tensor grid&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Tensor grid&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
 <span class="n">elements</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">elements</span>
 
 <span class="c1"># Plot!</span>
@@ -242,14 +243,14 @@
 </div>
 <p>It is readily apparent that the tensor grid index set has virtually every element within the order [4,4,4] cube. Lets suppose that one does not want to afford <span class="math notranslate nohighlight">\(4^3\)</span> computations, necessary to approximate all the coefficients associated with a tensor index set multivariate polynomial. One can then opt for a sparse grid, which are select linear combination of select tensor products. In Effective Quadratures, they can be declared as follows:</p>
 <p>Here <span class="math notranslate nohighlight">\(a\)</span> are the select tensor product grids used, and <span class="math notranslate nohighlight">\(b\)</span> are the linear coefficients used when combining the tensor product grids. While the code can perform integrations and coefficient approximation using sparse grids, we recommend users to stick to the effective subsampling approach that uses least squares. In both theory and practice, the results are identical. We now move on to the three other index sets: Total order, Euclidean and a Hyperbolic basis.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span> <span class="o">=</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Euclidean degree&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Euclidean degree&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
 </pre></div>
 </div>
 <div class="figure align-center" id="id2">
 <a class="reference internal image-reference" href="../_images/Basis_euclid.png"><img alt="../_images/Basis_euclid.png" src="../_images/Basis_euclid.png" style="width: 415.20000000000005px; height: 314.40000000000003px;" /></a>
 <p class="caption"><span class="caption-text">Figure. Euclidean degree multi-index set.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span> <span class="o">=</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Total order&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Total order&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
 </pre></div>
 </div>
 <div class="figure align-center" id="id3">
@@ -257,7 +258,7 @@
 <p class="caption"><span class="caption-text">Figure. Total order multi-index set.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 <p>And finally the hyperbolic one:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span> <span class="o">=</span> <span class="n">IndexSet</span><span class="p">(</span><span class="s1">&#39;Hyperbolic basis&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="n">q</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Hyperbolic basis&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="n">q</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="figure align-center" id="id4">

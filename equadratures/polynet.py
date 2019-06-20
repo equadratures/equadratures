@@ -1,10 +1,17 @@
+"""Polynomial neural networks."""
 from .parameter import Parameter
 from .basis import Basis
 from .poly import Poly
 import numpy as np
 
-#%% Multi-layer perceptron with poly activation
 class Polynet(object):
+    """
+    The class defines a Polynet object.
+    :param training_input:
+        A numpy array of training input values.
+    :param training_output
+        A numpy array of training output values.
+    """
     def __init__(self, training_input, training_output, num_ridges, max_iters=1, learning_rate = 0.001,
                  W=None, coeffs=None, momentum_rate = .001, opt = 'sd', poly_deg = 2, verbose = False):
         self.training_input = training_input
@@ -216,5 +223,3 @@ class Polynet(object):
     #     # print(np.linalg.cond(all_V[1]))
     #     # print(np.linalg.cond(stack_V))
     #     new_coeffs = np.linalg.lstsq(stack_V, Y, rcond=None)[0]
-
-

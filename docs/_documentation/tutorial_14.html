@@ -38,7 +38,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Contact" href="contact.html" />
+    <link rel="next" title="Polynomial neural networks" href="tutorial_15.html" />
     <link rel="prev" title="Polynomial variable projection" href="tutorial_12.html" /> 
 </head>
 
@@ -110,6 +110,7 @@
 <li class="toctree-l2"><a class="reference internal" href="tutorial_11.html">Active subspaces with polynomial approximations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_12.html">Polynomial variable projection</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Vector-valued dimension reduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_15.html">Polynomial neural networks</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
@@ -181,13 +182,14 @@
             
   <div class="section" id="vector-valued-dimension-reduction">
 <h1>Vector-valued dimension reduction<a class="headerlink" href="#vector-valued-dimension-reduction" title="Permalink to this headline">¶</a></h1>
-<p>In some applications, we may be interested in the approximation of vector-valued objectives. This allows us to study the dimension reducing subspaces of multiple scalar objectives, such as the lift and drag of an airfoil simultaneously, or may be interested in the discretized pressure profile over this airfoil. With an approach that extends the technique of <a class="reference external" href="https://effective-quadratures.github.io/Effective-Quadratures/_documentation/tutorial_11.html">active subspaces</a>, we can find subspaces within which the majority of the variation vector-valued function will be contained. In other words, for a function <span class="math notranslate nohighlight">\(\mathbf{f}(\mathbf{x}): \mathbb{R}^d \rightarrow \mathbb{R}^n\)</span>, we want to find a ridge approximation</p>
+<p>In some applications, we may be interested in the approximation of vector-valued objectives. This allows us to study the dimension reducing subspaces of multiple scalar objectives, such as the lift and drag of an airfoil simultaneously. Alternatively, we may be interested in the discretized pressure profile over this airfoil. With an approach that extends the technique of <a class="reference external" href="https://effective-quadratures.github.io/Effective-Quadratures/_documentation/tutorial_11.html">active subspaces</a>, and the closely related ridge approximation, we can find subspaces within which the greatest variation of the vector-valued function will be contained. In other words, for a function <span class="math notranslate nohighlight">\(\mathbf{f}(\mathbf{x}): \mathbb{R}^d \rightarrow \mathbb{R}^n\)</span>, we want to find a ridge approximation</p>
 <div class="math notranslate nohighlight">
 \[\mathbf{f}(\mathbf{x}) \approx \mathbf{g}( \mathbf{U}^T \mathbf{x}),\]</div>
-<p>where <span class="math notranslate nohighlight">\(\mathbf{U} \in \mathbb{R}^{k \times d}\)</span> with <span class="math notranslate nohighlight">\(k \ll d\)</span>. In EQ, we base our approach on Zahm et al. [1] and study the vector gradient covariance matrix. Define the Jacobian matrix as</p>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{U} \in \mathbb{R}^{k \times d}\)</span> with <span class="math notranslate nohighlight">\(k \ll d\)</span>. In Effective Quadratures, we base our approach on Zahm et al. [1] and study the vector gradient covariance matrix. Let us define the Jacobian matrix as</p>
 <div class="math notranslate nohighlight">
 \[\mathbf{J}(\mathbf{x}) = \left[\frac{\partial f_1}{\partial \mathbf{x}} , \frac{\partial f_2}{\partial \mathbf{x}} ,..., \frac{\partial f_n}{\partial \mathbf{x}} \right],\]</div>
-<p>where <span class="math notranslate nohighlight">\(f_i\)</span> is the <span class="math notranslate nohighlight">\(i\)</span>-th output component of <span class="math notranslate nohighlight">\(\mathbf{f}\)</span>. This matrix is constructed by stacking together the gradient vectors <span class="math notranslate nohighlight">\(\frac{\partial f_i}{\partial \mathbf{x}}\)</span>. How are the gradients evaluated? Assuming that automatic differentiation or adjoints are not available, we can adopt an approach similar to that detailed in the <a class="reference external" href="https://effective-quadratures.github.io/Effective-Quadratures/_documentation/tutorial_11.html">active subspaces tutorial</a> , and assume that each <span class="math notranslate nohighlight">\(f_i\)</span> has already been approximated as a polynomial series,</p>
+<p>where <span class="math notranslate nohighlight">\(f_i\)</span> is the <span class="math notranslate nohighlight">\(i\)</span>-th output component of <span class="math notranslate nohighlight">\(\mathbf{f}\)</span>. This matrix is constructed by stacking together the gradient vectors <span class="math notranslate nohighlight">\(\frac{\partial f_i}{\partial \mathbf{x}}\)</span>.</p>
+<p>So, how are the gradients evaluated? Assuming that automatic differentiation utilities or adjoints are not available, we can adopt an approach similar to that detailed in the <a class="reference external" href="https://effective-quadratures.github.io/Effective-Quadratures/_documentation/tutorial_11.html">active subspaces tutorial</a> , and assume that each <span class="math notranslate nohighlight">\(f_i\)</span> has already been approximated as a polynomial series,</p>
 <div class="math notranslate nohighlight">
 \[f_i(\mathbf{x}) \approx \sum_{j=1}^P a_j \phi_j(\mathbf{x}),\]</div>
 <p>from which gradients are easily evaluated. Then, we can form the gradient covariance matrix <span class="math notranslate nohighlight">\(\mathbf{H}\)</span> as</p>
@@ -209,7 +211,7 @@
 <div class="math notranslate nohighlight">
 \[\begin{split}\mathbf{H} = [\mathbf{U}\quad \mathbf{V}] \begin{bmatrix} \mathbf{\Lambda}_1 &amp; \\ &amp; \mathbf{\Lambda}_2 \end{bmatrix} [\mathbf{U} \quad \mathbf{V}]^T,\end{split}\]</div>
 <p><strong>Code Implementation</strong></p>
-<p>We consider a simple analytical example to demonstrate the use of vector-valued dimension reduction routines. Consider the function <span class="math notranslate nohighlight">\(\mathbf{f}: [-1,1]^5 \rightarrow \mathbb{R}^2\)</span>, with <span class="math notranslate nohighlight">\(\mathbf{f}(\mathbf{x}) = [f_0(\mathbf{x}), f_1(\mathbf{x})]^T\)</span> where:</p>
+<p>We consider a simple analytical example to demonstrate the use of our vector-valued dimension reduction routines. Consider the function <span class="math notranslate nohighlight">\(\mathbf{f}: [-1,1]^5 \rightarrow \mathbb{R}^2\)</span>, with <span class="math notranslate nohighlight">\(\mathbf{f}(\mathbf{x}) = [f_0(\mathbf{x}), f_1(\mathbf{x})]^T\)</span> where:</p>
 <div class="math notranslate nohighlight">
 \[f_0(\mathbf{x}) = \sin(\pi \mathbf{w}_0^T \mathbf{x})\]</div>
 <div class="math notranslate nohighlight">
@@ -246,14 +248,14 @@
                         <span class="n">no_of_quad_points</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>Now we can call the vector_AS method in the dr class to compute the Jacobian and find the DR space <span class="math notranslate nohighlight">\(\mathbf{U}\)</span>.</p>
+<p>Now we can call the <code class="code docutils literal notranslate"><span class="pre">vector_AS</span></code> method in the <code class="code docutils literal notranslate"><span class="pre">dr</span></code> class to compute the Jacobian and find the dimension reducing subspace <span class="math notranslate nohighlight">\(\mathbf{U}\)</span>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">my_dr</span> <span class="o">=</span> <span class="n">dr</span><span class="p">(</span><span class="n">training_input</span><span class="o">=</span><span class="n">X_train</span><span class="p">)</span>
 <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
 <span class="p">[</span><span class="n">eigs</span><span class="p">,</span> <span class="n">U</span><span class="p">]</span> <span class="o">=</span> <span class="n">my_dr</span><span class="o">.</span><span class="n">vector_AS</span><span class="p">(</span><span class="n">poly_list</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="n">R</span><span class="p">)</span>
 <span class="n">U</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>To check whether our answer is sensible, we can check the subspace distance between <span class="math notranslate nohighlight">\(\mathbf{U}\)</span> and the space spanned by the true dimension reducing subspace, <span class="math notranslate nohighlight">\(\text{span}(\mathbf{w}_0, \mathbf{w}_1)\)</span>:</p>
+<p>To verify whether our answer is reasonable, we can check the subspace distance between <span class="math notranslate nohighlight">\(\mathbf{U}\)</span> and the space spanned by the true dimension reducing subspace, <span class="math notranslate nohighlight">\(\text{span}(\mathbf{w}_0, \mathbf{w}_1)\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[\text{dist}(\mathbf{U}, \mathbf{W}) = ||\mathbf{U}\mathbf{U}^T - \mathbf{W}\mathbf{W}^T||_2\]</div>
 <p>where the 2-norm picks out the largest singular value of the argument.</p>
@@ -312,7 +314,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="contact.html" class="btn btn-neutral float-right" title="Contact" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="tutorial_15.html" class="btn btn-neutral float-right" title="Polynomial neural networks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="tutorial_12.html" class="btn btn-neutral float-left" title="Polynomial variable projection" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Higher order Sobol’ indices &mdash; Effective Quadratures v7.6 documentation</title>
+  <title>Higher order Sobol’ indices &mdash; Effective Quadratures v8.0 documentation</title>
   
 
   
@@ -19,34 +19,37 @@
   
 
   
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Nataf transform for correlated inputs" href="tutorial_10.html" />
     <link rel="prev" title="Computing Sobol’ (sensitivity) indices" href="tutorial_9.html" /> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search"  style="background: grey" >
           
 
           
@@ -63,7 +66,7 @@
             
             
               <div class="version">
-                7.6
+                8.0
               </div>
             
           
@@ -106,6 +109,7 @@
 <li class="toctree-l2"><a class="reference internal" href="tutorial_10.html">Nataf transform for correlated inputs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_11.html">Active subspaces with polynomial approximations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_12.html">Polynomial variable projection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_14.html">Vector-valued dimension reduction</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
@@ -181,20 +185,20 @@
 <p><strong>Theory</strong></p>
 <p>Variances give the spread of the data away from the mean, but does not account for the direction of the spread and the relative weight of the tail of the distribution (the “peakiness”). The skewness and kurtosis address precisely these concerns. These measures can also be decomposed in a similar fashion to Sobol’ indices, giving rise to conditional skewness and kurtosis. Individual components to the skewness and kurtosis with respect to each input variable or groups of such may be computed using the new methods in the Statistics class.</p>
 <p>The computation of Sobol’ indices is intuitive when considering the computation of the global variance using an orthogonal polynomial approximation of the function. Due to orthogonality of the basis polynomials, the global variance is computed as:</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[\textrm{Var}[f(x)] = \sum_{i=1}^{P} \beta_i^2\]</div>
-<p>where <span class="math notranslate">\(\beta_i\)</span>‘s are PC expansion coefficients, associated with a certain polynomial. A Sobol’ index simply sums up the squares of coefficients corresponding to contributing polynomials (i.e. polynomials with a non-zero order in the variables concerned). Conditional skewness/kurtosis indices follow the same principle.</p>
+<p>where <span class="math notranslate nohighlight">\(\beta_i\)</span>’s are PC expansion coefficients, associated with a certain polynomial. A Sobol’ index simply sums up the squares of coefficients corresponding to contributing polynomials (i.e. polynomials with a non-zero order in the variables concerned). Conditional skewness/kurtosis indices follow the same principle.</p>
 <p>Skewness and kurtosis are defined as the third and fourth central standardized moment. For instance, the skewness is:</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[\mu^{3} = \int_S (f(x) - \mu)^{3} \rho ds = \int_S \left(\sum_{i=1}^P \beta_i \pi_i(x)\right)^{3} \rho ds,\]</div>
-<p>where <span class="math notranslate">\(\rho\)</span> is the input PDF, defined over <span class="math notranslate">\(S\)</span>, the support. In practice, Gauss quadrature is used to evaluate the integral numerically, and two approaches can be taken. First, one can sum the polynomial evaluations, each weighted by the corresponding coefficient at the quadrature points, resulting in a “total evaluation” at each quadrature point. Then, cube/fourth the results and compute the integral by forming the inner product with a quadrature weight vector. This approach is <span class="math notranslate">\(O(Pd)\)</span> where <span class="math notranslate">\(P\)</span> is the number of basis terms and <span class="math notranslate">\(d\)</span> is the input dimension. This is satisfactory for computing the global skewness/kurtosis.</p>
-<p>However, to compute conditional indices, it is necessary to expand the inner sum using the multinomial theorem first, as only by doing so will the result be interpretable as a sum of contributions from each  (group of) basis term(s) (effectively integral-before-sum). The details of such expansion is given in Geraci et al [1]. With computing the variance-based Sobol’ indices, the cross term conveniently cancels with orthogonality. However, with skewness and kurtosis the cross terms do not necessarily cancel. This necessitates an <span class="math notranslate">\(O(P^3d)\)</span> operation for skewness and <span class="math notranslate">\(O(P^4d)\)</span> operation for kurtosis, resulting in forbiddingly long computational times.</p>
-<p>However, all is not lost, and some saving may be achieved with low order conditional skewness/kurtosis terms. First, Geraci et al.[1] details some conditions where the integral in the sum need not be computed as they are zero. Secondly, as only cross term integrals that result in the variables we are interested in need to be computed, some basis terms can be eliminated a priori. For instance, when computing first order indices, it is not necessary to consider any basis term that has total order larger than 1, since any integral with such a basis term will only increase the number of participating variables, and certainly will not contribute to the first order index at the end. This reduces the complexity to <span class="math notranslate">\(O(n^3d)\)</span> for skewness, for example, where <span class="math notranslate">\(n &lt;&lt; P\)</span> is the highest order of the polynomial in any dimension.</p>
+<p>where <span class="math notranslate nohighlight">\(\rho\)</span> is the input PDF, defined over <span class="math notranslate nohighlight">\(S\)</span>, the support. In practice, Gauss quadrature is used to evaluate the integral numerically, and two approaches can be taken. First, one can sum the polynomial evaluations, each weighted by the corresponding coefficient at the quadrature points, resulting in a “total evaluation” at each quadrature point. Then, cube/fourth the results and compute the integral by forming the inner product with a quadrature weight vector. This approach is <span class="math notranslate nohighlight">\(O(Pd)\)</span> where <span class="math notranslate nohighlight">\(P\)</span> is the number of basis terms and <span class="math notranslate nohighlight">\(d\)</span> is the input dimension. This is satisfactory for computing the global skewness/kurtosis.</p>
+<p>However, to compute conditional indices, it is necessary to expand the inner sum using the multinomial theorem first, as only by doing so will the result be interpretable as a sum of contributions from each  (group of) basis term(s) (effectively integral-before-sum). The details of such expansion is given in Geraci et al [1]. With computing the variance-based Sobol’ indices, the cross term conveniently cancels with orthogonality. However, with skewness and kurtosis the cross terms do not necessarily cancel. This necessitates an <span class="math notranslate nohighlight">\(O(P^3d)\)</span> operation for skewness and <span class="math notranslate nohighlight">\(O(P^4d)\)</span> operation for kurtosis, resulting in forbiddingly long computational times.</p>
+<p>However, all is not lost, and some saving may be achieved with low order conditional skewness/kurtosis terms. First, Geraci et al.[1] details some conditions where the integral in the sum need not be computed as they are zero. Secondly, as only cross term integrals that result in the variables we are interested in need to be computed, some basis terms can be eliminated a priori. For instance, when computing first order indices, it is not necessary to consider any basis term that has total order larger than 1, since any integral with such a basis term will only increase the number of participating variables, and certainly will not contribute to the first order index at the end. This reduces the complexity to <span class="math notranslate nohighlight">\(O(n^3d)\)</span> for skewness, for example, where <span class="math notranslate nohighlight">\(n &lt;&lt; P\)</span> is the highest order of the polynomial in any dimension.</p>
 <p><strong>Example</strong></p>
 <p>Let’s see the methods in action. First we define a test function. Taking the quadratic G-function [1] as an example:</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[f(x_0, x_1, x_2, x_3) = \prod_{i=1}^4 \frac{|4x_i - 2| + i^2}{1+i^2}.\]</div>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">G_fun</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">G_fun</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
         <span class="n">f</span> <span class="o">=</span> <span class="mf">1.0</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
                 <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">i</span><span class="o">**</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i</span><span class="o">**</span><span class="mf">2.0</span><span class="p">)</span>
@@ -203,9 +207,9 @@
 </pre></div>
 </div>
 <p>Let’s use a degree 5 tensor grid as the index set and the following input PDF:</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[x_0, x_1, x_2, x_3 \sim \mathcal{U}(0,1)^4.\]</div>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">degree</span> <span class="o">=</span> <span class="mi">5</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">degree</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="n">x0</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span><span class="o">=</span><span class="s2">&quot;Uniform&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
 <span class="n">x1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span> <span class="o">=</span><span class="s2">&quot;Uniform&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
 <span class="n">x2</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">distribution</span> <span class="o">=</span><span class="s2">&quot;Uniform&quot;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
@@ -214,14 +218,14 @@
 </pre></div>
 </div>
 <p>Calculate the polynomial coefficients and initiate Statistics class:</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">basis</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Tensor grid&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">basis</span> <span class="o">=</span> <span class="n">Basis</span><span class="p">(</span><span class="s1">&#39;Tensor grid&#39;</span><span class="p">)</span>
 <span class="n">uqProblem</span> <span class="o">=</span> <span class="n">Polyint</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
 <span class="n">uqProblem</span><span class="o">.</span><span class="n">computeCoefficients</span><span class="p">(</span><span class="n">G_fun</span><span class="p">)</span>
 <span class="n">stats</span> <span class="o">=</span> <span class="n">uqProblem</span><span class="o">.</span><span class="n">getStatistics</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>By default, global indices (mean, variance, skewness and kurtosis) are already computed at initialization. They can be viewed through printing the corresponding class variables.</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">mean</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">mean</span>
 <span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">variance</span>
 <span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">skewness</span>
 <span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">kurtosis</span>
@@ -233,7 +237,7 @@
 </pre></div>
 </div>
 <p>Now sample the output distribution with Monte Carlo and compute the statistics:</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x0_samples</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">getSamples</span><span class="p">(</span><span class="mi">100000</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x0_samples</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">getSamples</span><span class="p">(</span><span class="mi">100000</span><span class="p">)</span>
 <span class="n">x1_samples</span> <span class="o">=</span> <span class="n">x1</span><span class="o">.</span><span class="n">getSamples</span><span class="p">(</span><span class="mi">100000</span><span class="p">)</span>
 <span class="n">x2_samples</span> <span class="o">=</span> <span class="n">x2</span><span class="o">.</span><span class="n">getSamples</span><span class="p">(</span><span class="mi">100000</span><span class="p">)</span>
 <span class="n">x3_samples</span> <span class="o">=</span> <span class="n">x3</span><span class="o">.</span><span class="n">getSamples</span><span class="p">(</span><span class="mi">100000</span><span class="p">)</span>
@@ -254,7 +258,7 @@
 </pre></div>
 </div>
 <p>As seen, the agreement is not bad. Now, let’s calculate the first two orders of conditional indices.</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">v1</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getSobol</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">v1</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getSobol</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">v2</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getSobol</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">s1</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getCondSkewness</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">s2</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getCondSkewness</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
@@ -271,12 +275,12 @@
 </pre></div>
 </div>
 <p>As seen, the sums are close to one, so we don’t miss much by not evaluating the rest of the indices (which could take a long time). We may put these values in more context by calculating the Total Sensitivity Index [1] of each dimension:</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[\textrm{TSI}^a_j = \sum_{\textbf{m}\in V_j} s^{SI}_\textbf{m}\]</div>
-<p>where <span class="math notranslate">\(V_j\)</span> denotes the set of multi-indices <span class="math notranslate">\(\textbf{m}\)</span> that contains the dimension concerned, <span class="math notranslate">\(j\)</span>. This can be applied to variance (<span class="math notranslate">\(a=v\)</span>), skewness (<span class="math notranslate">\(a=s\)</span>) and kurtosis (<span class="math notranslate">\(a=k\)</span>). In our case, for example, we approximate:</p>
-<div class="math notranslate">
+<p>where <span class="math notranslate nohighlight">\(V_j\)</span> denotes the set of multi-indices <span class="math notranslate nohighlight">\(\textbf{m}\)</span> that contains the dimension concerned, <span class="math notranslate nohighlight">\(j\)</span>. This can be applied to variance (<span class="math notranslate nohighlight">\(a=v\)</span>), skewness (<span class="math notranslate nohighlight">\(a=s\)</span>) and kurtosis (<span class="math notranslate nohighlight">\(a=k\)</span>). In our case, for example, we approximate:</p>
+<div class="math notranslate nohighlight">
 \[\textrm{TSI}^v_0 = \texttt{v1[(0)] + v2[(0,1)] + v2[(0,2)] + v2[(0,3)] }\]</div>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">calc_TSI</span><span class="p">([</span><span class="n">v1</span><span class="p">,</span><span class="n">v2</span><span class="p">])</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">calc_TSI</span><span class="p">([</span><span class="n">v1</span><span class="p">,</span><span class="n">v2</span><span class="p">])</span>
 <span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">calc_TSI</span><span class="p">([</span><span class="n">s1</span><span class="p">,</span><span class="n">s2</span><span class="p">])</span>
 <span class="nb">print</span> <span class="n">stats</span><span class="o">.</span><span class="n">calc_TSI</span><span class="p">([</span><span class="n">k1</span><span class="p">,</span><span class="n">k2</span><span class="p">])</span>
 
@@ -285,14 +289,13 @@
 <span class="o">&gt;&gt;</span> <span class="p">[</span> <span class="mf">0.85915885</span>  <span class="mf">0.54439872</span>  <span class="mf">0.08897176</span>  <span class="mf">0.02198146</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>The results agree with the fact about the G-function, that the larger <span class="math notranslate">\(i\)</span> is the lower the conditional index will be, and offers a quantitative measure of how important the variable is: the higher the index, the more important it is. This type of analysis can be applied to dimensional reduction applications to prune unnecessary variables. They also agree somewhat with Geraci et al. [1], but with some discrepancies (possibly due to the index set used).</p>
+<p>The results agree with the fact about the G-function, that the larger <span class="math notranslate nohighlight">\(i\)</span> is the lower the conditional index will be, and offers a quantitative measure of how important the variable is: the higher the index, the more important it is. This type of analysis can be applied to dimensional reduction applications to prune unnecessary variables. They also agree somewhat with Geraci et al. [1], but with some discrepancies (possibly due to the index set used).</p>
 <p><strong>References</strong></p>
-<table class="docutils footnote" frame="void" id="id1" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label">[1]</td><td>Geraci, G., Congedo, P. M., Abgrall, R., Iaccarino, G. (2016). High-order statistics in global sensitivity analysis: decomposition and model reduction. Computer Methods in Applied Mechanics and Engineering, 301, 80-115.</td></tr>
-</tbody>
-</table>
+<dl class="footnote brackets">
+<dt class="label" id="id1"><span class="brackets">1</span></dt>
+<dd><p>Geraci, G., Congedo, P. M., Abgrall, R., Iaccarino, G. (2016). High-order statistics in global sensitivity analysis: decomposition and model reduction. Computer Methods in Applied Mechanics and Engineering, 301, 80-115.</p>
+</dd>
+</dl>
 </div>
 
 
@@ -306,7 +309,7 @@
         <a href="tutorial_10.html" class="btn btn-neutral float-right" title="Nataf transform for correlated inputs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="tutorial_9.html" class="btn btn-neutral" title="Computing Sobol’ (sensitivity) indices" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="tutorial_9.html" class="btn btn-neutral float-left" title="Computing Sobol’ (sensitivity) indices" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -315,7 +318,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2019 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures
 
     </p>
   </div>
@@ -332,33 +335,16 @@
   
 
 
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'v7.6',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  <script type="text/javascript" src="../_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

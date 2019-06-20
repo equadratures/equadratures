@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Dimension reduction utilities &mdash; Effective Quadratures v7.6 documentation</title>
+  <title>Dimension reduction utilities &mdash; Effective Quadratures v8.0 documentation</title>
   
 
   
@@ -19,34 +19,37 @@
   
 
   
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Convex optimization utilities" href="convex.html" />
     <link rel="prev" title="Utilities" href="utilities.html" /> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search"  style="background: grey" >
           
 
           
@@ -63,7 +66,7 @@
             
             
               <div class="version">
-                7.6
+                8.0
               </div>
             
           
@@ -176,18 +179,16 @@
             
   <div class="section" id="module-equadratures.dr">
 <span id="dimension-reduction-utilities"></span><h1>Dimension reduction utilities<a class="headerlink" href="#module-equadratures.dr" title="Permalink to this headline">¶</a></h1>
-<dl class="docutils">
-<dt>The functionalities of this script includes:</dt>
-<dd><ol class="first last arabic simple">
-<li>A polynomial-based active subspaces recipe;</li>
-<li>An ordinary least squares linear technique;</li>
-<li>The variable projection subroutine.</li>
+<dl class="simple">
+<dt>The functionalities of this script includes:</dt><dd><ol class="arabic simple">
+<li><p>A polynomial-based active subspaces recipe;</p></li>
+<li><p>An ordinary least squares linear technique;</p></li>
+<li><p>The variable projection subroutine.</p></li>
 </ol>
 </dd>
-<dt>References:</dt>
-<dd><ul class="first last simple">
-<li>Honkason, J. and Constantine, P. (2018). Data-driven polynomial ridge approximation using variable projection. [online] Arxiv.org. <a class="reference external" href="https://arxiv.org/abs/1702.05859">Paper</a>.</li>
-<li>Constantine, P. G. (2015). Active subspaces: Emerging ideas for dimension reduction in parameter studies. SIAM.</li>
+<dt>References:</dt><dd><ul class="simple">
+<li><p>Honkason, J. and Constantine, P. (2018). Data-driven polynomial ridge approximation using variable projection. [online] Arxiv.org. <a class="reference external" href="https://arxiv.org/abs/1702.05859">Paper</a>.</p></li>
+<li><p>Constantine, P. G. (2015). Active subspaces: Emerging ideas for dimension reduction in parameter studies. SIAM.</p></li>
 </ul>
 </dd>
 </dl>
@@ -200,7 +201,7 @@
 :return:</p>
 <blockquote>
 <div><ul class="simple">
-<li><strong>J (ndarray)</strong>: The Jacobian tensor, m-by-d-by-N, where J[a,b,c] = dP_a/dx_c_b (b-th dimension of P_a’s gradient at x_c)</li>
+<li><p><strong>J (ndarray)</strong>: The Jacobian tensor, m-by-d-by-N, where J[a,b,c] = dP_a/dx_c_b (b-th dimension of P_a’s gradient at x_c)</p></li>
 </ul>
 </div></blockquote>
 </dd></dl>
@@ -210,31 +211,27 @@
 <code class="descclassname">equadratures.dr.</code><code class="descname">jacobian_vp</code><span class="sig-paren">(</span><em>V</em>, <em>V_plus</em>, <em>U</em>, <em>y</em>, <em>f</em>, <em>Polybasis</em>, <em>eta</em>, <em>minmax</em>, <em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/dr.html#jacobian_vp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.dr.jacobian_vp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Internal function to variable_projection
 Calculates the Jacobian tensor using polynomial basis functions</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>V</strong> – ndarray, the affine transformed outputs</li>
-<li><strong>V_plus</strong> – ndarray, psuedoinverse matrix</li>
-<li><strong>U</strong> – ndarray, the active subspace directions</li>
-<li><strong>y</strong> – array, the untransformed projected values of inputs in active subspace</li>
-<li><strong>f</strong> – array, the untransformed outputs</li>
-<li><strong>Polybasis</strong> – Poly object, an instance of Poly class</li>
-<li><strong>eta</strong> – ndarray, the affine transformed projected values of inputs in active subspace</li>
-<li><strong>minmax</strong> – ndarray, the upper and lower bounds of input projections in each dimension</li>
-<li><strong>X</strong> – ndarray, the input</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>V</strong> – ndarray, the affine transformed outputs</p></li>
+<li><p><strong>V_plus</strong> – ndarray, psuedoinverse matrix</p></li>
+<li><p><strong>U</strong> – ndarray, the active subspace directions</p></li>
+<li><p><strong>y</strong> – array, the untransformed projected values of inputs in active subspace</p></li>
+<li><p><strong>f</strong> – array, the untransformed outputs</p></li>
+<li><p><strong>Polybasis</strong> – Poly object, an instance of Poly class</p></li>
+<li><p><strong>eta</strong> – ndarray, the affine transformed projected values of inputs in active subspace</p></li>
+<li><p><strong>minmax</strong> – ndarray, the upper and lower bounds of input projections in each dimension</p></li>
+<li><p><strong>X</strong> – ndarray, the input</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
-<li><strong>J (ndarray)</strong>: The Jacobian tensor</li>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>J (ndarray)</strong>: The Jacobian tensor</p></li>
 </ul>
 </p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -242,25 +239,21 @@ Calculates the Jacobian tensor using polynomial basis functions</p>
 <code class="descclassname">equadratures.dr.</code><code class="descname">vandermonde</code><span class="sig-paren">(</span><em>eta</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/dr.html#vandermonde"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.dr.vandermonde" title="Permalink to this definition">¶</a></dt>
 <dd><p>Internal function to variable_projection
 Calculates the Vandermonde matrix using polynomial basis functions</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>eta</strong> – ndarray, the affine transformed projected values of inputs in active subspace</li>
-<li><strong>p</strong> – int, the maximum degree of polynomials</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eta</strong> – ndarray, the affine transformed projected values of inputs in active subspace</p></li>
+<li><p><strong>p</strong> – int, the maximum degree of polynomials</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
-<li><strong>V (numpy array)</strong>: The resulting Vandermode matrix</li>
-<li><strong>Polybasis (Poly object)</strong>: An instance of Poly object containing the polynomial basis derived</li>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>V (numpy array)</strong>: The resulting Vandermode matrix</p></li>
+<li><p><strong>Polybasis (Poly object)</strong>: An instance of Poly object containing the polynomial basis derived</p></li>
 </ul>
 </p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -276,7 +269,7 @@ Calculates the Vandermonde matrix using polynomial basis functions</p>
         <a href="convex.html" class="btn btn-neutral float-right" title="Convex optimization utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="utilities.html" class="btn btn-neutral" title="Utilities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="utilities.html" class="btn btn-neutral float-left" title="Utilities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -285,7 +278,7 @@ Calculates the Vandermonde matrix using polynomial basis functions</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2019 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures
 
     </p>
   </div>
@@ -302,33 +295,16 @@ Calculates the Vandermonde matrix using polynomial basis functions</p>
   
 
 
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'v7.6',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  <script type="text/javascript" src="../_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

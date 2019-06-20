@@ -3,7 +3,6 @@ Quick start guide
 
 Below we provide some introductory tutorials to give you an idea of what Effective Quadratures can do. The tutorials are organized by complexity, so if you are new to the notion of *supervised learning through polynomials*, consider starting from the first tutorial.
 
-
 .. toctree::
    :maxdepth: 5 
 
@@ -22,3 +21,4 @@ Below we provide some introductory tutorials to give you an idea of what Effecti
    tutorial_10
    tutorial_11
    tutorial_12
+   tutorial_14

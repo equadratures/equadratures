@@ -15,7 +15,7 @@ where :math:`\mathbf{U} \in \mathbb{R}^{k \times d}` with :math:`k \ll d`. In EQ
         \mathbf{J}(\mathbf{x}) = \left[\frac{\partial f_1}{\partial \mathbf{x}} , \frac{\partial f_2}{\partial \mathbf{x}} ,..., \frac{\partial f_n}{\partial \mathbf{x}} \right],
 
 
-where :math:`f_i` is the :math:`i`-th output component of :math:`\mathbf{f}`. This matrix is constructed by stacking together the gradient vectors :math:`\frac{\partial f_i}{\partial \mathbf{x}}`. How are the gradients evaluated? Assuming that automatic differentiation or adjoints are not available, we can adopt an approach similar to that detailed in the `active subspaces tutorial <https://effective-quadratures.github.io/Effective-Quadratures/_documentation/tutorial_11.html>`__ , and assume that each $f_i$ has already been approximated as a polynomial series,
+where :math:`f_i` is the :math:`i`-th output component of :math:`\mathbf{f}`. This matrix is constructed by stacking together the gradient vectors :math:`\frac{\partial f_i}{\partial \mathbf{x}}`. How are the gradients evaluated? Assuming that automatic differentiation or adjoints are not available, we can adopt an approach similar to that detailed in the `active subspaces tutorial <https://effective-quadratures.github.io/Effective-Quadratures/_documentation/tutorial_11.html>`__ , and assume that each :math:`f_i` has already been approximated as a polynomial series,
 
 .. math::
 

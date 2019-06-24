@@ -58,6 +58,14 @@ class Polyint(Poly):
 
         """
         # Method to compute the coefficients
+        if callable(function):
+            self.function_evaluations = evalfunction(points=self.quadraturePoints, function=function)
+        else:
+            self.function_evaluations = function
+            rows, cols = self.quadraturePoints.shape
+            no_of_fun_evals = len(self.function_evaluations)
+            if rows != no_of_fun_evals:
+                raise(ValueError, 'polyint:computeCoefficients: Mismatch between the number of rows in the number of quadrature points '+str(rows)+' vs. '+str(no_of_fun_evals))
         method = self.basis.basis_type
         if method.lower() == 'sparse grid':
             coefficients, indexset, evaled_pts, weights = getSparsePseudospectralCoefficients(self, function)
@@ -68,6 +76,7 @@ class Polyint(Poly):
         self.multi_index = indexset
         self.quadraturePoints = evaled_pts
         self.quadratureWeights = weights
+        super(Polyint, self).__setFunctionEvaluations__(self.function_evaluations)
         super(Polyint, self).__setCoefficients__(self.coefficients)
         super(Polyint, self).__setQuadrature__(self.quadraturePoints, self.quadratureWeights)
         super(Polyint, self).__setBasis__(self.basis)

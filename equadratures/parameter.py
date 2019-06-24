@@ -152,7 +152,7 @@ class Parameter(object):
 			JacobiMatrix[order-1, order-2] = np.sqrt(ab[order-1,1])
 
 		return JacobiMatrix
-
+    
 	def _getOrthoPoly(self, points, order=None):
 		if order is None:
 			order = self.order + 1
@@ -189,20 +189,13 @@ class Parameter(object):
 					ab[u - 1, 1]) * orthopoly[u - 2, :]) / (1.0 * np.sqrt(ab[u, 1]))
 			for u in range(2, order):  # CHANGED 2/2/18
 				# Four-term recurrence formula for derivatives of orthogonal polynomials!
-				derivative_orthopoly[u, :] = (((gridPointsII[:, 0] - ab[u - 1, 0]) * derivative_orthopoly[u - 1, :]) - (
-							np.sqrt(ab[u - 1, 1]) * derivative_orthopoly[u - 2, :]) + orthopoly[u - 1, :]) / (
-														 1.0 * np.sqrt(ab[u, 1]))
-			for u in range(2, order):
+				derivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
+			for u in range(2,order):
 				# Four-term recurrence formula for second derivatives of orthogonal polynomials!
-				dderivative_orthopoly[u, :] = (((gridPointsII[:, 0] - ab[u - 1, 0]) * dderivative_orthopoly[u - 1,
-																					  :]) - (
-														   np.sqrt(ab[u - 1, 1]) * dderivative_orthopoly[u - 2,
-																				   :]) + 2.0 * derivative_orthopoly[
-																							   u - 1, :]) / (
-														  1.0 * np.sqrt(ab[u, 1]))
-
+				dderivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * dderivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * dderivative_orthopoly[u-2,:] ) +  2.0 * derivative_orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
+		
 		return orthopoly, derivative_orthopoly, dderivative_orthopoly
-
+		
 	def _getLocalQuadrature(self, order=None):
 		"""
 		Returns the 1D quadrature points and weights for the parameter. WARNING: Should not be called under normal circumstances.

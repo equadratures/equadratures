@@ -3,13 +3,15 @@ from .stats import Statistics
 from .parameter import Parameter
 from .basis import Basis
 from .optimization import Optimization
+from .poly import Poly
 from scipy.spatial import ConvexHull
-from scipy.misc import comb
+from scipy.special import comb
 from scipy.spatial.distance import cdist
+from scipy.optimize import linprog
 import numpy as np
 VERSION_NUMBER = 7.6
 
-class Projectedpoly(object):
+class Projectedpoly(Poly):
     """
     The class defines a Projectedpoly object.
 
@@ -416,7 +418,7 @@ class Projectedpoly(object):
             A callable function.
 
         """
-        return lambda (x) : self.evaluatePolyHessFit(x)
+        return lambda x : self.evaluatePolyHessFit(x)
     def getNumOfVertices(self):
         """
         Function that returns the expected number of vertices of the zonotope.
@@ -427,7 +429,27 @@ class Projectedpoly(object):
             An integer N specifying the expected number of vertices of zonotope.
         Notes
         -----
-        https://github.com/paulcon/active_subspaces/blob/master/active_subspaces/domains.py nzm
+        Adapted from https://github.com/paulcon/active_subspaces/blob/master/active_subspaces/domains.py nzm
+
+        The MIT License (MIT)
+
+        Copyright (c) 2016 Paul Constantine
+
+        Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+        documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+        the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+        to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+        The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+        the Software.
+
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+        THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+        CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+        IN THE SOFTWARE.
+
+        The terms in this license hold for all subsequent references to or adaptations from this package.
             
         """
         m, n = self.subspace.shape
@@ -508,7 +530,7 @@ class Projectedpoly(object):
         
         numVertices = X.shape[0]
         if totalVertices > numVertices:
-            print 'Warning: {} of {} vertices found.'.format(numVertices, totalVertices)
+            print('Warning: {} of {} vertices found.'.format(numVertices, totalVertices))
         
         Y = np.dot(X, W)
         return Y.reshape((numVertices, n)), X.reshape((numVertices, m))
@@ -574,7 +596,7 @@ class Projectedpoly(object):
             for i in range(P1['A'].shape[0]):
                 if P1['A'][i,:].tolist() not in banDirections:
                     if cnt > MaxIter:
-                        print 'Exceeded number of maximum number of iterations'
+                        print('Exceeded number of maximum number of iterations')
                         return P1
                     direction = P1['A'][i,:]
                     x = self.maxDirectionOpt(direction,W)
@@ -610,11 +632,12 @@ class Projectedpoly(object):
         opt.addNonLinearIneqCon({'poly':self,'bounds':bounds,'subspace':self.subspace})
         self.projOpt = opt
         return None
+
     def maxDirectionOpt(self,direction,U):
-       """
+        """
         Function that creates an optimization instance and adds the inequality constraints for
         the projection optimization problem.
-        
+
         :param Projectedpoly self:
             An instance of the Projectedpoly class.
         :param vector direction:
@@ -676,3 +699,115 @@ class Projectedpoly(object):
         """
         X1 = X0.view(np.dtype((np.void, X0.dtype.itemsize * X0.shape[1])))
         return np.unique(X1).view(X0.dtype).reshape(-1, X0.shape[1])
+
+    @staticmethod
+    def hit_and_run_sample(N, y, W1, W2):
+        """
+        A hit and run method for sampling the inactive variables from a polytope.
+        Points are then converted back to the full space coordinates.
+        Parameters
+        ----------
+        :param int N:
+            the number of inactive variable samples
+        :param ndarray y:
+            the value of the active variables
+        :param ndarray W1:
+            d-by-r matrix that contains the eigenvector bases of the r-dimensional
+            active subspace
+        :param ndarray W2:
+            d-by-(d-r) matrix that contains the eigenvector bases of the
+            (d-r)-dimensional inactive subspace
+        Returns
+        -------
+        :return:
+            Z: N-by-(d-r) matrix that contains values of the inactive variable that
+            correspond to the given `y`
+            X: N-by-d matrix for the sampled points in full space coordinates.
+        Notes
+        -----
+        https://github.com/paulcon/active_subspaces/blob/master/active_subspaces/domains.py
+        """
+        U = np.hstack([W1, W2])
+        m, n = W1.shape
+
+        # get an initial feasible point using the Chebyshev center. huge props to
+        # David Gleich for showing Paul the Chebyshev center.
+        s = np.dot(W1, y).reshape((m, 1))
+        normW2 = np.sqrt(np.sum(np.power(W2, 2), axis=1)).reshape((m, 1))
+        A = np.hstack((np.vstack((W2, -W2.copy())), np.vstack((normW2, normW2.copy()))))
+        b = np.vstack((1 - s, 1 + s)).reshape((2 * m, 1))
+        c = np.zeros((m - n + 1, 1))
+        c[-1] = -1.0
+
+        zc = linear_program_ineq(c, -A, -b)
+        z0 = zc[:-1].reshape((m - n, 1))
+
+        # define the polytope A >= b
+        s = np.dot(W1, y).reshape((m, 1))
+        A = np.vstack((W2, -W2))
+        b = np.vstack((-1 - s, -1 + s)).reshape((2 * m, 1))
+
+        # tolerance
+        ztol = 1e-6
+        eps0 = ztol / 4.0
+
+        Z = np.zeros((N, m - n))
+        for i in range(N):
+
+            # random direction
+            bad_dir = True
+            count, maxcount = 0, 50
+            while bad_dir:
+                d = np.random.normal(size=(m - n, 1))
+                bad_dir = np.any(np.dot(A, z0 + eps0 * d) <= b)
+                count += 1
+                if count >= maxcount:
+                    Z[i:, :] = np.tile(z0, (1, N - i)).transpose()
+                    yz = np.vstack([np.repeat(y[:, np.newaxis], N, axis=1), Z.T])
+                    return Z, np.dot(U, yz).T
+
+            # find constraints that impose lower and upper bounds on eps
+            f, g = b - np.dot(A, z0), np.dot(A, d)
+
+            # find an upper bound on the step
+            min_ind = np.logical_and(g <= 0, f < -np.sqrt(np.finfo(np.float).eps))
+            eps_max = np.amin(f[min_ind] / g[min_ind])
+
+            # find a lower bound on the step
+            max_ind = np.logical_and(g > 0, f < -np.sqrt(np.finfo(np.float).eps))
+            eps_min = np.amax(f[max_ind] / g[max_ind])
+
+            # randomly sample eps
+            eps1 = np.random.uniform(eps_min, eps_max)
+
+            # take a step along d
+            z1 = z0 + eps1 * d
+            Z[i, :] = z1.reshape((m - n,))
+
+            # update temp var
+            z0 = z1.copy()
+
+        yz = np.vstack([np.repeat(y[:, np.newaxis], N, axis=1), Z.T])
+        return Z, np.dot(U, yz).T
+
+def linear_program_ineq(c, A, b):
+    '''
+    Wrapper for scipy.optimize.linprog,
+    adapted from https://github.com/paulcon/active_subspaces/blob/master/active_subspaces/utils/qp_solver.py
+    '''
+    c = c.reshape((c.size,))
+    b = b.reshape((b.size,))
+
+    # make unbounded bounds
+    bounds = []
+    for i in range(c.size):
+        bounds.append((None, None))
+
+    A_ub, b_ub = -A, -b
+    res = linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds, options={"disp": False})
+    if res.success:
+        return res.x.reshape((c.size, 1))
+    else:
+        np.savez('bad_scipy_lp_ineq_{:010d}'.format(np.random.randint(int(1e9))),
+                 c=c, A=A, b=b, res=res)
+        raise Exception('Scipy did not solve the LP. Blame Scipy.')

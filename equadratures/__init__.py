@@ -1,5 +1,6 @@
 #from . distributions import parameter, poly, polycs, polyint, polyreg, polylsq, basis, stats, nataf
 from .parameter import Parameter 
+from .manyparameters import Manyparameters
 from .polyreg import Polyreg #
 from .polylsq import Polylsq
 from .polyint import Polyint 
@@ -12,6 +13,8 @@ from .polynet import Polynet
 import numpy as np
 from .utils import evalfunction, evalgradients, meshgrid
 from .dr import *
+from .optimization import Optimization
+from .projectedpoly import Projectedpoly
 import matplotlib
 params = {'legend.fontsize': 11,
           'font.size' : 10.0,

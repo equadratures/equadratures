@@ -104,13 +104,13 @@ class Poly(object):
 
         # Save time by returning if univariate!
         if dimensions == 1:
-            poly , _ =  self.parameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis)))
+            poly , _, _ =  self.parameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis)))
             return poly
         else:
             for i in range(0, dimensions):
                 if len(stackOfPoints.shape) == 1:
                     stackOfPoints = np.array([stackOfPoints])
-                p[i] , _ = self.parameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i])) )
+                p[i] , _, _ = self.parameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i])) )
 
         # One loop for polynomials
         polynomial = np.ones((basis_entries, no_of_points))
@@ -144,13 +144,13 @@ class Poly(object):
 
         # Save time by returning if univariate!
         if dimensions == 1:
-            _ , dpoly =  self.parameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis) ) )
+            _ , dpoly, _ =  self.parameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis) ) )
             return dpoly
         else:
             for i in range(0, dimensions):
                 if len(stackOfPoints.shape) == 1:
                     stackOfPoints = np.array([stackOfPoints])
-                p[i] , dp[i] = self.parameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i])) )
+                p[i] , dp[i], _ = self.parameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i])) )
 
         # One loop for polynomials
         R = []
@@ -170,6 +170,63 @@ class Poly(object):
                 R.append(polynomialgradient)
 
         return R
+
+    def getPolynomialHessian(self, stackOfPoints):
+        """
+        Evaluates the hessian for each of the polynomial basis functions at a set of points,
+        with respect to each input variable.
+        :param Poly self:
+            An instance of the Poly class.
+        :param matrix stackOfPoints:
+            A N-by-d matrix of points along which the gradient of the multivariate (in d-dimensions) polynomial basis
+            functions must be evaluated.
+        :return:
+            A list with d^2 elements, each with a P-by-N matrix of polynomial evaluations at the stackOfPoints,
+            where P is the cardinality of the basis.
+        """
+        # "Unpack" parameters from "self"
+        basis = self.basis.elements
+        basis_entries, dimensions = basis.shape
+        if stackOfPoints.ndim == 1:
+            no_of_points = 1
+        else:
+            no_of_points, _ = stackOfPoints.shape
+        p = {}
+        dp = {}
+        d2p = {}
+
+        # Save time by returning if univariate!
+        if dimensions == 1:
+            _, _, d2poly = self.parameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis)))
+            return d2poly
+        else:
+            for i in range(0, dimensions):
+                if len(stackOfPoints.shape) == 1:
+                    stackOfPoints = np.array([stackOfPoints])
+                p[i], dp[i], d2p[i] = self.parameters[i]._getOrthoPoly(stackOfPoints[:, i],
+                                                                       int(np.max(basis[:, i]) + 1))
+        H = []
+        for w in range(0, dimensions):
+            gradDirection1 = w
+            for v in range(0, dimensions):
+                gradDirection2 = v
+                polynomialhessian = np.zeros((basis_entries, no_of_points))
+                for i in range(0, basis_entries):
+                    temp = np.ones((1, no_of_points))
+                    for k in range(0, dimensions):
+                        if k == gradDirection1 == gradDirection2:
+                            polynomialhessian[i, :] = d2p[k][int(basis[i, k])] * temp
+                        elif k == gradDirection1:
+                            polynomialhessian[i, :] = dp[k][int(basis[i, k])] * temp
+                        elif k == gradDirection2:
+                            polynomialhessian[i, :] = dp[k][int(basis[i, k])] * temp
+                        else:
+                            polynomialhessian[i, :] = p[k][int(basis[i, k])] * temp
+                        temp = polynomialhessian[i, :]
+                H.append(polynomialhessian)
+
+        return H
+
     def getTensorQuadratureRule(self, orders=None):
         """
         Generates a tensor grid quadrature rule based on the parameters in Poly.
@@ -297,6 +354,30 @@ class Poly(object):
         for i in range(0, self.dimensions):
             grads[i,:] = np.mat(self.coefficients).T * H[i]
         return grads
+
+    def evaluatePolyHessFit(self, stackOfPoints):
+        """
+        Evaluates the hessian of the polynomial approximation of a function (or model data) at prescribed points.
+        :param Poly self:
+            An instance of the Poly class.
+        :param matrix stackOfPoints:
+            A N-by-d matrix of points (can be unscaled) at which the polynomial gradient must be evaluated at.
+        :return:
+            A d-by-d-by-N matrix of the hessian of the polynomial approximation.
+        """
+        if stackOfPoints.ndim == 1:
+            no_of_points = 1
+        else:
+            no_of_points, _ = stackOfPoints.shape
+        H = self.getPolynomialHessian(stackOfPoints)
+        if self.dimensions == 1:
+            return np.mat(self.coefficients).T * H
+        hess = np.zeros((self.dimensions, self.dimensions, no_of_points))
+        for i in range(0, self.dimensions):
+            for j in range(0, self.dimensions):
+                hess[i, j, :] = np.mat(self.coefficients).T * H[i * self.dimensions + j]
+        return hess
+
     def getPolyFitFunction(self):
         """
         Returns a callable polynomial approximation of a function (or model data).

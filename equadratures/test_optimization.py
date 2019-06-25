@@ -1,12 +1,7 @@
 import numpy as np
 import scipy as sp
-#from pyDOE import lhs
 import unittest
-
-import sys
-sys.path.append('C:\Users\james\Documents\Effective-Quadratures')
-import equadratures_tmp as eq
-
+import equadratures as eq
 
 class test_optimization(unittest.TestCase):
     

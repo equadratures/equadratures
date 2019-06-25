@@ -415,7 +415,7 @@ class Poly(object):
             A callable function.
 
         """
-        return lambda (x) : self.evaluatePolyHessFit(x)
+        return lambda x : self.evaluatePolyHessFit(x)
     def getFunctionSamples(self, number_of_samples):
         """
         Returns a set of function samples; useful for computing probabilities.

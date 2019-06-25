@@ -1,7 +1,6 @@
 import numpy as np
 import scipy as sp
-#from scipy.linalg import orth
-from pyDOE import lhs
+#from pyDOE import lhs
 import unittest
 
 import sys
@@ -85,7 +84,7 @@ class test_optimization(unittest.TestCase):
         n = 2
         N = 20
         
-        X = -1.+2.*lhs(n, samples=N)
+        X = np.random.uniform(-1.0, 1.0, (N, n))
 #       Function values for f and Poly object
         f = self.ObjFun(X)
         fparam = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degf)
@@ -106,8 +105,7 @@ class test_optimization(unittest.TestCase):
         n = 50
         N = 5000
         
-        X = -1.+2.*lhs(n, samples=N)
-                
+        X = np.random.uniform(-1.0, 1.0, (N, n))
 #       Active subspace and values for f
         U = sp.linalg.orth(np.random.rand(n,df))
         u, f = self.ObjFun_Subspace(X,U)
@@ -127,7 +125,7 @@ class test_optimization(unittest.TestCase):
         n = 2
         N = 20
         
-        X = -1.+2.*lhs(n, samples=N)
+        X = np.random.uniform(-1.0, 1.0, (N, n))
 #       Function values for f and Poly object
         f = self.ObjFun(X)
         fparam = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degf)
@@ -154,7 +152,7 @@ class test_optimization(unittest.TestCase):
         n = 2
         N = 20
         
-        X = -1.+2.*lhs(n, samples=N)
+        X = np.random.uniform(-1.0, 1.0, (N, n))
 #       Function values for f and Poly object
         f = self.ObjFun(X)
         fparam = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degf)
@@ -183,8 +181,7 @@ class test_optimization(unittest.TestCase):
         n = 50
         N = 5000
         
-        X = -1.+2.*lhs(n, samples=N)
-                
+        X = np.random.uniform(-1.0, 1.0, (N, n))
 #       Active subspace and values for f
         U = sp.linalg.orth(np.random.rand(n,df))
         u, f = self.ObjFun_Subspace(X,U)

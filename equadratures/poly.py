@@ -143,7 +143,12 @@ class Poly(object):
         basis = self.basis.elements
         basis_entries, dimensions = basis.shape
         if len(stackOfPoints.shape) == 1:
-            stackOfPoints = np.reshape(stackOfPoints, (len(stackOfPoints),1))
+            if dimensions == 1:
+                # a 1d array of inputs, and each input is 1d
+                stackOfPoints = np.reshape(stackOfPoints, (len(stackOfPoints),1))
+            else:
+                # a 1d array representing 1 point, in multiple dimensions!
+                stackOfPoints = np.array([stackOfPoints])
         no_of_points, _ = stackOfPoints.shape
         p = {}
         dp = {}

@@ -7,6 +7,7 @@ from .polycs import Polycs
 from .poly import Poly
 from .stats import Statistics
 from .basis import Basis
+from .polynet import Polynet
 from .nataf import Nataf
 import numpy as np
 from .utils import evalfunction, evalgradients, meshgrid

@@ -17,8 +17,8 @@ class TestPolyreg(TestCase):
         myBasis = Basis('Univariate')
         poly = Polyreg(myParameters, myBasis, training_inputs=x_train, training_outputs=y_train)
         t_stat, R2 =  poly.getfitStatistics()
-        np.testing.assert_almost_equal( R2, 0.846, decimal=1, err_msg = "Difference greated than imposed tolerance for mean value")
-        
+        np.testing.assert_almost_equal( R2, 0.846, decimal=3, err_msg = "Difference greated than imposed tolerance for mean value")
+
 
 
 if __name__== '__main__':

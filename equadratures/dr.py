@@ -238,6 +238,7 @@ class dr(object):
             U = U_new
             V = V_new
             coeff = coeff_new
+            V_plus = V_plus_new
             res = res_new
             R = R_new
 
@@ -363,14 +364,13 @@ def jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
     J=np.zeros((M,m,n))
     #Obtain the derivative of this tensor
     dV=np.zeros((m,n,M,N))
-    for k in range(0,m):
-        for l in range(0,n):
-            for i in range(0,M):
-                for j in range(0,N):
-                    current=Gradient[l].T
-                    if n==1:
-                        current=Gradient.T
-                    dV[k,l,i,j]=np.asscalar(vectord[l])*np.asscalar(X[i,k])*np.asscalar(current[i,j])#Eqn 16 17
+    for l in range(0,n):
+	        for j in range(0,N):
+	            current=Gradient[l].T
+	            if n==1:
+	                current=Gradient.T
+	            dV[:,l,:,j]=np.asscalar(vectord[l])*(X.T*current[:,j])#Eqn 16 17
+
     #Get the P matrix
     P=np.identity(M)-np.matmul(V,V_plus)
     V_minus=scipy.linalg.pinv(V)
@@ -395,3 +395,9 @@ def jacobian_vec(list_of_poly, X):
     for p in range(len(list_of_poly)):
         J[p,:,:] = list_of_poly[p].evaluatePolyGradFit(X)
     return J
+
+def subspace_dist(U, V):
+    if len(U.shape) == 1:
+        return np.linalg.norm(np.outer(U, U) - np.outer(V, V), ord=2)
+    else:
+        return np.linalg.norm(np.dot(U, U.T) - np.dot(V, V.T), ord=2) 

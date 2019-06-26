@@ -62,7 +62,7 @@ class Polyreg(Poly):
         p = len(self.y)
         if self.training_grads is None:
             self.bz = np.dot( self.Wz ,  np.reshape(self.y, (p,1)) )
-            alpha = np.linalg.lstsq(self.A, self.bz) # Opted for numpy's standard version because of speed!
+            alpha = np.linalg.lstsq(self.A, self.bz, rcond=None) # Opted for numpy's standard version because of speed!
             self.coefficients = alpha[0]
             super(Polyreg, self).__setCoefficients__(self.coefficients)
         else:

@@ -10,7 +10,7 @@ from .qr import solveCLSQ
 from .utils import cell2matrix
 from scipy.stats import linregress
 
-class Polyreg(Projectedpoly):
+class Polyreg(Poly):
     """
     The class defines a Polyreg object. It is the child of Poly.
     :param Parameter parameters:
@@ -27,7 +27,7 @@ class Polyreg(Projectedpoly):
         Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.
     """
     def __init__(self, parameters, basis, training_inputs = None, fun=None, training_outputs=None, training_grads=None, quadrature_rule = None, no_of_quad_points = None, gradmethod=None, subspace=None):
-        super(Polyreg, self).__init__(parameters, basis, subspace)
+        super(Polyreg, self).__init__(parameters, basis)
         if not(training_inputs is None):
             self.x = training_inputs
             if len(self.x.shape) == 1:

@@ -19,34 +19,37 @@
   
 
   
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Matrix factorization utilities" href="qr.html" />
     <link rel="prev" title="Convex optimization utilities" href="convex.html" /> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -100,6 +103,7 @@
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Statistics utilities</a></li>
 <li class="toctree-l3"><a class="reference internal" href="qr.html">Matrix factorization utilities</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nataf.html">Nataf utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optimisation.html">Optimization with polynomial surrogates</a></li>
 </ul>
 </li>
 </ul>
@@ -180,24 +184,19 @@
 <dl class="class">
 <dt id="equadratures.stats.Statistics">
 <em class="property">class </em><code class="descclassname">equadratures.stats.</code><code class="descname">Statistics</code><span class="sig-paren">(</span><em>coefficients</em>, <em>basis</em>, <em>parameters</em>, <em>quadrature_points=None</em>, <em>quadrature_weights=None</em>, <em>polynomial_evals=None</em>, <em>max_sobol_order=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/stats.html#Statistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.stats.Statistics" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>coefficients</strong> (<em>numpy-matrix</em>) – Coefficients from a polynomial expansion. Can be computed using any technique.</li>
-<li><strong>basis</strong> (<a class="reference internal" href="basis.html#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) – Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.</li>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coefficients</strong> (<em>numpy-matrix</em>) – Coefficients from a polynomial expansion. Can be computed using any technique.</p></li>
+<li><p><strong>basis</strong> (<a class="reference internal" href="basis.html#equadratures.basis.Basis" title="equadratures.basis.Basis"><em>Basis</em></a>) – Polynomial index set. If an index set is not given, the constructor uses a tensor grid basis of polynomials. For total order and hyperbolic index sets, the user needs to explicity input an index set.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>Attributes:</dt>
-<dd><ul class="first last simple">
-<li><strong>self.mean</strong>: (double) Mean of the polynomial expansion.</li>
-<li><strong>self.variance</strong>: (double) Variance of the polynomial expansion.</li>
-<li><strong>self.sobol</strong>:(dict) Sobol’ indices of order up to number of dimensions.</li>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Attributes:</dt><dd><ul class="simple">
+<li><p><strong>self.mean</strong>: (double) Mean of the polynomial expansion.</p></li>
+<li><p><strong>self.variance</strong>: (double) Variance of the polynomial expansion.</p></li>
+<li><p><strong>self.sobol</strong>:(dict) Sobol’ indices of order up to number of dimensions.</p></li>
 </ul>
 </dd>
 </dl>
@@ -205,18 +204,17 @@
 <dt id="equadratures.stats.Statistics.getCondKurtosis">
 <code class="descname">getCondKurtosis</code><span class="sig-paren">(</span><em>order=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/stats.html#Statistics.getCondKurtosis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.stats.Statistics.getCondKurtosis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get conditional kurtosis indices at specified order.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>int</strong> (<em>order</em>) – The order at which conditional kurtosis indices are computed. By default, computes first order conditional kurtosis.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">indices: Dictionary where keys specify non-zero dimensions and values represent conditional kurtosis indices.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>int</strong> (<em>order</em>) – The order at which conditional kurtosis indices are computed. By default, computes first order conditional kurtosis.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>indices: Dictionary where keys specify non-zero dimensions and values represent conditional kurtosis indices.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></p>
+</dd>
+</dl>
 <p><strong>Sample usage:</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stats</span> <span class="o">=</span> <span class="n">Statistics</span><span class="p">(</span><span class="n">coeffcients</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
 <span class="n">first_order_kurtosis</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getCondKurtosis</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>        
@@ -228,18 +226,17 @@
 <dt id="equadratures.stats.Statistics.getCondSkewness">
 <code class="descname">getCondSkewness</code><span class="sig-paren">(</span><em>order=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/stats.html#Statistics.getCondSkewness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.stats.Statistics.getCondSkewness" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get conditional skewness indices at specified order.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>int</strong> (<em>order</em>) – The order at which conditional skewness indices are computed. By default, computes first order conditional skewness.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">indices: Dictionary where keys specify non-zero dimensions and values represent conditional skewness indices.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>int</strong> (<em>order</em>) – The order at which conditional skewness indices are computed. By default, computes first order conditional skewness.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>indices: Dictionary where keys specify non-zero dimensions and values represent conditional skewness indices.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></p>
+</dd>
+</dl>
 <p><strong>Sample usage:</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stats</span> <span class="o">=</span> <span class="n">Statistics</span><span class="p">(</span><span class="n">coeffcients</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
 <span class="n">first_order_skewness</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getCondSkewness</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>        
@@ -251,18 +248,17 @@
 <dt id="equadratures.stats.Statistics.getSobol">
 <code class="descname">getSobol</code><span class="sig-paren">(</span><em>order=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/stats.html#Statistics.getSobol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.stats.Statistics.getSobol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get Sobol’ indices at specified order.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>int</strong> (<em>order</em>) – The order at which Sobol’ indices are computed. By default, computes first order Sobol’ indices.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">indices: Dictionary where keys specify non-zero dimensions and values represent Sobol’ indices.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>int</strong> (<em>order</em>) – The order at which Sobol’ indices are computed. By default, computes first order Sobol’ indices.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>indices: Dictionary where keys specify non-zero dimensions and values represent Sobol’ indices.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></p>
+</dd>
+</dl>
 <p><strong>Sample usage:</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stats</span> <span class="o">=</span> <span class="n">Statistics</span><span class="p">(</span><span class="n">coeffcients</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
 <span class="n">fosi</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">getSobol</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>        
@@ -285,7 +281,7 @@
         <a href="qr.html" class="btn btn-neutral float-right" title="Matrix factorization utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="convex.html" class="btn btn-neutral" title="Convex optimization utilities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="convex.html" class="btn btn-neutral float-left" title="Convex optimization utilities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -294,7 +290,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2019 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures
 
     </p>
   </div>
@@ -311,33 +307,16 @@
   
 
 
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'v7.6',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  <script type="text/javascript" src="../_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

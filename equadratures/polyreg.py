@@ -10,7 +10,7 @@ from .qr import solveCLSQ
 from .utils import cell2matrix
 from scipy.stats import linregress
 
-class Polyreg(Projectedpoly):
+class Polyreg(Poly):
     """
     The class defines a Polyreg object. It is the child of Poly.
     :param Parameter parameters:
@@ -26,8 +26,8 @@ class Polyreg(Projectedpoly):
     :param callable fun:
         Instead of specifying the output training points, the user can also provide a callable function, which will be evaluated.
     """
-    def __init__(self, parameters, basis, training_inputs = None, fun=None, training_outputs=None, training_grads=None, quadrature_rule = None, no_of_quad_points = None, gradmethod=None, subspace=None):
-        super(Polyreg, self).__init__(parameters, basis, subspace)
+    def __init__(self, parameters, basis, training_inputs = None, fun=None, training_outputs=None, training_grads=None, quadrature_rule = None, no_of_quad_points = None, gradmethod=None):
+        super(Polyreg, self).__init__(parameters, basis)
         if not(training_inputs is None):
             self.x = training_inputs
             if len(self.x.shape) == 1:
@@ -53,7 +53,6 @@ class Polyreg(Projectedpoly):
         self.computeCoefficients()
         self.quadrature_rule = quadrature_rule
         self.getQuadraturePointsWeights(no_of_quad_points)
-        self.subspace = subspace
     def computeCoefficients(self):
         """
         This function computes the coefficients using least squares. To access the coefficients simply use the class's attribute self.coefficients.
@@ -79,7 +78,7 @@ class Polyreg(Projectedpoly):
             del d
             coefficients, cond = solveCLSQ(self.A, self.bz, self.C, self.dy, self.gradmethod)
             self.coefficients = coefficients
-            super(Polyreg, self).__setCoefficients__(self.coefficients)           
+            super(Polyreg, self).__setCoefficients__(self.coefficients)
     def cross_validation(self, folds = 5):
         """
         This function carries out a cross validation procedure on the polynomial.
@@ -94,22 +93,22 @@ class Polyreg(Projectedpoly):
         N = x.shape[0]
         y = self.y
         R_sq = np.zeros(folds)
-         
+
         for n in range(folds):
             indices = [int(i) for i in n * np.ceil(N/5.0) + range(int(np.ceil(N/5.0))) if i < N]
             x_ver = x[indices]
             x_train = np.delete(x, indices, 0)
             y_ver = y[indices].flatten()
             y_train = np.squeeze(np.delete(y, indices))
-             
+
             poly_trained = Polyreg(self.parameters, self.basis, training_inputs = x_train, training_outputs = y_train,no_of_quad_points = 1)
             y_trained = np.squeeze(np.asarray(poly_trained.evaluatePolyFit(x_ver)))
-             
+
             _,_,r,_,_ = linregress(y_ver, y_trained)
-             
+
             R_sq[n] = r**2.0
-        
-        return np.mean(R_sq)   
+
+        return np.mean(R_sq)
     def setDesignMatrix(self):
         """
         Sets the design matrix using the polynomials defined in the basis.
@@ -124,7 +123,7 @@ class Polyreg(Projectedpoly):
         self.A =  self.Wz * Pz.T
         if self.training_grads is not None:
             dPcell = super(Polyreg, self).getPolynomialGradient(self.x)
-            self.C = cell2matrix(dPcell, self.Wz)  
+            self.C = cell2matrix(dPcell, self.Wz)
         rows, cols = self.A.shape
         if (rows <= cols) and (self.training_grads is None):
             raise(ValueError, 'Polyreg:setDesignMatrix:: Number of columns have to be less than (or equal to) the number of rows!')
@@ -143,7 +142,7 @@ class Polyreg(Projectedpoly):
         t_stat = get_t_value(self.coefficients, self.PzT, self.y)
         r_sq = get_R_squared(self.y, super(Polyreg, self).evaluatePolyFit(self.x))
         return t_stat, r_sq
-    
+
     def getQuadraturePointsWeights(self, points):
         if points == 0:
             return

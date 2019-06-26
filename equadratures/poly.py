@@ -4,7 +4,6 @@ import pickle
 from .parameter import Parameter
 from .basis import Basis
 import numpy as np
-VERSION_NUMBER = 7.6
 
 class Poly(object):
     """
@@ -50,7 +49,7 @@ class Poly(object):
         """
         Sets the basis
         """
-        self.basis = basisNew 
+        self.basis = basisNew
     def __setQuadrature__(self, quadraturePoints, quadratureWeights):
         """
         Sets the quadrature points and weights
@@ -201,7 +200,7 @@ class Poly(object):
         p = {}
         dp = {}
         d2p = {}
-                        
+
         # Save time by returning if univariate!
         if dimensions == 1:
             _ , _ , d2poly =  self.parameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis) ) )
@@ -210,7 +209,7 @@ class Poly(object):
             for i in range(0, dimensions):
                 if len(stackOfPoints.shape) == 1:
                     stackOfPoints = np.array([stackOfPoints])
-                p[i] , dp[i] , d2p[i] = self.parameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i]) + 1 ) )    
+                p[i] , dp[i] , d2p[i] = self.parameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i]) + 1 ) )
         H = []
         for w in range(0, dimensions):
             gradDirection1 = w
@@ -288,7 +287,7 @@ class Poly(object):
             evals = self.getPolynomial(self.quadraturePoints)
             return Statistics(self.coefficients, self.basis, self.parameters, self.quadraturePoints, self.quadratureWeights, evals, max_sobol_order)
         else:
-            return Statistics(self.coefficients, self.basis, self.parameters, max_sobol_order=max_sobol_order)            
+            return Statistics(self.coefficients, self.basis, self.parameters, max_sobol_order=max_sobol_order)
     def getQuadratureRule(self, options=None, number_of_points = None):
         """
         Generates quadrature points and weights.

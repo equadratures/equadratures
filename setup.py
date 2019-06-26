@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='equadratures',
-      version='7.6.2',
+      version='8.0.0',
       description='Machine learning with polynomials',
       long_description=readme(),
       classifiers=[
@@ -16,7 +16,7 @@ setup(name='equadratures',
       ],
       keywords='polynomial chaos effective quadratures polynomial approximations gradients',
       url='https://github.com/Effective-Quadratures/Effective-Quadratures',
-      author='Pranay Seshadri, Nicholas Wong, Irene Virdis',
+      author='Pranay Seshadri, Nicholas Wong, Irene Virdis, James Gross',
       license='LPGL-2.1',
       packages=['equadratures', 'equadratures.distributions'],
       install_requires=[

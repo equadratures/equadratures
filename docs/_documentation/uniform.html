@@ -19,34 +19,37 @@
   
 
   
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Weibull" href="weibull.html" />
     <link rel="prev" title="Gamma" href="gamma.html" /> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -187,50 +190,41 @@
 <dt id="equadratures.distributions.uniform.Uniform">
 <em class="property">class </em><code class="descclassname">equadratures.distributions.uniform.</code><code class="descname">Uniform</code><span class="sig-paren">(</span><em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/uniform.html#Uniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.uniform.Uniform" title="Permalink to this definition">¶</a></dt>
 <dd><p>The class defines a Uniform object. It is the child of Distribution.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mean</strong> (<em>double</em>) – <blockquote>
-<div>Mean of the Gaussian distribution.</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name" colspan="2">param double variance:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">Variance of the Gaussian distribution.</td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mean</strong> (<em>double</em>) – <blockquote>
+<div><p>Mean of the Gaussian distribution.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">param double variance</dt>
+<dd class="field-odd"><p>Variance of the Gaussian distribution.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
 <dl class="method">
 <dt id="equadratures.distributions.uniform.Uniform.getCDF">
 <code class="descname">getCDF</code><span class="sig-paren">(</span><em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/uniform.html#Uniform.getCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.uniform.Uniform.getCDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>A uniform cumulative density function.
 :param points:</p>
 <blockquote>
-<div>Matrix of points which have to be evaluated</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>lower</strong> (<em>double</em>) – Lower bound of the support of the uniform distribution.</li>
-<li><strong>upper</strong> (<em>double</em>) – Upper bound of the support of the uniform distribution.</li>
+<div><p>Matrix of points which have to be evaluated</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lower</strong> (<em>double</em>) – Lower bound of the support of the uniform distribution.</p></li>
+<li><p><strong>upper</strong> (<em>double</em>) – Upper bound of the support of the uniform distribution.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Cumulative density values along the support of the uniform distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An array of N equidistant values over the support of the distribution.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Cumulative density values along the support of the uniform distribution.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -239,85 +233,76 @@
 <dd><p>A uniform probability distribution.
 :param points:</p>
 <blockquote>
-<div>Matrix of points which have to be evaluated</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>lower</strong> (<em>double</em>) – Lower bound of the support of the uniform distribution.</li>
-<li><strong>upper</strong> (<em>double</em>) – Upper bound of the support of the uniform distribution.</li>
+<div><p>Matrix of points which have to be evaluated</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lower</strong> (<em>double</em>) – Lower bound of the support of the uniform distribution.</p></li>
+<li><p><strong>upper</strong> (<em>double</em>) – Upper bound of the support of the uniform distribution.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An array of N equidistant values over the support of the distribution.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Probability density values along the support of the uniform distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An array of N equidistant values over the support of the distribution.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Probability density values along the support of the uniform distribution.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="equadratures.distributions.uniform.Uniform.getRecurrenceCoefficients">
 <code class="descname">getRecurrenceCoefficients</code><span class="sig-paren">(</span><em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/uniform.html#Uniform.getRecurrenceCoefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.uniform.Uniform.getRecurrenceCoefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>Recurrence coefficients for the uniform distribution.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.uniform.Uniform" title="equadratures.distributions.uniform.Uniform"><em>Uniform</em></a>) – An instance of the Uniform class.</li>
-<li><strong>order</strong> (<em>array</em>) – The order of the recurrence coefficients desired.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong> (<a class="reference internal" href="#equadratures.distributions.uniform.Uniform" title="equadratures.distributions.uniform.Uniform"><em>Uniform</em></a>) – An instance of the Uniform class.</p></li>
+<li><p><strong>order</strong> (<em>array</em>) – The order of the recurrence coefficients desired.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Recurrence coefficients associated with the uniform distribution.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Recurrence coefficients associated with the uniform distribution.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="equadratures.distributions.uniform.Uniform.getSamples">
 <code class="descname">getSamples</code><span class="sig-paren">(</span><em>m=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/uniform.html#Uniform.getSamples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.uniform.Uniform.getSamples" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates samples from the Uniform distribution.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Param:</th><td class="field-body">uniform self:
-An instance of Uniform class</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Param:</th><td class="field-body">integer m:
-NUmber of random samples. If no provided, a default number of 5e5 is assumed.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A N-by-1 vector that contains the samples.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Param</dt>
+<dd class="field-odd"><p>uniform self:
+An instance of Uniform class</p>
+</dd>
+<dt class="field-even">Param</dt>
+<dd class="field-even"><p>integer m:
+NUmber of random samples. If no provided, a default number of 5e5 is assumed.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A N-by-1 vector that contains the samples.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="equadratures.distributions.uniform.Uniform.getiCDF">
 <code class="descname">getiCDF</code><span class="sig-paren">(</span><em>xx</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/distributions/uniform.html#Uniform.getiCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.distributions.uniform.Uniform.getiCDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Uniform inverse cumulative density function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Param:</th><td class="field-body">Uniform self:
-An instance of Uniform class</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>xx</strong> (<em>array</em>) – Points at which the inverse cumulative density function need to be evaluated.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Inverse cumulative density function values of the Uniform distribution.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Param</dt>
+<dd class="field-odd"><p>Uniform self:
+An instance of Uniform class</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>xx</strong> (<em>array</em>) – Points at which the inverse cumulative density function need to be evaluated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Inverse cumulative density function values of the Uniform distribution.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -335,7 +320,7 @@ An instance of Uniform class</td>
         <a href="weibull.html" class="btn btn-neutral float-right" title="Weibull" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="gamma.html" class="btn btn-neutral" title="Gamma" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="gamma.html" class="btn btn-neutral float-left" title="Gamma" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -344,7 +329,7 @@ An instance of Uniform class</td>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2019 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures
 
     </p>
   </div>
@@ -361,33 +346,16 @@ An instance of Uniform class</td>
   
 
 
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'v7.6',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  <script type="text/javascript" src="../_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

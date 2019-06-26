@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Optimization with polynomial surrogates &mdash; Effective Quadratures v7.6 documentation</title>
+  <title>Optimization with polynomial surrogates &mdash; Effective Quadratures v8.0 documentation</title>
   
 
   
@@ -49,7 +49,7 @@
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+        <div class="wy-side-nav-search"  style="background: grey" >
           
 
           
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                7.6
+                8.0
               </div>
             
           
@@ -180,7 +180,148 @@
             
   <div class="section" id="module-equadratures.optimization">
 <span id="optimization-with-polynomial-surrogates"></span><h1>Optimization with polynomial surrogates<a class="headerlink" href="#module-equadratures.optimization" title="Permalink to this headline">¶</a></h1>
-<p>Perform unconstrained or constrained optimization of Poly objects using scipy.optimize.</p>
+<p>Perform unconstrained or constrained optimization.</p>
+<dl class="class">
+<dt id="equadratures.optimization.Optimization">
+<em class="property">class </em><code class="descclassname">equadratures.optimization.</code><code class="descname">Optimization</code><span class="sig-paren">(</span><em>method='trust-constr'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/optimization.html#Optimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.optimization.Optimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class performs unconstrained or constrained optimization of Poly objects using scipy.optimize.minimize.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>method</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<em>string</em>) – A string specifying the method that will be used for optimization. All of the available choices come from scipy.optimize.minimize
+(see &lt;<a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html">https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html</a>&gt; for a list of methods and further information).
+In the case of general constrained optimization, the options are ‘COBYLA’, ‘SLSQP’, and ‘trust-constr’. The default is ‘trust-constr’.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="equadratures.optimization.Optimization.addBounds">
+<code class="descname">addBounds</code><span class="sig-paren">(</span><em>lb</em>, <em>ub</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/optimization.html#Optimization.addBounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.optimization.Optimization.addBounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds bounds lb &lt;= x &lt;=ub to the optimization problem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lb</strong> (<em>ndarray</em>) – 1-by-n matrix that contains lower bounds of x.</p></li>
+<li><p><strong>ub</strong> (<em>ndarray</em>) – 1-by-n matrix that contains upper bounds of x.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.optimization.Optimization.addLinearEqCon">
+<code class="descname">addLinearEqCon</code><span class="sig-paren">(</span><em>A</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/optimization.html#Optimization.addLinearEqCon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.optimization.Optimization.addLinearEqCon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds linear equality constraints  A x = b to the optimization routine.
+Only ‘trust-constr’ and ‘SLSQP’ methods can handle equality constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> (<em>ndarray</em>) – M-by-n matrix that contains coefficients of the linear equality constraints</p></li>
+<li><p><strong>b</strong> (<em>ndarray</em>) – M-by-1 matrix that specifies right hand side of the linear equality constraints.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.optimization.Optimization.addLinearIneqCon">
+<code class="descname">addLinearIneqCon</code><span class="sig-paren">(</span><em>A</em>, <em>b_l</em>, <em>b_u</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/optimization.html#Optimization.addLinearIneqCon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.optimization.Optimization.addLinearIneqCon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds linear inequality constraints b_l &lt;= A x &lt;= b_u to the optimization problem.
+Only ‘trust-constr’, ‘COBYLA, and ‘SLSQP’ methods can handle general constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> (<em>ndarray</em>) – M-by-n matrix that contains coefficients of the linear inequality constraints</p></li>
+<li><p><strong>b_l</strong> (<em>ndarray</em>) – M-by-1 matrix that specifies lower bounds of the linear inequality constraints.
+If there is no lower bound, set b_l = -np.inf * np.ones(M).</p></li>
+<li><p><strong>b_u</strong> (<em>ndarray</em>) – M-by-1 matrix that specifies upper bounds of the linear inequality constraints.
+If there is no upper bound, set b_u = np.inf * np.ones(M).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.optimization.Optimization.addNonLinearEqCon">
+<code class="descname">addNonLinearEqCon</code><span class="sig-paren">(</span><em>value</em>, <em>Poly=None</em>, <em>subspace=None</em>, <em>Function=None</em>, <em>jacFunction=None</em>, <em>hessFunction=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/optimization.html#Optimization.addNonLinearEqCon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.optimization.Optimization.addNonLinearEqCon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds nonlinear inequality constraints g(x) = value to the optimization routine.
+Only ‘trust-constr’ and ‘SLSQP’ methods can handle equality constraints.
+If Poly object is provided, gradients and Hessians will be computed automatically.
+If ‘subspace’ is provided, this method adds the constraint g(M^T x) = value, where M is a tall matrix specified using the subspace argument.
+If a lambda function is provided with ‘function’ argument, the user may provide ‘jacFunction’ for gradients and ‘hessFunction’ for Hessians;
+otherwise, a 2-point differentiation rule will be used to approximate these.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – a float value specifying what nonlinear function must be equal to</p></li>
+<li><p><strong>Poly</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<a class="reference internal" href="polyparent.html#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – an instance of the Poly class</p></li>
+<li><p><strong>subspace</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<em>ndarray</em>) – n-by-d matrix specifying the tall subspace matrix</p></li>
+<li><p><strong>Function</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<em>function</em>) – a lambda function of constraint</p></li>
+<li><p><strong>jacFunction</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<em>function</em>) – a lambda function of the gradient of the constraint</p></li>
+<li><p><strong>hessFunction</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<em>function</em>) – a lambda function of the Hessian of the constraint</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.optimization.Optimization.addNonLinearIneqCon">
+<code class="descname">addNonLinearIneqCon</code><span class="sig-paren">(</span><em>bounds</em>, <em>Poly=None</em>, <em>subspace=None</em>, <em>Function=None</em>, <em>jacFunction=None</em>, <em>hessFunction=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/optimization.html#Optimization.addNonLinearIneqCon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.optimization.Optimization.addNonLinearIneqCon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds nonlinear inequality constraints lb &lt;= g(x) &lt;= ub to the optimization problem, where lb, ub = bounds.
+Only ‘trust-constr’, ‘COBYLA, and ‘SLSQP’ methods can handle general constraints.
+If Poly object is provided using ‘poly’ argument, gradients and Hessians will be computed automatically.
+If ‘subspace’ is provided, adds the constraint lb &lt;= g(M^T x) &lt;= ub, where M is a tall matrix specified using the subspace argument.
+If a lambda function is provided with ‘function’ argument, the user may provide ‘jacFunction’ for gradients and ‘hessFunction’ for Hessians;
+otherwise, a 2-point differentiation rule will be used to approximate these.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bounds</strong> (<em>ndarray</em>) – array with 2 entries specifying the lower and upper bounds of the inequality.
+If there is no lower bound, set bounds[0] = -np.inf.
+If there is no upper bound, set bounds[1] = np.inf.</p></li>
+<li><p><strong>Poly</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<a class="reference internal" href="polyparent.html#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – an instance of the Poly class</p></li>
+<li><p><strong>subspace</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<em>ndarray</em>) – n-by-d matrix specifying a subspace matrix</p></li>
+<li><p><strong>Function</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<em>function</em>) – a lambda function of constraint</p></li>
+<li><p><strong>jacFunction</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<em>function</em>) – a lambda function of the gradient of the constraint</p></li>
+<li><p><strong>hessFunction</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<em>function</em>) – a lambda function of the Hessian of the constraint</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.optimization.Optimization.addObjective">
+<code class="descname">addObjective</code><span class="sig-paren">(</span><em>Poly=None</em>, <em>subspace=None</em>, <em>Function=None</em>, <em>jacFunction=None</em>, <em>hessFunction=None</em>, <em>maximize=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/optimization.html#Optimization.addObjective"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.optimization.Optimization.addObjective" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Poly</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<a class="reference internal" href="polyparent.html#equadratures.poly.Poly" title="equadratures.poly.Poly"><em>Poly</em></a>) – an instance of the Poly class</p></li>
+<li><p><strong>subspace</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<em>ndarray</em>) – n-by-d matrix specifying a subspace matrix</p></li>
+<li><p><strong>Function</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<em>function</em>) – a lambda function of constraint</p></li>
+<li><p><strong>jacFunction</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<em>function</em>) – a lambda function of the gradient of the constraint</p></li>
+<li><p><strong>hessFunction</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<em>function</em>) – a lambda function of the Hessian of the constraint</p></li>
+<li><p><strong>maximize</strong><strong> (</strong><strong>optional</strong><strong>)</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – a flag to specify if the user would like to maximize</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="equadratures.optimization.Optimization.optimizePoly">
+<code class="descname">optimizePoly</code><span class="sig-paren">(</span><em>x0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/optimization.html#Optimization.optimizePoly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.optimization.Optimization.optimizePoly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs optimization on a specified function, provided the objective has been added using ‘addObjective’ method
+and constraints have been added using the relevant method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x0</strong> (<em>ndarray</em>) – initial point for optimizer</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An object containing the optimization result. Important attributes are: the solution array ‘x’, a Boolean flag ‘success’ indicating
+if the optimizer exited successfully, and a doc-string ‘message’ describing the cause of the termination.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

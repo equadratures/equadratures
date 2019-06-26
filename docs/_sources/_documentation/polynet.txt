@@ -1,0 +1,5 @@
+Deep learning
+=====================
+
+.. automodule:: equadratures.polynet
+    :members:

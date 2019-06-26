@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Nataf utilities &mdash; Effective Quadratures v7.6 documentation</title>
+  <title>Nataf utilities &mdash; Effective Quadratures v8.0 documentation</title>
   
 
   
@@ -49,7 +49,7 @@
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+        <div class="wy-side-nav-search"  style="background: grey" >
           
 
           
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                7.6
+                8.0
               </div>
             
           
@@ -180,11 +180,7 @@
             
   <div class="section" id="module-equadratures.nataf">
 <span id="nataf-utilities"></span><h1>Nataf utilities<a class="headerlink" href="#module-equadratures.nataf" title="Permalink to this headline">¶</a></h1>
-<p>Class for solving the Nataf transformation in N-Dimensional case, 
-for generic types of input  marginals.</p>
-<p>Input parameter: 
-D : List of Distributions: instances of Parameter class.
-R : Correlation matrix of distributions which belong to D.</p>
+<p>Utilities for dealing with correlated inputs.</p>
 <dl class="class">
 <dt id="equadratures.nataf.Nataf">
 <em class="property">class </em><code class="descclassname">equadratures.nataf.</code><code class="descname">Nataf</code><span class="sig-paren">(</span><em>D=None</em>, <em>R=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/nataf.html#Nataf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.nataf.Nataf" title="Permalink to this definition">¶</a></dt>
@@ -194,7 +190,7 @@ References for theory:</p>
 <div><p>Melchers, R., E. (Robert E.), 1945- Structural reliability analysis
 and predictions - 2nd edition - John Wiley &amp; Sons Ltd.</p>
 </div></blockquote>
-<p>The input correlated marginals are mapped from their physical space to a new 
+<p>The input correlated marginals are mapped from their physical space to a new
 standard normal space, in which points are uncorrelated.</p>
 <p>Attributes of the class:
 :param list D:</p>
@@ -206,7 +202,7 @@ standard normal space, in which points are uncorrelated.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>R</strong> (<em>numpy-matrix</em>) – The correlation matrix associated with the joint distribution.</p></li>
 <li><p><strong>std</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) – A standard normal distribution</p></li>
-<li><p><strong>A</strong> (<em>numpy-matrix</em>) – The Cholesky decomposition of Fictive matrix R0, 
+<li><p><strong>A</strong> (<em>numpy-matrix</em>) – The Cholesky decomposition of Fictive matrix R0,
 associated with the set of normal intermediate
 correlated distributions.</p></li>
 </ul>
@@ -225,7 +221,7 @@ M represents the number of correlated marginals</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A N-by-M Matrix which contains standardized uncorrelated data.
-The transformation of each i-th input marginal is stored along 
+The transformation of each i-th input marginal is stored along
 the i-th column of the output matrix.</p>
 </dd>
 </dl>
@@ -235,7 +231,7 @@ the i-th column of the output matrix.</p>
 <dt id="equadratures.nataf.Nataf.CorrelationMatrix">
 <code class="descname">CorrelationMatrix</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/nataf.html#Nataf.CorrelationMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.nataf.Nataf.CorrelationMatrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>The following calculations check the correlation
-matrix of input arrays and determine the covariance 
+matrix of input arrays and determine the covariance
 matrix: The input matrix mush have [Nxm] dimensions where
 m is the number of the marginals.</p>
 <dl class="field-list simple">
@@ -283,7 +279,7 @@ points represents the array we want to correlate.</p>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A N-by-M matrix in which correlated samples are organized
 along columns: the result of the run of the present method
-for the i-th marginal into the input matrix is stored 
+for the i-th marginal into the input matrix is stored
 along the i-th column of the output matrix.</p>
 </dd>
 </dl>

@@ -4,7 +4,7 @@ import pickle
 from .parameter import Parameter
 from .basis import Basis
 import numpy as np
-VERSION_NUMBER = 8.0
+VERSION_NUMBER = 7.6
 
 class Poly(object):
     """
@@ -415,7 +415,7 @@ class Poly(object):
             A callable function.
 
         """
-        return lambda (x) : self.evaluatePolyHessFit(x)
+        return lambda x : self.evaluatePolyHessFit(x)
     def getFunctionSamples(self, number_of_samples):
         """
         Returns a set of function samples; useful for computing probabilities.

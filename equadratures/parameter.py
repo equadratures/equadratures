@@ -160,33 +160,34 @@ class Parameter(object):
 			order = order + 1
 		gridPoints = np.asarray(points).copy()
 		ab = self.getRecurrenceCoefficients(order)
-		if ( any(gridPoints) < self.bounds[0]) or (any(gridPoints) > self.bounds[1] ) :
+		if (any(gridPoints) < self.bounds[0]) or (any(gridPoints) > self.bounds[1]):
 			for r in range(0, len(gridPoints)):
-				gridPoints[r] = (gridPoints[r] - self.bounds[0])/(self.bounds[1] - self.bounds[0])
+				gridPoints[r] = (gridPoints[r] - self.bounds[0]) / (self.bounds[1] - self.bounds[0])
 
-		orthopoly = np.zeros((order, len(gridPoints))) # create a matrix full of zeros
+		orthopoly = np.zeros((order, len(gridPoints)))  # create a matrix full of zeros
 		derivative_orthopoly = np.zeros((order, len(gridPoints)))
 		dderivative_orthopoly = np.zeros((order, len(gridPoints)))
 
 		# Convert the grid points to a numpy array -- simplfy life!
 		gridPointsII = np.zeros((len(gridPoints), 1))
 		for u in range(0, len(gridPoints)):
-			gridPointsII[u,0] = gridPoints[u]
-		orthopoly[0,:] = 1.0
+			gridPointsII[u, 0] = gridPoints[u]
+		orthopoly[0, :] = 1.0
 
 		# Cases
-		if order == 1: #CHANGED 2/2/18
+		if order == 1:  # CHANGED 2/2/18
 			return orthopoly, derivative_orthopoly, dderivative_orthopoly
-		orthopoly[1,:] = ((gridPointsII[:,0] - ab[0,0]) * orthopoly[0,:] ) * (1.0)/(1.0 * np.sqrt(ab[1,1]) )
-		derivative_orthopoly[1,:] = orthopoly[0,:] / (np.sqrt(ab[1,1]))
-		if order == 2: #CHANGED 2/2/18
+		orthopoly[1, :] = ((gridPointsII[:, 0] - ab[0, 0]) * orthopoly[0, :]) * (1.0) / (1.0 * np.sqrt(ab[1, 1]))
+		derivative_orthopoly[1, :] = orthopoly[0, :] / (np.sqrt(ab[1, 1]))
+		if order == 2:  # CHANGED 2/2/18
 			return orthopoly, derivative_orthopoly, dderivative_orthopoly
 
-		if order >= 3: #CHANGED 2/2/18
-			for u in range(2,order): #CHANGED 2/2/18
+		if order >= 3:  # CHANGED 2/2/18
+			for u in range(2, order):  # CHANGED 2/2/18
 				# Three-term recurrence rule in action!
-				orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0])*orthopoly[u-1,:]) - np.sqrt(ab[u-1,1])*orthopoly[u-2,:] )/(1.0 * np.sqrt(ab[u,1]))
-			for u in range(2, order): #CHANGED 2/2/18
+				orthopoly[u, :] = (((gridPointsII[:, 0] - ab[u - 1, 0]) * orthopoly[u - 1, :]) - np.sqrt(
+					ab[u - 1, 1]) * orthopoly[u - 2, :]) / (1.0 * np.sqrt(ab[u, 1]))
+			for u in range(2, order):  # CHANGED 2/2/18
 				# Four-term recurrence formula for derivatives of orthogonal polynomials!
 				derivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
 			for u in range(2,order):

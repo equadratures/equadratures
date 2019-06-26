@@ -4,6 +4,7 @@ import pickle
 from .parameter import Parameter
 from .basis import Basis
 import numpy as np
+VERSION_NUMBER = 8.0
 
 class Poly(object):
     """
@@ -44,12 +45,12 @@ class Poly(object):
             An array of the coefficients computed using either integration, least squares or compressive sensing routines.
 
         """
-        self.coefficients = coefficients
+        self.coefficients = np.array(coefficients)
     def __setBasis__(self, basisNew):
         """
         Sets the basis
         """
-        self.basis = basisNew
+        self.basis = basisNew 
     def __setQuadrature__(self, quadraturePoints, quadratureWeights):
         """
         Sets the quadrature points and weights
@@ -141,22 +142,26 @@ class Poly(object):
         # "Unpack" parameters from "self"
         basis = self.basis.elements
         basis_entries, dimensions = basis.shape
-        if stackOfPoints.ndim == 1:
-            no_of_points = 1
-        else:
-            no_of_points, _ = stackOfPoints.shape
+        if len(stackOfPoints.shape) == 1:
+            if dimensions == 1:
+                # a 1d array of inputs, and each input is 1d
+                stackOfPoints = np.reshape(stackOfPoints, (len(stackOfPoints),1))
+            else:
+                # a 1d array representing 1 point, in multiple dimensions!
+                stackOfPoints = np.array([stackOfPoints])
+        no_of_points, _ = stackOfPoints.shape
         p = {}
         dp = {}
 
         # Save time by returning if univariate!
         if dimensions == 1:
-            _ , dpoly , _ =  self.parameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis) ) )
+            _ , dpoly, _ =  self.parameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis) ) )
             return dpoly
         else:
             for i in range(0, dimensions):
                 if len(stackOfPoints.shape) == 1:
                     stackOfPoints = np.array([stackOfPoints])
-                p[i] , dp[i] , _ = self.parameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i])) )
+                p[i] , dp[i], _ = self.parameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i])) )
 
         # One loop for polynomials
         R = []
@@ -176,11 +181,11 @@ class Poly(object):
                 R.append(polynomialgradient)
 
         return R
+
     def getPolynomialHessian(self, stackOfPoints):
         """
         Evaluates the hessian for each of the polynomial basis functions at a set of points,
         with respect to each input variable.
-
         :param Poly self:
             An instance of the Poly class.
         :param matrix stackOfPoints:
@@ -203,13 +208,14 @@ class Poly(object):
 
         # Save time by returning if univariate!
         if dimensions == 1:
-            _ , _ , d2poly =  self.parameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis) ) )
+            _, _, d2poly = self.parameters[0]._getOrthoPoly(stackOfPoints, int(np.max(basis)))
             return d2poly
         else:
             for i in range(0, dimensions):
                 if len(stackOfPoints.shape) == 1:
                     stackOfPoints = np.array([stackOfPoints])
-                p[i] , dp[i] , d2p[i] = self.parameters[i]._getOrthoPoly(stackOfPoints[:,i], int(np.max(basis[:,i]) + 1 ) )
+                p[i], dp[i], d2p[i] = self.parameters[i]._getOrthoPoly(stackOfPoints[:, i],
+                                                                       int(np.max(basis[:, i]) + 1))
         H = []
         for w in range(0, dimensions):
             gradDirection1 = w
@@ -220,17 +226,18 @@ class Poly(object):
                     temp = np.ones((1, no_of_points))
                     for k in range(0, dimensions):
                         if k == gradDirection1 == gradDirection2:
-                            polynomialhessian[i,:] = d2p[k][int(basis[i,k])] * temp
+                            polynomialhessian[i, :] = d2p[k][int(basis[i, k])] * temp
                         elif k == gradDirection1:
-                            polynomialhessian[i,:] = dp[k][int(basis[i,k])] * temp
+                            polynomialhessian[i, :] = dp[k][int(basis[i, k])] * temp
                         elif k == gradDirection2:
-                            polynomialhessian[i,:] = dp[k][int(basis[i,k])] * temp
+                            polynomialhessian[i, :] = dp[k][int(basis[i, k])] * temp
                         else:
-                            polynomialhessian[i,:] = p[k][int(basis[i,k])] * temp
-                        temp = polynomialhessian[i,:]
+                            polynomialhessian[i, :] = p[k][int(basis[i, k])] * temp
+                        temp = polynomialhessian[i, :]
                 H.append(polynomialhessian)
 
         return H
+
     def getTensorQuadratureRule(self, orders=None):
         """
         Generates a tensor grid quadrature rule based on the parameters in Poly.
@@ -287,7 +294,7 @@ class Poly(object):
             evals = self.getPolynomial(self.quadraturePoints)
             return Statistics(self.coefficients, self.basis, self.parameters, self.quadraturePoints, self.quadratureWeights, evals, max_sobol_order)
         else:
-            return Statistics(self.coefficients, self.basis, self.parameters, max_sobol_order=max_sobol_order)
+            return Statistics(self.coefficients, self.basis, self.parameters, max_sobol_order=max_sobol_order)            
     def getQuadratureRule(self, options=None, number_of_points = None):
         """
         Generates quadrature points and weights.
@@ -361,6 +368,7 @@ class Poly(object):
         for i in range(0, self.dimensions):
             grads[i,:] = np.mat(self.coefficients).T * H[i]
         return grads
+
     def evaluatePolyHessFit(self, stackOfPoints):
         """
         Evaluates the hessian of the polynomial approximation of a function (or model data) at prescribed points.
@@ -377,11 +385,14 @@ class Poly(object):
         else:
             no_of_points, _ = stackOfPoints.shape
         H = self.getPolynomialHessian(stackOfPoints)
-        hess = np.zeros( (self.dimensions, self.dimensions,no_of_points) )
+        if self.dimensions == 1:
+            return np.mat(self.coefficients).T * H
+        hess = np.zeros((self.dimensions, self.dimensions, no_of_points))
         for i in range(0, self.dimensions):
             for j in range(0, self.dimensions):
-                hess[i,j,:] = np.mat(self.coefficients).T * H[i * self.dimensions + j]
+                hess[i, j, :] = np.mat(self.coefficients).T * H[i * self.dimensions + j]
         return hess
+
     def getPolyFitFunction(self):
         """
         Returns a callable polynomial approximation of a function (or model data).

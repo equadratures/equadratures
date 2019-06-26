@@ -19,7 +19,5 @@ class TestPolyreg(TestCase):
         t_stat, R2 =  poly.getfitStatistics()
         np.testing.assert_almost_equal( R2, 0.846, decimal=3, err_msg = "Difference greated than imposed tolerance for mean value")
 
-
-
 if __name__== '__main__':
     unittest.main()

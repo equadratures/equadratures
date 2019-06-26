@@ -174,7 +174,6 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
     dimensions = basis.elements.shape[1]
     norm_ind = basis.elements.copy()
     norm_ind = list(map(tuple,(norm_ind > 0).astype(int)))
-
     combo_index = {}
 #    for tot_order in range(1,dimensions+1): #loop over order
     for i in combinations(range(dimensions), order):
@@ -252,8 +251,6 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
                 integral3 = np.dot(evals3, quad_wts)
 
                 combo_index[summed_norm_index] = combo_index[summed_norm_index] + 6 * integral3 /(variance**1.5* skewness)
-
-#    print combo_index
     combo_index = {tuple(np.nonzero(key)[0]): value for key, value in combo_index.items()}
     return combo_index
 
@@ -263,7 +260,6 @@ def CondKurtosis(order, quad_wts, weighted_evals, basis, variance, kurtosis):
     dimensions = basis.elements.shape[1]
     norm_ind = basis.elements.copy()
     norm_ind = list(map(tuple,(norm_ind > 0).astype(int)))
-
     combo_index = {}
 #    for tot_order in range(1,dimensions+1): #loop over order
     for i in combinations(range(dimensions), order):

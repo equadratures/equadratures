@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Matrix factorization utilities &mdash; Effective Quadratures v7.6 documentation</title>
+  <title>Matrix factorization utilities &mdash; Effective Quadratures v8.0 documentation</title>
   
 
   
@@ -19,34 +19,37 @@
   
 
   
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Nataf utilities" href="nataf.html" />
     <link rel="prev" title="Statistics utilities" href="stats.html" /> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search"  style="background: grey" >
           
 
           
@@ -63,7 +66,7 @@
             
             
               <div class="version">
-                7.6
+                8.0
               </div>
             
           
@@ -100,6 +103,7 @@
 <li class="toctree-l3"><a class="reference internal" href="stats.html">Statistics utilities</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Matrix factorization utilities</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nataf.html">Nataf utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optimisation.html">Optimization with polynomial surrogates</a></li>
 </ul>
 </li>
 </ul>
@@ -183,26 +187,29 @@
 <dd><p>Computes the bidiagonalization of the m-by-n matrix A := U B V’, where
 m &gt;=n. Here U is an m-by-n orthogonal matrix, B is a n-by-n bi-diagonal matrix
 and V is a n-by-n orthogonal matrix.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix A</strong> (<em>numpy</em>) – an m-by-n matrix</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">U, the left orthogonal matrix</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy matrix</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">B, the bidiagonal matrix</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy matrix</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">V, the right orthogonal matrix</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy matrix</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>matrix A</strong> (<em>numpy</em>) – an m-by-n matrix</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>U, the left orthogonal matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy matrix</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>B, the bidiagonal matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy matrix</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>V, the right orthogonal matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy matrix</p>
+</dd>
+</dl>
 <p>** Notes **
 Uses the algorithm of Golub and Kahan (1965) and requires 4mn^2 - 4n^3/3 flops.</p>
 </dd></dl>
@@ -213,67 +220,64 @@ Uses the algorithm of Golub and Kahan (1965) and requires 4mn^2 - 4n^3/3 flops.<
 <dd><p>Solves the constrained least squares problem min ||Ax-b||_2 subject to Cx=d via the direct elimination method.
 :param numpy ndarray A: an m-by-n A matrix
 :param numpy ndarray b: an m-by-1 b matrix</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">x, the coefficients of the least squares problem.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">cond, the condition number of the final matrix on which least squares is performed</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>x, the coefficients of the least squares problem.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>cond, the condition number of the final matrix on which least squares is performed</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="equadratures.qr.gsvd">
 <code class="descclassname">equadratures.qr.</code><code class="descname">gsvd</code><span class="sig-paren">(</span><em>a</em>, <em>m</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/qr.html#gsvd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.qr.gsvd" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>a</strong> – Matrix to GSVD</li>
-<li><strong>m</strong> – 1st Constraint, (u.T * m * u) = I</li>
-<li><strong>w</strong> – 2nd Constraint, (v.T * w * v) = I</li>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> – Matrix to GSVD</p></li>
+<li><p><strong>m</strong> – 1st Constraint, (u.T * m * u) = I</p></li>
+<li><p><strong>w</strong> – 2nd Constraint, (v.T * w * v) = I</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(u ,s, v)</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(u ,s, v)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="equadratures.qr.house">
 <code class="descclassname">equadratures.qr.</code><code class="descname">house</code><span class="sig-paren">(</span><em>vec</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/qr.html#house"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.qr.house" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a scalar and a vector that may be used to form a Householder matrix</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ndarray vec</strong> (<em>numpy</em>) – The input vector that needs to be reflected in the hyperplane
-spanned by the Householder vector, v</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">v, the Householder vector</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">beta, the Householder scalar</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">double</td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt><strong>Notes</strong></dt>
-<dd>The Householder vector is given by P = I - beta * v * v’</dd>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ndarray vec</strong> (<em>numpy</em>) – The input vector that needs to be reflected in the hyperplane
+spanned by the Householder vector, v</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>v, the Householder vector</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>beta, the Householder scalar</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>double</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt><strong>Notes</strong></dt><dd><p>The Householder vector is given by P = I - beta * v * v’</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -283,60 +287,60 @@ spanned by the Householder vector, v</td>
 <dd><p>Solves the constrained least squares problem min ||Ax-b||_2 subject to Cx=d via the null space method.
 :param numpy ndarray A: an m-by-n A matrix
 :param numpy ndarray b: an m-by-1 b matrix</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">x, the coefficients of the least squares problem.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">cond, the condition number of the final matrix on which least squares is performed</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>x, the coefficients of the least squares problem.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>cond, the condition number of the final matrix on which least squares is performed</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="equadratures.qr.permvec2mat">
 <code class="descclassname">equadratures.qr.</code><code class="descname">permvec2mat</code><span class="sig-paren">(</span><em>vec</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/qr.html#permvec2mat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.qr.permvec2mat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts a permutation vector into a permutation matrix</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix p</strong> (<em>numpy</em>) – A 1 x k vector of permutation indices (all integers)</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">P, the k x k permutation matrix</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy matrix</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>matrix p</strong> (<em>numpy</em>) – A 1 x k vector of permutation indices (all integers)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>P, the k x k permutation matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy matrix</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="equadratures.qr.qr_Givens">
 <code class="descclassname">equadratures.qr.</code><code class="descname">qr_Givens</code><span class="sig-paren">(</span><em>A</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/qr.html#qr_Givens"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.qr.qr_Givens" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the Givens QR factorization of a matrix A</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix A</strong> (<em>numpy</em>) – Matrix input for QR factorization</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Q, the m x m orthogonal matrix</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy matrix</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">R, the m x n upper triangular matrix</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy matrix</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>matrix A</strong> (<em>numpy</em>) – Matrix input for QR factorization</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Q, the m x m orthogonal matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy matrix</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>R, the m x n upper triangular matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy matrix</p>
+</dd>
+</dl>
 <p><strong>Sample declaration</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">Q</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="n">qr_Givens</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
 </pre></div>
@@ -347,22 +351,23 @@ spanned by the Householder vector, v</td>
 <dt id="equadratures.qr.qr_Householder">
 <code class="descclassname">equadratures.qr.</code><code class="descname">qr_Householder</code><span class="sig-paren">(</span><em>A</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/qr.html#qr_Householder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.qr.qr_Householder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the Householder QR factorization of a matrix A</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix A</strong> (<em>numpy</em>) – Matrix input for QR factorization</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Q, the m x m orthogonal matrix</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy matrix</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">R, the m x n upper triangular matrix</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy matrix</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>matrix A</strong> (<em>numpy</em>) – Matrix input for QR factorization</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Q, the m x m orthogonal matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy matrix</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>R, the m x n upper triangular matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy matrix</p>
+</dd>
+</dl>
 <p><strong>Sample declaration</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">Q</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="n">qr_Householder</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
 </pre></div>
@@ -373,30 +378,26 @@ spanned by the Householder vector, v</td>
 <dt id="equadratures.qr.qr_MGS">
 <code class="descclassname">equadratures.qr.</code><code class="descname">qr_MGS</code><span class="sig-paren">(</span><em>A</em>, <em>pivoting=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/qr.html#qr_MGS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.qr.qr_MGS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the thin QR factorization via the Modified Gram Schmidt Method</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>matrix A</strong> (<em>numpy</em>) – Matrix input for QR factorization</li>
-<li><strong>pivoting</strong> (<em>sting</em>) – Set pivoting to yes to compute a QR with column pivoting factorization.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>matrix A</strong> (<em>numpy</em>) – Matrix input for QR factorization</p></li>
+<li><p><strong>pivoting</strong> (<em>sting</em>) – Set pivoting to yes to compute a QR with column pivoting factorization.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Q, the m x n orthogonal matrix</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">numpy matrix</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">R, the n x n upper triangular matrix</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy matrix</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Q, the m x n orthogonal matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy matrix</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>R, the n x n upper triangular matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy matrix</p>
+</dd>
+</dl>
 <p><strong>Sample declaration</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">Q</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="n">qr_MGS</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
 <span class="o">&gt;&gt;</span> <span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">qr_MGS</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">pivoting</span><span class="o">=</span><span class="s1">&#39;yes&#39;</span><span class="p">)</span>
@@ -408,27 +409,23 @@ spanned by the Householder vector, v</td>
 <dt id="equadratures.qr.solveCLSQ">
 <code class="descclassname">equadratures.qr.</code><code class="descname">solveCLSQ</code><span class="sig-paren">(</span><em>A</em>, <em>b</em>, <em>C</em>, <em>d</em>, <em>technique=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/qr.html#solveCLSQ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.qr.solveCLSQ" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solves the direct, constraint least squares problem ||Ax-b||_2 subject to Cx=d.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>matrix A</strong> (<em>numpy</em>) – an m-by-n matrix</li>
-<li><strong>matrix b</strong> (<em>numpy</em>) – an m-by-1 matrix</li>
-<li><strong>ndarray C</strong> (<em>numpy</em>) – an k-by-n matrix</li>
-<li><strong>ndarray d</strong> (<em>numpy</em>) – an k-by-1 matrix</li>
-<li><strong>technique</strong> (<em>string</em>) – The technique for solving the least squares problem. Options include, weighted, constrainedDE, constrainedNS.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>matrix A</strong> (<em>numpy</em>) – an m-by-n matrix</p></li>
+<li><p><strong>matrix b</strong> (<em>numpy</em>) – an m-by-1 matrix</p></li>
+<li><p><strong>ndarray C</strong> (<em>numpy</em>) – an k-by-n matrix</p></li>
+<li><p><strong>ndarray d</strong> (<em>numpy</em>) – an k-by-1 matrix</p></li>
+<li><p><strong>technique</strong> (<em>string</em>) – The technique for solving the least squares problem. Options include, weighted, constrainedDE, constrainedNS.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">x, the coefficients of the least squares problem.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>x, the coefficients of the least squares problem.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
 <p>method options: ‘equality’, ‘weighted’, ‘inequality’,…</p>
 </dd></dl>
 
@@ -436,30 +433,26 @@ spanned by the Householder vector, v</td>
 <dt id="equadratures.qr.solveLSQ">
 <code class="descclassname">equadratures.qr.</code><code class="descname">solveLSQ</code><span class="sig-paren">(</span><em>A</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/equadratures/qr.html#solveLSQ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#equadratures.qr.solveLSQ" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solves the direct least squares problem ||Ax-b||_2 using the method of QR factorization</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>ndarray A</strong> (<em>numpy</em>) – an m-by-n A matrix</li>
-<li><strong>ndarray b</strong> (<em>numpy</em>) – an m-by-1 b matrix</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ndarray A</strong> (<em>numpy</em>) – an m-by-n A matrix</p></li>
+<li><p><strong>ndarray b</strong> (<em>numpy</em>) – an m-by-1 b matrix</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">x, the coefficients of the least squares problem.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">ndarray</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">cond, the condition number of the matrix A</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>x, the coefficients of the least squares problem.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>cond, the condition number of the matrix A</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -475,7 +468,7 @@ spanned by the Householder vector, v</td>
         <a href="nataf.html" class="btn btn-neutral float-right" title="Nataf utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="stats.html" class="btn btn-neutral" title="Statistics utilities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="stats.html" class="btn btn-neutral float-left" title="Statistics utilities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -484,7 +477,7 @@ spanned by the Householder vector, v</td>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016-2019 by Effective Quadratures.
+        &copy; Copyright 2016-2019 by Effective Quadratures
 
     </p>
   </div>
@@ -501,33 +494,16 @@ spanned by the Householder vector, v</td>
   
 
 
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'v7.6',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  <script type="text/javascript" src="../_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

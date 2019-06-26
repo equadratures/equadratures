@@ -216,5 +216,3 @@ class Polynet(object):
     #     # print(np.linalg.cond(all_V[1]))
     #     # print(np.linalg.cond(stack_V))
     #     new_coeffs = np.linalg.lstsq(stack_V, Y, rcond=None)[0]
-
-

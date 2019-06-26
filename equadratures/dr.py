@@ -402,7 +402,6 @@ def jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
     J=np.zeros((M,m,n))
     #Obtain the derivative of this tensor
     dV=np.zeros((m,n,M,N))
-
     for l in range(0,n):
         for j in range(0,N):
             current=Gradient[l].T

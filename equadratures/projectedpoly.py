@@ -2,12 +2,16 @@
 from .stats import Statistics
 from .parameter import Parameter
 from .basis import Basis
+from .optimization import Optimization
+from .poly import Poly
 from scipy.spatial import ConvexHull
-from scipy.misc import comb
+from scipy.special import comb
+from scipy.spatial.distance import cdist
+from scipy.optimize import linprog
 import numpy as np
 VERSION_NUMBER = 7.6
 
-class Projectedpoly(object):
+class Projectedpoly(Poly):
     """
     The class defines a Projectedpoly object.
 
@@ -414,157 +418,398 @@ class Projectedpoly(object):
             A callable function.
 
         """
-        return lambda (x) : self.evaluatePolyHessFit(x)
-def getNumOfVertices(W):
-    """
-    Function that returns the expected number of vertices of the zonotope.
-    
-    :param Projectedpoly self:
-        An instance of the Projectedpoly class.
-    :return:
-        An integer N specifying the expected number of vertices of zonotope.
-    Notes
-    -----
-    https://github.com/paulcon/active_subspaces/blob/master/active_subspaces/domains.py nzm
+        return lambda x : self.evaluatePolyHessFit(x)
+    def getNumOfVertices(self):
+        """
+        Function that returns the expected number of vertices of the zonotope.
         
-    """
-    m, n = W.shape
-    N = 0
-    for i in range(n):
-        N += comb(m-1,i)
-    N = 2*N
-    return int(N)
-def getIntervalVertices(W):
-    """
-    Function that returns the endpoints of the zonotopes for a 1D subspace.
-    
-    :param Projectedpoly self:
-        An instance of the Projectedpoly class.
-    :return matrix Y:
-        A matrix Y of the vertices of the zonotope in the reduced space.
-    :return matrix X:
-        A matrix X of the vertices of the zonotope in the full space.
-    Notes
-    -----
-    https://github.com/paulcon/active_subspaces/blob/master/active_subspaces/domains.py interval_endpoints
-        
-    """
-    m, n = W.shape
-    assert n == 1
-    y0 = np.dot(W.T, np.sign(W))[0]
-    if y0 < -y0:
-        yl, yu = y0, -y0
-        xl, xu = np.sign(W), -np.sign(W)
-    else:
-        yl, yu = -y0, y0
-        xl, xu = -np.sign(W), np.sign(W)
-    Y = np.array([yl, yu]).reshape((2,1))
-    X = np.vstack((xl.reshape((1,m)), xu.reshape((1,m))))
-    return Y, X
-def getZonotopeVertices(W, numSamples=10000, maxCount=100000):
-    """
-    Function that returns the vertices that describe the zonotope.
-    
-    :param Projectedpoly self:
-        An instance of the Projectedpoly class.
-    :param integer numSamples:
-        An integer specifying the number of samples to take at each iteration.
-    :param integer maxCount:
-        An integer specifying the maximum number of iterations.
-    :return matrix Y:
-        A matrix Y of the vertices of the zonotope in the reduced space.
-    :return matrix X:
-        A matrix X of the vertices of the zonotope in the full space.
-    Notes
-    -----
-    https://github.com/paulcon/active_subspaces/blob/master/active_subspaces/domains.py zonotope_vertices
-        
-    """
-    m, n = W.shape
-    totalVertices = getNumOfVertices(W)
-    
-    numSamples = int(numSamples)
-    maxCount = int(maxCount)
-    
-    Z = np.random.normal(size=(numSamples, n))
-    X = getUniqueRows(np.sign(np.dot(Z, W.transpose())))
-    X = getUniqueRows(np.vstack((X, -X)))
-    N = X.shape[0]
-    
-    count = 0
-    while N < totalVertices:
-        Z = np.random.normal(size=(numSamples, n))
-        X0 = getUniqueRows(np.sign(np.dot(Z, W.transpose())))
-        X0 = getUniqueRows(np.vstack((X0, -X0)))
-        X = getUniqueRows(np.vstack((X, X0)))
-        N = X.shape[0]
-        count += 1
-        if count > maxCount:
-            break
-    
-    numVertices = X.shape[0]
-    if totalVertices > numVertices:
-        print 'Warning: {} of {} vertices found.'.format(numVertices, totalVertices)
-    
-    Y = np.dot(X, W)
-    return Y.reshape((numVertices, n)), X.reshape((numVertices, m))
-def getZonotopeLinearInequalities(W):
-    """
-    Function that returns the linear inequalities that describe the zonotope.
-    
-    :param Projectedpoly self:
-        An instance of the Projectedpoly class.
-    :return matrix A:
-        The matrix A defining the linear inequalities Ax <= b
-    :return vector b:
-        The vector b defining the linear inequalities Ax <= b
+        :param Projectedpoly self:
+            An instance of the Projectedpoly class.
+        :return:
+            An integer N specifying the expected number of vertices of zonotope.
+        Notes
+        -----
+        Adapted from https://github.com/paulcon/active_subspaces/blob/master/active_subspaces/domains.py nzm
 
-    """
-    n = W.shape[1]
-    if n == 1:
-        Y, X = getIntervalVertices(W)
-    else:
-        Y, X = getZonotopeVertices(W)
-    return getHull(Y,X)
-def getHull(Y,X):
-    """
-    Function that returns a dictionary of objects from hull computations.
-    
-    :param matrix Y:
-        A matrix Y of points in the reduced space.
-    :param matrix X:
-        A matrix X of point in the full space, corresponding to points in Y.
-    :return:
-        A dictionary 'hull' containing the linear inequalities Ax <= b for the
-        convex hull of the vertices in the reduced space 'vertV', as well as the
-        corresponding vertices in the full space 'vertX'
+        The MIT License (MIT)
+
+        Copyright (c) 2016 Paul Constantine
+
+        Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+        documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+        the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+        to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+        The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+        the Software.
+
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+        THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+        CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+        IN THE SOFTWARE.
+
+        The terms in this license hold for all subsequent references to or adaptations from this package.
+            
+        """
+        m, n = self.subspace.shape
+        N = 0
+        for i in range(n):
+            N += comb(m-1,i)
+        N = 2*N
+        return int(N)
+    def getIntervalVertices(self):
+        """
+        Function that returns the endpoints of the zonotopes for a 1D subspace.
         
-    """
-    n = Y.shape[1]
-    if n == 1:
-        A = np.array([[1],[-1]])
-        b = np.array([[max(Y)],[min(Y)]])
-        vertX = np.array([[np.argmax(Y)],[np.argmin(Y)]])
-        return {'A': A, 'b': b, 'vertV': b, 'vertX': vertX}
-    else:
-        convexHull = ConvexHull(Y)
-        A = convexHull.equations[:,:n]
-        b = -convexHull.equations[:,n]
-        vertV = Y[convexHull.vertices,:]
-        vertX = X[convexHull.vertices,:]
-        return {'A': A, 'b': b, 'vertV': vertV, 'vertX': vertX}
-def getUniqueRows(X0):
-    """
-    Function that returns unique rows from ndarray.
-    
-    :param matrix X0:
-        A matrix which may have multiple equivalent rows
-    :return:
-        A matrix X1 containing only the unique rows of X0
-    Notes
-    -----
-    http://stackoverflow.com/questions/16970982/find-unique-rows-in-numpy-array
+        :param Projectedpoly self:
+            An instance of the Projectedpoly class.
+        :return matrix Y:
+            A matrix Y of the vertices of the zonotope in the reduced space.
+        :return matrix X:
+            A matrix X of the vertices of the zonotope in the full space.
+        Notes
+        -----
+        https://github.com/paulcon/active_subspaces/blob/master/active_subspaces/domains.py interval_endpoints
+            
+        """
+        W = self.subspace
+        m, n = W.shape
+        assert n == 1
+        y0 = np.dot(W.T, np.sign(W))[0]
+        if y0 < -y0:
+            yl, yu = y0, -y0
+            xl, xu = np.sign(W), -np.sign(W)
+        else:
+            yl, yu = -y0, y0
+            xl, xu = -np.sign(W), np.sign(W)
+        Y = np.array([yl, yu]).reshape((2,1))
+        X = np.vstack((xl.reshape((1,m)), xu.reshape((1,m))))
+        return Y, X
+    def getZonotopeVertices(self, numSamples=10000, maxCount=100000):
+        """
+        Function that returns the vertices that describe the zonotope.
         
-    """
-    X1 = X0.view(np.dtype((np.void, X0.dtype.itemsize * X0.shape[1])))
-    return np.unique(X1).view(X0.dtype).reshape(-1, X0.shape[1])
+        :param Projectedpoly self:
+            An instance of the Projectedpoly class.
+        :param integer numSamples:
+            An integer specifying the number of samples to take at each iteration.
+        :param integer maxCount:
+            An integer specifying the maximum number of iterations.
+        :return matrix Y:
+            A matrix Y of the vertices of the zonotope in the reduced space.
+        :return matrix X:
+            A matrix X of the vertices of the zonotope in the full space.
+        Notes
+        -----
+        https://github.com/paulcon/active_subspaces/blob/master/active_subspaces/domains.py zonotope_vertices
+            
+        """
+        W = self.subspace
+        m, n = W.shape
+        totalVertices = self.getNumOfVertices()
+        
+        numSamples = int(numSamples)
+        maxCount = int(maxCount)
+        
+        Z = np.random.normal(size=(numSamples, n))
+        X = self.getUniqueRows(np.sign(np.dot(Z, W.transpose())))
+        X = self.getUniqueRows(np.vstack((X, -X)))
+        N = X.shape[0]
+        
+        count = 0
+        while N < totalVertices:
+            Z = np.random.normal(size=(numSamples, n))
+            X0 = self.getUniqueRows(np.sign(np.dot(Z, W.transpose())))
+            X0 = self.getUniqueRows(np.vstack((X0, -X0)))
+            X = self.getUniqueRows(np.vstack((X, X0)))
+            N = X.shape[0]
+            count += 1
+            if count > maxCount:
+                break
+        
+        numVertices = X.shape[0]
+        if totalVertices > numVertices:
+            print('Warning: {} of {} vertices found.'.format(numVertices, totalVertices))
+        
+        Y = np.dot(X, W)
+        return Y.reshape((numVertices, n)), X.reshape((numVertices, m))
+    def getZonotopeLinearInequalities(self):
+        """
+        Function that returns the linear inequalities that describe the zonotope.
+        
+        :param Projectedpoly self:
+            An instance of the Projectedpoly class.
+        :return matrix A:
+            The matrix A defining the linear inequalities Ax <= b
+        :return vector b:
+            The vector b defining the linear inequalities Ax <= b
+
+        """
+        n = self.subspace.shape[1]
+        if n == 1:
+            Y, X = self.getIntervalVertices()
+        else:
+            Y, X = self.getZonotopeVertices()
+        return self.getHull(Y,X)
+    def setProjection(self,bounds,W,dist=0.1):
+        """
+        Function that returns the hull of extreme points of projected set.
+        
+        :param Projectedpoly self:
+            An instance of the Projectedpoly class.
+        :param vector bounds:
+            A vector specifying the lower and upper bounds of polynomial.
+        :param subspace W:
+            A matrix W specifying the subspace we would like to project on to.
+        :return dict P1:
+            A dictionary object P1 containing the linear inequalities and the 
+            vertices in reduced and full space of the projected set
+
+        """
+        self.defineInequalityCons(bounds)
+        m, n = W.shape
+        X = np.zeros((1,m))
+        OK = 0
+        MaxIter = 100
+        cnt = 0
+        
+        while not OK:
+            direction = np.random.uniform(-1,1,n)
+            if cnt > MaxIter:
+                raise Exception('Iterative hull algorithm exceeded maximum number of iterations.')
+            x = self.maxDirectionOpt(direction,W)
+            cnt += 1
+            X = np.vstack((X,x))
+            V = np.dot(X,W)
+            V,ind = np.unique(V.round(decimals=3),return_index=True,axis=0)
+            X = X[ind]
+            if V.shape[0] == n+2:
+                OK = 1
+        X = X[~np.all(X == 0., axis=1)]
+        V = V[~np.all(V == 0., axis=1)]
+        
+        P1 = self.getHull(V,X)
+        OK = 0
+        banDirections = []
+        while not OK:
+            for i in range(P1['A'].shape[0]):
+                if P1['A'][i,:].tolist() not in banDirections:
+                    if cnt > MaxIter:
+                        print('Exceeded number of maximum number of iterations')
+                        return P1
+                    direction = P1['A'][i,:]
+                    x = self.maxDirectionOpt(direction,W)
+                    cnt += 1
+                    v = np.dot(x,W)
+                    if min(cdist(v.reshape(1,-1),V)[0]) > dist:
+                        X = np.vstack((X,x))
+                        V = np.vstack((V,v))
+                        V,ind = np.unique(V.round(decimals=3),return_index=True,axis=0)
+                        X = X[ind]
+                    else:
+                        banDirections.append(P1['A'][i,:].tolist())
+            P2 = self.getHull(V,X)
+            if P1['vertV'].shape == P2['vertV'].shape:
+                if np.allclose(P1['vertV'],P2['vertV']):
+                    OK = 1
+            P1 = P2
+        return P1
+    def defineInequalityCons(self,bounds):
+        """
+        Function that creates an optimization instance and adds the inequality constraints for
+        the projection optimization problem.
+        
+        :param Projectedpoly self:
+            An instance of the Projectedpoly class.
+        :param vector bounds:
+            A vector specifying the lower and upper bounds of polynomial.
+
+        """
+        m = self.subspace.shape[0]
+        opt = Optimization(method='trust-constr') 
+        opt.addLinearIneqCon(np.eye(m),-np.ones(m),np.ones(m))
+        opt.addNonLinearIneqCon({'poly':self,'bounds':bounds,'subspace':self.subspace})
+        self.projOpt = opt
+        return None
+
+    def maxDirectionOpt(self,direction,U):
+        """
+        Function that creates an optimization instance and adds the inequality constraints for
+        the projection optimization problem.
+
+        :param Projectedpoly self:
+            An instance of the Projectedpoly class.
+        :param vector direction:
+            A 1-by-n vector specifying the direction to maximise in.
+        :param subspace U:
+            A subspace matrix U in which to project onto.
+        :return:
+            A 1-by-m vector x which specifies the full dimensional answer to the
+            maximum direction optimization problem.
+
+        """
+        n = U.shape[0]
+        c = U.dot(direction)
+        x0 = np.random.uniform(-1,1,n)
+        objDict = {'function': lambda x: c.dot(x), 'jacFunction': lambda x: c, 'hessFunction': lambda x: np.zeros((n,n))}
+        x = self.projOpt.optimizePoly(objDict,x0)['x']
+        return x
+    @staticmethod
+    def getHull(Y,X):
+        """
+        Function that returns a dictionary of objects from hull computations.
+        
+        :param matrix Y:
+            A matrix Y of points in the reduced space.
+        :param matrix X:
+            A matrix X of point in the full space, corresponding to points in Y.
+        :return:
+            A dictionary 'hull' containing the linear inequalities Ax <= b for the
+            convex hull of the vertices in the reduced space 'vertV', as well as the
+            corresponding vertices in the full space 'vertX'
+            
+        """
+        n = Y.shape[1]
+        if n == 1:
+            A = np.array([[1],[-1]])
+            b = np.array([[max(Y)],[min(Y)]])
+            vertX = np.array([[np.argmax(Y)],[np.argmin(Y)]])
+            return {'A': A, 'b': b, 'vertV': b, 'vertX': vertX}
+        else:
+            convexHull = ConvexHull(Y)
+            A = convexHull.equations[:,:n]
+            b = -convexHull.equations[:,n]
+            vertV = Y[convexHull.vertices,:]
+            vertX = X[convexHull.vertices,:]
+            return {'A': A, 'b': b, 'vertV': vertV, 'vertX': vertX}
+    @staticmethod
+    def getUniqueRows(X0):
+        """
+        Function that returns unique rows from ndarray.
+        
+        :param matrix X0:
+            A matrix which may have multiple equivalent rows
+        :return:
+            A matrix X1 containing only the unique rows of X0
+        Notes
+        -----
+        http://stackoverflow.com/questions/16970982/find-unique-rows-in-numpy-array
+            
+        """
+        X1 = X0.view(np.dtype((np.void, X0.dtype.itemsize * X0.shape[1])))
+        return np.unique(X1).view(X0.dtype).reshape(-1, X0.shape[1])
+
+    @staticmethod
+    def hit_and_run_sample(N, y, W1, W2):
+        """
+        A hit and run method for sampling the inactive variables from a polytope.
+        Points are then converted back to the full space coordinates.
+        Parameters
+        ----------
+        :param int N:
+            the number of inactive variable samples
+        :param ndarray y:
+            the value of the active variables
+        :param ndarray W1:
+            d-by-r matrix that contains the eigenvector bases of the r-dimensional
+            active subspace
+        :param ndarray W2:
+            d-by-(d-r) matrix that contains the eigenvector bases of the
+            (d-r)-dimensional inactive subspace
+        Returns
+        -------
+        :return:
+            Z: N-by-(d-r) matrix that contains values of the inactive variable that
+            correspond to the given `y`
+            X: N-by-d matrix for the sampled points in full space coordinates.
+        Notes
+        -----
+        https://github.com/paulcon/active_subspaces/blob/master/active_subspaces/domains.py
+        """
+        U = np.hstack([W1, W2])
+        m, n = W1.shape
+
+        # get an initial feasible point using the Chebyshev center. huge props to
+        # David Gleich for showing Paul the Chebyshev center.
+        s = np.dot(W1, y).reshape((m, 1))
+        normW2 = np.sqrt(np.sum(np.power(W2, 2), axis=1)).reshape((m, 1))
+        A = np.hstack((np.vstack((W2, -W2.copy())), np.vstack((normW2, normW2.copy()))))
+        b = np.vstack((1 - s, 1 + s)).reshape((2 * m, 1))
+        c = np.zeros((m - n + 1, 1))
+        c[-1] = -1.0
+        print(np.linalg.cond(A))
+        # print()
+
+        zc = linear_program_ineq(c, -A, -b)
+        z0 = zc[:-1].reshape((m - n, 1))
+
+        # define the polytope A >= b
+        s = np.dot(W1, y).reshape((m, 1))
+        A = np.vstack((W2, -W2))
+        b = np.vstack((-1 - s, -1 + s)).reshape((2 * m, 1))
+
+        # tolerance
+        ztol = 1e-6
+        eps0 = ztol / 4.0
+
+        Z = np.zeros((N, m - n))
+        for i in range(N):
+
+            # random direction
+            bad_dir = True
+            count, maxcount = 0, 50
+            while bad_dir:
+                d = np.random.normal(size=(m - n, 1))
+                bad_dir = np.any(np.dot(A, z0 + eps0 * d) <= b)
+                count += 1
+                if count >= maxcount:
+                    Z[i:, :] = np.tile(z0, (1, N - i)).transpose()
+                    yz = np.vstack([np.repeat(y[:, np.newaxis], N, axis=1), Z.T])
+                    return Z, np.dot(U, yz).T
+
+            # find constraints that impose lower and upper bounds on eps
+            f, g = b - np.dot(A, z0), np.dot(A, d)
+
+            # find an upper bound on the step
+            min_ind = np.logical_and(g <= 0, f < -np.sqrt(np.finfo(np.float).eps))
+            eps_max = np.amin(f[min_ind] / g[min_ind])
+
+            # find a lower bound on the step
+            max_ind = np.logical_and(g > 0, f < -np.sqrt(np.finfo(np.float).eps))
+            eps_min = np.amax(f[max_ind] / g[max_ind])
+
+            # randomly sample eps
+            eps1 = np.random.uniform(eps_min, eps_max)
+
+            # take a step along d
+            z1 = z0 + eps1 * d
+            Z[i, :] = z1.reshape((m - n,))
+
+            # update temp var
+            z0 = z1.copy()
+
+        yz = np.vstack([np.repeat(y[:, np.newaxis], N, axis=1), Z.T])
+        return Z, np.dot(U, yz).T
+
+def linear_program_ineq(c, A, b):
+    '''
+    Wrapper for scipy.optimize.linprog,
+    adapted from https://github.com/paulcon/active_subspaces/blob/master/active_subspaces/utils/qp_solver.py
+    '''
+    c = c.reshape((c.size,))
+    b = b.reshape((b.size,))
+
+    # make unbounded bounds
+    bounds = []
+    for i in range(c.size):
+        bounds.append((None, None))
+
+    A_ub, b_ub = -A, -b
+    res = linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds, options={"disp": True}, method='simplex')
+    if res.success:
+        return res.x.reshape((c.size, 1))
+    else:
+        np.savez('bad_scipy_lp_ineq_{:010d}'.format(np.random.randint(int(1e9))),
+                 c=c, A=A, b=b, res=res)
+        raise Exception('Scipy did not solve the LP. Blame Scipy.')

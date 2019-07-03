@@ -10,7 +10,7 @@ To aid polynomial construction, as well as to facilitate statistical inference, 
    stats
    qr
    nataf
-
+   optimisation
 
 
 .. automodule:: equadratures

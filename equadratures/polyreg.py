@@ -44,7 +44,7 @@ class Polyreg(Poly):
         else:
             self.y = training_outputs
         if self.dimensions != self.basis.elements.shape[1]:
-            raise(ValueError, 'Polyreg:__init__:: The number of parameters and the number of dimensions in the index set must be the same.')
+            raise ValueError('Polyreg:__init__:: The number of parameters and the number of dimensions in the index set must be the same.')
         self.training_grads = training_grads
         self.gradmethod = gradmethod
         self.setDesignMatrix()

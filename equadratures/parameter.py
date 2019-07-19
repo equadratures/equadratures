@@ -1,16 +1,17 @@
 "Definition of a univariate parameter."
-from .distributions.gaussian import Gaussian
-from .distributions.uniform import Uniform
-from .distributions.chebyshev import Chebyshev
-from .distributions.beta import Beta
-from .distributions.cauchy import Cauchy
-from .distributions.exponential import Exponential
-from .distributions.gamma import Gamma
-from .distributions.weibull import Weibull
-from .distributions.rayleigh import Rayleigh
-from .distributions.chisquared import Chisquared
-from .distributions.truncated_gaussian import TruncatedGaussian
-from .distributions.custom import Custom
+from equadratures.distributions.gaussian import Gaussian
+from equadratures.distributions.uniform import Uniform
+from equadratures.distributions.chebyshev import Chebyshev
+from equadratures.distributions.beta import Beta
+from equadratures.distributions.cauchy import Cauchy
+from equadratures.distributions.exponential import Exponential
+from equadratures.distributions.gamma import Gamma
+from equadratures.distributions.weibull import Weibull
+from equadratures.distributions.rayleigh import Rayleigh
+from equadratures.distributions.chisquared import Chisquared
+from equadratures.distributions.truncated_gaussian import TruncatedGaussian
+from equadratures.distributions.custom import Custom
+
 import numpy as np
 
 class Parameter(object):

@@ -1,8 +1,11 @@
 """The Exponential distribution."""
-import numpy as np
+
 from equadratures.distributions.template import Distribution
 from equadratures.distributions.recurrence_utils import custom_recurrence_coefficients
+
+import numpy as np
 from scipy.stats import expon
+
 RECURRENCE_PDF_SAMPLES = 8000
 
 class Exponential(Distribution):

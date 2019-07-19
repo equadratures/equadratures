@@ -1,8 +1,10 @@
 """The polynomial parent class."""
-from .stats import Statistics
+
+from equadratures.stats import Statistics
+from equadratures.parameter import Parameter
+from equadratures.basis import Basis
+
 import pickle
-from .parameter import Parameter
-from .basis import Basis
 import numpy as np
 VERSION_NUMBER = 8.0
 

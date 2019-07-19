@@ -1,7 +1,10 @@
 """The Rayleigh distribution."""
-import numpy as np
+
 from equadratures.distributions.template import Distribution
+
+import numpy as np
 from scipy.stats import rayleigh
+
 RECURRENCE_PDF_SAMPLES = 8000
 
 class Rayleigh(Distribution):

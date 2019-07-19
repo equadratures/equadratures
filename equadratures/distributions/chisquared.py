@@ -1,8 +1,11 @@
 """The Chi-squared distribution."""
-import numpy as np
+
 from equadratures.distributions.template import Distribution
+
+import numpy as np
 from scipy.special import erf, erfinv, gamma, gammainc
 from scipy.stats import chi2
+
 RECURRENCE_PDF_SAMPLES = 8000
 
 class Chisquared(Distribution):

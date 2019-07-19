@@ -1,4 +1,7 @@
-from .optimization import Optimization
+""" Please add a file description here"""
+
+from equadratures.optimization import Optimization
+
 import numpy as np
 from scipy.spatial import ConvexHull
 

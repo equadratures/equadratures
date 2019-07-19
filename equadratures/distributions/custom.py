@@ -1,9 +1,12 @@
 """ The Custom distribution"""
-import numpy as np
-from equadratures.distributions.template import Distribution
-from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
+
 from equadratures.distributions.recurrence_utils import jacobi_recurrence_coefficients
+from equadratures.distributions.template import Distribution
+
+import numpy as np
 import scipy.stats as stats
+from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
+
 RECURRENCE_PDF_SAMPLES = 8000
 
 #-----------------#

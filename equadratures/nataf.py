@@ -1,10 +1,12 @@
 """ Utilities for dealing with correlated inputs."""
+
+from equadratures.parameter import Parameter
+from equadratures.polyint import Polyint
+from equadratures.basis import Basis
+
 import numpy as np
-from scipy import optimize
-from .parameter import Parameter
-from .polyint import Polyint
-from .basis import Basis
 from scipy import stats
+from scipy import optimize
 
 #import matplotlib.pyplot as plt
 

@@ -96,8 +96,8 @@ pygments_style = 'sphinx'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_docsstatic']
 
-html_logo = './_documentation/logo.png'
-html_favicon = './_documentation/logo.png'
+html_logo = 'logo.png'
+html_favicon = 'logo.png'
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 #
@@ -160,7 +160,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'EffectiveQuadratures', u'Effective Quadratures Documentation',
+    (master_doc, 'EffectiveQuadratures', u' ',
      author, 'EffectiveQuadratures', 'One line description of project.',
      'Miscellaneous'),
 ]

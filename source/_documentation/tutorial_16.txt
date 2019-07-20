@@ -16,7 +16,7 @@ where :math:`\mathbf{x}` are design parameters and $s$ is a spatial parameter fo
 	h(\mathbf{x}) \approx g_h(\mathbf{U}^T \mathbf{x})
 
 
-Instead of finding these quantities directly (e.g. using active subspaces, variable projection etc.), we propose to first find instead the dimension reducing approximations of the _field quantity defined at specific node locations_
+Instead of finding these quantities directly (e.g. using active subspaces, variable projection etc.), we propose to first find instead the dimension reducing approximations of the *field quantity defined at specific node locations*
 
 .. math::
 	f(\mathbf{x}, s_i) \approx g_i(\mathbf{W}_i^T \mathbf{x}).

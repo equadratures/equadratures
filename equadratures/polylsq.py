@@ -1,13 +1,15 @@
 """Finding coefficients via least squares."""
-from .parameter import Parameter
-from .basis import Basis
-from .poly import Poly
+
+from equadratures.parameter import Parameter
+from equadratures.basis import Basis
+from equadratures.poly import Poly
+from equadratures.utils import evalfunction, evalgradients, cell2matrix
+from equadratures.qr import solveCLSQ
+from equadratures.convex import maxdet, binary2indices
+
 import numpy as np
-from .utils import evalfunction, evalgradients, cell2matrix
-from scipy.linalg import qr, svd, lu
-from .qr import solveCLSQ
 import matplotlib.pyplot as plt
-from .convex import maxdet, binary2indices
+from scipy.linalg import qr, svd, lu
 
 class Polylsq(Poly):
     """

@@ -1,6 +1,9 @@
 """The Distribution template."""
-import numpy as np
+
 from equadratures.distributions.recurrence_utils import custom_recurrence_coefficients
+
+import numpy as np
+
 PDF_SAMPLES = 500000
 
 class Distribution(object):

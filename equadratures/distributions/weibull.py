@@ -1,9 +1,12 @@
 """The Weibull distribution."""
-import numpy as np
+
 from equadratures.distributions.template import Distribution
 from equadratures.distributions.recurrence_utils import custom_recurrence_coefficients
+
+import numpy as np
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 from scipy.stats import weibull_min
+
 RECURRENCE_PDF_SAMPLES = 8000
 
 class Weibull(Distribution):

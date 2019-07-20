@@ -1,4 +1,5 @@
 """Recurrence coefficients class."""
+
 import numpy as np 
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 

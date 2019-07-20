@@ -1,14 +1,16 @@
 """The polynomial parent class."""
-from .stats import Statistics
-from .parameter import Parameter
-from .basis import Basis
-from .optimization import Optimization
-from .poly import Poly
+from equadratures.stats import Statistics
+from equadratures.parameter import Parameter
+from equadratures.basis import Basis
+from equadratures.optimization import Optimization
+from equadratures.poly import Poly
+
 from scipy.spatial import ConvexHull
 from scipy.special import comb
 from scipy.spatial.distance import cdist
 from scipy.optimize import linprog
 import numpy as np
+
 VERSION_NUMBER = 7.6
 
 class Projectedpoly(Poly):

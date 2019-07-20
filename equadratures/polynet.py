@@ -1,6 +1,7 @@
-from .parameter import Parameter
-from .basis import Basis
-from .poly import Poly
+from equadratures.parameter import Parameter
+from equadratures.basis import Basis
+from equadratures.poly import Poly
+
 import numpy as np
 
 #%% Multi-layer perceptron with poly activation

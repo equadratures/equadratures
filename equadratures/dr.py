@@ -7,12 +7,13 @@ References:
     - Honkason, J. and Constantine, P. (2018). Data-driven polynomial ridge approximation using variable projection. [online] Arxiv.org. `Paper <https://arxiv.org/abs/1702.05859>`_.
     - Constantine, P. G. (2015). Active subspaces: Emerging ideas for dimension reduction in parameter studies. SIAM.
 """
+from equadratures.parameter import Parameter
+from equadratures.poly import Poly
+from equadratures.basis import Basis
+
 import numpy as np
 import scipy
-from .parameter import Parameter
-from .poly import Poly
 import scipy.io
-from .basis import Basis
 from scipy.linalg import orth, sqrtm
 from time import time
 

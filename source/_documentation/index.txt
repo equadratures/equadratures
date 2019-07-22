@@ -7,9 +7,6 @@ Sitemap
    introduction
    modules
    tutorials
-   contact
-
-
 
 Indices and tables
 ==================

@@ -1,13 +1,15 @@
 """Finding coefficients via regression."""
-from .parameter import Parameter
-from .basis import Basis
-from .poly import Poly
-from .projectedpoly import Projectedpoly
+
+from equadratures.parameter import Parameter
+from equadratures.basis import Basis
+from equadratures.poly import Poly
+from equadratures.projectedpoly import Projectedpoly
+from equadratures.stats import Statistics, getAllSobol
+from equadratures.qr import solveCLSQ
+from equadratures.utils import cell2matrix
+
 import numpy as np
-from .stats import Statistics, getAllSobol
 import scipy
-from .qr import solveCLSQ
-from .utils import cell2matrix
 from scipy.stats import linregress
 
 class Polyreg(Poly):

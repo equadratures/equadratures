@@ -1,6 +1,8 @@
 """Computing statistics from polynomial expansions."""
+
+from equadratures.basis import Basis
+
 import numpy as np
-from .basis import Basis
 from itertools import *
 
 class Statistics(object):

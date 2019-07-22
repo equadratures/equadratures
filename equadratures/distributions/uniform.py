@@ -1,7 +1,11 @@
-import numpy as np
+""" Please add a file description here"""
+
 from equadratures.distributions.template import Distribution
 from equadratures.distributions.recurrence_utils import jacobi_recurrence_coefficients
+
+import numpy as np
 from scipy.stats import uniform
+
 RECURRENCE_PDF_SAMPLES = 8000
 
 class Uniform(Distribution):

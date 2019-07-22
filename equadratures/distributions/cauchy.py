@@ -1,7 +1,9 @@
 """The Cauchy distribution."""
-import numpy as np
+
 from equadratures.distributions.template import Distribution
 from equadratures.distributions.recurrence_utils import custom_recurrence_coefficients
+
+import numpy as np
 from scipy.stats import cauchy
 RECURRENCE_PDF_SAMPLES = 8000
 

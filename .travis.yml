@@ -13,6 +13,19 @@ addons:
     - libatlas-base-dev
     - liblapack-dev
 
+# blocklist
+# Block all /*feature*/ branches
+# Anything within /_>/ is treated as a Regex
+branches:
+  except:
+  - /*feature*/
+
+# safelist
+# Only Build and Test changes of the master branch
+branches:
+  only:
+  - master
+
 before_install:
  - travis_retry wget http://repo.continuum.io/miniconda/Miniconda-3.8.3-Linux-x86_64.sh -O miniconda.sh
  - chmod +x miniconda.sh

@@ -1,9 +1,12 @@
 """The Gaussian / Normal distribution."""
-import numpy as np
-from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
+
 from equadratures.distributions.template import Distribution
+
+import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
+from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
+
 RECURRENCE_PDF_SAMPLES = 8000
 
 class Gaussian(Distribution):

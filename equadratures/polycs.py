@@ -1,12 +1,13 @@
 """Finding coefficients via compressive sensing."""
-from .parameter import Parameter
-from .basis import Basis
-from .poly import Poly
+from equadratures.parameter import Parameter
+from equadratures.basis import Basis
+from equadratures.poly import Poly
+from equadratures.stats import Statistics, getAllSobol
+from equadratures.convex import *
+from equadratures.utils import columnNormalize
+
 import numpy as np
-from .stats import Statistics, getAllSobol
-from .convex import *
 import scipy
-from .utils import columnNormalize
 
 
 class Polycs(Poly):

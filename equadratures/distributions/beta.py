@@ -1,8 +1,10 @@
 """The Beta distribution."""
-import numpy as np
+
 from equadratures.distributions.template import Distribution
-from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 from equadratures.distributions.recurrence_utils import jacobi_recurrence_coefficients
+
+import numpy as np
+from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 from scipy.stats import beta
 RECURRENCE_PDF_SAMPLES = 8000
 

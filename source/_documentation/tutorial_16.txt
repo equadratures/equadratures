@@ -1,0 +1,175 @@
+Embedded Ridge Approximations
+====================
+In this tutorial we describe an application of vector-valued dimension reduction to ridge approximation of scalar-valued quantities of interest (qois). The qois under consideration are integrals of a primal *scalar field quantity*. For example, we can study the lift of an airfoil as the integral of the pressure profile around the airfoil, and how it varies with small changes in geometry of the airfoil.
+
+In [1], we establish a link between the dimension reducing subspaces of a field quantity and that of an integral of the field. The field quantity can be treated as vector-valued objective; it is defined over a continuous computational domain (e.g. around the surface of the airfoil), but in computational applications we discretize it into values at a number of nodes. Each node then defines one component of the field quantity, as a function of inputs. Assembling the node values into one vector-valued objective defines the field.
+
+Our goal is to find a ridge approximation of a scalar-valued quantity. Suppose that it can be written as an integral of a field quantity :math:`f(\mathbf{x}, s)`, 
+
+.. math::
+	h(\mathbf{x}) = \int \omega(s) f(\mathbf{x}, s) ds
+
+
+where :math:`\mathbf{x}` are design parameters and $s$ is a spatial parameter for the field. The goal is to seek a tall matrix :math:`\mathbf{U}` and a low-dimensional function $g_h(.)$ such that
+
+.. math::
+	h(\mathbf{x}) \approx g_h(\mathbf{U}^T \mathbf{x})
+
+
+Instead of finding these quantities directly (e.g. using active subspaces, variable projection etc.), we propose to first find instead the dimension reducing approximations of the *field quantity defined at specific node locations*
+
+.. math::
+	f(\mathbf{x}, s_i) \approx g_i(\mathbf{W}_i^T \mathbf{x}).
+
+
+It can be shown that given :math:`g_i(.)` and :math:`\mathbf{W}_i` at sufficient locations :math:`s_i`, we can compute :math:`\mathbf{U}`. We refer readers to [1] for further details on this. 
+
+Why is this method advantageous to direct estimation? We place an assumption on the scalar field, which we call **localized scalar-field influence**. In essence, a field quantity at a certain location is unlikely to be affected strongly by a perturbation far from it. An example would be a subsonic flow field, where small changes in geometry should cause small disturbances far away, provided that the flow physics do not change. This notion then translates to *anisotropy* in the field quantities: the node quantity can only be affected strongly by nearby perturbations, implying that it is approximately constant with respect to faraway perturbation. This notion does not exist for the corresponding integral qois, because it should, in general, depend on the whole field. Because of the low-dimensional characteristics of the field, ridge approximations can be made at a lower cost; armed with the field ridge approximations, we can extend them to approximate integral qois, with no further data required.
+
+Let's illustrate this concept with the code implementation of an example from [1]. We study the shape design of the NACA0012 profile in a subsonic flow, parameterized by 50 Hicks-Henne bumps on the surface, and compare two approaches to approximating the dimension reducing subspaces (:math:`\mathbf{U}`) of lift and drag coefficients: the embedded ridge approach---approximating the field quantity first---and direct approach. 
+
+.. code::
+
+        from equadratures import *
+        import numpy as np
+                
+        X = np.loadtxt('Data/bumps')
+        Y = np.loadtxt('Data/cp')
+        ver_X = np.loadtxt('Data/ver_bumps')
+        ver_Y = np.loadtxt('Data/ver_cp')
+        ver_cl = np.loadtxt('Data/ver_cl')
+        ver_cd = np.loadtxt('Data/ver_cd')
+        cl = np.loadtxt('Data/L_data')
+        cd = np.loadtxt('Data/D_data')
+        a_l = np.loadtxt('Data/a_L')
+        a_d = np.loadtxt('Data/a_D')
+
+        num_designs = X.shape[0]
+        num_cp = Y.shape[1]
+        num_vars = X.shape[1]
+
+The input output pair (:math:`X, Y, C_l, C_d`) contain 2000 designs, their corresponding pressure coefficient (:math:`C_p`) profiles measured at 200 points on each airfoil, and the corresponding lift and drag coefficients. (ver_X, ver_Y, ver_cl, ver_cd) contain 100 independent input-output pairs for validation. For small perturbations, the lift and drag can be expressed approximately as linear functions of the pressure profile: :math:`C_l = \mathbf{a}_l^T \mathbf{p}` and :math:`C_d = \mathbf{a}_d^T \mathbf{p}` since they are integrals of the pressure field, :math:`a_L` and :math:`a_D` therefore encodes this proportionality constant.
+
+We wish to study the accuracy of both methods with limited data. We subsample 300 points of data as an example.
+
+.. code::
+
+        subsample = np.random.choice(num_designs, 300, replace=False)
+        X_s = X[subsample,:]
+        Y_s = Y[subsample, :]
+        cl_s = cl[subsample]
+        cd_s = cd[subsample]
+
+With only 300 points, we cannot construct a global polynomial surrogate to evaluate active subspace directions with degree beyond 1. Hence, we will use variable projection (VP). First, we can try to find the :math:`\mathbf{U}` for our objectives directly (noting that lift takes a 1-dimensional dimension reducing subspace and drag takes a 2-dimensional subspace):
+
+.. code::
+
+        Ul_dir, _ = my_dr.variable_projection(1, 2, X_s, cl_s, tol=1e-7, beta=1e-4)
+        Ud_dir, _ = my_dr.variable_projection(2, 2, X_s, cd_s, tol=1e-7, beta=1e-4)
+
+For the embedded approach, we remark from observation that nodes away from the leading edge tend to vary with bump amplitudes linearly, while those near the leading edge do not (they vary approximately quadratically). Hence, we use a linear model to approximate the :math:`\mathbf{W}_i` for nodes not at the leading edge and VP for those which are:
+
+.. code::
+
+        W = np.zeros((num_cp, num_vars))
+        projected_X_s = np.zeros((num_cp, subsample_range[s]))
+        start = 80
+        end = 106
+        exclude = range(start, end)
+        for i in range(num_cp):
+            if i in exclude:
+                continue
+            u,_ = my_dr.linearModel(X_s,Y_s[:,i])
+            W[i] = u/np.linalg.norm(u)
+            projected_X_s[i] = np.dot(X_s,W[i])
+
+        for i in exclude:
+            u, R = my_dr.variable_projection(1, 2, X_s, Y_s[:, i], tol=1e-7,beta=1e-4)
+            W[i] = np.squeeze(np.asarray(u))
+            projected_X_s[i] = np.dot(X_s,W[i])
+
+We will also need the ridge profiles :math:`g_i`, which we use a quadratic to approximate. Since this is a 1-dimensional quadratic, we do not require any further samples.
+
+.. code::
+
+        ridge_poly_list = []
+        poly_order = 2
+        one_Basis = Basis('Total order', [poly_order])
+        one_param = [Parameter(order=poly_order, distribution='uniform', lower=-3, upper=3)]
+
+        for i in range(num_cp):
+            ridge_poly_list.append(
+                Polyreg(one_param, one_Basis, training_inputs=projected_X_s[i], training_outputs=Y_s[:, i], no_of_quad_points=0))
+
+Once we have the ridge parameters of the pressure field, we can then estimate the dimension reducing subspaces of lift and drag by calculating their gradient covariance matrices and taking the leading eigenvectors. For details on the steps, please refer to [1].
+
+.. code::
+
+        # Form Jacobian
+
+        [N,d] = X_s.shape
+        J = np.zeros((num_cp,num_vars,N))
+        for p in range(num_cp):
+            u = np.reshape(projected_X_s[p], (len(projected_X_s[p]), 1))
+            w = np.reshape(W[p], (len(W[p]), 1))
+            grad_u1 = np.array(ridge_poly_list[p].evaluatePolyGradFit(u))
+            J[p,:,:] = np.dot(w,grad_u1)
+
+        # Vector DR
+        Rd = np.outer(a_d, a_d)
+        Rl = np.outer(a_l, a_l)
+        [eigsd, Ud] = my_dr.vector_AS(ridge_poly_list, R=Rd,J=J)
+        [eigsl, Ul] = my_dr.vector_AS(ridge_poly_list, R=Rl,J=J)
+        Ud_emb = np.real(Ud)[:,:2]
+        Ul_emb = np.real(Ul)[:,0]
+
+Finally, we can fit surrogate models in the estimated subspaces, and evaluate their accuracy via the mean squared error on the validation data. 
+
+.. code::
+
+        emb_proj_cl_X_s = np.dot(X_s, Ul_emb)
+        emb_proj_cd_X_s = np.dot(X_s, Ud_emb)
+        dir_proj_cl_X_s = np.dot(X_s, Ul_dir)
+        dir_proj_cd_X_s = np.dot(X_s, Ud_dir)
+
+        poly_order = 2
+        one_param = [Parameter(order=poly_order, distribution='uniform', lower=-3, upper=3)]
+        two_param = [Parameter(order=poly_order, distribution='uniform', lower=-3, upper=3),
+                     Parameter(order=poly_order, distribution='uniform', lower=-3, upper=3)]
+        one_Basis = Basis('Total order', [poly_order])
+        two_Basis = Basis('Total order', [poly_order, poly_order])
+
+
+        emb_poly_cl = Polyreg(one_param, one_Basis, training_inputs=emb_proj_cl_X_s, training_outputs=cl_s
+                              , no_of_quad_points=0)
+        emb_poly_cd = Polyreg(two_param, two_Basis, training_inputs=emb_proj_cd_X_s, training_outputs=cd_s
+                              , no_of_quad_points=0)
+        dir_poly_cl = Polyreg(one_param, one_Basis, training_inputs=dir_proj_cl_X_s, training_outputs=cl_s
+                              , no_of_quad_points=0)
+        dir_poly_cd = Polyreg(two_param, two_Basis, training_inputs=dir_proj_cd_X_s, training_outputs=cd_s
+                              , no_of_quad_points=0)
+
+        emb_proj_cl_ver_X = np.dot(ver_X, Ul_emb)
+        emb_proj_cd_ver_X = np.dot(ver_X, Ud_emb)
+        dir_proj_cl_ver_X = np.dot(ver_X, Ul_dir)
+        dir_proj_cd_ver_X = np.dot(ver_X, Ud_dir)
+
+        emb_pred_cl = emb_poly_cl.evaluatePolyFit(emb_proj_cl_ver_X)
+        emb_pred_cd = emb_poly_cd.evaluatePolyFit(emb_proj_cd_ver_X)
+        dir_pred_cl = dir_poly_cl.evaluatePolyFit(dir_proj_cl_ver_X)
+        dir_pred_cd = dir_poly_cd.evaluatePolyFit(dir_proj_cd_ver_X)
+
+        emb_err_cl = np.mean((emb_pred_cl - ver_cl)**2 / np.var(ver_cl))
+        emb_err_cd = np.mean((emb_pred_cd - ver_cd)**2 / np.var(ver_cd))
+        dir_err_cl = np.mean((dir_pred_cl - ver_cl)**2 / np.var(ver_cl))
+        dir_err_cd = np.mean((dir_pred_cd - ver_cd)**2 / np.var(ver_cd))
+
+Repeating this exercise for different degrees of subsampling over multiple trials will produce the lines for VP in figure 4.5 of [1], which we reproduce below:
+
+..	figure:: Figures/fig45.png
+
+   	Figure 4.5 from [1]
+
+**References**
+
+[1] Wong, C. Y., Seshadri, P., Parks, G. T., Girolami, M., Embedded Ridge Approximations: Constructing Ridge Approximations Over Localized Scalar Fields For Improved Simulation-Centric Dimension Reduction, `Preprint <https://arxiv.org/pdf/1907.07037.pdf>`__

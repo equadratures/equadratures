@@ -131,18 +131,26 @@ class Polyreg(Poly):
             raise(ValueError, 'Polyreg:setDesignMatrix:: Number of columns have to be less than (or equal to) the number of rows!')
         super(Polyreg, self).__setDesignMatrix__(self.A)
 
-    def getfitStatistics(self):
+    def getfitStatistics(self, X=None, Y=None):
         """
         Computes statistics based on the quality of the fit
         :param Polyreg self:
             An instance of the Polyreg class.
+        :param ndarray X:
+            Inputs to calculate R^2 on. Leave blank to calculate on training data.
+        :param 1darray Y:
+            Outputs to calculate R^2 on. Leave blank to calculate on training data.
         :return:
             `T statistic <https://en.wikipedia.org/wiki/T-statistic>`_.
         :return:
             `Coefficient of determination / R-squared value <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_.
         """
         t_stat = get_t_value(self.coefficients, self.PzT, self.y)
-        r_sq = get_R_squared(self.y, super(Polyreg, self).evaluatePolyFit(self.x))
+        if X is None:
+            X = self.x
+        if Y is None:
+            Y = self.y
+        r_sq = get_R_squared(Y, super(Polyreg, self).evaluatePolyFit(X))
         return t_stat, r_sq
 
     def getQuadraturePointsWeights(self, points):
@@ -187,7 +195,8 @@ def get_t_value(coefficients, PzT, y):
    return t_stat
 
 def get_R_squared(y, evals):
-    y_bar = scipy.mean(y) * np.ones((len(y),1))
+    evals = evals.reshape(-1,1)
+    y_bar = np.mean(y)
     TSS = np.linalg.norm(y - y_bar)**2
     RSS = np.linalg.norm(evals - y)**2
     return 1 - RSS/TSS

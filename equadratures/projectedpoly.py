@@ -740,8 +740,6 @@ class Projectedpoly(Poly):
         b = np.vstack((1 - s, 1 + s)).reshape((2 * m, 1))
         c = np.zeros((m - n + 1, 1))
         c[-1] = -1.0
-        print(np.linalg.cond(A))
-        # print()
 
         zc = linear_program_ineq(c, -A, -b)
         z0 = zc[:-1].reshape((m - n, 1))
@@ -808,7 +806,7 @@ def linear_program_ineq(c, A, b):
         bounds.append((None, None))
 
     A_ub, b_ub = -A, -b
-    res = linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds, options={"disp": True}, method='simplex')
+    res = linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds, options={"disp": False}, method='simplex')
     if res.success:
         return res.x.reshape((c.size, 1))
     else:

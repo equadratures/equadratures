@@ -13,9 +13,11 @@ InducedSampling:
     Compute Samples from classes of polynomials induced probability measures
 """
 
-from .parameter import Parameter
-from .poly import Poly
-from equadratures import IndexSet
+from equadratures.parameter import Parameter
+from equadratures.poly import Poly
+from equadratures.basis import Basis
+
+import numpy as np
 
 
 class OptimalSampling:
@@ -142,29 +144,72 @@ class InducedSampling:
         tensor_sample = [self.order]*self.dimension
         indices = IndexSet('Total order', tensor_sample)
 
-        univariate_induced_sampling = self.find_measure_class(self.param_type)
-        x = self.inverse_mixture_sampling(self.sample_size,
+        univar_induced_sampling = self.generate_sample_measure(self.param_type,
+                                                               self.shape_parameter_A,
+                                                               self.shape_parameter_B)
+        x = self.inverse_mixture_sampling(self.dimension,
+                                          self.sample_size,
                                           indices,
-                                          univariate_induced_sampling)
+                                          univar_induced_sampling)
 
         poly = Poly(self.parameter, indices)
         polynomials = poly.getPolynomial(x)
 
-    def generate_sample_measure(self):
+    def generate_sample_measure(self, param_type,
+                                shape_parameter_A,
+                                shape_parameter_B):
+
         """
         Generate the class of probability measures
         the input distribution belongs to.
         And return the univariate function object to used to sample
         """
-        if self.param_type is "Beta":
-            alpha = self.shape_parameter_B - 1.0
-            beta = self.shape_parameter_A - 1.0
+        if param_type is "Beta":
+            alpha = shape_parameter_B - 1.0
+            beta = shape_parameter_A - 1.0
         if self.param_type is "Uniform":
             alpha = 0.0
             beta = 0.0
 
         if param_type in ["Chebyshev", "Uniform", "Arcsine"]:
-            return self.inverse_induced_jacobi()
+            return lambda cdf_values, indices:\
+                self.inverse_induced_jacobi(cdf_values, indices, alpha, beta)
+
+    @staticmethod
+    def inverse_mixture_sampling(sample_size, dimension, indices, sampling_method):
+        """
+        Performs tensorial sampling from the additive mixture of induced distributions.
+
+        :param int sample_size:
+            number of sampled points returned
+        :param int order
+            number of sampled points returned
+        :param int dimension
+            number of sampled points returned
+        :param Basis indices:
+            Basis set of the tensorial indices for the polynomial variables
+        :param self.functions sampling_method:
+            The inverse induced sampling from this class
+            Example: inverse_induced_jacobi(), inverse_induced_freud(),
+            inverse_induced_hl_freud()
+
+        :return:
+        :param np.array x:
+            A matrix x, of size (sample_size*dimension)
+            specifying the sampled multi-variable input values
+        """
+        if sample_size <= 0 and type(sample_size) == int:
+            raise ValueError("sample_size must be a positive integer")
+
+        # TODO add a total order index set with random samples
+        # The above would be necessary in higher dimensions
+        indices_number = indices.elements.shape[0]
+        sampled_indices_rows = np.ceil(indices_number * np.random.rand(sample_size, 1))
+        indices.elements = indices.elements[sample_indices_rows, :]
+
+        x = sampling_method(np.random.rand(sample_size, dimension), indices)
+
+        return x
 
     def inverse_induced_jacobi(self):
         """

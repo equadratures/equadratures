@@ -104,7 +104,7 @@ class dr(object):
             raise Exception('training data missing!')
         N,D=training_input.shape
         A=np.concatenate((training_input,np.ones((N,1))),axis=1)
-        x,residual=np.linalg.lstsq(A,training_output)[:2]
+        x,residual=np.linalg.lstsq(A,training_output, rcond=None)[:2]
         u=x[:D]
         c=x[D]
         if r:
@@ -136,9 +136,10 @@ class dr(object):
         return X_stnd
 
 
-    def variable_projection(self,n,p,X=None,f=None,gamma=None,beta=None,tol=None,maxiter=1000,U0=None):
+    def variable_projection(self,n,p,X=None,f=None,gamma=None,beta=None,tol=None,maxiter=1000,U0=None, verbose=False):
         """
         Variable Projection function to obtain an active subspace in inputs design space
+        Note: It may help to standardize outputs to zero mean and unit variance
 
         :param X: ndarray, the input
         :param f: array, the output
@@ -193,50 +194,34 @@ class dr(object):
         #TODO: convergence criterion??
 
         for iteration in range(0,maxiter):
-            time_index = 0
             #Construct the Jacobian step 9
             J=jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X)
-            # print J[0]
             #Calculate the gradient of Jacobian #step 10
             G=np.zeros((m,n))
             for i in range(0,M):
                 G=G+res[i]*J[i,:,:]
 
-
             #conduct the SVD for J_vec
-            # vec_J=np.zeros((M,(m*n)))
-            # for i in range(0,M):
-            #     for j in range(0,m):
-            #         for k in range(0,n):
-            #             vec_J[i,j*n+k]=J[i,j,k]
             vec_J = np.reshape(J,(M,m*n))
             Y,S,Z=np.linalg.svd(vec_J,full_matrices=False)#step 11
-
 
             #obtain delta
             delta = np.dot(Y[:,:-n**2].T, res)
             delta = np.dot(np.diag(1/S[:-n**2]), delta)
             delta = -np.dot(Z[:-n**2,:].T, delta).reshape(U.shape)
 
-
-
             #carry out Gauss-Newton step
             vec_delta=delta.flatten()# step 12
-
-
 
             #vectorize G step 13
             vec_G=G.flatten()
             alpha=np.dot(vec_G.T,vec_delta)
             norm_G=np.dot(vec_G.T,vec_G)
 
-
-
             #check alpha step 14
             if alpha>=0:
                 delta=-G
                 alpha=-norm_G
-
 
             #SVD on delta step 17
             Y,S,Z=np.linalg.svd(delta,full_matrices=False)
@@ -257,7 +242,6 @@ class dr(object):
                     for j in range(0,n):
                         eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
 
-
                 V_new,Polybasis=vandermonde(eta,p)
                 V_plus_new=np.linalg.pinv(V_new)
                 coeff_new=np.dot(V_plus_new,f)
@@ -269,7 +253,6 @@ class dr(object):
                 t=t*gamma
 
             dist_change = subspace_dist(U, U_new)
-            # print dist_change
             U = U_new
             V = V_new
             coeff = coeff_new
@@ -278,8 +261,12 @@ class dr(object):
             R = R_new
             if not(tol is None):
                 if dist_change < tol:
-                    print("VP finished with %d iterations" % iteration)
+                    if verbose:
+                        print("VP finished with %d iterations" % iteration)
                     break
+        if iteration == maxiter-1 and verbose:
+            print("VP finished with %d iterations" % iteration)
+
         return U,R
 
     def vector_AS(self, list_of_polys, R = None, alpha=None, k=None, samples=None, bootstrap=False, bs_trials = 50
@@ -390,10 +377,6 @@ def jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
     :return:
         * **J (ndarray)**: The Jacobian tensor
     """
-    time_index = 0
-    ti = time()
-
-
     M,N=V.shape
     m,n=U.shape
     Gradient=Polybasis.getPolynomialGradient(eta)
@@ -412,17 +395,13 @@ def jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
 
     #Get the P matrix
     P=np.identity(M)-np.matmul(V,V_plus)
-
     V_minus=scipy.linalg.pinv(V)
-
-
 
     #Calculate entries for the tensor
     for j in range(0,m):
         for k in range(0,n):
             temp1=np.linalg.multi_dot([P,dV[j,k,:,:],V_minus])
             J[:,j,k]=(-np.matmul((temp1+temp1.T),f)).reshape((M,))# Eqn 15
-
 
     return J
 

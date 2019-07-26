@@ -29,7 +29,9 @@ class Polycs(Poly):
         super(Polycs, self).__init__(parameters, basis)
         if not(training_inputs is None):
             self.x = training_inputs
-            assert self.x.shape[1] == len(parameters) # Check that x is in the correct shape
+            if self.x.shape[1] != len(parameters):
+                raise ValueError(
+                       'Polycs:__init__:: The number of parameters and the number of columns in the training input must be the same.')
             self.w = np.eye(self.x.shape[0])
         else:
             if not(training_outputs is None):
@@ -45,7 +47,7 @@ class Polycs(Poly):
         else:
             self.y = np.dot(self.w, training_outputs)
         if self.dimensions != self.basis.elements.shape[1]:
-            raise(ValueError, 'Polycs:__init__:: The number of parameters and the number of dimensions in the index set must be the same.')
+            raise ValueError('Polycs:__init__:: The number of parameters and the number of dimensions in the index set must be the same.')
         self.setDesignMatrix()
         self.cond = np.linalg.cond(self.A)
         self.coherence = coherence(self.A)
@@ -90,8 +92,6 @@ class Polycs(Poly):
                 A_train = np.delete(A, indices, 0)
                 y_ver = y[indices].flatten()
                 y_train = np.delete(y, indices).flatten()
-                
-                
                 x_train = bp_denoise(A_train, y_train, epsilon[e])
                 y_trained = np.reshape(np.dot(A_ver, x_train), len(y_ver))
                 
@@ -105,7 +105,7 @@ class Polycs(Poly):
         residue = np.linalg.norm(np.dot(A, x).flatten() - y.flatten())
         self.coefficients = np.reshape(x, (len(x),1))
     
-    def getQuadraturePointsWeights(self, points):
+    def getQuadraturePointsWeights(self, points=None):
         """
         Generates quadrature points and weights.
 
@@ -124,8 +124,10 @@ class Polycs(Poly):
 
 #Generates the projection and preconditoning matrices for the given sampling method.
 def samplingMethod(parameters, basis, sampling, no_of_points):
-    if not(sampling.lower() in ["standard", "asymptotic", "dlm"]) :
-        raise(ValueError, 'Polycs:samplingMethod:: Must supply training x or valid sampling method.') 
+    if sampling is None:
+        raise ValueError('Polycs:samplingMethod:: Must supply training x or valid sampling method.')
+    elif not(sampling.lower() in ["standard", "asymptotic", "dlm"]) :
+        raise ValueError('Polycs:samplingMethod:: Must supply training x or valid sampling method.')
     if no_of_points is None:
         no_of_points = int(basis.elements.shape[0]/2)
     dimensions = len(parameters)
@@ -137,16 +139,16 @@ def samplingMethod(parameters, basis, sampling, no_of_points):
             p[:,i] = parameters[i].getSamples(m=no_of_points).flatten()
         v = np.eye(no_of_points)
     elif sampling.lower() == "asymptotic":
-        if not(all([i.param_type.lower() == "uniform" for i in parameters]) or all([i.param_type.lower() == "gaussian" for i in parameters])):
+        if not(all([i.name.lower() == "uniform" for i in parameters]) or all([i.name.lower() == "gaussian" for i in parameters])):
             raise(ValueError, "Polycs:samplingMethod:: Asymptotic sampling only available for uniform and gaussian distribution (for now).")
-        if all([i.param_type.lower() == "uniform" for i in parameters]):
+        if all([i.name.lower() == "uniform" for i in parameters]):
             p = np.cos(np.random.uniform(size = p.shape) * np.pi)
             ranges = np.array([param.upper - param.lower for param in parameters], dtype = "float")
             means = np.array([(param.upper + param.lower)/2.0 for param in parameters], dtype = "float")
             
             v = np.diag([np.prod(np.array([(1-p[i,j]**2)**.25 for j in range(dimensions)])) for i in range(no_of_points)])
             p = p * ranges/2.0 + means
-        elif all([i.param_type.lower() == "gaussian" for i in parameters]):
+        elif all([i.name.lower() == "gaussian" for i in parameters]):
             z = np.random.normal(size = p.shape)
             u = np.random.uniform(size = p.shape)
             z_norm = np.linalg.norm(z, axis = 1).reshape((no_of_points,1))

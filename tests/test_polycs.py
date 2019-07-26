@@ -6,6 +6,10 @@ import numpy as np
 
 class TestPolycs(TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        np.random.seed(0)
+
     def test_simple2D(self):
         d = 5
         param = Parameter(distribution='Uniform', lower=-1, upper=1., order=1)
@@ -51,7 +55,70 @@ class TestPolycs(TestCase):
 
         np.testing.assert_almost_equal(np.linalg.norm(actual_coeffs - poly.coefficients.flatten()), 0, decimal=4,
                                        err_msg="Difference greated than imposed tolerance for coeffs")
+    @staticmethod
+    def fs(x):
+        return np.sum(x)
 
+    def test_input_errors(self):
+        dims = 3
+        p_order = 2
+        myBasis = Basis('tensor grid', [p_order for _ in range(dims)])
+        myParams = [Parameter(p_order, distribution='uniform', lower=-1.0, upper=1.0) for _ in range(dims)]
+        x = np.random.uniform(low=-1.0, size=(100, 3))
+        x4 = np.random.uniform(low=-1.0, size=(100, 4))
+        y = np.apply_along_axis(self.fs, 1, x)
+        g = 0
+
+        def e1():
+            Polycs(myParams, myBasis, training_outputs=y) # no self.x for data driven
+        def e2():
+            Polycs(myParams, myBasis, fun=self.fs) # no sampling method
+        def e3():
+            Polycs(myParams, myBasis, training_inputs=x, training_outputs=y, fun=self.fs) # can't have both y and f
+        def e4():
+            Polycs(myParams, myBasis, training_inputs=x, fun=g) # bad function
+        def e5():
+            Polycs(myParams, myBasis, training_inputs=x4, fun=self.fs) # wrong dimension
+        def e6():
+            Polycs(myParams, myBasis, fun=self.fs, sampling='invalid') # bad sampling method
+
+        self.assertRaises(ValueError, e1)
+        self.assertRaises(ValueError, e2)
+        self.assertRaises(ValueError, e3)
+        self.assertRaises(ValueError, e4)
+        self.assertRaises(ValueError, e5)
+        self.assertRaises(ValueError, e6)
+
+    def test_sampling(self):
+        dims = 3
+        p_order = 2
+        myBasis = Basis('tensor grid', [p_order for _ in range(dims)])
+        myParams = [Parameter(p_order, distribution='uniform', lower=-1.0, upper=1.0) for _ in range(dims)]
+        myParams_g = [Parameter(p_order, distribution='gaussian', shape_parameter_A=0.0, shape_parameter_B=1.0)
+                      for _ in range(dims)]
+
+        poly_std = Polycs(myParams, myBasis, fun=self.fs, sampling="standard", no_of_points=20)
+        poly_asm_u = Polycs(myParams, myBasis, fun=self.fs, sampling="asymptotic", no_of_points=20)
+        poly_asm_g = Polycs(myParams_g, myBasis, fun=self.fs, sampling="asymptotic", no_of_points=20)
+        poly_dlm = Polycs(myParams, myBasis, fun=self.fs, sampling="dlm", no_of_points=20)
+
+        self.assertEqual(poly_std.x.shape, (20, 3))
+        self.assertEqual(poly_asm_u.x.shape ,(20, 3))
+        self.assertEqual(poly_asm_g.x.shape,(20, 3))
+        self.assertEqual(poly_dlm.x.shape ,(20, 3))
+
+        xi_2 = np.linalg.norm(poly_asm_g.x, axis=1) ** 2
+        np.testing.assert_array_almost_equal(np.exp(-xi_2 / 4.0), np.diag(poly_asm_g.w))
+
+        np.testing.assert_array_almost_equal(np.prod((1 - poly_asm_u.x ** 2) ** .25, axis=1), np.diag(poly_asm_u.w))
+
+        p, w = poly_dlm.getQuadratureRule(options='tensor grid')
+        num_points = 20
+        for i in range(num_points):
+            match = np.where((poly_dlm.x[i] == p).all(axis=1))[0]
+            # assert shape[0] equal to 1
+            matched_index = match[0]
+            np.testing.assert_almost_equal(np.sqrt(w)[matched_index] , np.diag(poly_dlm.w)[i])
 
 if __name__ == '__main__':
     unittest.main()

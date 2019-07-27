@@ -88,7 +88,7 @@ class Sampling:
                 (number of observations, dimensions).
     """
 
-    def __init__(self, parameters, basis, method, samples):
+    def __init__(self, parameters, basis, samples):
 
         if not isinstance(samples, tuple):
             raise TypeError("The input variable samples should be a tuple got: ",
@@ -108,26 +108,22 @@ class Sampling:
         arguments = samples[1]
 
         try:
-            random_samples = ['monte-carlo',
-                              'latin-hypercube',
-                              'induced-sampling',
-                              'christoffel-sampling']
-            method_index = random_samples.index(method)
             # TODO package the other 3 methods in classes
-            # and place them in the list below
-            random_sampling_classes = ["place_holder_MC",
-                                       "place_holder_LH",
-                                       InducedSampling,
-                                       "place_holder_Christoffel"]
+            # and place them in the hash table below
+            random_samples = {'monte-carlo': "place_holder_MC",
+                              'latin-hypercube': "place_holder_LH",
+                              'induced-sampling': InducedSampling,
+                              'christoffel-sampling': "place_holder_Christoffel"}
+            sampling_method = random_samples[method]
             sampling_ratio = arguments["sampling-ratio"]
             subsampling = arguments["subsampling-optimisation"]
-            self.sampling_class = random_sampling_classes[method_index](parameters,
-                                                                        basis,
-                                                                        sampling_ratio,
-                                                                        subsampling)
+            self.sampling_class = sampling_method(parameters,
+                                                  basis,
+                                                  sampling_ratio,
+                                                  subsampling)
 
-        # Except the method is not in the list of random methods
-        except ValueError:
+        # Except the method is not in the hash table of random methods
+        except KeyError:
 
             if method == "sparse-grid":
                 growth_rule = arguments["growth-rule"]

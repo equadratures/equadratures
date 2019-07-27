@@ -9,9 +9,6 @@ from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 
 RECURRENCE_PDF_SAMPLES = 8000
 
-#-----------------#
-import matplotlib.pyplot as plt
-#-----------------#
 class Custom(Distribution):
     """ The class defines a Custom object.
             

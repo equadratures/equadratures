@@ -17,4 +17,4 @@ class TestSamplingGeneration(TestCase):
                                      "subsampling-optimisation": 'qr'}
                                     )
                                    )
-        assert type(generator_class.sampling_class) == InducedSampling
+        assert generator_class.sampling_class.__class__ == InducedSampling

@@ -16,6 +16,13 @@ class Poly(object):
         A list of parameters.
     :param Basis basis:
         A basis selected for the multivariate polynomial.
+    :param String method:
+        The method used for computing the coefficients.
+        Should be one of:
+            - 'compressive-sensing'
+            - 'numerical-integration'
+            - 'least-squares'
+            - 'minimum-norm'
 
     """
     def __init__(self, parameters, basis):

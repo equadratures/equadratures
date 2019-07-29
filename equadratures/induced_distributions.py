@@ -1,18 +1,3 @@
-"""
-Quadrature Numerical Integration Strategy
-Based on The Induced Sampling Technique by Dr. Narayan
-With the Christoffel Function based on Orthogonal Polynomials
-With Optimal Sub-Sampling by Rank-Revealing QR
-
-Classes
----------------------
-OptimalSampling:
-    Optimal sub-sampling from an Christoffel weighted random sampling
-
-InducedSampling:
-    Compute Samples from classes of polynomials induced probability measures
-"""
-
 from equadratures.parameter import Parameter
 from equadratures.poly import Poly
 from equadratures.basis import Basis
@@ -302,7 +287,7 @@ class InducedSampling:
         vgrid = np.cos(xx)
         chebyparameter = Parameter(param_type='Chebyshev', order=M-1, lower=0.0, upper=1.0)
         V, __ = chebyparameter._getOrthoPoly(vgrid)
-        iV = np.linalg.inv(V) # Shouldn't we replace this with a 
+        iV = np.linalg.inv(V) # Shouldn't we replace this with a
         lenug = len(ug) - 1
         ugrid = np.zeros((M, lenug))
         xgrid = np.zeros((M, lenug))
@@ -315,14 +300,14 @@ class InducedSampling:
                 temp = ( temp - xgrid[0,q] ) / (xgrid[lenug, q] - xgrid[0,q] )
             else:
                 temp = ( temp - xgrid[0,q] ) / (xgrid[lenug, q] - xgrid[1, q] )
-            
+
             for i in range(0, len(temp)):
                 temp[i] = temp[i] * (1 + vgrid[i])**(exponents[0,q]) * (1 - vgrid[i])** exponents[1,q]
                 if np.isinf(temp[i]) or np.isnan(temp[i]):
                     temp[i] = 0.0
             temp = np.reshape(temp, (M,1))
             xcoefficients[:,q] = np.reshape( np.dot(iV, temp), M)
-    
+
         data = np.zeros((M + 6, lenug))
         for q in range(0, lenug):
             data[0,q] = ug[q]
@@ -332,7 +317,7 @@ class InducedSampling:
             data[4,q] = exponents[0,q]
             data[5,q] = exponents[1,q]
             for r in range(6, lenug):
-                data[r, q] = xcoefficients[r-6, q] 
+                data[r, q] = xcoefficients[r-6, q]
         return data
 
     def median_approximation_jacobi(alpha, beta, n):
@@ -362,7 +347,7 @@ class InducedSampling:
         :return:
             A N-by-2 matrix that contains the modified recurrence coefficients.
         """
-      
+
         alpha = ab[:,0]
         length_alpha = len(alpha)
         beta = ab[:,1]
@@ -371,101 +356,17 @@ class InducedSampling:
         acorrect = np.zeros((N-1, 1))
         bcorrect = np.zeros((N-1, 1))
         ab = np.zeros((N-1, N-1))
-    
+
         for i in range(0, N-1):
             acorrect[i] = np.sqrt(beta[i+1]) * 1.0 / r[i]
             bcorrect[i] = np.sqrt(beta[i+1]) * r[i]
-    
+
         for i in range(1, N-1):
             acorrect[i] = acorrect[i+1] - acorrect[i]
             bcorrect[i] = bcorrect[i] * 1.0/bcorrect[i-1]
-    
+
         for i in range(0, N-1):
             ab[i,1] = beta[i] * bcorrect[i]
             ab[i, 0] = alpha[i] + sign * acorrect[i]
-    
+
         return ab
-
-    def quadraticModification(alphabeta, x0):
-        """
-        Performs a quadratic modification of the orthogonal polynomial recurrence coefficients. It transforms the coefficients
-        such that the new coefficients are associated with a polynomial family that is orthonormal under the weight (x - x0)**2
-        :param Parameter self:
-            An instance of the Parameter class
-        :param double:
-            The shift in the weights
-        :return:
-            A N-by-2 matrix that contains the modified recurrence coefficients.
-        """
-        N = len(alphabeta)
-        alpha = alphabeta[:,0]
-        beta = alphabeta[:,1]
-        C = np.reshape(  christoffelNormalizedOrthogonalPolynomials(alpha, beta, x0, N-1)  , [N, 1] )
-        acorrect = np.zeros((N-2, 1))
-        bcorrect = np.zeros((N-2, 1))
-        ab = np.zeros((N-2, 2))
-        temp1 = np.zeros((N-1, 1))
-        for i in range(0, N-1):
-            temp1[i] = np.sqrt(beta[i+1]) * C[i+1] * C[i] * 1.0/np.sqrt(1.0 + C[i]**2)
-        temp1[0] = np.sqrt(beta[1])*C[1]
-        acorrect = np.diff(temp1, axis=0)
-        temp1 = 1 + C[0:N-1]**2
-        for i in range(0, N-2):
-            bcorrect[i] = (1.0 * temp1[i+1] ) / (1.0 *  temp1[i] )
-        print bcorrect.shape
-        print '-----*'
-        bcorrect[0] = (1.0 + C[1]**2) * 1.0/(C[0]**2)
-        for i in range(0, N-2):
-            ab[i,1] = beta[i+1] * bcorrect[i]
-            ab[i,0] = alpha[i+1] + acorrect[i]
-        return ab
-
-    def evaluateRatioSuccessiveOrthoPolynomials(a, b, x, N):
-        # Evaluates the ratio between successive orthogonal polynomials!
-        nx = len(x)
-        assert (N>0), "This positive integer must be greater than 0!"
-        assert (N < len(a)), "Positive integer N must be less than the number of elements in a!"
-        assert (N < len(b)), "Positive integer N must be less than the number of elements in b!"
-        r = np.zeros((nx, N))
-    
-        # Flatten x!
-        xf = x[:]
-        p0 = np.ones((nx, 1)) * 1.0/np.sqrt(b[0])
-        p1 = np.ones((nx, 1))
-        r1 = np.ones((nx, 1))
-        r2 = np.ones((nx, 1))
-        for i in range(0, nx):
-            p1[i] = 1.0/np.sqrt(b[1]) * ( xf[i] - a[0] ) * p0[i]
-            r1[i] = p1[i] / p0[i]
-        r[:,0] = r1
-    
-        for q in range(1, N):
-            for i in range(0, nx):
-                r2[i] = ( xf[i] - a[q] ) - np.sqrt(b[q])/ r1[i]
-                r1[i] = 1.0/np.sqrt(b[q+1]) * r2[i]
-            r[:,q] = r1
-    
-        return r
-
-    def christoffelNormalizedOrthogonalPolynomials(a, b, x, N):
-        # Evaluates the Christoffel normalized orthogonal getPolynomialCoefficients
-        nx = len(x)
-        assert N>= 0
-        assert N <= len(a)
-        assert N <= len(b)
-        C = np.zeros((nx, N+1))
-        # Initialize the polynomials!
-        C[:,0] = 1.0/ ( 1.0 * np.sqrt(b[0]) )
-        if N > 0:
-            for k in range(0, len(x)):
-                C[k,1] = 1.0 / (1.0 * np.sqrt(b[1]) ) * (x[k] - a[0])
-        if N > 1:
-            for k in range(0, len(x)):
-                C[k,2] = 1.0 / np.sqrt(1.0 + C[k,1]**2)  * (  (x[k] - a[1]) * C[k,1] - np.sqrt(b[1]) )
-                C[k,2] = C[k,2] / (1.0 * np.sqrt(b[2]) )
-        if N > 2:
-            for nnn in range(2, N):
-                for k in range(0, len(x)):
-                    C[k,nnn+1] = 1.0/np.sqrt(1.0 + C[k,nnn]**2) * (  (x[k] - a[nnn]) * C[k,nnn] - np.sqrt(b[nnn]) * C[k,nnn-1] / np.sqrt(1.0 + C[k, nnn-1]**2) )
-                    C[k,nnn+1] = C[k,nnn+1] / np.sqrt(b[nnn+1])
-        return C

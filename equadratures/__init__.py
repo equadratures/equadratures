@@ -13,6 +13,7 @@ from equadratures.utils import evalfunction, evalgradients, meshgrid
 from equadratures.dr import *
 from equadratures.optimization import Optimization
 from equadratures.projectedpoly import Projectedpoly
+from equadratures.induced_distributions import InducedSampling
 
 import numpy as np
 import os, sys

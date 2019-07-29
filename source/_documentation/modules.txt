@@ -9,7 +9,7 @@ Modules
    basis
    poly
    distributions
-   utilities
+   samples
    
 
 

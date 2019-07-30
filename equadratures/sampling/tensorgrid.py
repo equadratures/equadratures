@@ -3,7 +3,7 @@ from equadratures.sampling.sampling_template import Sampling
 import numpy as np
 class Tensorgrid(Sampling):
     """
-    The class defines a Sampling object. It serves as a template for all sampling methodologies.
+    The class defines a Tensorgrid sampling object.
 
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.

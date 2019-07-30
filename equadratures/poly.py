@@ -2,7 +2,7 @@
 from equadratures.stats import Statistics
 from equadratures.parameter import Parameter
 from equadratures.basis import Basis
-from equadratures.samples import Samples
+from equadratures.samples import Samples, Userdefined
 from equadratures.solvers import basis_pursuit_denoising, least_squares, minimum_norm
 import pickle
 import numpy as np
@@ -108,7 +108,7 @@ class Poly(object):
                 self.polysample = Samples(parameters=self.parameters, basis=self.basis, mesh=self.mesh, subsampling_algorithm=self.subsampling_algorithm, subsampling_ratio=self.subsampling_ratio, solver_function=solver)
         # Case where inputs and outputs are not provided!
         elif self.mesh.lower() == 'user-defined':
-            self.polysample = Samples(parameters=self.parameters, basis=self.basis, inputs=self.inputs, outputs=self.outputs, coefficient_computation=solver)
+            self.polysample = Userdefined(parameters=self.parameters, basis=self.basis, inputs=self.inputs, outputs=self.outputs, coefficient_computation=solver)
     def get_mean_and_variance(self):
         """
         Computes the mean and variance of the model.

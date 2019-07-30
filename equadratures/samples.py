@@ -1,7 +1,29 @@
 """The Sample template."""
 from equadratures.parameter import Parameter
 from equadratures.basis import Basis
+from equadratures.quadrature import sparse_grid, tensor_grid, tensor_grid_subsampled
 import numpy as np
+
+class Userdefined(object):
+    def __init__(self, parameters, basis, inputs outputs, coefficient_computation):
+    """
+    The user defined case.
+    """
+    def __init(self, parameters, basis, inputs, outputs, solver_function):
+        self.X = inputs
+        if len(self.X.shape) == 1:
+            self.X = np.reshape(self.X,(len(self.X),1))
+        assert self.X.shape[1] == len(self.parameters) # Check that x is in the correct shape
+        self.y = training_outputs
+        assert self.y.shape[0] == self.X.shape[0]
+        self.__set_points_and_weights()
+        self.__get_design_matrix()
+
+    def __set_points_and_weights(self, ):
+
+    def get_points_and_weights(self):
+        return
+
 class Samples(object):
     """
     Computes samples.
@@ -21,7 +43,10 @@ class Samples(object):
         if self.mesh == 'sparse-grid':
             self.mysample = sparse_grid(parameters=self.parameters, basis=self.basis, level=self.level, dimensions=self.dimensions, growth_rule=self.growth_rule)
         elif self.mesh == 'tensor-grid' and self.subsampling_algorithm == None:
-            self.
+            self.mysample = tensor_grid(parameters=self.parameters, basis=self.basis)
+        elif self.mesh == 'tensor-grid' and self.subsampling_algorithm is not None:
+            self.mysample = tensor_grid_subsampled(parameters=self.parameters, basis=self.basis, solver_function=self.solver_function)
+
 
     def get_points_and_weights(self):
         return self.mysamples.get_points_and_weights()

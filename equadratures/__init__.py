@@ -1,17 +1,12 @@
 from equadratures.parameter import Parameter
-from equadratures.polyreg import Polyreg
-from equadratures.polylsq import Polylsq
-from equadratures.polyint import Polyint
-from equadratures.polycs import Polycs
 from equadratures.poly import Poly
 from equadratures.stats import Statistics
 from equadratures.basis import Basis
 from equadratures.polynet import Polynet
-from equadratures.nataf import Nataf
-from equadratures.polynet import Polynet
 from equadratures.utils import evalfunction, evalgradients, meshgrid
 from equadratures.dr import *
 from equadratures.optimization import Optimization
+from equadratures.mesh import Mesh
 from equadratures.projectedpoly import Projectedpoly
 from equadratures.induced_distributions import InducedSampling
 

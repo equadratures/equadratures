@@ -11,7 +11,6 @@ from equadratures.distributions.rayleigh import Rayleigh
 from equadratures.distributions.chisquared import Chisquared
 from equadratures.distributions.truncated_gaussian import TruncatedGaussian
 from equadratures.distributions.custom import Custom
-
 import numpy as np
 
 class Parameter(object):
@@ -25,16 +24,16 @@ class Parameter(object):
     :param integer order:
         Order of the parameter.
     :param string param_type:
-        The type of distribution that characterizes the parameter. Options include: 
-		`Chebyshev (arcsine) <https://en.wikipedia.org/wiki/Arcsine_distribution>`_, 
-		`Gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_, 
-		`Truncated-Gaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_, 
-		`Beta <https://en.wikipedia.org/wiki/Beta_distribution>`_, 
-		`Cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_, 
-		`Exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_, 
-		`Uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_, 
-		`Gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_, 
-		`Weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_. 
+        The type of distribution that characterizes the parameter. Options include:
+		`Chebyshev (arcsine) <https://en.wikipedia.org/wiki/Arcsine_distribution>`_,
+		`Gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_,
+		`Truncated-Gaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_,
+		`Beta <https://en.wikipedia.org/wiki/Beta_distribution>`_,
+		`Cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_,
+		`Exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_,
+		`Uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_,
+		`Gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_,
+		`Weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_.
 		If no string is provided, a `Uniform` distribution is assumed. If the user provides data, and would like to generate orthogonal polynomials (and quadrature rules) based on the data, they can set this option to be Custom.
     :param double shape_parameter_A:
         Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a `Gaussian` (or `TruncatedGaussian`), this represents the mean. In the case of a Beta distribution this represents the alpha value. For a uniform distribution this input is not required.
@@ -47,24 +46,24 @@ class Parameter(object):
     """
 	def __init__(self, order, distribution, endpoints=False, shape_parameter_A=None, shape_parameter_B=None, lower=None, upper=None, data=None):
 		self.name = distribution
-		self.order = order 
+		self.order = order
 		self.shape_parameter_A = shape_parameter_A
 		self.shape_parameter_B = shape_parameter_B
 		self.lower = lower
 		self.upper = upper
 		self.endpoints = endpoints
 		self.data = data
-		self.setDistribution()
-		self.setBounds()
-		self.setMoments()
+		self.set_distribution()
+		self.set_bounds()
+		self.set_moments()
 
-	def setDistribution(self):
+	def set_distribution(self):
 		choices = {'gaussian': Gaussian(self.shape_parameter_A, self.shape_parameter_B),
 			       'normal': Gaussian(self.shape_parameter_A, self.shape_parameter_B),
 			       'uniform' : Uniform(self.lower, self.upper),
 				   'custom': Custom(self.data),
 				   'beta': Beta(self.lower, self.upper, self.shape_parameter_A, self.shape_parameter_B),
-				   'cauchy' : Cauchy(self.shape_parameter_A, self.shape_parameter_B), 
+				   'cauchy' : Cauchy(self.shape_parameter_A, self.shape_parameter_B),
 				   'exponential': Exponential(self.shape_parameter_A),
 				   'gamma': Gamma(self.shape_parameter_A, self.shape_parameter_B),
 				   'weibull': Weibull(self.shape_parameter_A, self.shape_parameter_B),
@@ -74,62 +73,62 @@ class Parameter(object):
 				   'chisquared' : Chisquared(self.shape_parameter_A),
 				   'truncated-gaussian': TruncatedGaussian(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
 				   }
-		distribution = choices.get(self.name.lower(), distributionError)
+		distribution = choices.get(self.name.lower(), distribution_error)
 		self.distribution = distribution
 
-	def setMoments(self):
-		self.mean = self.distribution.mean 
+	def set_moments(self):
+		self.mean = self.distribution.mean
 		self.variance = self.distribution.variance
-		
-	def setBounds(self):
+
+	def set_bounds(self):
 		self.bounds = self.distribution.bounds
 
-	def getPDF(self, points=None):
+	def get_pdf(self, points=None):
 		if points is None:
 			x = self.distribution.x_range_for_pdf
 			return x, self.distribution.getPDF(x)
 		else:
 			return self.distribution.getPDF(points)
 
-	def getCDF(self, points=None):
+	def get_cdf(self, points=None):
 		if points is None:
 			x = self.distribution.x_range_for_pdf
 			return x, self.distribution.getCDF(x)
 		else:
 			return self.distribution.getCDF(points)
 
-	def getiCDF(self, xx):
+	def get_icdf(self, xx):
 		return self.distribution.getiCDF(xx)
 
-	def getSamples(self, m):
+	def get_samples(self, m):
 		return self.distribution.getSamples(m)
-	
-	def getDescription(self):
+
+	def get_description(self):
 		return self.distribution.getDescription()
-	
-	def getRecurrenceCoefficients(self, order=None):
-		return self.distribution.getRecurrenceCoefficients(order)
-		
-	def getJacobiEigenVectors(self, order=None):
+
+	def get_recurrence_coefficients(self, order=None):
+		return self.distribution.get_recurrence_coefficients(order)
+
+	def get_jacobi_eigenvectors(self, order=None):
 		if order is None:
 			order = self.order + 1
-			JacobiMat = self.jacobiMatrix(order)
+			JacobiMat = self.get_jacobi_matrix(order)
 			if order == 1:
 				V = [1.0]
 		else:
-			D,V = np.linalg.eig(self.jacobiMatrix(order))
+			D,V = np.linalg.eig(self.get_jacobi_matrix(order))
 			V = np.mat(V) # convert to matrix
 			i = np.argsort(D) # get the sorted indices
 			i = np.array(i) # convert to array
 			V = V[:,i]
 		return V
 
-	def jacobiMatrix(self, order=None):
+	def get_jacobi_matrix(self, order=None):
 		if order is None:
-			ab = self.getRecurrenceCoefficients()
+			ab = self.get_recurrence_coefficients()
 			order = self.order + 1
 		else:
-			ab = self.getRecurrenceCoefficients(order)
+			ab = self.get_recurrence_coefficients(order)
 
 		order = int(order)
 
@@ -153,14 +152,14 @@ class Parameter(object):
 			JacobiMatrix[order-1, order-2] = np.sqrt(ab[order-1,1])
 
 		return JacobiMatrix
-    
-	def _getOrthoPoly(self, points, order=None):
+
+	def _get_ortho_poly(self, points, order=None):
 		if order is None:
 			order = self.order + 1
 		else:
 			order = order + 1
 		gridPoints = np.asarray(points).copy()
-		ab = self.getRecurrenceCoefficients(order)
+		ab = self.get_recurrence_coefficients(order)
 		if (any(gridPoints) < self.bounds[0]) or (any(gridPoints) > self.bounds[1]):
 			for r in range(0, len(gridPoints)):
 				gridPoints[r] = (gridPoints[r] - self.bounds[0]) / (self.bounds[1] - self.bounds[0])
@@ -194,10 +193,10 @@ class Parameter(object):
 			for u in range(2,order):
 				# Four-term recurrence formula for second derivatives of orthogonal polynomials!
 				dderivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * dderivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * dderivative_orthopoly[u-2,:] ) +  2.0 * derivative_orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
-		
+
 		return orthopoly, derivative_orthopoly, dderivative_orthopoly
-		
-	def _getLocalQuadrature(self, order=None):
+
+	def _get_local_quadrature(self, order=None):
 		"""
 		Returns the 1D quadrature points and weights for the parameter. WARNING: Should not be called under normal circumstances.
 		:param Parameter self:
@@ -210,13 +209,13 @@ class Parameter(object):
 			A 1-by-N matrix that contains the quadrature weights
 		"""
 		if self.endpoints is False:
-			return getlocalquadrature(self, order)
+			return get_local_quadrature(self, order)
 		elif self.endpoints is True:
-			return getlocalquadraturelobatto(self, order)
+			return get_local_quadrature_lobatto(self, order)
 		else:
 			raise(ValueError, '_getLocalQuadrature:: Error with Endpoints entry!')
 
-def getlocalquadrature(self, order=None):
+def get_local_quadrature(self, order=None):
     # Check for extra input argument!
     if order is None:
         order = self.order + 1
@@ -224,8 +223,8 @@ def getlocalquadrature(self, order=None):
         order = order + 1
 
     # Get the recurrence coefficients & the jacobi matrix
-    JacobiMat = self.jacobiMatrix(order)
-    ab = self.getRecurrenceCoefficients(order+1)
+    JacobiMat = self.get_jacobi_matrix(order)
+    ab = self.get_recurrence_coefficients(order+1)
 
     # If statement to handle the case where order = 1
     if order == 1:
@@ -249,9 +248,9 @@ def getlocalquadrature(self, order=None):
             p[u,0] = local_points[u]
             if (p[u,0] < 1e-16) and (-1e-16 < p[u,0]):
                 p[u,0] = np.abs(p[u,0])
-    return p, w   
+    return p, w
 
-def getlocalquadraturelobatto(self, order=None):
+def get_local_quadrature_lobatto(self, order=None):
     # Check for extra input argument!
     if order is None:
         order = self.order - 2
@@ -261,9 +260,9 @@ def getlocalquadraturelobatto(self, order=None):
     b = self.distribution.shape_parameter_B
     N = order
     # Get the recurrence coefficients & the jacobi matrix
-    ab = self.getRecurrenceCoefficients(order+2)
+    ab = self.get_recurrence_coefficients(order+2)
     ab[N+2, 0] = (a - b) / (2 * float(N+1) + a + b + 2)
-    ab[N+2, 1] = 4 * (float(N+1) + a + 1) * (float(N+1) + b + 1) * (float(N+1) + a + b + 1) / ((2 * float(N+1) + a + b + 1) * 
+    ab[N+2, 1] = 4 * (float(N+1) + a + 1) * (float(N+1) + b + 1) * (float(N+1) + a + b + 1) / ((2 * float(N+1) + a + b + 1) *
     (2 * float(N+1) + a + b + 2)**2)
     K = N + 2
     n0, __ = ab.shape
@@ -287,6 +286,5 @@ def getlocalquadraturelobatto(self, order=None):
         p[u,0] = local_points[u]
     return p, w
 
-def distributionError():
-	raise(ValueError, 'Please select a valid distribution for your parameter; documentation can be found at www.effective-quadratures.org') 
-	
+def distribution_error():
+	raise(ValueError, 'Please select a valid distribution for your parameter; documentation can be found at www.effective-quadratures.org')

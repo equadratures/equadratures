@@ -2,8 +2,8 @@
 from equadratures.stats import Statistics
 from equadratures.parameter import Parameter
 from equadratures.basis import Basis
-import equadratures.solvers as solvers
 from equadratures.samples import Samples
+from equadratures.solvers import basis_pursuit_denoising, least_squares, minimum_norm
 import pickle
 import numpy as np
 from copy import deepcopy
@@ -68,16 +68,47 @@ class Poly(object):
         self.parameters = parameters
         self.basis = basis
         self.method = method
-        self.samples = samples
+        self.mesh = samples[0]
+        if 'subsampling-option' in samples[1]:
+            self.subsampling_algorithm = samples[1].get('subsampling-option')
+        if 'subsampling-ratio' in samples[1]:
+            self.subsampling_ratio = float(samples[1].get('subsampling-ratio'))
+        if 'growth-rule' in samples[1]:
+            self.growth_rule = samples[1].get('growth-rule')
+        if 'level' in samples[1]:
+            self.level = samples[1].get('level')
+        if 'sample-points' in samples[1]:
+            self.inputs = samples[1].get('sample-points')
+        if 'sample-outputs' in samples[1]:
+            self.outputs = samples[1].get('sample-outputs')
         self.dimensions = len(parameters)
         self.orders = []
         for i in range(0, self.dimensions):
             self.orders.append(self.parameters[i].order)
         if not self.basis.orders :
             self.basis.setOrders(self.orders)
-        self.Samples = Samples(samples)
-        self.quadrature_points = self.Samples.get_samples()
-        self.quadrature_weights = self.get_weights()
+        self.__set_samples()
+    def __set_samples(self):
+        """
+        Creates an instances of the Samples class.
+
+        :param Poly self:
+            An instance of the Poly class.
+        """
+        if self.method.lower() == 'compressive-sensing' or self.method.lower() == 'compressed-sensing':
+            solver = lambda A, b: basis_pursuit_denoising(A, b)
+        elif self.method.lower() == 'least-squares':
+            solver = lambda A, b: least_squares(A, b)
+        elif self.method.lower() == 'minimum-norm':
+            solver = lambda A, b: minimum_norm(A, b)
+        elif self.method.lower() == 'numerical-integration':
+            solver = None
+        # Case where inputs and outputs are provided!
+        if self.mesh.lower() ~= 'user-defined':
+                self.polysample = Samples(parameters=self.parameters, basis=self.basis, mesh=self.mesh, subsampling_algorithm=self.subsampling_algorithm, subsampling_ratio=self.subsampling_ratio, solver_function=solver)
+        # Case where inputs and outputs are not provided!
+        elif self.mesh.lower() == 'user-defined':
+            self.polysample = Samples(parameters=self.parameters, basis=self.basis, inputs=self.inputs, outputs=self.outputs, coefficient_computation=solver)
     def get_mean_and_variance(self):
         """
         Computes the mean and variance of the model.
@@ -121,6 +152,8 @@ class Poly(object):
         :param callable model_grads:
             The gradient of the function that needs to be approximated. In the absence of a callable gradient function, the input can be a matrix of gradient evaluations at the quadrature points.
         """
+        self.Samples.set_model()
+        """
         if callable(model):
             y = evaluate_model(self.quadrature_points, model)
         else:
@@ -147,7 +180,7 @@ class Poly(object):
             C = cell2matrix(dPcell, W)
             d = deepcopy(self.gradient_evaluations)
         if self.method.lower() == 'compressive-sensing':
-            self.coefficients = solvers.sparse_solver(A, b)
+            self.coefficients = solvers.basis_pursuit_denoising(A, b)
         elif self.method.lower() == 'least-squares':
             if model_grads is None:
                 self.coefficients = solvers.least_squares(A, b)
@@ -157,7 +190,8 @@ class Poly(object):
             self.coefficients = solvers.minimum_norm(A, b)
         elif self.method.lower() == 'numerical-integration':
             self.coefficients = solvers.linear_system(A, b)
-    def get_samples(self):
+        """
+    def get_points(self):
         """
         Returns the samples based on the sampling strategy.
 
@@ -166,7 +200,7 @@ class Poly(object):
         :return:
             **x**: A numpy.ndarray of sampled quadrature points with shape (number_of_samples, dimension).
         """
-        return self.quadrature_points
+        return self.polysample.get_points()
     def get_weights(self):
         """
         Computes quadrature weights.
@@ -177,9 +211,8 @@ class Poly(object):
             **w**: A numpy.ndarray of the corresponding quadrature weights with shape (number_of_samples, 1).
 
         """
-        wts =  1.0/(np.sum( self.get_poly(self.quadrature_points)**2 , 0) )**2
-        self.quadrature_weights = wts * 1.0/np.sum(wts)
-    def get_samples_and_weights(self):
+        return self.polysample.get_weights()
+    def get_points_and_weights(self):
         """
         Returns the samples and weights based on the sampling strategy.
 
@@ -190,7 +223,7 @@ class Poly(object):
 
             **w**: A numpy.ndarray of the corresponding quadrature weights with shape (number_of_samples, 1).
         """
-        return self.quadrature_points, self.quadrature_weights
+        return self.polysample.get_points_and_weights()
     def get_polyfit(self, stackOfPoints):
         """
         Evaluates the the polynomial approximation of a function (or model data) at prescribed points.

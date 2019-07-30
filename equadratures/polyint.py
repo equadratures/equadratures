@@ -43,17 +43,17 @@ class Polyint(Poly):
         """
         Returns multivariate orthonormal polynomial coefficients.
 
-        :param Polyint self: 
+        :param Polyint self:
             An instance of the Polyint class
         :param: callable function:
             The function that needs to be approximated (or interpolated)
-        :return: coefficients: 
+        :return: coefficients:
             The pseudospectral coefficients
         :rtype: ndarray
-        :return: indexset: 
+        :return: indexset:
             The indices used for the pseudospectral computation
         :rtype: ndarray
-        :return: evaled_pts: 
+        :return: evaled_pts:
             The points at which the function was evaluated
         :rtype: ndarray
 
@@ -107,7 +107,7 @@ def getPseudospectralCoefficients(self, function, override_orders=None):
     else:
         y = function
     b = np.dot( W  ,  np.reshape(y, (m,1)) )
-    coefficients = np.dot(A.T , b)  
+    coefficients = np.dot(A.T , b)
     return coefficients, tensor_elements, pts, wts
 
 def getSparsePseudospectralCoefficients(self, function):
@@ -128,14 +128,14 @@ def getSparsePseudospectralCoefficients(self, function):
     indices = np.zeros((rows))
 
     for i in range(0,rows):
-        orders = sparse_indices[i,:] 
+        orders = sparse_indices[i,:]
         K, I, points , weights = getPseudospectralCoefficients(self, function, orders.astype(int))
         individual_tensor_indices[i] = I
         individual_tensor_coefficients[i] =  K
         points_store[i] = points
         weights_store[i] = weights
         indices[i] = len(I)
-        
+
     sum_indices = int(np.sum(indices))
     store = np.zeros((sum_indices, dimensions+1))
     points_saved = np.zeros((sum_indices, dimensions))
@@ -289,7 +289,7 @@ def getSparsePseudospectralCoefficients(self, function):
     indices = np.zeros((rows))
 
     for i in range(0,rows):
-        orders = sparse_indices[i,:] 
+        orders = sparse_indices[i,:]
         K, I, points , weights = getPseudospectralCoefficients(self, function, orders)
         individual_tensor_indices[i] = I
         individual_tensor_coefficients[i] =  K
@@ -297,12 +297,12 @@ def getSparsePseudospectralCoefficients(self, function):
         weights_store[i] = weights
         indices[i] = len(weights)
 
-    sum_indices = int(np.sum(indices)) 
+    sum_indices = int(np.sum(indices))
     store = np.zeros((sum_indices, dimensions+1))
     points_saved = np.zeros((sum_indices, dimensions))
     weights_saved = np.zeros((sum_indices))
     counter = int(0)
-    #print sum_indices 
+    #print sum_indices
     #print '******'
     for i in range(0,rows):
         #print points_store[i]

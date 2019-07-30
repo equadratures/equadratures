@@ -1,17 +1,14 @@
 """ Please add a file description here"""
-
 from equadratures.distributions.template import Distribution
 from equadratures.distributions.recurrence_utils import jacobi_recurrence_coefficients
-
 import numpy as np
 from scipy.stats import uniform
-
 RECURRENCE_PDF_SAMPLES = 8000
 
 class Uniform(Distribution):
     """
     The class defines a Uniform object. It is the child of Distribution.
-    
+
     :param double mean:
 		Mean of the Gaussian distribution.
 	:param double variance:
@@ -26,16 +23,15 @@ class Uniform(Distribution):
             self.variance = 1.0/12.0 * (self.upper - self.lower)**2
             self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
             self.parent = uniform(loc=(self.lower), scale=(self.upper-self.lower))
-	    
+
         self.skewness = 0.0
-        self.shape_parameter_A = 0. 
+        self.shape_parameter_A = 0.
         self.shape_parameter_B = 0.
-	
-    def getCDF(self, points=None):
+    def get_cdf(self, points=None):
         """
         A uniform cumulative density function.
-        :param points: 
-                Matrix of points which have to be evaluated 
+        :param points:
+                Matrix of points which have to be evaluated
         :param double lower:
             Lower bound of the support of the uniform distribution.
         :param double upper:
@@ -45,12 +41,11 @@ class Uniform(Distribution):
         :return:
             Cumulative density values along the support of the uniform distribution.
         """
-        if points is not None: 
+        if points is not None:
             return self.parent.cdf(points)
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
-
-    def getPDF(self, points=None):
+    def get_pdf(self, points=None):
         """
         A uniform probability distribution.
         :param points:
@@ -67,13 +62,11 @@ class Uniform(Distribution):
         if points is not None:
             return self.parent.pdf(points)
         else:
-            raise(ValueError, 'Please digit an input for getPDF method')
-
-
-    def getRecurrenceCoefficients(self, order):
+            raise(ValueError, 'Please digit an input for get_pdf method')
+    def get_recurrence_coefficients(self, order):
         """
         Recurrence coefficients for the uniform distribution.
-        
+
         :param Uniform self:
             An instance of the Uniform class.
         :param array order:
@@ -83,8 +76,7 @@ class Uniform(Distribution):
         """
         ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, order)
         return ab
-
-    def getiCDF(self, xx):
+    def get_icdf(self, xx):
         """
         A Uniform inverse cumulative density function.
 
@@ -96,8 +88,7 @@ class Uniform(Distribution):
             Inverse cumulative density function values of the Uniform distribution.
         """
         return self.parent.ppf(xx)
-
-    def getSamples(self, m = None):
+    def get_samples(self, m = None):
         """
         Generates samples from the Uniform distribution.
 
@@ -113,4 +104,3 @@ class Uniform(Distribution):
         else:
             number = 500000
         return self.parent.rvs(size=number)
-

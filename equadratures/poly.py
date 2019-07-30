@@ -154,9 +154,6 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
-        def dummy_function(x):
-            return 1.0
-
         # User-defined data
         if self.user_defined is True:
             if len(self.inputs.shape) == 1:

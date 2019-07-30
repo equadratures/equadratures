@@ -1,4 +1,4 @@
-from equadratures.induced_distributions import InducedSampling
+from equadratures.induced_sampling import InducedSampling
 
 
 class Sampling:

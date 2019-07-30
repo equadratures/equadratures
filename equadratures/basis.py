@@ -50,9 +50,8 @@ class Basis(object):
         if orders is None:
             self.orders = []
         else:
-            self.setOrders(orders)
-
-    def setOrders(self, orders):
+            self.set_orders(orders)
+    def set_orders(self, orders):
         """
         Sets the highest order in each direction of the basis.
 
@@ -65,37 +64,24 @@ class Basis(object):
             self.orders.append(orders[i])
         self.dimension = len(self.orders)
         name = self.basis_type
-        if name.lower() == "total order":
+        if name.lower() == "total-order":
             basis = total_order_basis(self.orders)
         elif name.lower() ==  "univariate":
             basis = np.reshape( np.linspace(0, self.orders[0], self.orders[0]+1) , (self.orders[0]+1, 1) )
-        elif name.lower() == "sparse grid":
+        elif name.lower() == "sparse-grid":
             sparse_index, a, SG_set = sparse_grid_basis(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
             basis = SG_set
-        elif (name.lower() == "tensor grid") or (name.lower() == "tensor") :
+        elif (name.lower() == "tensor-grid") or (name.lower() == "tensor") :
             basis = tensor_grid_basis(self.orders)
-        elif name.lower() == "hyperbolic basis":
+        elif name.lower() == "hyperbolic-basis":
             basis = hyperbolic_basis(self.orders, self.q)
-        elif name.lower() == "euclidean degree":
+        elif name.lower() == "euclidean-degree":
             basis = euclidean_degree_basis(self.orders)
         else:
             raise(ValueError, 'Basis __init__: invalid value for basis_type!')
             basis = [0]
-
         self.elements = basis
         self.cardinality = len(basis)
-
-        ## Don't sort a sparse grid index set, because the order is tied to the coefficients!
-        """
-        if avoid_sorting is False:
-            if name =="Hyperbolic basis":
-                self.sort()
-            elif name == "Euclidean degree":
-                self.sort()
-            elif name == "Total order":
-                self.sort()
-        """
-
     def prune(self, number_of_elements_to_delete):
         """
         Prunes down the number of elements in an index set.
@@ -111,7 +97,6 @@ class Basis(object):
             raise(ValueError, 'In Basis() --> prune(): Number of elements to be deleted must be greater than the total number of elements')
         else:
             self.elements =  index_entries[0:new_elements, :]
-
     def sort(self):
         """
         Routine that sorts a multi-index in ascending order based on the total orders. The constructor by default calls this function.
@@ -136,8 +121,7 @@ class Basis(object):
                 row_index = sorted_indices[i]
                 sorted_elements[i,j] = elements[row_index, j]
         self.elements = sorted_elements
-
-    def getBasis(self):
+    def get_basis(self):
         """
         Gets the index set elements for the Basis object.
 

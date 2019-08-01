@@ -1,7 +1,7 @@
-"""Tensor grid based sampling."""
+"""Sparse grid based sampling."""
 from equadratures.sampling_methods.sampling_template import Sampling
 from equadratures.sampling_methods.tensorgrid import Tensorgrid
-from equadratures.basis import Basis, sparse_grid_basis
+from equadratures.basis import sparse_grid_basis
 import numpy as np
 class Sparsegrid(Sampling):
     """
@@ -10,11 +10,13 @@ class Sparsegrid(Sampling):
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     """
-    def __init__(self, parameters=None, basis=None, orders=None):
-        super(Sampling, self).__init__(parameters, basis)
-        p, w = self.__get_sparsegrid_quadrature_rule()
-        super(Sampling, self).____set_points_and_weights__(p, w)
-    def __get_sparse_grid_quadrature_rule(self, orders=None):
+    def __init__(self, parameters, basis):
+        self.parameters = parameters
+        self.basis = basis
+        self.dimensions = len(self.parameters)
+        self.__set_sparsegrid_quadrature_rule()
+        super(Sparsegrid, self).__init__(self.parameters, self.basis, self.points, self.weights)
+    def __set_sparsegrid_quadrature_rule(self, orders=None):
         """
         Generates a sparse grid quadrature rule based on the parameters in Poly.
 
@@ -39,14 +41,15 @@ class Sparsegrid(Sampling):
 
         for i in range(0,rows):
             orders = sparse_indices[i,:]
-            #K, I, points , weights = getPseudospectralCoefficients(self, function, orders.astype(int))
-            pts, wts =  self.__get_tensorial_quadrature_rule(orders.astype(int))
-            tensor_basis = Basis('Tensor grid', orders.astype(int))
-            tensor_elements = tensor_basis.elements
+            myTensor = Tensorgrid(self.parameters, self.basis, orders.astype(int) )
+            pts = myTensor.points
+            wts = myTensor.weights
+            tensor_elements = myTensor.basis.elements
             individual_tensor_indices[i] = tensor_elements
             points_store[i] = pts
             weights_store[i] = wts
             indices[i] = len(I)
+            del myTensor
         sum_indices = int(np.sum(indices))
         points_saved = np.zeros((sum_indices, dimensions))
         weights_saved = np.zeros((sum_indices))
@@ -57,4 +60,5 @@ class Sparsegrid(Sampling):
                     points_saved[counter,d] = points_store[i][j, d]
                 weights_saved[counter] = weights_store[i][j]
                 counter = counter + 1
-        return points_saved, weights_saved
+        self.points = points_saved
+        self.weights = weights_saved

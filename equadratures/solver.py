@@ -1,12 +1,13 @@
 """Solvers for computing of a linear system."""
 import numpy as np
-class Solvers(object):
+class Solver(object):
     """
     Returns solver functions for solving Ax=b
 
     :param string method:
     """
     def __init__(self, method):
+        self.method = method
         if self.method.lower() == 'compressive-sensing' or self.method.lower() == 'compressed-sensing':
             self.solver = lambda A, b: basis_pursuit_denoising(A, b)
         elif self.method.lower() == 'least-squares':

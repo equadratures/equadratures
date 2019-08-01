@@ -14,7 +14,6 @@ class Quadrature(object):
         self.parameters = parameters
         self.basis = basis
         self.points = points
-        self.weights = weights
         self.correlation = correlation
         self.mesh = mesh
         choices = {'tensor-grid': Tensorgrid(self.parameters, self.basis),\

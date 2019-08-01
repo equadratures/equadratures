@@ -2,7 +2,7 @@
 from equadratures.stats import Statistics
 from equadratures.parameter import Parameter
 from equadratures.basis import Basis
-from equadratures.solvers import Solvers
+from equadratures.solver import Solver
 from equadratures.subsampling import Subsampling
 from equadratures.quadrature import Quadrature
 import pickle
@@ -99,34 +99,34 @@ class Poly(object):
         for i in range(0, self.dimensions):
             self.orders.append(self.parameters[i].order)
         if not self.basis.orders :
-            self.basis.setOrders(self.orders)
+            self.basis.set_orders(self.orders)
 
         # Initialize some default values!
         if self.method == 'numerical-integration' or self.method == 'integration':
             self.mesh = self.basis.basis_type
             self.sampling_ratio = 1.0
-            self.subsampling_algorithm = None
+            self.subsampling_algorithm_name = None
             self.correlation_matrix = None
             self.inputs = None
             self.outputs = None
         elif self.method == 'least-squares':
             self.mesh = 'tensor-grid'
             self.sampling_ratio = 1.0
-            self.subsampling_algorithm = 'qr'
+            self.subsampling_algorithm_name = 'qr'
             self.correlation_matrix = None
             self.inputs = None
             self.outputs = None
         elif self.method == 'compressed-sensing' or self.method == 'compressive-sensing':
             self.mesh = 'monte-carlo'
             self.sampling_ratio = 0.8
-            self.subsampling_algorithm = None
+            self.subsampling_algorithm_name = None
             self.correlation_matrix = None
             self.inputs = None
             self.outputs = None
         elif self.method == 'minimum-norm':
             self.mesh = 'monte-carlo'
             self.sampling_ratio = 0.8
-            self.subsampling_algorithm = None
+            self.subsampling_algorithm_name = None
             self.correlation_matrix = None
             self.inputs = None
             self.outputs = None
@@ -135,7 +135,7 @@ class Poly(object):
         if self.args is not None:
             if 'mesh' in args: self.mesh = args.get('mesh')
             if 'sampling-ratio' in args: self.sampling_ratio = float(args.get('sampling-ratio'))
-            if 'subsampling-algorithm' in args: self.subsampling_algorithm = args.get('subsampling-algorithm')
+            if 'subsampling-algorithm' in args: self.subsampling_algorithm_name = args.get('subsampling-algorithm')
             if 'sample-points' in args: self.inputs = args.get('sample-points')
             if 'sample-outputs' in args: self.outputs = args.get('sample-outputs')
             if 'correlation' in args: self.correlation_matrix = args.get('correlation')
@@ -150,8 +150,8 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
-        polysubsampling = Subsampling(self.algorithm)
-        self.algorithm = polysubsampling.get_subsampling_method()
+        polysubsampling = Subsampling(self.subsampling_algorithm_name)
+        self.subsampling_algorithm_function = polysubsampling.get_subsampling_method()
     def __set_solver(self):
         """
         Private function that sets the solver depending on the user-defined method.
@@ -180,15 +180,14 @@ class Poly(object):
         quadrature = Quadrature(parameters=self.parameters, basis=self.basis, \
                         points=self.inputs, outputs=self.outputs, correlation = self.correlation_matrix, \
                         mesh=self.mesh)
-
         # Subsampling
-        if self.subsampling_algorithm is not None:
+        if self.subsampling_algorithm_name is not None:
             P = self.get_poly(quadrature.quadrature_points)
             W = np.mat( np.diag(np.sqrt(quadrature.quadrature_weights)))
             A = W * P.T
             mm, nn = A.shape
             m_refined = int(np.round(self.sampling_ratio * nn))
-            z = self.algorithm(A, m_refined)
+            z = self.subsampling_algorithm_function(A, m_refined)
             self.quadrature_points = evaled_pts[z,:]
             self.quadrature_weights =  weights[z] / np.sum(weights[z])
         else:

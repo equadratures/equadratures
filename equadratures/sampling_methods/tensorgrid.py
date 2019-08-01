@@ -8,11 +8,13 @@ class Tensorgrid(Sampling):
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     """
-    def __init__(self, parameters=None, basis=None, orders=None):
-        super(Sampling, self).__init__(parameters, basis)
-        p, w = self.__get_tensorial_quadrature_rule()
-        super(Sampling, self).____set_points_and_weights__(p, w)
-    def __get_tensorial_quadrature_rule(self, orders=None):
+    def __init__(self, parameters, basis, orders=None):
+        self.parameters = parameters
+        self.basis = basis
+        self.dimensions = len(self.parameters)
+        self.__set_points(orders)
+        super(Tensorgrid, self).__init__(self.parameters, self.basis, self.points, self.weights)
+    def __set_points(self, orders=None):
         """
         Generates a tensor grid quadrature rule based on the parameters in Poly.
 
@@ -48,8 +50,5 @@ class Tensorgrid(Sampling):
             pp = np.concatenate((left_side, right_side), axis = 1)
 
         # Ignore the first column of pp
-        points = pp[:,1::]
-        weights = ww
-
-        # Return tensor grid quad-points and weights
-        return points, weights
+        self.points = pp[:,1::]
+        self.weights = ww

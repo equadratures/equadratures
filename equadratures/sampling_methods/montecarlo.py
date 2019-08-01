@@ -9,12 +9,12 @@ class Montecarlo(Sampling):
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     """
-    def __init__(self, parameters=None, basis=None):
+    def __init__(self, parameters, basis):
         self.parameters = parameters
         self.basis = basis
         number_of_samples = int(self.basis.cardinality * len(self.parameters) * CONST)
         self.__set_points(number_of_samples)
-        super(Sampling, self).__init__(parameters, basis)
+        super(Montecarlo, self).__init__(self.parameters, self.basis, self.points)
     def __set_points(self, number_of_samples):
         """
         Sets the quadrature points and weights.

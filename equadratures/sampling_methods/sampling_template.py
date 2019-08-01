@@ -1,6 +1,5 @@
 """Sampling strategy."""
 import numpy as np
-CONST = 5
 class Sampling(object):
     """
     The class defines a Sampling object. It serves as a template for all sampling methodologies.
@@ -8,10 +7,13 @@ class Sampling(object):
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     """
-    def __init__(self, parameters=None, basis=None, mesh=None):
+    def __init__(self, parameters, basis, points=None, weights=None ):
         self.parameters = parameters
         self.basis = basis
-        self.__set_weights()
+        self.points = points
+        self.weights = weights
+        if self.weights is None:
+            self.__set_weights()
     def __set_weights(self):
         P = self.__get_multivariate_orthogonal_polynomial(self.points)
         wts =  1.0/np.sum( P**2 , 0)

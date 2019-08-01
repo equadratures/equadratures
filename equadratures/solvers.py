@@ -1,6 +1,22 @@
-"""Solvers for computing the coefficients."""
+"""Solvers for computing of a linear system."""
 import numpy as np
+class Solvers(object):
+    """
+    Returns solver functions for solving Ax=b
 
+    :param string method:
+    """
+    def __init__(self, method):
+        if self.method.lower() == 'compressive-sensing' or self.method.lower() == 'compressed-sensing':
+            self.solver = lambda A, b: basis_pursuit_denoising(A, b)
+        elif self.method.lower() == 'least-squares':
+            self.solver = lambda A, b: least_squares(A, b)
+        elif self.method.lower() == 'minimum-norm':
+            self.solver = lambda A, b: minimum_norm(A, b)
+        elif self.method.lower() == 'numerical-integration':
+            self.solver = lambda A, b: least_squares(A, b)
+    def get_solver(self):
+        return self.solver
 def least_squares(A, b):
     alpha = np.linalg.lstsq(A, b)
     return alpha[0]

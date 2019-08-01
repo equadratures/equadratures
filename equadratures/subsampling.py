@@ -2,6 +2,31 @@
 import numpy as np
 from scipy.linalg import qr, svd, lu, det, cholesky, lstsq
 from copy import deepcopy
+class Solvers(object):
+    """
+    Returns subsampling methods for pruning down the number of
+
+    :param string method:
+    """
+    def __init__(self, subsampling_algorithm):
+        self.subsampling_algorithm = subsampling_algorithm
+        if self.subsampling_algorithm == 'qr':
+            self.algorithm = lambda A, k : get_qr_column_pivoting(A, k)
+        elif self.subsampling_algorithm == 'svd':
+            self.algorithm = lambda A, k : get_svd_subset_selection(A, k)
+        elif self.subsampling_algorithm == 'newton':
+            self.algorithm = lambda A, K : get_newton_determinant_maximization(A, k)
+        elif self.subsampling_algorithm == 'random':
+            self.algorithm = 0 #np.random.choice(int(m), m_refined, replace=False)
+        elif self.subsampling_algorithm = None:
+            self.algorithm = lambda A, k: __get_all_pivots(A, k)
+    def get_subsampling_method(self):
+        return self.algorithm
+def __get_all_pivots(Ao, number_of_subsamples):
+    """
+    A dummy case where we return all the subsamples.
+    """
+    return np.arange(1, len(number_of_subsamples))
 def get_qr_column_pivoting(Ao, number_of_subsamples):
     """
     Pivoted QR factorization, where the pivots are used as a heuristic for subsampling.

@@ -2,11 +2,9 @@
 from equadratures.stats import Statistics
 from equadratures.parameter import Parameter
 from equadratures.basis import Basis
-from equadratures.solvers import basis_pursuit_denoising, least_squares, minimum_norm
-from equadratures.subsampling import get_qr_column_pivoting, get_svd_subset_selection, get_newton_determinant_maximization
-from equadratures.sampling.tensorgrid import Tensorgrid
-from equadratures.sampling.sparsegrid import Sparsegrid
-from equadratures.sampling.montecarlo import Montecarlo
+from equadratures.solvers import Solvers
+from equadratures.subsampling import Subsampling
+from equadratures.samples import Samples
 import pickle
 import numpy as np
 from copy import deepcopy
@@ -67,13 +65,27 @@ class Poly(object):
         basis = Basis('tensor-grid')
         poly = Poly(parameters=[param, param, param], basis=basis, method='numerical-integration')
 
+        # Other declarations:
+        poly = Poly(parameters=[param, param],        basis=basis, method='numerical-integration') # Default: integration
+        poly = Poly(parameters=[param, param, param], basis=basis, method='least-squares') # Default: subsamples form a tensor grid!
+        poly = Poly(parameters=[param, param, param], basis=basis, method='compressed-sensing') # Default: randomized samples!
+        poly = Poly(parameters=[param, param, param], basis=basis, method='minimum-norm') # Default: Random points!
+        poly = Poly(parameters=[param, param, param], basis=basis, method='minimum-norm', correlation=mat) # correlated!
+
+        # Least squares
+        poly = Poly(parameters=[param, param, param], basis=basis, method='least-squares',
+                                    {'mesh':'induced', 'sampling-ratio':1.5, 'subsampling-option'})
+
+
+
+
     **References**
         1. Seshadri, P., Iaccarino, G., Ghisu, T., (2018) Quadrature Strategies for Constructing Polynomial Approximations. Uncertainty Modeling for Engineering Applications. Springer, Cham, 2019. 1-25. `Preprint <https://arxiv.org/pdf/1805.07296.pdf>`__
         2. Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations. SIAM/ASA Journal on Uncertainty Quantification 5.1 :1003-1023. `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
         3. Bos, L., De Marchi, S., Sommariva, A., Vianello, M., (2010) Computing Multivariate Fekete and Leja points by Numerical Linear Algebra. SIAM Journal on Numerical Analysis, 48(5). `Paper <https://epubs.siam.org/doi/abs/10.1137/090779024>`__
         4. Joshi, S., Boyd, S., (2009) Sensor Selection via Convex Optimization. IEEE Transactions on Signal Processing, 57(2). `Paper <https://ieeexplore.ieee.org/document/4663892>`__
     """
-    def __init__(self, parameters, basis, method, samples=None):
+    def __init__(self, parameters, basis, method, args=None):
         try:
             len(parameters)
         except TypeError:
@@ -81,28 +93,53 @@ class Poly(object):
         self.parameters = parameters
         self.basis = basis
         self.method = method
-        if samples is not None:
-            self.mesh = samples[0]
-            if 'subsampling-option' in samples[1]:
-                self.subsampling_algorithm = samples[1].get('subsampling-option')
-            if 'subsampling-ratio' in samples[1]:
-                self.subsampling_ratio = float(samples[1].get('sampling-ratio'))
-            if 'sample-points' in samples[1]:
-                self.inputs = samples[1].get('sample-points')
-                self.user_defined = True
-            if 'sample-outputs' in samples[1]:
-                self.outputs = samples[1].get('sample-outputs')
-        if samples is None:
-            if 'growth-rule' in samples[1]:
-                self.growth_rule = samples[1].get('growth-rule')
-            if 'level' in samples[1]:
-                self.level = samples[1].get('level')
+        self.args = args
         self.dimensions = len(parameters)
         self.orders = []
         for i in range(0, self.dimensions):
             self.orders.append(self.parameters[i].order)
         if not self.basis.orders :
             self.basis.setOrders(self.orders)
+
+        # Initialize some default values!
+        if self.method == 'numerical-integration' or self.method == 'integration'
+            self.mesh = self.basis.basis_type
+            self.sampling_ratio = 1.0
+            self.subsampling_algorithm = None
+            self.correlation_matrix = None
+            self.inputs = None
+            self.outputs = None
+        elif self.method == 'least-squares':
+            self.mesh = 'tensor-grid'
+            self.sampling_ratio = 1.0
+            self.subsampling_algorithm = 'qr'
+            self.correlation_matrix = None
+            self.inputs = None
+            self.outputs = None
+        elif self.method == 'compressed-sensing' or self.method == 'compressive-sensing':
+            self.mesh = 'monte-carlo'
+            self.sampling_ratio = 0.8
+            self.subsampling_algorithm = None
+            self.correlation_matrix = None
+            self.inputs = None
+            self.outputs = None
+        elif self.method == 'minimum-norm':
+            self.mesh = 'monte-carlo'
+            self.sampling_ratio = 0.8
+            self.subsampling_algorithm = None
+            self.correlation_matrix = None
+            self.inputs = None
+            self.outputs = None
+
+        # Now depending on user inputs, override these default values!
+        if self.args is not None:
+            if 'mesh' in args: self.mesh = args.get('mesh')
+            if 'sampling-ratio' in args: self.sampling_ratio = float(args.get('sampling-ratio'))
+            if 'subsampling-algorithm' in args: self.subsampling_algorithm = args.get('subsampling-algorithm')
+            if 'sample-points' in args: self.inputs = args.get('sample-points')
+            if 'sample-outputs' in args: self.outputs = args.get('sample-outputs')
+            if 'correlation' in args: self.correlation_matrix = args.get('correlation')
+
         self.__set_solver()
         self.__set_subsampling_algorithm()
         self.__set_points_and_weights()
@@ -113,14 +150,8 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
-        if self.subsampling_algorithm == 'qr':
-            self.algorithm = lambda A, k : get_qr_column_pivoting(A, k)
-        elif self.subsampling_algorithm == 'svd':
-            self.algorithm = lambda A, k : get_svd_subset_selection(A, k)
-        elif self.subsampling_algorithm == 'newton':
-            self.algorithm = lambda A, K : get_newton_determinant_maximization(A, k)
-        elif self.subsampling_algorithm == 'random':
-            self.algorithm = 0 #np.random.choice(int(m), m_refined, replace=False)
+        polysubsampling = Subsampling(self.algorithm)
+        self.algorithm = polysubsampling.get_subsampling_method()
     def __set_solver(self):
         """
         Private function that sets the solver depending on the user-defined method.
@@ -128,25 +159,16 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
-        if self.method.lower() == 'compressive-sensing' or self.method.lower() == 'compressed-sensing':
-            self.solver = lambda A, b: basis_pursuit_denoising(A, b)
-        elif self.method.lower() == 'least-squares':
-            self.solver = lambda A, b: least_squares(A, b)
-        elif self.method.lower() == 'minimum-norm':
-            self.solver = lambda A, b: minimum_norm(A, b)
-        elif self.method.lower() == 'numerical-integration':
-            self.solver = lambda A, b: least_squares(A, b)
-    def __get_quadrature_weights(self, points):
+        polysolver = Solver(self.method)
+        self.solver = polysolver.get_solver()
+    def __get_weights(self, points):
         """
         Private function that sets the quadrature weights, when given the quadrature points.
 
         :param Poly self:
             An instance of the Poly object.
         """
-        P = self.get_poly(points)
-        wts =  1.0/np.sum( P**2 , 0)
-        wts = wts * 1.0/np.sum(wts)
-        return wts
+        return self.quadrature_weights
     def __set_points_and_weights(self):
         """
         Private function that sets the quadrature points.
@@ -154,26 +176,12 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
-        # User-defined data
-        if self.user_defined is True:
-            if len(self.inputs.shape) == 1:
-                self.inputs = np.reshape(self.inputs, (len(self.inputs), 1))
-            assert self.inputs.shape[1] == len(self.parameters)
-            assert self.outputs.shape[0] == self.inputs.shape[0]
-            self.quadrature_points = self.inputs
-            self.quadrature_weights = self.__get_quadrature_weights()
-            return
-        # Traditional numerical integration rules
-        if self.mesh == 'sparse-grid':
-            samples = Sparsegrid(self.parameters, self.basis)
-        elif self.mesh == 'tensor-grid'
-            samples = Tensorgrid(self.parameters, self.basis)
-        elif self.mesh == 'monte-carlo':
-            samples = Montecarlo(self.parameters, self.basis)
-        elif self.mesh == 'christoffel':
-            samples = Christoffel(self.parameters, self.basis)
-        elif self.mesh == 'induced':
-            samples = Induced(self.parameters, self.basis)
+        # Samples
+        samples = Samples(parameters=self.parameters, basis=self.basis, \
+                        points=self.inputs, outputs=self.outputs, correlation = self.correlation_matrix, \
+                        mesh=self.mesh)
+
+        # Subsampling
         if self.subsampling_algorithm is not None:
             P = self.get_poly(samples.quadrature_points)
             W = np.mat( np.diag(np.sqrt(samples.quadrature_weights)))
@@ -560,7 +568,6 @@ def evalgradients(points, fungrad, format):
     else:
         error_function('evalgradients(): Format must be either matrix or vector!')
         return 0
-
 # Evaluate the function (above) at certain points
 def evalfunction(points, function):
     function_values = np.zeros((len(points), 1))

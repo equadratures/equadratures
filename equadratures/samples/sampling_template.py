@@ -1,5 +1,6 @@
-"""The sampling template."""
+"""Sampling strategy."""
 import numpy as np
+CONST = 5
 class Sampling(object):
     """
     The class defines a Sampling object. It serves as a template for all sampling methodologies.
@@ -7,11 +8,14 @@ class Sampling(object):
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     """
-    def __init__(self, parameters=None, basis=None):
+    def __init__(self, parameters=None, basis=None, mesh=None):
         self.parameters = parameters
         self.basis = basis
-        self.points = None
-        self.weights = None
+        self.__set_weights()
+    def __set_weights(self):
+        P = self.__get_multivariate_orthogonal_polynomial(self.points)
+        wts =  1.0/np.sum( P**2 , 0)
+        self.weights = wts * 1.0/np.sum(wts)
     def get_points(self):
         """
         Returns the quadrature points.
@@ -36,20 +40,6 @@ class Sampling(object):
                 An instance of the sampling class.
         """
         return self.points, self.weights
-    def __set_points_and_weights(self, pts, wts=None):
-        """
-        Sets the quadrature points and weights.
-
-        :param Sampling self:
-                An instance of the sampling class.
-        """
-        self.points = points
-        if wts is None:
-            P = self.__get_multivariate_orthogonal_polynomial(self.points)
-            wts =  1.0/np.sum( P**2 , 0)
-            self.weights = wts * 1.0/np.sum(wts)
-        else:
-            self.weights = wts
     def __get_multivariate_orthogonal_polynomial(self):
         """
         Utility for evaluating a multivariate orthogonal polynomial at given points.

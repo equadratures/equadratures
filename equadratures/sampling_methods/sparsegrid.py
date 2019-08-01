@@ -1,6 +1,6 @@
 """Tensor grid based sampling."""
-from equadratures.sampling.sampling_template import Sampling
-from equadratures.sampling.tensorgrid import Tensorgrid
+from equadratures.sampling_methods.sampling_template import Sampling
+from equadratures.sampling_methods.tensorgrid import Tensorgrid
 from equadratures.basis import Basis, sparse_grid_basis
 import numpy as np
 class Sparsegrid(Sampling):

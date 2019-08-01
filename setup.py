@@ -18,7 +18,7 @@ setup(name='equadratures',
       url='https://github.com/Effective-Quadratures/Effective-Quadratures',
       author='Pranay Seshadri, Nicholas Wong, Irene Virdis, James Gross',
       license='LPGL-2.1',
-      packages=['equadratures', 'equadratures.distributions'],
+      packages=['equadratures', 'equadratures.distributions', 'equadratures.sampling_methods'],
       install_requires=[
           'numpy',
           'scipy >= 0.15.0',

@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.linalg import qr, svd, lu, det, cholesky, lstsq
 from copy import deepcopy
-class Solvers(object):
+class Subsampling(object):
     """
     Returns subsampling methods for pruning down the number of
 
@@ -18,7 +18,7 @@ class Solvers(object):
             self.algorithm = lambda A, K : get_newton_determinant_maximization(A, k)
         elif self.subsampling_algorithm == 'random':
             self.algorithm = 0 #np.random.choice(int(m), m_refined, replace=False)
-        elif self.subsampling_algorithm = None:
+        elif self.subsampling_algorithm == None:
             self.algorithm = lambda A, k: __get_all_pivots(A, k)
     def get_subsampling_method(self):
         return self.algorithm
@@ -57,7 +57,7 @@ def get_newton_determinant_maximization(Ao, number_of_subsamples):
     A = deepcopy(Ao)
     maxiter = 50
     n_tol = 1e-12
-    gap = 1.005s
+    gap = 1.005
 
     # For backtracking line search parameters
     alpha = 0.01

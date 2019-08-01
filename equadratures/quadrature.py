@@ -1,9 +1,9 @@
 """The samples template."""
+from equadratures.sampling_methods.montecarlo import Montecarlo
+from equadratures.sampling_methods.tensorgrid import Tensorgrid
+from equadratures.sampling_methods.sparsegrid import Sparsegrid
 import numpy as np
-from equadratures.samples.montecarlo import Montecarlo
-from equadratures.samples.tensorgrid import Tensorgrid
-from equadratures.samples.sparsegrid import Sparsegrid
-class Samples(object):
+class Quadrature(object):
     """
     The class defines a Sampling object. It serves as a template for all sampling methodologies.
 
@@ -17,12 +17,10 @@ class Samples(object):
         self.weights = weights
         self.correlation = correlation
         self.mesh = mesh
-        choices = {'tensor-grid': Tensorgrid(self.parameters, self.basis),
-			       'sparse-grid': Sparsegrid(self.parameters, self.basis),
-                   'monte-carlo': Montecarlo(self.parameters, self.basis),
-				   }
-		distribution = choices.get(self.name.lower(), distributionError)
-		self.distribution = distribution
+        choices = {'tensor-grid': Tensorgrid(self.parameters, self.basis),\
+        'sparse-grid': Sparsegrid(self.parameters, self.basis), \
+        'monte-carlo': Montecarlo(self.parameters, self.basis)}
+        self.sampling = choices.get(self.name.lower(), error_message)
     def get_points(self):
         """
         Returns the quadrature points.
@@ -47,14 +45,5 @@ class Samples(object):
                 An instance of the sampling class.
         """
         return self.sampling.points, self.sampling.weights
-
-
- Now call the relevant meshes!
-        if self.mesh == 'tensor-grid':
-            self.sampling = Tensorgrid(self.parameters, self.basis)
-        elif self.mesh == 'sparse-grid':
-            self.sampling = Sparsegrid(self.parameters, self.basis)
-        elif self.mesh == 'monte-carlo':
-            self.sampling = Montecarlo(self.parameters, self.basis)
-        elif self.mesh == 'induced':
-            self.sampling = Induced(self.parameters, self.basis)
+def error_message():
+    raise(ValueError, 'Oh no. Something went wrong in samples.py!')

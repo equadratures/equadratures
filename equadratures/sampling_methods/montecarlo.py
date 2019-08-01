@@ -1,6 +1,6 @@
 """Monte Carlo based sampling."""
 import numpy as np
-from equadratures.samples.sampling_template import Sampling
+from equadratures.sampling_methods.sampling_template import Sampling
 CONST = 5
 class Montecarlo(Sampling):
     """
@@ -12,9 +12,10 @@ class Montecarlo(Sampling):
     def __init__(self, parameters=None, basis=None):
         self.parameters = parameters
         self.basis = basis
-        self.__set_points()
+        number_of_samples = int(self.basis.cardinality * len(self.parameters) * CONST)
+        self.__set_points(number_of_samples)
         super(Sampling, self).__init__(parameters, basis)
-    def __set_points(self, number_of_samples= int(self.basis.cardinality * self.dimensions * CONST) ):
+    def __set_points(self, number_of_samples):
         """
         Sets the quadrature points and weights.
 

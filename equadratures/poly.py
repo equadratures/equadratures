@@ -4,7 +4,7 @@ from equadratures.parameter import Parameter
 from equadratures.basis import Basis
 from equadratures.solvers import Solvers
 from equadratures.subsampling import Subsampling
-from equadratures.samples import Samples
+from equadratures.quadrature import Quadrature
 import pickle
 import numpy as np
 from copy import deepcopy
@@ -102,7 +102,7 @@ class Poly(object):
             self.basis.setOrders(self.orders)
 
         # Initialize some default values!
-        if self.method == 'numerical-integration' or self.method == 'integration'
+        if self.method == 'numerical-integration' or self.method == 'integration':
             self.mesh = self.basis.basis_type
             self.sampling_ratio = 1.0
             self.subsampling_algorithm = None
@@ -177,14 +177,14 @@ class Poly(object):
             An instance of the Poly object.
         """
         # Samples
-        samples = Samples(parameters=self.parameters, basis=self.basis, \
+        quadrature = Quadrature(parameters=self.parameters, basis=self.basis, \
                         points=self.inputs, outputs=self.outputs, correlation = self.correlation_matrix, \
                         mesh=self.mesh)
 
         # Subsampling
         if self.subsampling_algorithm is not None:
-            P = self.get_poly(samples.quadrature_points)
-            W = np.mat( np.diag(np.sqrt(samples.quadrature_weights)))
+            P = self.get_poly(quadrature.quadrature_points)
+            W = np.mat( np.diag(np.sqrt(quadrature.quadrature_weights)))
             A = W * P.T
             mm, nn = A.shape
             m_refined = int(np.round(self.sampling_ratio * nn))
@@ -192,8 +192,8 @@ class Poly(object):
             self.quadrature_points = evaled_pts[z,:]
             self.quadrature_weights =  weights[z] / np.sum(weights[z])
         else:
-            self.quadrature_points = samples.quadrature_points
-            self.quadrature_weights = samples.quadrature_weights
+            self.quadrature_points = quadrature.quadrature_points
+            self.quadrature_weights = quadrature.quadrature_weights
     def get_mean_and_variance(self):
         """
         Computes the mean and variance of the model.
@@ -216,16 +216,6 @@ class Poly(object):
         if self.statistics_object is None:
             self.statistics_object = Statistics(self.coefficients, self.basis, self.parameters, max_sobol_order=highest_sobol_order_to_compute)
         return self.statistics_object.sobol
-    def clone(self):
-        """
-        Clones a Poly object.
-
-        :param Poly self:
-            An instance of the Poly class.
-        :return:
-            **poly**: Clone of the polynomial input.
-        """
-        return type(self)(self.parameters, self.basis, self.method, self.samples)
     def set_model(self, model, model_grads=None):
         """
         Computes the coefficients of the polynomial via the method selected.
@@ -263,11 +253,11 @@ class Poly(object):
             C = cell2matrix(dPcell, W)
             d = deepcopy(self.gradient_evaluations)
         else:
-            if self.solver is None:
-                if self.mesh == 'tensor-grid':
-                    __, __, self.coefficients =
-            elif self.solver is not None:
-                self.coefficients = self.solver(A, b)
+            #f self.solver is None:
+            #    if self.mesh == 'tensor-grid':
+            #        __, __, self.coefficients =
+            #elif self.solver is not None:
+            self.coefficients = self.solver(A, b)
     def get_points(self):
         """
         Returns the samples based on the sampling strategy.

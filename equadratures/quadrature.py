@@ -19,11 +19,14 @@ class Quadrature(object):
         self.mesh = mesh
         if self.mesh == 'tensor-grid':
             self.samples = Tensorgrid(self.parameters, self.basis)
+            self.list = None
         elif self.mesh == 'sparse-grid':
             self.samples = Sparsegrid(self.parameters, self.basis)
-            self.solver = lambda model_evals: self.samples.__get_spam_solver(model_evals)
+            self.list = self.samples.tensor_product_list
+            self.sparse_weights = self.samples.sparse_weights
         elif self.mesh == 'monte-carlo':
             self.samples = Montecarlo(self.parameters, self.basis)
+            self.list = None
         else:
             error_message()
     def get_points(self):

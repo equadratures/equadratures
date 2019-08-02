@@ -266,19 +266,34 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
-        if self.method == 'sparse-grid':
-            print('got here!')
-            # 1. Need to split the model evaluations based on points!
-            print(len(self.quadrature.tensor_product_list))
-            for tensor in self.quadrature.tensor_product_list:
-                P = self.get_poly(tensor.points)
+        print(self.mesh)
+        if self.mesh == 'sparse-grid':
+            counter = 0
+            multi_index = []
+            coefficients = np.empty([1])
+            multindices = np.empty([1, self.dimensions])
+            print(self.quadrature.sparse_weights)
+            for tensor in self.quadrature.list:
+                P = self.get_poly(tensor.points, tensor.basis.elements)
                 W = np.diag(np.sqrt(tensor.weights))
                 A = np.dot(W , P.T)
-                mm, nn = A.shape
-                __, __, indices = np.intersect1d(tensor.points, self.quadrature_points).reshape(-1, ncols)
+                __, __ , counts = np.unique( np.vstack( [tensor.points, self.quadrature_points]), axis=0, return_index=True, return_counts=True)
+                indices = [i for i in counts if i == 2]
                 b = np.dot(W , self.model_evaluations[indices])
-                coefficients = self.solver(A, b)
-                print(coefficients, indices)
+                del counts, indices
+                coefficients_i = self.solver(A, b)  * self.quadrature.sparse_weights[counter]
+                multindices_i =  tensor.basis.elements
+                coefficients = np.vstack([coefficients_i, coefficients])
+                multindices = np.vstack([multindices_i, multindices])
+                counter =+ 1
+
+            __, indices , counts = np.unique(multindices, axis=0, return_index=True, return_counts=True)
+            print(coefficients[indices])
+            print(multindices[indices])
+
+            print('*****')
+            print(multindices, coefficients)
+
         else: # All other methods!
             P = self.get_poly(self.quadrature_points)
             W = np.diag(np.sqrt(self.quadrature_weights))

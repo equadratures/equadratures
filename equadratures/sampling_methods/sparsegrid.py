@@ -34,7 +34,6 @@ class Sparsegrid(Sampling):
         cols = len(sparse_indices[0])
 
         # For storage we use dictionaries
-        individual_tensor_indices = {}
         points_store = {}
         weights_store = {}
         indices = np.zeros((rows))
@@ -47,8 +46,6 @@ class Sparsegrid(Sampling):
             self.tensor_product_list.append(myTensor)
             pts = myTensor.points
             wts = myTensor.weights
-            tensor_elements = myTensor.basis.elements
-            individual_tensor_indices[i] = tensor_elements
             points_store[i] = pts
             weights_store[i] = wts
             indices[i] = myTensor.basis.cardinality

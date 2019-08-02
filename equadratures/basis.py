@@ -128,19 +128,19 @@ class Basis(object):
         :param Basis object: An instance of the Basis class.
         """
         name = self.basis_type
-        if name == "Total order":
+        if name == "total-order":
             basis = total_order_basis(self.orders)
-        elif name == "Sparse grid":
-            sparse_index, a, SG_set = sparse_grid_basis(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
-            return sparse_index, a, SG_set
-        elif name == "Tensor grid":
+        elif name == "tensor-grid":
             basis = tensor_grid_basis(self.orders)
-        elif name == "Hyperbolic basis":
+        elif name == "hyperbolic-basis":
             basis = hyperbolic_basis(self.orders, self.q)
-        elif name == "Euclidean degree":
+        elif name == "euclidean-degree":
             basis = euclidean_degree_basis(self.orders)
+        elif name == "sparse-grid":
+            sparse_index, sparse_weight_factors, sparse_grid_set = sparse_grid_basis(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
+            return sparse_index, sparse_weight_factors, sparse_grid_set
         else:
-            raise(ValueError, 'Basis __init__: invalid value for basis_type!')
+            raise(ValueError, 'invalid value for basis_type!')
             basis = [0]
         return basis
 
@@ -241,7 +241,6 @@ def total_order_basis(orders):
         R = getTotalOrderBasisRecursion(i, dimensions)
         total_order = np.vstack((total_order, R))
     return total_order
-
 def sparse_grid_basis(level, growth_rule, dimensions):
 
     # Initialize a few parameters for the setup

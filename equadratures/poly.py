@@ -100,7 +100,6 @@ class Poly(object):
             self.orders.append(self.parameters[i].order)
         if not self.basis.orders :
             self.basis.set_orders(self.orders)
-
         # Initialize some default values!
         if self.method == 'numerical-integration' or self.method == 'integration':
             self.mesh = self.basis.basis_type
@@ -130,7 +129,6 @@ class Poly(object):
             self.correlation_matrix = None
             self.inputs = None
             self.outputs = None
-
         # Now depending on user inputs, override these default values!
         if self.args is not None:
             if 'mesh' in args: self.mesh = args.get('mesh')
@@ -139,10 +137,10 @@ class Poly(object):
             if 'sample-points' in args: self.inputs = args.get('sample-points')
             if 'sample-outputs' in args: self.outputs = args.get('sample-outputs')
             if 'correlation' in args: self.correlation_matrix = args.get('correlation')
-
         self.__set_solver()
         self.__set_subsampling_algorithm()
         self.__set_points_and_weights()
+        self.statistics_object = None
     def __set_subsampling_algorithm(self):
         """
         Private function that sets the subsampling algorithm based on the user-defined method.
@@ -180,10 +178,11 @@ class Poly(object):
         quadrature = Quadrature(parameters=self.parameters, basis=self.basis, \
                         points=self.inputs, outputs=self.outputs, correlation = self.correlation_matrix, \
                         mesh=self.mesh)
+        quadrature_points, quadrature_weights = quadrature.get_points_and_weights()
         # Subsampling
         if self.subsampling_algorithm_name is not None:
-            P = self.get_poly(quadrature.quadrature_points)
-            W = np.mat( np.diag(np.sqrt(quadrature.quadrature_weights)))
+            P = self.get_poly(quadrature_points)
+            W = np.mat( np.diag(np.sqrt(quadrature_weights)))
             A = W * P.T
             mm, nn = A.shape
             m_refined = int(np.round(self.sampling_ratio * nn))
@@ -191,8 +190,8 @@ class Poly(object):
             self.quadrature_points = evaled_pts[z,:]
             self.quadrature_weights =  weights[z] / np.sum(weights[z])
         else:
-            self.quadrature_points = quadrature.quadrature_points
-            self.quadrature_weights = quadrature.quadrature_weights
+            self.quadrature_points = quadrature_points
+            self.quadrature_weights = quadrature_weights
     def get_mean_and_variance(self):
         """
         Computes the mean and variance of the model.
@@ -230,11 +229,14 @@ class Poly(object):
             y = evaluate_model(self.quadrature_points, model)
         else:
             y = model
+        if y.shape[1] != 1:
+            raise(ValueError, 'model values should be a column vector.')
+
         self.model_evaluations = model
         P = self.get_poly(self.quadrature_points)
         W = np.diag(np.sqrt(self.quadrature_weights))
-        A = W * P.T
-        b = W * y
+        A = np.dot(W , P.T)
+        b = np.dot(W , y)
         if model_grads is not None:
             if callable(model_grads):
                 grad_values = evaluate_model_gradients(self.quadrature_points, model_grads, 'matrix')
@@ -252,10 +254,8 @@ class Poly(object):
             C = cell2matrix(dPcell, W)
             d = deepcopy(self.gradient_evaluations)
         else:
-            #f self.solver is None:
-            #    if self.mesh == 'tensor-grid':
-            #        __, __, self.coefficients =
-            #elif self.solver is not None:
+            print(A.shape)
+            print(b.shape)
             self.coefficients = self.solver(A, b)
     def get_points(self):
         """
@@ -533,7 +533,7 @@ class Poly(object):
 
         return H
 # Evaluate the gradient of the function at given points
-def evalgradients(points, fungrad, format):
+def evaluate_model_gradients(points, fungrad, format):
     dimensions = len(points[0,:])
 
     if format is 'matrix':
@@ -558,7 +558,7 @@ def evalgradients(points, fungrad, format):
         error_function('evalgradients(): Format must be either matrix or vector!')
         return 0
 # Evaluate the function (above) at certain points
-def evalfunction(points, function):
+def evaluate_model(points, function):
     function_values = np.zeros((len(points), 1))
 
     # For loop through all the points

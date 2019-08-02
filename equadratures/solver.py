@@ -15,7 +15,7 @@ class Solver(object):
         elif self.method.lower() == 'minimum-norm':
             self.solver = lambda A, b: minimum_norm(A, b)
         elif self.method.lower() == 'numerical-integration':
-            self.solver = lambda A, b: least_squares(A, b)
+            self.solver = lambda A, b: np.dot(A.T, b)
     def get_solver(self):
         return self.solver
 def least_squares(A, b):

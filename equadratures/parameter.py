@@ -153,7 +153,7 @@ class Parameter(object):
 
 		return JacobiMatrix
 
-	def _get_ortho_poly(self, points, order=None):
+	def _get_orthogonal_polynomial(self, points, order=None):
 		if order is None:
 			order = self.order + 1
 		else:

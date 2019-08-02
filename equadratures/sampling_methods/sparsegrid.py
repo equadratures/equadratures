@@ -1,7 +1,7 @@
 """Sparse grid based sampling."""
 from equadratures.sampling_methods.sampling_template import Sampling
 from equadratures.sampling_methods.tensorgrid import Tensorgrid
-from equadratures.basis import sparse_grid_basis
+from equadratures.basis import Basis
 import numpy as np
 class Sparsegrid(Sampling):
     """
@@ -29,7 +29,7 @@ class Sparsegrid(Sampling):
 
             **w**: A numpy.ndarray of the corresponding quadrature weights with shape (number_of_samples, 1).
         """
-        sparse_indices, sparse_factors, not_used = sparse_grid_basis(self.basis.level, self.basis.growth_rule, self.dimensions)
+        sparse_indices, sparse_factors, not_used = self.basis.get_basis()
         rows = len(sparse_indices)
         cols = len(sparse_indices[0])
 

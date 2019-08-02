@@ -2,6 +2,7 @@
 from equadratures.sampling_methods.montecarlo import Montecarlo
 from equadratures.sampling_methods.tensorgrid import Tensorgrid
 from equadratures.sampling_methods.sparsegrid import Sparsegrid
+from equadratures.sampling_methods.sampling_template import Sampling
 import numpy as np
 class Quadrature(object):
     """
@@ -16,10 +17,14 @@ class Quadrature(object):
         self.points = points
         self.correlation = correlation
         self.mesh = mesh
-        choices = {'tensor-grid': Tensorgrid(self.parameters, self.basis),\
-        'sparse-grid': Sparsegrid(self.parameters, self.basis), \
-        'monte-carlo': Montecarlo(self.parameters, self.basis)}
-        self.sampling = choices.get(self.name.lower(), error_message)
+        if self.mesh == 'tensor-grid':
+            self.samples = Tensorgrid(self.parameters, self.basis)
+        elif self.mesh == 'sparse-grid':
+            self.samples = Sparsegrid(self.parameters, self.basis)
+        elif self.mesh == 'monte-carlo':
+            self.samples = Montecarlo(self.parameters, self.basis)
+        else:
+            error_message()
     def get_points(self):
         """
         Returns the quadrature points.
@@ -27,7 +32,7 @@ class Quadrature(object):
         :param Sampling self:
                 An instance of the sampling class.
         """
-        return self.sampling.points
+        return self.samples.points
     def get_weights(self):
         """
         Returns the quadrature weights.
@@ -35,7 +40,7 @@ class Quadrature(object):
         :param Sampling self:
                 An instance of the sampling class.
         """
-        return self.sampling.weights
+        return self.samples.weights
     def get_points_and_weights(self):
         """
         Returns the quadrature points and weights.
@@ -43,6 +48,6 @@ class Quadrature(object):
         :param Sampling self:
                 An instance of the sampling class.
         """
-        return self.sampling.points, self.sampling.weights
+        return self.samples.points, self.samples.weights
 def error_message():
     raise(ValueError, 'Oh no. Something went wrong in samples.py!')

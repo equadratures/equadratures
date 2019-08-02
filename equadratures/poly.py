@@ -66,7 +66,7 @@ class Poly(object):
         poly = Poly(parameters=[param, param, param], basis=basis, method='numerical-integration')
 
         # Other declarations:
-        poly = Poly(parameters=[param, param],        basis=basis, method='numerical-integration') # Default: integration
+        poly = Poly(parameters=[param, param], basis=basis, method='numerical-integration') # Default: integration
         poly = Poly(parameters=[param, param, param], basis=basis, method='least-squares') # Default: subsamples form a tensor grid!
         poly = Poly(parameters=[param, param, param], basis=basis, method='compressed-sensing') # Default: randomized samples!
         poly = Poly(parameters=[param, param, param], basis=basis, method='minimum-norm') # Default: Random points!
@@ -84,6 +84,8 @@ class Poly(object):
         2. Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations. SIAM/ASA Journal on Uncertainty Quantification 5.1 :1003-1023. `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
         3. Bos, L., De Marchi, S., Sommariva, A., Vianello, M., (2010) Computing Multivariate Fekete and Leja points by Numerical Linear Algebra. SIAM Journal on Numerical Analysis, 48(5). `Paper <https://epubs.siam.org/doi/abs/10.1137/090779024>`__
         4. Joshi, S., Boyd, S., (2009) Sensor Selection via Convex Optimization. IEEE Transactions on Signal Processing, 57(2). `Paper <https://ieeexplore.ieee.org/document/4663892>`__
+        5. SPAM Paper by Paul
+        6. Xiu and Karndiakis paper.
     """
     def __init__(self, parameters, basis, method, args=None):
         try:
@@ -184,10 +186,10 @@ class Poly(object):
             An instance of the Poly object.
         """
         # Samples
-        quadrature = Quadrature(parameters=self.parameters, basis=self.basis, \
+        self.quadrature = Quadrature(parameters=self.parameters, basis=self.basis, \
                         points=self.inputs, outputs=self.outputs, correlation = self.correlation_matrix, \
                         mesh=self.mesh)
-        quadrature_points, quadrature_weights = quadrature.get_points_and_weights()
+        quadrature_points, quadrature_weights = self.quadrature.get_points_and_weights()
         # Subsampling
         if self.subsampling_algorithm_name is not None:
             P = self.get_poly(quadrature_points)
@@ -241,7 +243,7 @@ class Poly(object):
             assert(y.shape[0] == self.quadrature_points.shape[0])
         if y.shape[1] != 1:
             raise(ValueError, 'model values should be a column vector.')
-        self.model_evaluations = model
+        self.model_evaluations = y
         if self.gradient_flag == 1:
             if callable(model_grads):
                 grad_values = evaluate_model_gradients(self.quadrature_points, model_grads, 'matrix')
@@ -264,25 +266,29 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
-
-
-
-        # Coefficient computation!
         if self.method == 'sparse-grid':
-            for i in range(0, )
-        else:
+            print('got here!')
+            # 1. Need to split the model evaluations based on points!
+            print(len(self.quadrature.tensor_product_list))
+            for tensor in self.quadrature.tensor_product_list:
+                P = self.get_poly(tensor.points)
+                W = np.diag(np.sqrt(tensor.weights))
+                A = np.dot(W , P.T)
+                mm, nn = A.shape
+                __, __, indices = np.intersect1d(tensor.points, self.quadrature_points).reshape(-1, ncols)
+                b = np.dot(W , self.model_evaluations[indices])
+                coefficients = self.solver(A, b)
+                print(coefficients, indices)
+        else: # All other methods!
             P = self.get_poly(self.quadrature_points)
             W = np.diag(np.sqrt(self.quadrature_weights))
             A = np.dot(W , P.T)
-            b = np.dot(W , y)
-
+            b = np.dot(W , self.model_evaluations)
+            if self.gradient_flag == 1:
                 C = cell2matrix(dPcell, W)
-                d = deepcopy(self.gradient_evaluations)
-                self.coefficients = self.solver(A, b, C, d)
+                self.coefficients = self.solver(A, b, C, self.gradient_evaluations)
             else:
                 self.coefficients = self.solver(A, b)
-
-
     def get_multi_index(self):
         """
         Returns the multi-index set of the basis.
@@ -578,10 +584,11 @@ class Poly(object):
                 H.append(polynomialhessian)
 
         return H
-# Evaluate the gradient of the function at given points
 def evaluate_model_gradients(points, fungrad, format):
+    """
+    NEED TO COMPLETE.
+    """
     dimensions = len(points[0,:])
-
     if format is 'matrix':
         grad_values = np.zeros((len(points), dimensions))
         # For loop through all the points
@@ -603,16 +610,19 @@ def evaluate_model_gradients(points, fungrad, format):
     else:
         error_function('evalgradients(): Format must be either matrix or vector!')
         return 0
-# Evaluate the function (above) at certain points
 def evaluate_model(points, function):
+    """
+    NEED TO COMPLETE.
+    """
     function_values = np.zeros((len(points), 1))
-
     # For loop through all the points
     for i in range(0, len(points)):
         function_values[i,0] = function(points[i,:])
-
     return function_values
 def vector_to_2D_grid(coefficients, index_set):
+    """
+    NEED TO COMPLETE.
+    """
     max_order = int(np.max(index_set)) + 1
     x, y = np.mgrid[0:max_order, 0:max_order]
     z = np.full(x.shape, float('NaN'))

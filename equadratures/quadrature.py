@@ -21,6 +21,7 @@ class Quadrature(object):
             self.samples = Tensorgrid(self.parameters, self.basis)
         elif self.mesh == 'sparse-grid':
             self.samples = Sparsegrid(self.parameters, self.basis)
+            self.solver = lambda model_evals: self.samples.__get_spam_solver(model_evals)
         elif self.mesh == 'monte-carlo':
             self.samples = Montecarlo(self.parameters, self.basis)
         else:

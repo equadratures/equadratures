@@ -38,12 +38,13 @@ class Sparsegrid(Sampling):
         points_store = {}
         weights_store = {}
         indices = np.zeros((rows))
-
+        self.tensor_product_list = []
         for i in range(0,rows):
             orders = sparse_indices[i,:]
             print(orders)
             myBasis = Basis('tensor-grid')
             myTensor = Tensorgrid(parameters=self.parameters, basis=myBasis, orders=orders.astype(int) )
+            self.tensor_product_list.append(myTensor)
             pts = myTensor.points
             wts = myTensor.weights
             tensor_elements = myTensor.basis.elements
@@ -62,5 +63,7 @@ class Sparsegrid(Sampling):
                     points_saved[counter,d] = points_store[i][j, d]
                 weights_saved[counter] = weights_store[i][j]
                 counter = counter + 1
-        self.points = points_saved
-        self.weights = weights_saved
+        self.points , indices = np.unique(points_saved, axis=0, return_index=True)
+        self.weights = weights_saved[indices]
+        self.sparse_indices = sparse_indices
+        self.sparse_weights = sparse_factors

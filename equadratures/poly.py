@@ -96,6 +96,7 @@ class Poly(object):
         self.args = args
         self.dimensions = len(parameters)
         self.orders = []
+        self.gradient_flag = 0
         for i in range(0, self.dimensions):
             self.orders.append(self.parameters[i].order)
         if not self.basis.orders :
@@ -109,6 +110,14 @@ class Poly(object):
             self.inputs = None
             self.outputs = None
         elif self.method == 'least-squares':
+            self.mesh = 'tensor-grid'
+            self.sampling_ratio = 1.0
+            self.subsampling_algorithm_name = 'qr'
+            self.correlation_matrix = None
+            self.inputs = None
+            self.outputs = None
+        elif self.method == 'least-squares-with-gradients':
+            self.gradient_flag = 1
             self.mesh = 'tensor-grid'
             self.sampling_ratio = 1.0
             self.subsampling_algorithm_name = 'qr'
@@ -211,8 +220,7 @@ class Poly(object):
         :param int highest_sobol_order_to_compute:
             The order of the Sobol' indices required.
         """
-        if self.statistics_object is None:
-            self.statistics_object = Statistics(self.coefficients, self.basis, self.parameters, max_sobol_order=highest_sobol_order_to_compute)
+        self.statistics_object = Statistics(self.coefficients, self.basis, self.parameters, max_sobol_order=highest_sobol_order_to_compute)
         return self.statistics_object.sobol
     def set_model(self, model, model_grads=None):
         """
@@ -225,19 +233,16 @@ class Poly(object):
         :param callable model_grads:
             The gradient of the function that needs to be approximated. In the absence of a callable gradient function, the input can be a matrix of gradient evaluations at the quadrature points.
         """
+        # Model evaluation
         if callable(model):
             y = evaluate_model(self.quadrature_points, model)
         else:
             y = model
+            assert(y.shape[0] == self.quadrature_points.shape[0])
         if y.shape[1] != 1:
             raise(ValueError, 'model values should be a column vector.')
-
         self.model_evaluations = model
-        P = self.get_poly(self.quadrature_points)
-        W = np.diag(np.sqrt(self.quadrature_weights))
-        A = np.dot(W , P.T)
-        b = np.dot(W , y)
-        if model_grads is not None:
+        if self.gradient_flag == 1:
             if callable(model_grads):
                 grad_values = evaluate_model_gradients(self.quadrature_points, model_grads, 'matrix')
             else:
@@ -251,12 +256,53 @@ class Poly(object):
                     counter = counter + 1
             del d, grad_values
             dP = self.get_poly_grad(self.quadrature_points)
-            C = cell2matrix(dPcell, W)
-            d = deepcopy(self.gradient_evaluations)
+        self.__set_coefficients()
+    def __set_coefficients(self):
+        """
+        Computes the polynomial approximation coefficients.
+
+        :param Poly self:
+            An instance of the Poly object.
+        """
+
+
+
+        # Coefficient computation!
+        if self.method == 'sparse-grid':
+            for i in range(0, )
         else:
-            print(A.shape)
-            print(b.shape)
-            self.coefficients = self.solver(A, b)
+            P = self.get_poly(self.quadrature_points)
+            W = np.diag(np.sqrt(self.quadrature_weights))
+            A = np.dot(W , P.T)
+            b = np.dot(W , y)
+
+                C = cell2matrix(dPcell, W)
+                d = deepcopy(self.gradient_evaluations)
+                self.coefficients = self.solver(A, b, C, d)
+            else:
+                self.coefficients = self.solver(A, b)
+
+
+    def get_multi_index(self):
+        """
+        Returns the multi-index set of the basis.
+
+        :param Poly self:
+            An instance of the Poly object.
+        :return:
+            **c**: A numpy.ndarray of the coefficients with size (cardinality_of_basis, dimensions).
+        """
+        return self.basis.elements
+    def get_coefficients(self):
+        """
+        Returns the coefficients of the polynomial approximation.
+
+        :param Poly self:
+            An instance of the Poly object.
+        :return:
+            **c**: A numpy.ndarray of the coefficients with size (number_of_coefficients, 1).
+        """
+        return self.coefficients
     def get_points(self):
         """
         Returns the samples based on the sampling strategy.
@@ -566,3 +612,12 @@ def evaluate_model(points, function):
         function_values[i,0] = function(points[i,:])
 
     return function_values
+def vector_to_2D_grid(coefficients, index_set):
+    max_order = int(np.max(index_set)) + 1
+    x, y = np.mgrid[0:max_order, 0:max_order]
+    z = np.full(x.shape, float('NaN'))
+    indices = index_set.astype(int)
+    l = len(coefficients)
+    coefficients = np.reshape(coefficients, (1, l))
+    z[indices[:,0], indices[:,1]] = coefficients
+    return x, y, z, max_order

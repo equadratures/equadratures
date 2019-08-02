@@ -13,7 +13,7 @@ class Basis(object):
     :param double q: The `q' parameter is used to control the number of basis terms used in a hyperbolic basis. It varies between 0.0 to 1.0. A value of 1.0 yields a total order basis.
 
     Attributes:
-        * **self.dimension**: (integer) Number of dimensions of the index set.
+        * **self.dimensions**: (integer) Number of dimensions of the index set.
         * **self.elements**: (numpy array) The multi-indices of the index set.
         * **self.cardinality**:(integer) The cardinality of the index set.
 
@@ -62,14 +62,14 @@ class Basis(object):
         self.orders = []
         for i in range(0, len(orders)):
             self.orders.append(orders[i])
-        self.dimension = len(self.orders)
+        self.dimensions = len(self.orders)
         name = self.basis_type
         if name.lower() == "total-order":
             basis = total_order_basis(self.orders)
         elif name.lower() ==  "univariate":
             basis = np.reshape( np.linspace(0, self.orders[0], self.orders[0]+1) , (self.orders[0]+1, 1) )
         elif name.lower() == "sparse-grid":
-            sparse_index, a, SG_set = sparse_grid_basis(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
+            sparse_index, a, SG_set = sparse_grid_basis(self.level, self.growth_rule, self.dimensions) # Note sparse grid rule depends on points!
             basis = SG_set
         elif (name.lower() == "tensor-grid") or (name.lower() == "tensor") :
             basis = tensor_grid_basis(self.orders)
@@ -105,19 +105,19 @@ class Basis(object):
         """
         number_of_elements = len(self.elements)
         combined_indices_for_sorting = np.ones((number_of_elements, 1))
-        sorted_elements = np.ones((number_of_elements, self.dimension))
+        sorted_elements = np.ones((number_of_elements, self.dimensions))
         elements = self.elements
         for i in range(0, number_of_elements):
             a = np.sort(elements[i,:])
             u = 0
-            for j in range(0, self.dimension):
+            for j in range(0, self.dimensions):
                 u = 10**(j) * a[j] + u
             combined_indices_for_sorting[i] = u
         sorted_indices = np.argsort(combined_indices_for_sorting, axis=0)
 
        # Create a new index set with the sorted entries
         for i in range(0, number_of_elements):
-            for j in range(0, self.dimension):
+            for j in range(0, self.dimensions):
                 row_index = sorted_indices[i]
                 sorted_elements[i,j] = elements[row_index, j]
         self.elements = sorted_elements
@@ -137,7 +137,7 @@ class Basis(object):
         elif name == "euclidean-degree":
             basis = euclidean_degree_basis(self.orders)
         elif name == "sparse-grid":
-            sparse_index, sparse_weight_factors, sparse_grid_set = sparse_grid_basis(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
+            sparse_index, sparse_weight_factors, sparse_grid_set = sparse_grid_basis(self.level, self.growth_rule, self.dimensions) # Note sparse grid rule depends on points!
             return sparse_index, sparse_weight_factors, sparse_grid_set
         else:
             raise(ValueError, 'invalid value for basis_type!')

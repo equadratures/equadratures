@@ -1,5 +1,6 @@
 """Tensor grid based sampling."""
 from equadratures.sampling_methods.sampling_template import Sampling
+#from equadratures.basis import Basis
 import numpy as np
 class Tensorgrid(Sampling):
     """
@@ -11,6 +12,8 @@ class Tensorgrid(Sampling):
     def __init__(self, parameters, basis, orders=None):
         self.parameters = parameters
         self.basis = basis
+        if orders is not None:
+            self.basis.set_orders(orders)
         self.dimensions = len(self.parameters)
         self.__set_points(orders)
         super(Tensorgrid, self).__init__(self.parameters, self.basis, self.points, self.weights)

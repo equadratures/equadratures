@@ -16,6 +16,8 @@ class Solver(object):
             self.solver = lambda A, b: minimum_norm(A, b)
         elif self.method.lower() == 'numerical-integration':
             self.solver = lambda A, b: np.dot(A.T, b)
+        elif self.method.lower() == 'least-squares-with-gradients':
+            self.solver = lambda A, b, C, d: constrained_least_squares(A, b, C, d)
     def get_solver(self):
         return self.solver
 def least_squares(A, b):

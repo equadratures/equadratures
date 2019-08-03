@@ -6,7 +6,7 @@ import numpy as np
 def rosenbrock_fun(x):
     return (1 - x[0])**2 + 100*(x[1] - x[0]**2)**2
 
-class TestPolyint(TestCase):
+class TestA(TestCase):
 
     def test_tensor(self):
         mu = 1
@@ -16,7 +16,7 @@ class TestPolyint(TestCase):
         x2 = Parameter(distribution="Gaussian", shape_parameter_A=mu, shape_parameter_B=variance, order=6)
         parameters = [x1, x2]
         basis = Basis('Tensor grid')
-        uqProblem = Polyint(parameters, basis)
+        uqProblem = Poly(parameters, basis, 'numerical-integration')
         uqProblem.computeCoefficients(rosenbrock_fun)
         myStats = uqProblem.getStatistics()
         large_number = 1000000
@@ -27,6 +27,7 @@ class TestPolyint(TestCase):
         np.testing.assert_almost_equal(myStats.mean * 1.0/10000.0, np.mean(f)* 1.0/10000.0, decimal=2, err_msg = "Difference greated than imposed tolerance")
         np.testing.assert_almost_equal(myStats.variance* 1.0/1000000000.0, np.var(f)* 1.0/1000000000.0, decimal=2, err_msg = "Difference greated than imposed tolerance")
 
+    def test_sparse(self):
 
 if __name__== '__main__':
     unittest.main()

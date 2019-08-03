@@ -5,27 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.special import erf, gamma
 N = 900000
-
-def plot(x, f_X, a, b, samples, dist_name, ylims=None):
-
-  fig = plt.figure()
-  ax = fig.add_subplot(1,1,1)
-  plt.hist(samples, 30, normed=1, facecolor='orangered', edgecolor='black', linewidth=0.5, label='parameter-samples')
-  plt.plot(x, f_X, c='navy', lw=3, label='input')
-  plt.plot(a, b, '--', c='green', label='parameter-pdf')
-  legend = ax.legend(loc='upper left')
-  plt.xlabel('Viscosity', fontsize=13)
-  plt.ylabel('PDF', fontsize=13)
-  plt.xticks(fontsize=13)
-  plt.yticks(fontsize=13)
-  plt.title(dist_name)
-  if ylims is not None:
-    plt.ylim([ylims[0], ylims[1]])
-  ax.set_xlabel('X variable')
-  ax.set_ylabel('PDF')
-  plt.tight_layout()
-  plt.show()
-
 def blackbox(x):
   return x
 
@@ -52,7 +31,6 @@ class Test_Distributions(TestCase):
        b = xo.getPDF(a)
        samples = xo.getSamples(m=1000)
        std_dev = np.std(samples)
-       plot(x, f_X, a, b, samples, xo.name)
        xi = np.random.gamma(k,theta, (N,1))
        yi = evalfunction(np.reshape(xi, (N, 1) ), blackbox)
        eq_m = float('%.4f' %myStats.mean)
@@ -84,7 +62,6 @@ class Test_Distributions(TestCase):
        a = x
        b = xo.getPDF(a)
        samples = xo.getSamples(m=1000)
-       plot(x, f_X, a, b, samples, xo.name)
        eq_m = float('%.4f' %myStats.mean)
        mc_m = float('%.4f' %np.mean(yi))
        error_mean = np.testing.assert_almost_equal(eq_m, mc_m, decimal=2, err_msg="difference greater than imposed tolerance for mean value")

@@ -19,7 +19,7 @@ import sphinx_bootstrap_theme
 
 # -- Project information -----------------------------------------------------
 
-project = u'Effective Quadratures'
+project = u' '
 copyright = u'2016-2019 by Effective Quadratures'
 author = u'Pranay Seshadri, Nicholas Wong, James Gross, Irene Vidris'
 
@@ -83,7 +83,7 @@ language = None
 exclude_patterns = [u'_docsbuild', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+#pygments_style = 'sphinx'
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -98,9 +98,9 @@ pygments_style = 'sphinx'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_docsstatic']
+html_static_path = ['']
 
-html_logo = 'logo.png'
+html_logo = 'logo_white_font.png'
 html_favicon = 'logo.png'
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -128,7 +128,7 @@ latex_elements = {
 
     # The font size ('10pt', '11pt' or '12pt').
     #
-    'pointsize': '10pt',
+    'pointsize': '12pt',
 
     # Additional stuff for the LaTeX preamble.
     #
@@ -180,14 +180,14 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 # -- Options for todo extension ----------------------------------------------
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = True
+#todo_include_todos = True
 
 html_theme_options = {
     # Navigation bar title. (Default: ``project`` value)
-    'navbar_title': "Effective Quadratures",
+    'navbar_title': "",
     
     # Tab name for entire site. (Default: "Site")
-    'navbar_site_name': "Site",
+    'navbar_site_name': "Explore",
     
     # A list of tuples containing pages or urls to link to.
     # Valid tuples should be in the following forms:
@@ -211,7 +211,7 @@ html_theme_options = {
                      
                      # Global TOC depth for "site" navbar tab. (Default: 1)
                      # Switching to -1 shows all levels.
-                     'globaltoc_depth': 2,
+                     'globaltoc_depth': -1,
                      
                      # Include hidden TOCs in Site navbar?
                      #
@@ -224,7 +224,7 @@ html_theme_options = {
                      
                      # HTML navbar class (Default: "navbar") to attach to <div> element.
                      # For black navbar, do "navbar navbar-inverse"
-                     'navbar_class': "navbar navbar-inverse",
+                     'navbar_class': "navbar",
                      
                      # Fix navigation bar to top of page?
                      # Values: "true" (default) or "false"
@@ -232,7 +232,7 @@ html_theme_options = {
                      
                      # Location of link to source.
                      # Options are "nav" (default), "footer" or anything else to exclude.
-                     'source_link_position': "nav",
+                     'source_link_position': "none",
                      
                      # Bootswatch (http://bootswatch.com/) theme.
                      #
@@ -245,8 +245,7 @@ html_theme_options = {
                      # Currently, the supported themes are:
                      # - Bootstrap 2: https://bootswatch.com/2
                      # - Bootstrap 3: https://bootswatch.com/3
-                     'bootswatch_theme': "united",
-                     
+                     'bootswatch_theme': "cerulean",
                      'page_toc_position': 'sidebar-left',
                      
                      # Choose Bootstrap version.

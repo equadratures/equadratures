@@ -111,7 +111,7 @@ class Poly(object):
         elif self.method == 'least-squares':
             self.mesh = 'tensor-grid'
             self.sampling_ratio = 1.0
-            self.subsampling_algorithm_name = 'qr'
+            self.subsampling_algorithm_name = None
             self.correlation_matrix = None
             self.inputs = None
             self.outputs = None
@@ -119,7 +119,7 @@ class Poly(object):
             self.gradient_flag = 1
             self.mesh = 'tensor-grid'
             self.sampling_ratio = 1.0
-            self.subsampling_algorithm_name = 'qr'
+            self.subsampling_algorithm_name = None
             self.correlation_matrix = None
             self.inputs = None
             self.outputs = None
@@ -182,12 +182,10 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
-        # Samples
         self.quadrature = Quadrature(parameters=self.parameters, basis=self.basis, \
                         points=self.inputs, outputs=self.outputs, correlation = self.correlation_matrix, \
                         mesh=self.mesh)
         quadrature_points, quadrature_weights = self.quadrature.get_points_and_weights()
-        # Subsampling
         if self.subsampling_algorithm_name is not None:
             P = self.get_poly(quadrature_points)
             W = np.mat( np.diag(np.sqrt(quadrature_weights)))
@@ -221,7 +219,7 @@ class Poly(object):
         """
         self.statistics_object = Statistics(self.coefficients, self.basis, self.parameters, max_sobol_order=highest_sobol_order_to_compute)
         return self.statistics_object.sobol
-    def set_model(self, model, model_grads=None):
+    def set_model(self, model=None, model_grads=None):
         """
         Computes the coefficients of the polynomial via the method selected.
 
@@ -232,29 +230,34 @@ class Poly(object):
         :param callable model_grads:
             The gradient of the function that needs to be approximated. In the absence of a callable gradient function, the input can be a matrix of gradient evaluations at the quadrature points.
         """
-        # Model evaluation
-        if callable(model):
-            y = evaluate_model(self.quadrature_points, model)
+        print('coefficient_class')
+        print(self.outputs)
+        if (model is None) and (self.outputs is not None):
+            print('got here!')
+            self.model_evaluations = self.outputs
         else:
-            y = model
-            assert(y.shape[0] == self.quadrature_points.shape[0])
-        if y.shape[1] != 1:
-            raise(ValueError, 'model values should be a column vector.')
-        self.model_evaluations = y
-        if self.gradient_flag == 1:
-            if callable(model_grads):
-                grad_values = evaluate_model_gradients(self.quadrature_points, model_grads, 'matrix')
+            if callable(model):
+                y = evaluate_model(self.quadrature_points, model)
             else:
-                grad_values = model_grads
-            p, q = grad_values.shape
-            self.gradient_evaluations = np.zeros((p*q,1))
-            counter = 0
-            for j in range(0,q):
-                for i in range(0,p):
-                    self.gradient_evaluations[counter] = W[i,i] * grad_values[i,j]
-                    counter = counter + 1
-            del d, grad_values
-            dP = self.get_poly_grad(self.quadrature_points)
+                y = model
+                assert(y.shape[0] == self.quadrature_points.shape[0])
+            if y.shape[1] != 1:
+                raise(ValueError, 'model values should be a column vector.')
+            self.model_evaluations = y
+            if self.gradient_flag == 1:
+                if callable(model_grads):
+                    grad_values = evaluate_model_gradients(self.quadrature_points, model_grads, 'matrix')
+                else:
+                    grad_values = model_grads
+                p, q = grad_values.shape
+                self.gradient_evaluations = np.zeros((p*q,1))
+                counter = 0
+                for j in range(0,q):
+                    for i in range(0,p):
+                        self.gradient_evaluations[counter] = W[i,i] * grad_values[i,j]
+                        counter = counter + 1
+                del d, grad_values
+                dP = self.get_poly_grad(self.quadrature_points)
         self.__set_coefficients()
     def __set_coefficients(self):
         """
@@ -292,6 +295,7 @@ class Poly(object):
             self.coefficients = coefficients_final
             self.basis.elements = unique_indices
         else:
+            print('got here!')
             P = self.get_poly(self.quadrature_points)
             W = np.diag(np.sqrt(self.quadrature_weights))
             A = np.dot(W , P.T)
@@ -365,7 +369,7 @@ class Poly(object):
         :return:
             **p**: A numpy.ndarray of shape (1, number_of_observations) corresponding to the polynomial approximation of the model.
         """
-        return self.getPolynomial(stack_of_points).T *  np.mat(self.coefficients)
+        return self.get_poly(stack_of_points).T *  np.mat(self.coefficients)
     def get_polyfit_grad(self, stack_of_points, dim_index = None):
         """
         Evaluates the gradient of the polynomial approximation of a function (or model data) at prescribed points.
@@ -382,7 +386,7 @@ class Poly(object):
             no_of_points = 1
         else:
             no_of_points, _ = stack_of_points.shape
-        H = self.getPolynomialGradient(stack_of_points, dim_index=dim_index)
+        H = self.get_poly_grad(stack_of_points, dim_index=dim_index)
         grads = np.zeros((self.dimensions, no_of_points ) )
         if self.dimensions == 1:
             return np.mat(self.coefficients).T * H
@@ -405,7 +409,7 @@ class Poly(object):
             no_of_points = 1
         else:
             no_of_points, _ = stack_of_points.shape
-        H = self.getPolynomialHessian(stack_of_points)
+        H = self.get_poly_hess(stack_of_points)
         if self.dimensions == 1:
             return np.mat(self.coefficients).T * H
         hess = np.zeros((self.dimensions, self.dimensions, no_of_points))
@@ -422,7 +426,7 @@ class Poly(object):
         :return:
             A callable function.
         """
-        return lambda x: np.array(self.getPolynomial(x).T *  np.mat(self.coefficients))
+        return lambda x: np.array(self.get_poly(x).T *  np.mat(self.coefficients))
     def get_polyfit_grad_function(self):
         """
         Returns a callable for the gradients of the polynomial approximation of a function (or model data).

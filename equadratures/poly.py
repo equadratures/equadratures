@@ -278,15 +278,12 @@ class Poly(object):
                 del counts, indices
                 coefficients_i = self.solver(A, b)  * self.quadrature.sparse_weights[counter]
                 multindices_i =  tensor.basis.elements
-                print(coefficients_i, multindices_i)
-                print('---------')
                 coefficients = np.vstack([coefficients_i, coefficients])
                 multindices = np.vstack([multindices_i, multindices])
                 counter = counter +  1
             multindices = np.delete(multindices, multindices.shape[0]-1, 0)
-            coefficients = np.delete(coefficients, multindices.shape[0]-1, 0)
-            __, indices , counts = np.unique(multindices, axis=0, return_index=True, return_counts=True)
-            unique_indices = multindices[indices]
+            coefficients = np.delete(coefficients, coefficients.shape[0]-1)
+            unique_indices, indices , counts = np.unique(multindices, axis=0, return_index=True, return_counts=True)
             coefficients_final = np.zeros((unique_indices.shape[0], 1))
             for i in range(0, unique_indices.shape[0]):
                 for j in range(0, multindices.shape[0]):

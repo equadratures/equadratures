@@ -76,9 +76,6 @@ class Poly(object):
         poly = Poly(parameters=[param, param, param], basis=basis, method='least-squares',
                                     {'mesh':'induced', 'sampling-ratio':1.5, 'subsampling-option'})
 
-
-
-
     **References**
         1. Seshadri, P., Iaccarino, G., Ghisu, T., (2018) Quadrature Strategies for Constructing Polynomial Approximations. Uncertainty Modeling for Engineering Applications. Springer, Cham, 2019. 1-25. `Preprint <https://arxiv.org/pdf/1805.07296.pdf>`__
         2. Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations. SIAM/ASA Journal on Uncertainty Quantification 5.1 :1003-1023. `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
@@ -266,35 +263,38 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
-        print(self.mesh)
         if self.mesh == 'sparse-grid':
             counter = 0
             multi_index = []
             coefficients = np.empty([1])
             multindices = np.empty([1, self.dimensions])
-            print(self.quadrature.sparse_weights)
             for tensor in self.quadrature.list:
                 P = self.get_poly(tensor.points, tensor.basis.elements)
                 W = np.diag(np.sqrt(tensor.weights))
                 A = np.dot(W , P.T)
                 __, __ , counts = np.unique( np.vstack( [tensor.points, self.quadrature_points]), axis=0, return_index=True, return_counts=True)
-                indices = [i for i in counts if i == 2]
+                indices = [i for i in range(0, len(counts)) if  counts[i] == 2]
                 b = np.dot(W , self.model_evaluations[indices])
                 del counts, indices
                 coefficients_i = self.solver(A, b)  * self.quadrature.sparse_weights[counter]
                 multindices_i =  tensor.basis.elements
+                print(coefficients_i, multindices_i)
+                print('---------')
                 coefficients = np.vstack([coefficients_i, coefficients])
                 multindices = np.vstack([multindices_i, multindices])
-                counter =+ 1
-
+                counter = counter +  1
+            multindices = np.delete(multindices, multindices.shape[0]-1, 0)
+            coefficients = np.delete(coefficients, multindices.shape[0]-1, 0)
             __, indices , counts = np.unique(multindices, axis=0, return_index=True, return_counts=True)
-            print(coefficients[indices])
-            print(multindices[indices])
-
-            print('*****')
-            print(multindices, coefficients)
-
-        else: # All other methods!
+            unique_indices = multindices[indices]
+            coefficients_final = np.zeros((unique_indices.shape[0], 1))
+            for i in range(0, unique_indices.shape[0]):
+                for j in range(0, multindices.shape[0]):
+                    if np.array_equiv( unique_indices[i,:] , multindices[j,:]):
+                        coefficients_final[i] = coefficients_final[i] + coefficients[j]
+            self.coefficients = coefficients_final
+            self.basis.elements = unique_indices
+        else:
             P = self.get_poly(self.quadrature_points)
             W = np.diag(np.sqrt(self.quadrature_weights))
             A = np.dot(W , P.T)

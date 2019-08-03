@@ -15,7 +15,7 @@ class Solver(object):
         elif self.method.lower() == 'minimum-norm':
             self.solver = lambda A, b: minimum_norm(A, b)
         elif self.method.lower() == 'numerical-integration':
-            self.solver = lambda A, b: np.dot(A.T, b)
+            self.solver = lambda A, b: orthogonal_linear_system(A, b)
         elif self.method.lower() == 'least-squares-with-gradients':
             self.solver = lambda A, b, C, d: constrained_least_squares(A, b, C, d)
     def get_solver(self):
@@ -23,10 +23,16 @@ class Solver(object):
 def least_squares(A, b):
     alpha = np.linalg.lstsq(A, b)
     return alpha[0]
+    #coefficients = alpha[0]
+    #for i in range(0, coefficients):
+    #    if np.abs(coefficients[i]) <= 1e-16:
+    #        coefficients[i] = 1e-16
+    #return coefficients
 def minimum_norm(A, b):
     return 0
-def linear_system(A, b):
-    return 0
+def orthogonal_linear_system(A, b):
+    coefficients = np.dot(A.T, b)
+    return coefficients
 def constrained_least_squares(A, b, C, d):
     return 0
 def basis_pursuit_denoising(Ao, bo):

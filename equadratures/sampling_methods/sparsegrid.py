@@ -40,7 +40,6 @@ class Sparsegrid(Sampling):
         self.tensor_product_list = []
         for i in range(0,rows):
             orders = sparse_indices[i,:]
-            print(orders)
             myBasis = Basis('tensor-grid')
             myTensor = Tensorgrid(parameters=self.parameters, basis=myBasis, orders=orders.astype(int) )
             self.tensor_product_list.append(myTensor)

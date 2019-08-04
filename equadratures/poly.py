@@ -125,14 +125,14 @@ class Poly(object):
             self.outputs = None
         elif self.method == 'compressed-sensing' or self.method == 'compressive-sensing':
             self.mesh = 'monte-carlo'
-            self.sampling_ratio = 0.8
+            self.sampling_ratio = 1.0
             self.subsampling_algorithm_name = None
             self.correlation_matrix = None
             self.inputs = None
             self.outputs = None
         elif self.method == 'minimum-norm':
             self.mesh = 'monte-carlo'
-            self.sampling_ratio = 0.8
+            self.sampling_ratio = 1.0
             self.subsampling_algorithm_name = None
             self.correlation_matrix = None
             self.inputs = None

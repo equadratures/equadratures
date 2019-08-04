@@ -63,8 +63,8 @@ class Sampling(object):
             return poly
         else:
             for i in range(0, dimensions):
-                if len(stack_of_points.shape) == 1:
-                    stack_of_points = np.array([stack_of_points])
+                if len(self.points.shape) == 1:
+                    self.points = np.asarray([self.points])
                 p[i] , _ , _ = self.parameters[i]._get_orthogonal_polynomial(self.points[:,i], int(np.max(basis[:,i])) )
 
         # One loop for polynomials

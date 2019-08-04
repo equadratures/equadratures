@@ -9,7 +9,7 @@ Effective Quadratures is an open-source library for *uncertainty quantification*
 Code
 ***************
 
-The latest version of the code is version 8.0 and was released in August 2019. We welcome contributions and suggestions from both users and folks interested in developing the code further.
+The latest version of the code is version 8.0 and was released in August 2019. 
 
 .. image:: https://travis-ci.org/Effective-Quadratures/Effective-Quadratures.svg?branch=master
 	:target: https://travis-ci.org/Effective-Quadratures/
@@ -35,7 +35,11 @@ or if you are using python3, then
 	
 	pip3 install equadratures
 
-Alternatively you can visit our `GitHub page <https://github.com/Effective-Quadratures/Effective-Quadratures>`__ and click either on the **Fork Code** button or **Clone**. 
+Alternatively you can visit our `GitHub page <https://github.com/Effective-Quadratures/Effective-Quadratures>`__ and click either on the **Fork Code** button or **Clone**. For issues with the code, please do *raise an issue* on our Github page; do make sure to add the relevant bits of code and specifics on package version numbers. We welcome contributions and suggestions from both users and folks interested in developing the code further.
+
+Our is designed to require minimal dependencies; current package requirements include ``numpy``, ``scipy`` and ``matplotlib``.
+
+
 Workshops
 ***********
 
@@ -48,13 +52,13 @@ We routinely organize workshops covering the theory, algorithms and applications
 * computing moments from models and data-sets
 * sensitivity analysis and Sobol' indices
 * data-driven dimension reduction
-* neural networks
+* ridge approximations and neural networks
 * surrogate-based design optimisation 
 
 If this is of interest, please do get in touch. Upcoming workshops include:
 
 - 23rd August 2019, Rolls-Royce, Derbyshire.
-- 16th September 2019, UKAEA, Oxfordshire.
+- 16th September 2019, United Kingdom Atomic Energy Authority, Oxfordshire.
 
 
 Papers
@@ -71,4 +75,4 @@ Papers
 Get in touch
 ***************
 
-Feel free to follow us via `Twitter <https://twitter.com/EQuadratures>`__ or email us at contact@effective-quadratures.org.
+Feel free to follow us via `Twitter <https://twitter.com/EQuadratures>`__ or email us at contact@effective-quadratures.org. 

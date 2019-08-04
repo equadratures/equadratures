@@ -1,5 +1,6 @@
 """Solvers for computing of a linear system."""
 import numpy as np
+from copy import deepcopy
 class Solver(object):
     """
     Returns solver functions for solving Ax=b
@@ -37,7 +38,7 @@ def constrained_least_squares(A, b, C, d):
     return 0
 def basis_pursuit_denoising(Ao, bo):
     A = deepcopy(Ao)
-    b = deepcopy(bo)
+    y = deepcopy(bo)
     N = A.shape[0]
     # Possible noise levels
     log_epsilon = [-8,-7,-6,-5,-4,-3,-2,-1]

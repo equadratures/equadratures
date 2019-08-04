@@ -1,5 +1,0 @@
-Samples
-=====================
-
-.. automodule:: equadratures.induced_distributions
-    :members:

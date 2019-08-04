@@ -1,4 +1,4 @@
-"""The polynomial parent class."""
+"""The polynomial parent class; one of the main building blocks in Effective Quadratures."""
 from equadratures.stats import Statistics
 from equadratures.parameter import Parameter
 from equadratures.basis import Basis
@@ -16,27 +16,24 @@ class Poly(object):
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     :param str method: The method used for computing the coefficients. Should be one of: ``compressive-sensing``,
         ``numerical-integration``, ``least-squares`` or ``minimum-norm``.
-    :param tuple samples: With the format (str, dict). Here the str argument to this input specifies the sampling strategy. Avaliable options
-        are: ``monte-carlo``, ``latin-hypercube``, ``induced-sampling``, ``christoffel-sampling``, ``sparse-grid``, ``tensor-grid`` or ``user-defined``.
-        The second argument to this input is a dictionary, that naturally depends on the chosen string.
-        Note that ``monte-carlo``, ``latin-hypercube``, ``induced-sampling`` and ``christoffel-sampling`` are random
-        sampling techniques and thus their output will vary with each instance; initialization of a random seed
-        is recommended to facilitate reproducibility. The second argument to this input is a dict with the following key value structure.
+    :param dict args: Optional arguments centered around the specific sampling strategy and correlations within the samples.
 
-        :param dict args: For ``monte-carlo``, ``latin-hypercube``, ``induced-sampling`` and ``christoffel-sampling``, the following structure
-            ``{'sampling-ratio': (double), 'subsampling-option': (str), 'correlation': (numpy.ndarray)}`` should be adopted. The ``sampling-ratio``
-            is the of the number of samples to the number of coefficients (cardinality of the basis) and it should be greater than 1.0 for
-            ``least-squares``. The ``subsampling-option`` input refers to the optimisation technique for subsampling. In the aforementioned four sampling strategies,
+        :string mesh: Avaliable options are: ``monte-carlo``, ``induced-sampling``, ``sparse-grid``, ``tensor-grid`` or ``user-defined``.
+            Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1]
+            is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
+        :string subsampling-algorithm: The ``subsampling-algorithm`` input refers to the optimisation technique for subsampling. In the aforementioned four sampling strategies,
             we generate a logarithm factor of samples above the required amount and prune down the samples using an optimisation
             technique (see [1]). Existing optimisation strategies include: ``qr``, ``lu``, ``svd``, ``newton``. These refer to QR with column
             pivoting [2], LU with row pivoting [3], singular value decomposition with subset selection [2] and a convex relaxation
             via Newton's method for determinant maximization [4]. Note that if the ``tensor-grid`` option is selected, then subsampling will depend on whether the Basis
-            argument is a total order index set, hyperbolic basis or a tensor order index set. In the case of the latter, no subsampling will be carrried out. The final input
-            argument is the correlation matrix between the input parameters. This input is a numpy.ndarray of size (number of parameters, number of parameters). Should this input
-            not be provided, the parameters will be assumed to be independent.
-        :param dict args: For the ``user-defined`` scenario, the dict is of the form ``{'sample-points': (numpy ndarray), 'sample-outputs': (numpy ndarray), 'correlation': None}``.
-            The shape of *sample-points* will have size (observations, dimensions), while the shape of *sample-outputs* will have size (observations, 1). Once again, unless explicitly
-            provided, the parameters will be assumed to be independent.
+            argument is a total order index set, hyperbolic basis or a tensor order index set.
+        :float sampling-ratio: Denotes the extent of undersampling or oversampling required. For values equal to unity (default), the number of rows
+            and columns of the associated Vandermonde-type matrix are equal.
+        :numpy.ndarray correlation-matrix: In the case where the inputs are correlated, a user-defined correlation matrix must be provided. This matrix
+            input must be symmetric, positive-definite and be of shape (number_of_inputs, number_of_inputs).
+        :numpy.ndarray sample-points: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
+        :numpy.ndarray sample-outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points. Note that
+            if ``sample-points`` is provided as an input, then the code expects ``sample-outputs`` too.
 
     **Sample constructor initialisations**::
 
@@ -46,43 +43,30 @@ class Poly(object):
         # Subsampling from a tensor grid
         param = Parameter(distribution='uniform', lower=-1., upper=1., order=3)
         basis = Basis('total order')
-        samples = ('tensor-grid', {'subsampling-ratio': 1.1, 'subsampling-option': 'qr'})
-        poly = Poly(parameters=[param, param], basis=basis, method='least-squares', samples=samples)
+        poly = Poly(parameters=[param, param], basis=basis, method='least-squares' , args={'mesh':'tensor-grid', 'subsampling-algorithm':'svd', 'sampling-ratio':1.0})
 
-        # User-defined data
+        # User-defined data with compressive sensing
         X = np.loadtxt('inputs.txt')
         y = np.loadtxt('outputs.txt')
-        samples = ('user-defined', {'sample-points': X, 'sample-outputs': y})
-        poly = Poly(parameters=[param, param], basis=basis, method='compressive-sensing', samples=samples)
+        param = Parameter(distribution='uniform', lower=-1., upper=1., order=3)
+        basis = Basis('total order')
+        poly = Poly([param, param], basis, method='compressive-sensing', args={'sample-points':X_red, \
+                                                               'sample-outputs':Y_red})
 
         # Using a sparse grid
         param = Parameter(distribution='uniform', lower=-1., upper=1., order=3)
         basis = Basis('sparse-grid', level=7, growth_rule='exponential')
         poly = Poly(parameters=[param, param], basis=basis, method='numerical-integration')
 
-        # Using a tensor grid
-        param = Parameter(distribution='uniform', lower=-1., upper=1., order=3)
-        basis = Basis('tensor-grid')
-        poly = Poly(parameters=[param, param, param], basis=basis, method='numerical-integration')
-
-        # Other declarations:
-        poly = Poly(parameters=[param, param], basis=basis, method='numerical-integration') # Default: integration
-        poly = Poly(parameters=[param, param, param], basis=basis, method='least-squares') # Default: subsamples form a tensor grid!
-        poly = Poly(parameters=[param, param, param], basis=basis, method='compressed-sensing') # Default: randomized samples!
-        poly = Poly(parameters=[param, param, param], basis=basis, method='minimum-norm') # Default: Random points!
-        poly = Poly(parameters=[param, param, param], basis=basis, method='minimum-norm', correlation=mat) # correlated!
-
-        # Least squares
-        poly = Poly(parameters=[param, param, param], basis=basis, method='least-squares',
-                                    {'mesh':'induced', 'sampling-ratio':1.5, 'subsampling-option'})
 
     **References**
-        1. Seshadri, P., Iaccarino, G., Ghisu, T., (2018) Quadrature Strategies for Constructing Polynomial Approximations. Uncertainty Modeling for Engineering Applications. Springer, Cham, 2019. 1-25. `Preprint <https://arxiv.org/pdf/1805.07296.pdf>`__
-        2. Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations. SIAM/ASA Journal on Uncertainty Quantification 5.1 :1003-1023. `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
-        3. Bos, L., De Marchi, S., Sommariva, A., Vianello, M., (2010) Computing Multivariate Fekete and Leja points by Numerical Linear Algebra. SIAM Journal on Numerical Analysis, 48(5). `Paper <https://epubs.siam.org/doi/abs/10.1137/090779024>`__
-        4. Joshi, S., Boyd, S., (2009) Sensor Selection via Convex Optimization. IEEE Transactions on Signal Processing, 57(2). `Paper <https://ieeexplore.ieee.org/document/4663892>`__
-        5. SPAM Paper by Paul
-        6. Xiu and Karndiakis paper.
+        1. Constantine, P. G., Eldred, M. S., Phipps, E. T., (2012) Sparse Pseudospectral Approximation Method. Computer Methods in Applied Mechanics and Engineering. 1-12. `Paper <https://www.sciencedirect.com/science/article/pii/S0045782512000953>`__
+        2. Xiu, D., Karniadakis, G. E., (2002) The Wiener-Askey Polynomial Chaos for Stochastic Differential Equations. SIAM Journal on Scientific Computing,  24(2), `Paper <https://epubs.siam.org/doi/abs/10.1137/S1064827501387826?journalCode=sjoce3>`__
+        3. Seshadri, P., Iaccarino, G., Ghisu, T., (2018) Quadrature Strategies for Constructing Polynomial Approximations. Uncertainty Modeling for Engineering Applications. Springer, Cham, 2019. 1-25. `Preprint <https://arxiv.org/pdf/1805.07296.pdf>`__
+        4. Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations. SIAM/ASA Journal on Uncertainty Quantification, 5(1). `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
+        5. Bos, L., De Marchi, S., Sommariva, A., Vianello, M., (2010) Computing Multivariate Fekete and Leja points by Numerical Linear Algebra. SIAM Journal on Numerical Analysis, 48(5). `Paper <https://epubs.siam.org/doi/abs/10.1137/090779024>`__
+        6. Joshi, S., Boyd, S., (2009) Sensor Selection via Convex Optimization. IEEE Transactions on Signal Processing, 57(2). `Paper <https://ieeexplore.ieee.org/document/4663892>`__
+
     """
     def __init__(self, parameters, basis, method, args=None):
         try:
@@ -210,6 +194,15 @@ class Poly(object):
         if self.statistics_object is None:
             self.statistics_object = Statistics(self.coefficients, self.basis, self.parameters)
         return self.statistics_object.mean, self.statistics_object.variance
+    def get_skewness_and_kurtosis(self):
+        """
+        Computes the skewness and kurtosis of the model.
+
+        :param Poly self:
+            An instance of the Poly class.
+        """
+        self.statistics_object = Statistics(self.coefficients, self.basis, self.parameters, self.quadrature_points, self.quadrature_weights)
+        return self.statistics_object.skewness, self.statistics_object.kurtosis
     def get_sobol_indices(self, highest_sobol_order_to_compute=1):
         """
         Computes the Sobol' indices.

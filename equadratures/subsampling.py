@@ -15,7 +15,7 @@ class Subsampling(object):
         elif self.subsampling_algorithm == 'svd':
             self.algorithm = lambda A, k : get_svd_subset_selection(A, k)
         elif self.subsampling_algorithm == 'newton':
-            self.algorithm = lambda A, K : get_newton_determinant_maximization(A, k)
+            self.algorithm = lambda A, k : get_newton_determinant_maximization(A, k)
         elif self.subsampling_algorithm == 'random':
             self.algorithm = 0 #np.random.choice(int(m), m_refined, replace=False)
         elif self.subsampling_algorithm == None:
@@ -74,12 +74,12 @@ def get_newton_determinant_maximization(Ao, number_of_subsamples):
     kappa = np.log(gap) * n/m
 
     # Objective function
-    Z = diag(z)
+    Z = __diag(z)
     fz = -np.log(np.linalg.det(A.T * Z * A)) - kappa * np.sum(np.log(z) + np.log(1.0 - z))
 
     # Optimization loop!
     for i in range(0, maxiter) :
-        Z = diag(z)
+        Z = __diag(z)
         W = np.linalg.inv(A.T * Z * A)
         V = A * W * A.T
         vo = np.matrix(np.diag(V))
@@ -91,7 +91,7 @@ def get_newton_determinant_maximization(Ao, number_of_subsamples):
         one_by_z2 = ones_m / z**2
         one_by_one_minus_z2 = ones_m / (ones_m - z)**2
         g = -vo- kappa * (one_by_z - one_by_one_minus_z)
-        H = np.multiply(V, V) + kappa * diag( one_by_z2 + one_by_one_minus_z2)
+        H = np.multiply(V, V) + kappa * __diag( one_by_z2 + one_by_one_minus_z2)
 
         # Textbook Newton's method -- compute inverse of Hessian
         R = np.matrix(cholesky(H) )
@@ -104,8 +104,8 @@ def get_newton_determinant_maximization(Ao, number_of_subsamples):
         dz = -Hinvg + (np.dot( ones_m_transpose , Hinvg ) / np.dot(ones_m_transpose , Hinv1)) * Hinv1
 
 
-        deczi = indices(dz, lambda x: x < 0)
-        inczi = indices(dz, lambda x: x > 0)
+        deczi = __indices(dz, lambda x: x < 0)
+        inczi = __indices(dz, lambda x: x > 0)
         a1 = 0.99* -z[deczi, 0] / dz[deczi, 0]
         a2 = (1 - z[inczi, 0] )/dz[inczi, 0]
         s = np.min(np.vstack([1.0, np.vstack(a1), np.vstack(a2) ] )  )
@@ -113,7 +113,7 @@ def get_newton_determinant_maximization(Ao, number_of_subsamples):
 
         while flag == 1:
             zp = z + s*dz
-            Zp = diag(zp)
+            Zp = __diag(zp)
             fzp = -np.log(np.linalg.det(A.T * Zp * A) ) - kappa * np.sum(np.log(zp) + np.log(1 - zp)  )
             const = fz + alpha * s * g.T * dz
             if fzp <= const[0,0]:
@@ -127,17 +127,18 @@ def get_newton_determinant_maximization(Ao, number_of_subsamples):
             break
         zsort = np.sort(z, axis=0)
         thres = zsort[m - number_of_subsamples - 1]
-        zhat, not_used = find(z, thres)
+        zhat, not_used = __find(z, thres)
 
     zsort = np.sort(z, axis=0)
     thres = zsort[m - number_of_subsamples - 1]
-    zhat, not_used = find(z, thres)
+    zhat, not_used = __find(z, thres)
     p, q = zhat.shape
-    Zhat = diag(zhat)
+    Zhat = __diag(zhat)
     L = np.log(np.linalg.det(A.T * Zhat  * A))
     ztilde  = z
-    Utilde = np.log(np.linalg.det(A.T * diag(z) * A))  + 2 * m * kappa
+    Utilde = np.log(np.linalg.det(A.T * __diag(z) * A))  + 2 * m * kappa
     z = __binary2indices(zhat)
+    return z
 def __binary2indices(zhat):
     """
     Simple utility that converts a binary array into one with indices!
@@ -148,3 +149,23 @@ def __binary2indices(zhat):
         if(zhat[i,0] == 1):
             pvec.append(i)
     return pvec
+def __indices(a, func):
+    return [i for (i, val) in enumerate(a) if func(val)]
+def __diag(vec):
+    m = len(vec)
+    D = np.zeros((m, m))
+    for i in range(0, m):
+        D[i,i] = vec[i,0]
+    return D
+def __find(vec, thres):
+    t = []
+    vec_new = []
+    for i in range(0, len(vec)):
+        if vec[i] > thres:
+            t.append(i)
+            vec_new.append(1.0)
+        else:
+            vec_new.append(0.0)
+    vec_new = np.matrix(vec_new)
+    vec_new = vec_new.T
+    return vec_new, t

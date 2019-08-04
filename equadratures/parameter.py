@@ -75,40 +75,31 @@ class Parameter(object):
 				   }
 		distribution = choices.get(self.name.lower(), distribution_error)
 		self.distribution = distribution
-
 	def set_moments(self):
 		self.mean = self.distribution.mean
 		self.variance = self.distribution.variance
-
 	def set_bounds(self):
 		self.bounds = self.distribution.bounds
-
 	def get_pdf(self, points=None):
 		if points is None:
 			x = self.distribution.x_range_for_pdf
 			return x, self.distribution.getPDF(x)
 		else:
 			return self.distribution.getPDF(points)
-
 	def get_cdf(self, points=None):
 		if points is None:
 			x = self.distribution.x_range_for_pdf
 			return x, self.distribution.getCDF(x)
 		else:
 			return self.distribution.getCDF(points)
-
 	def get_icdf(self, xx):
 		return self.distribution.getiCDF(xx)
-
 	def get_samples(self, m):
 		return self.distribution.getSamples(m)
-
 	def get_description(self):
 		return self.distribution.getDescription()
-
 	def get_recurrence_coefficients(self, order=None):
 		return self.distribution.get_recurrence_coefficients(order)
-
 	def get_jacobi_eigenvectors(self, order=None):
 		if order is None:
 			order = self.order + 1
@@ -122,7 +113,6 @@ class Parameter(object):
 			i = np.array(i) # convert to array
 			V = V[:,i]
 		return V
-
 	def get_jacobi_matrix(self, order=None):
 		if order is None:
 			ab = self.get_recurrence_coefficients()
@@ -131,17 +121,14 @@ class Parameter(object):
 			ab = self.get_recurrence_coefficients(order)
 
 		order = int(order)
-
 		# The case of order 1~
 		if int(order) == 1:
 			JacobiMatrix = ab[0, 0]
-
 		# For everything else~
 		else:
 			JacobiMatrix = np.zeros((int(order), int(order))) # allocate space
 			JacobiMatrix[0,0] = ab[0,0]
 			JacobiMatrix[0,1] = np.sqrt(ab[1,1])
-
 			k = order - 1
 			for u in range(1, int(k)):
 				JacobiMatrix[u,u] = ab[u,0]
@@ -150,9 +137,7 @@ class Parameter(object):
 
 			JacobiMatrix[order-1, order-1] = ab[order-1,0]
 			JacobiMatrix[order-1, order-2] = np.sqrt(ab[order-1,1])
-
 		return JacobiMatrix
-
 	def _get_orthogonal_polynomial(self, points, order=None):
 		if order is None:
 			order = self.order + 1
@@ -230,9 +215,9 @@ def get_local_quadrature(self, order=None):
     if order == 1:
         # Check to see whether upper and lower bound are defined:
         if not self.lower or not self.upper:
-            p = self.distribution.mean
+            p = np.asarray(self.distribution.mean).reshape((1,1))
         else:
-            p = [(self.upper - self.lower)/(2.0) + self.lower]
+            p = np.asarray((self.upper - self.lower)/(2.0) + self.lower).reshape((1,1))
         w = [1.0]
     else:
         # Compute eigenvalues & eigenvectors of Jacobi matrix

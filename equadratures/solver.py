@@ -1,5 +1,6 @@
 """Solvers for computing of a linear system."""
 import numpy as np
+from scipy.linalg import qr
 from copy import deepcopy
 class Solver(object):
     """
@@ -24,13 +25,19 @@ class Solver(object):
 def least_squares(A, b):
     alpha = np.linalg.lstsq(A, b, rcond=None)
     return alpha[0]
-    #coefficients = alpha[0]
-    #for i in range(0, coefficients):
-    #    if np.abs(coefficients[i]) <= 1e-16:
-    #        coefficients[i] = 1e-16
-    #return coefficients
 def minimum_norm(A, b):
-    return 0
+    Q, R, pvec = qr(A, pivoting=True )
+    m, n = A.shape
+    r = np.linalg.matrix_rank(A)
+    Q1 = Q[0:r, 0:r]
+    R1 = R[0:r, 0:r]
+    indices = np.argsort(pvec)
+    P = np.eye(n)
+    temp = P[indices,:]
+    P1 = temp[0:n, 0:r]
+    x = np.dot(P1 ,  np.dot( np.linalg.inv(R1)  , np.dot( Q1.T , b ) ) )
+    x = x.reshape(n, 1)
+    return x
 def orthogonal_linear_system(A, b):
     coefficients = np.dot(A.T, b)
     return coefficients

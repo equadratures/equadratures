@@ -142,7 +142,9 @@ class Poly(object):
             if 'mesh' in args: self.mesh = args.get('mesh')
             if 'sampling-ratio' in args: self.sampling_ratio = float(args.get('sampling-ratio'))
             if 'subsampling-algorithm' in args: self.subsampling_algorithm_name = args.get('subsampling-algorithm')
-            if 'sample-points' in args: self.inputs = args.get('sample-points')
+            if 'sample-points' in args:
+                self.inputs = args.get('sample-points')
+                self.mesh = 'user-defined'
             if 'sample-outputs' in args: self.outputs = args.get('sample-outputs')
             if 'correlation' in args: self.correlation_matrix = args.get('correlation')
         self.__set_solver()
@@ -230,10 +232,7 @@ class Poly(object):
         :param callable model_grads:
             The gradient of the function that needs to be approximated. In the absence of a callable gradient function, the input can be a matrix of gradient evaluations at the quadrature points.
         """
-        print('coefficient_class')
-        print(self.outputs)
         if (model is None) and (self.outputs is not None):
-            print('got here!')
             self.model_evaluations = self.outputs
         else:
             if callable(model):
@@ -295,7 +294,6 @@ class Poly(object):
             self.coefficients = coefficients_final
             self.basis.elements = unique_indices
         else:
-            print('got here!')
             P = self.get_poly(self.quadrature_points)
             W = np.diag(np.sqrt(self.quadrature_weights))
             A = np.dot(W , P.T)

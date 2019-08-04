@@ -21,7 +21,7 @@ class Solver(object):
     def get_solver(self):
         return self.solver
 def least_squares(A, b):
-    alpha = np.linalg.lstsq(A, b)
+    alpha = np.linalg.lstsq(A, b, rcond=None)
     return alpha[0]
     #coefficients = alpha[0]
     #for i in range(0, coefficients):

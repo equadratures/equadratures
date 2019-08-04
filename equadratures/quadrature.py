@@ -29,7 +29,7 @@ class Quadrature(object):
             self.samples = Montecarlo(self.parameters, self.basis)
             self.list = None
         elif self.mesh == 'user-defined':
-            self.samples = Userdefined(self.parameters, self.basis, self.parameters)
+            self.samples = Userdefined(self.parameters, self.basis, self.points)
         else:
             error_message()
     def get_points(self):

@@ -15,7 +15,7 @@ class Sampling(object):
         if self.weights is None:
             self.__set_weights()
     def __set_weights(self):
-        P = self.__get_multivariate_orthogonal_polynomial(self.points)
+        P = self.__get_multivariate_orthogonal_polynomial()
         wts =  1.0/np.sum( P**2 , 0)
         self.weights = wts * 1.0/np.sum(wts)
     def get_points(self):
@@ -52,8 +52,7 @@ class Sampling(object):
         basis = self.basis.elements
         basis_entries, dimensions = basis.shape
         p = {}
-
-        if self.points.ndim == 1:
+        if self.points.shape[0] == 1:
             no_of_points = 1
         else:
             no_of_points, __ = self.points.shape

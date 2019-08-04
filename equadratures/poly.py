@@ -195,8 +195,8 @@ class Poly(object):
             mm, nn = A.shape
             m_refined = int(np.round(self.sampling_ratio * nn))
             z = self.subsampling_algorithm_function(A, m_refined)
-            self.quadrature_points = evaled_pts[z,:]
-            self.quadrature_weights =  weights[z] / np.sum(weights[z])
+            self.quadrature_points = quadrature_points[z,:]
+            self.quadrature_weights =  quadrature_weights[z] / np.sum(quadrature_weights[z])
         else:
             self.quadrature_points = quadrature_points
             self.quadrature_weights = quadrature_weights

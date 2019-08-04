@@ -2,7 +2,7 @@
 Effective Quadratures
 *************************
 
-Effective Quadratures is an open-source library for *uncertainty quantification*, *machine learning*, *optimisation*, *numerical integration* and *dimension reduction* -- all using orthogonal polynomials. It is particularly useful for models / problems where output quantities of interest are smooth and continuous; to this extent it has found widespread applications in computational engineering models (finite elements, computational fluid dynamics, etc). It is built on the latest research within these areas and has both deterministic and randomized algorithms. Effective Quadratures is actively being developed by researchers at the `University of Cambridge <https://www.cam.ac.uk>`__ , `Stanford University <https://www.stanford.edu>`__, `The University of Utah <https://www.utah.edu>`__, `The Alan Turing Institute <https://www.turing.ac.uk>`__ and the `University of Cagliari <https://www.unica.it/unica/>`__. 
+Effective Quadratures is an open-source library for *uncertainty quantification*, *machine learning*, *optimisation*, *numerical integration* and *dimension reduction* -- all using orthogonal polynomials. It is particularly useful for models / problems where output quantities of interest are smooth and continuous; to this extent it has found widespread applications in computational engineering models (finite elements, computational fluid dynamics, etc). It is built on the latest research within these areas and has both deterministic and randomized algorithms. Effective Quadratures is actively being developed by researchers at the `University of Cambridge <https://www.cam.ac.uk>`__ , `Stanford University <https://www.stanford.edu>`__, `The University of Utah <https://www.utah.edu>`__, `The Alan Turing Institute <https://www.turing.ac.uk>`__ and the `University of Cagliari <https://www.unica.it/unica/>`__. For a list of current and past developers, click here. 
 
 **Key words associated with this code**: polynomial surrogates, polynomial chaos, polynomial variable projection, Gaussian quadrature, Clenshaw Curtis, polynomial least squares, compressed sensing, gradient-enhanced surrogates, supervised learning.
 
@@ -61,16 +61,18 @@ If this is of interest, please do get in touch. Upcoming workshops include:
 - 16th September 2019, United Kingdom Atomic Energy Authority, Oxfordshire.
 
 
-Papers
-***************
+Papers (both theory and applications)
+***************************************
 
-- Seshadri, P., Iaccarino, G., Ghisu, T., (2018) Quadrature Strategies for Constructing Polynomial Approximations. Uncertainty Modeling for Engineering Applications. Springer, Cham, 2019. 1-25. `Preprint <https://arxiv.org/pdf/1805.07296.pdf>`__
+- Wong, C. Y., Seshadri, P., 
 
-- Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations." SIAM/ASA Journal on Uncertainty Quantification 5.1 : 1003-1023. `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
+- Seshadri, P., Iaccarino, G., Ghisu, T., (2018) Quadrature Strategies for Constructing Polynomial Approximations. *Uncertainty Modeling for Engineering Applications*. Springer, Cham, 2019. 1-25. `Preprint <https://arxiv.org/pdf/1805.07296.pdf>`__
 
-- Seshadri, P., Parks, G. T., (2017) Effective-Quadratures (EQ): Polynomials for Computational Engineering Studies, Journal of Open Source Software, 2(11), 166, `Paper <http://joss.theoj.org/papers/ba651f2b3608a5d2b085af06b1108747>`__
+- Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations." *SIAM/ASA Journal on Uncertainty Quantification* 5.1 : 1003-1023. `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
 
-- Kalra, T. S., Aretxabaleta, A., Seshadri, P., Ganju, N. K., Beudin, A. (2017). Sensitivity analysis of a coupled hydrodynamic-vegetation model using the effectively subsampled quadratures method (ESQM v5. 2). Geoscientific Model Development, 10(12), 4511. `Paper <https://www.repository.cam.ac.uk/bitstream/handle/1810/270655/Kalra_et_al-2017-Geoscientific_Model_Development_Discussions-VoR.pdf?sequence=4>`__
+- Seshadri, P., Parks, G. T., (2017) Effective-Quadratures (EQ): Polynomials for Computational Engineering Studies, *Journal of Open Source Software*, 2(11), 166, `Paper <http://joss.theoj.org/papers/ba651f2b3608a5d2b085af06b1108747>`__
+
+- Kalra, T. S., Aretxabaleta, A., Seshadri, P., Ganju, N. K., Beudin, A. (2017). Sensitivity analysis of a coupled hydrodynamic-vegetation model using the effectively subsampled quadratures method (ESQM v5. 2). *Geoscientific Model Development*, 10(12), 4511. `Paper <https://www.repository.cam.ac.uk/bitstream/handle/1810/270655/Kalra_et_al-2017-Geoscientific_Model_Development_Discussions-VoR.pdf?sequence=4>`__
 
 Get in touch
 ***************

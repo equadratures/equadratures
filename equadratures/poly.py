@@ -153,14 +153,6 @@ class Poly(object):
         """
         polysolver = Solver(self.method)
         self.solver = polysolver.get_solver()
-    def __get_weights(self, points):
-        """
-        Private function that sets the quadrature weights, when given the quadrature points.
-
-        :param Poly self:
-            An instance of the Poly object.
-        """
-        return self.quadrature_weights
     def __set_points_and_weights(self):
         """
         Private function that sets the quadrature points.
@@ -190,6 +182,12 @@ class Poly(object):
 
         :param Poly self:
             An instance of the Poly class.
+
+        :return:
+            **mean**: The approximated mean of the polynomial fit; output as a float.
+
+            **variance**: The approximated variance of the polynomial fit; output as a float.
+
         """
         if self.statistics_object is None:
             self.statistics_object = Statistics(self.coefficients, self.basis, self.parameters)
@@ -200,6 +198,12 @@ class Poly(object):
 
         :param Poly self:
             An instance of the Poly class.
+
+        :return:
+            **skewness**: The approximated skewness of the polynomial fit; output as a float.
+
+            **kurtosis**: The approximated kurtosis of the polynomial fit; output as a float.
+
         """
         self.statistics_object = Statistics(self.coefficients, self.basis, self.parameters, self.quadrature_points, self.quadrature_weights)
         return self.statistics_object.skewness, self.statistics_object.kurtosis
@@ -211,6 +215,9 @@ class Poly(object):
             An instance of the Poly class.
         :param int highest_sobol_order_to_compute:
             The order of the Sobol' indices required.
+
+        :return:
+            **sobol_indices**: A dict comprising of Sobol' indices and constitutent mixed orders of the parameters.
         """
         self.statistics_object = Statistics(self.coefficients, self.basis, self.parameters, max_sobol_order=highest_sobol_order_to_compute)
         return self.statistics_object.sobol
@@ -303,7 +310,7 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         :return:
-            **c**: A numpy.ndarray of the coefficients with size (cardinality_of_basis, dimensions).
+            **multi_indices**: A numpy.ndarray of the coefficients with size (cardinality_of_basis, dimensions).
         """
         return self.basis.elements
     def get_coefficients(self):
@@ -313,7 +320,7 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         :return:
-            **c**: A numpy.ndarray of the coefficients with size (number_of_coefficients, 1).
+            **coefficients**: A numpy.ndarray of the coefficients with size (number_of_coefficients, 1).
         """
         return self.coefficients
     def get_points(self):
@@ -323,7 +330,7 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         :return:
-            **x**: A numpy.ndarray of sampled quadrature points with shape (number_of_samples, dimension).
+            **points**: A numpy.ndarray of sampled quadrature points with shape (number_of_samples, dimension).
         """
         return self.quadrature_points
     def get_weights(self):
@@ -333,7 +340,7 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly class.
         :return:
-            **w**: A numpy.ndarray of the corresponding quadrature weights with shape (number_of_samples, 1).
+            **weights**: A numpy.ndarray of the corresponding quadrature weights with shape (number_of_samples, 1).
 
         """
         return self.quadrature_weights
@@ -448,7 +455,7 @@ class Poly(object):
             An ndarray with shape (number of observations, dimensions) at which the polynomial must be evaluated.
 
         :return:
-            **p**: A numpy.ndarray of shape (cardinality, number_of_observations) corresponding to the polynomial basis function evaluations
+            **polynomial**: A numpy.ndarray of shape (cardinality, number_of_observations) corresponding to the polynomial basis function evaluations
             at the stack_of_points.
         """
         if custom_multi_index is None:
@@ -490,7 +497,7 @@ class Poly(object):
             An ndarray with shape (number_of_observations, dimensions) at which the gradient must be evaluated.
 
         :return:
-            **dp**: A list with d elements, where d corresponds to the dimension of the problem. Each element is a numpy.ndarray of shape
+            **Gradients**: A list with d elements, where d corresponds to the dimension of the problem. Each element is a numpy.ndarray of shape
             (cardinality, number_of_observations) corresponding to the gradient polynomial evaluations at the stack_of_points.
         """
         # "Unpack" parameters from "self"
@@ -545,7 +552,7 @@ class Poly(object):
             An ndarray with shape (number_of_observations, dimensions) at which the Hessian must be evaluated.
 
         :return:
-            **h**: A list with d^2 elements, where d corresponds to the dimension of the model. Each element is a numpy.ndarray of shape
+            **Hessian**: A list with d^2 elements, where d corresponds to the dimension of the model. Each element is a numpy.ndarray of shape
             (cardinality, number_of_observations) corresponding to the hessian polynomial evaluations at the stack_of_points.
 
         """
@@ -593,7 +600,20 @@ class Poly(object):
         return H
 def evaluate_model_gradients(points, fungrad, format):
     """
-    NEED TO COMPLETE.
+    Evaluates the model gradient at given values.
+
+    :param numpy.ndarray points:
+        An ndarray with shape (number_of_observations, dimensions) at which the gradient must be evaluated.
+    :param callable fungrad:
+        A callable argument for the function's gradients.
+    :param string format:
+        The format in which the output is to be provided: ``matrix`` will output a numpy.ndarray of shape
+        (number_of_observations, dimensions) with gradient values, while ``vector`` will stack all the
+        vectors in this matrix to yield a numpy.ndarray with shape (number_of_observations x dimensions, 1).
+
+    :return:
+        **grad_values**: A numpy.ndarray of gradient evaluations.
+
     """
     dimensions = len(points[0,:])
     if format is 'matrix':
@@ -619,16 +639,37 @@ def evaluate_model_gradients(points, fungrad, format):
         return 0
 def evaluate_model(points, function):
     """
-    NEED TO COMPLETE.
+    Evaluates the model function at given values.
+
+    :param numpy.ndarray points:
+        An ndarray with shape (number_of_observations, dimensions) at which the gradient must be evaluated.
+    :param callable fungrad:
+        A callable argument for the function.
+
+    :return:
+        **function_values**: A numpy.ndarray of function evaluations.
     """
     function_values = np.zeros((len(points), 1))
-    # For loop through all the points
     for i in range(0, len(points)):
         function_values[i,0] = function(points[i,:])
     return function_values
 def vector_to_2D_grid(coefficients, index_set):
     """
-    NEED TO COMPLETE.
+    Handy function that converts a vector of coefficients into a matrix based on index set values.
+
+    :param numpy.ndarray coefficients:
+        An ndarray with shape (N, 1) where N corresponds to the number of coefficient values.
+    :param numpy.ndarray index_set:
+        The multi-index set of the basis.
+
+    :return:
+        **x**: A numpy.ndarray of x values of the meshgrid.
+
+        **y**: A numpy.ndarray of y values of the meshgrid.
+
+        **z**: A numpy.ndarray of the coefficient values.
+
+        **max_order**: int corresponds to the highest order.
     """
     max_order = int(np.max(index_set)) + 1
     x, y = np.mgrid[0:max_order, 0:max_order]

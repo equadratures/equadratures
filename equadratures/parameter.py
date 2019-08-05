@@ -17,33 +17,28 @@ class Parameter(object):
 	"""
     This class defines a univariate parameter. Below are details of its constructor.
 
-    :param double lower:
+    :param float lower:
         Lower bound for the parameter.
-    :param double upper:
+    :param float upper:
         Upper bound for the parameter.
-    :param integer order:
+    :param int order:
         Order of the parameter.
-    :param string param_type:
-        The type of distribution that characterizes the parameter. Options include:
-		`chebyshev (arcsine) <https://en.wikipedia.org/wiki/Arcsine_distribution>`_,
-		`gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_,
-		`truncated-Gaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_,
-		`beta <https://en.wikipedia.org/wiki/Beta_distribution>`_,
-		`cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_,
-		`exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_,
-		`uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_,
-		`gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_,
-		`weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_.
-		If no string is provided, a `Uniform` distribution is assumed. If the user provides data, and would like to generate orthogonal polynomials (and quadrature rules) based on the data, they can set this option to be Custom.
-    :param double shape_parameter_A:
-        Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a `gaussian` (or `truncated-gaussian`), this represents the mean. In the case of a beta distribution this represents the alpha value. For a uniform distribution this input is not required.
-    :param double shape_parameter_B:
-        This is the second shape parameter that characterizes the distribution selected. In the case of a `gaussian` or `truncated-gaussian`, this is the variance.
-    :param data:
-        A numpy.ndarray with shape (number_of_data_points, 2), where the first column comprises of parameter values, while the second column corresponds to
-		the data observations. This input should only be used with the ``custom`` distribution.
-    :param endpoints:
-        A boolean entry. If set to True, then the quadrature points and weights will have end-points.
+    :param str param_type:
+
+		The type of distribution that characterizes the parameter. Options include `chebyshev (arcsine) <https://en.wikipedia.org/wiki/Arcsine_distribution>`_, `gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_,
+		`truncated-gaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_, `beta <https://en.wikipedia.org/wiki/Beta_distribution>`_,
+		`cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_, `exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_,
+		`uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_, `gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_,
+		`weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_. If no string is provided, a ``uniform`` distribution is assumed. If the user provides data, and would like to generate orthogonal
+		polynomials (and quadrature rules) based on the data, they can set this option to be ``custom``.
+    :param float shape_parameter_A:
+        Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a ``gaussian`` (or ``truncated-gaussian``), this represents the mean. In the case of a beta distribution this represents the alpha value. For a ``uniform`` distribution this input is not required.
+    :param float shape_parameter_B:
+        This is the second shape parameter that characterizes the distribution selected. In the case of a ``gaussian`` or ``truncated-gaussian``, this is the variance.
+    :param numpy.ndarray data:
+		A data-set with shape (number_of_data_points, 2), where the first column comprises of parameter values, while the second column corresponds to the data observations. This input should only be used with the ``custom`` distribution.
+    :param bool endpoints:
+        If set to ``True``, then the quadrature points and weights will have end-points, based on Gauss-Lobatto quadrature rules.
     """
 	def __init__(self, order, distribution, endpoints=False, shape_parameter_A=None, shape_parameter_B=None, lower=None, upper=None, data=None):
 		self.name = distribution

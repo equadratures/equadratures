@@ -16,7 +16,9 @@ class Poly(object):
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     :param str method: The method used for computing the coefficients. Should be one of: ``compressive-sensing``,
         ``numerical-integration``, ``least-squares`` or ``minimum-norm``.
-    :param dict args: Optional arguments centered around the specific sampling strategy and correlations within the samples.
+    :param dict args:
+        Optional arguments centered around the specific sampling strategy and
+        correlations within the samples.
 
         :string mesh: Avaliable options are: ``monte-carlo``, ``induced-sampling``, ``sparse-grid``, ``tensor-grid`` or ``user-defined``.
             Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1]

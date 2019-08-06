@@ -11,7 +11,7 @@ RECURRENCE_PDF_SAMPLES = 8000
 class Gamma(Distribution):
     """
     The class defines a Gamma object. It is the child of Distribution.
-    
+
     :param double shape:
 		Shape parameter of the gamma distribution.
     :param double scale:
@@ -21,18 +21,18 @@ class Gamma(Distribution):
         self.shape = shape
         self.scale = scale
         self.bounds = np.array([0.0, np.inf])
-        if (self.shape is not None) and (self.scale is not None) and (self.shape > 0.0) : 
+        if (self.shape is not None) and (self.scale is not None) and (self.shape > 0.0) :
             self.mean = self.shape * self.scale
             self.variance = self.shape * self.scale**2
             self.skewness = 2.0 / np.sqrt(self.shape)
             self.kurtosis = 6.0 / self.shape # double-check!
             self.x_range_for_pdf = np.linspace(0, self.shape*self.scale*10, RECURRENCE_PDF_SAMPLES)
             self.parent = gamma(a=self.shape, scale=self.scale)
-    
-    def getDescription(self):
+
+    def get_description(self):
         """
         A description of the gamma distribution.
-            
+
         :param Gamma self:
             An instance of the Gamma class.
         :return:
@@ -41,10 +41,10 @@ class Gamma(Distribution):
         text = "A gamma distribution with a shape parameter of "+str(self.shape)+", and a scale parameter of "+str(self.scale)+"."
         return text
 
-    def getPDF(self, points=None):
+    def get_pdf(self, points=None):
         """
         A gamma probability density function.
-        
+
         :param Gamma self:
             An instance of the Gamma class.
         :param matrix points:
@@ -58,11 +58,11 @@ class Gamma(Distribution):
             return self.parent.pdf(points)
         else:
             raise(ValueError, 'Please digit an input for getPDF method')
-    
-    def getCDF(self, points=None):
+
+    def get_cdf(self, points=None):
         """
         A gamma cumulative density function.
-        
+
         :param Gamma self:
             An instance of the Gamma class.
         :param matrix points:
@@ -77,10 +77,10 @@ class Gamma(Distribution):
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
 
-    def getiCDF(self, xx):
+    def get_icdf(self, xx):
         """
         A gamma inverse cumulative density function.
-        
+
         :param gamma self:
             An instance of Gamma class.
         :param xx:
@@ -90,10 +90,10 @@ class Gamma(Distribution):
         """
         return self.parent.ppf(xx)
 
-    def getSamples(self, m=None):
+    def get_samples(self, m=None):
         """
          Generates samples from the Gamma distribution.
-         
+
          :param Gamma self:
              An instance of the Gamma class.
          :param integer m:
@@ -106,4 +106,3 @@ class Gamma(Distribution):
         else:
            number = 500000
         return self.parent.rvs(size = number)
-

@@ -124,7 +124,7 @@ class Parameter(object):
 		:param numpy.ndarray xx:
 			Values of the cumulative density function for which its inverse needs to be computed.
         """
-		return self.distribution.getiCDF(xx)
+		return self.distribution.get_icdf(xx)
 	def get_samples(self, m):
 		return self.distribution.getSamples(m)
 	def get_description(self):

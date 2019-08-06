@@ -9,7 +9,6 @@ Modules
    parameter
    basis
    poly
-   distributions
    
 
 .. automodule:: equadratures

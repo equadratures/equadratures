@@ -49,11 +49,10 @@ class Parameter(object):
 		self.upper = upper
 		self.endpoints = endpoints
 		self.data = data
-		self.set_distribution()
-		self.set_bounds()
-		self.set_moments()
-
-	def set_distribution(self):
+		self.__set_distribution()
+		self.__set_bounds()
+		self.__set_moments()
+	def __set_distribution(self):
 		choices = {'gaussian': Gaussian(self.shape_parameter_A, self.shape_parameter_B),
 			       'normal': Gaussian(self.shape_parameter_A, self.shape_parameter_B),
 			       'uniform' : Uniform(self.lower, self.upper),
@@ -71,24 +70,60 @@ class Parameter(object):
 				   }
 		distribution = choices.get(self.name.lower(), distribution_error)
 		self.distribution = distribution
-	def set_moments(self):
+	def __set_moments(self):
+		"""
+        Private function that sets the mean and the variance of the distribution.
+
+        :param Parameter self:
+            An instance of the Parameter object.
+        """
 		self.mean = self.distribution.mean
 		self.variance = self.distribution.variance
-	def set_bounds(self):
+	def __set_bounds(self):
+		"""
+        Private function that sets the bounds of the distribution.
+
+        :param Parameter self:
+            An instance of the Parameter object.
+        """
 		self.bounds = self.distribution.bounds
 	def get_pdf(self, points=None):
+		"""
+        Computes the probability density function associated with the Parameter.
+
+        :param Parameter self:
+            An instance of the Parameter object.
+		:param numpy.ndarray points:
+			Values of the parameter at which the PDF must be evaluated.
+        """
 		if points is None:
 			x = self.distribution.x_range_for_pdf
 			return x, self.distribution.getPDF(x)
 		else:
 			return self.distribution.getPDF(points)
 	def get_cdf(self, points=None):
+		"""
+        Computes the cumulative density function associated with the Parameter.
+
+        :param Parameter self:
+            An instance of the Parameter object.
+		:param numpy.ndarray points:
+			Values of the parameter at which the PDF must be evaluated.
+        """
 		if points is None:
 			x = self.distribution.x_range_for_pdf
 			return x, self.distribution.getCDF(x)
 		else:
 			return self.distribution.getCDF(points)
 	def get_icdf(self, xx):
+		"""
+        Computes the inverse cumulative density function associated with the Parameter.
+
+        :param Parameter self:
+            An instance of the Parameter object.
+		:param numpy.ndarray xx:
+			Values of the cumulative density function for which its inverse needs to be computed.
+        """
 		return self.distribution.getiCDF(xx)
 	def get_samples(self, m):
 		return self.distribution.getSamples(m)

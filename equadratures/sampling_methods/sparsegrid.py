@@ -44,7 +44,7 @@ class Sparsegrid(Sampling):
             myTensor = Tensorgrid(parameters=self.parameters, basis=myBasis, orders=orders.astype(int) )
             self.tensor_product_list.append(myTensor)
             pts = myTensor.points
-            wts = myTensor.weights
+            wts = myTensor.weights * sparse_factors[i]
             points_store[i] = pts
             weights_store[i] = wts
             indices[i] = myTensor.basis.cardinality

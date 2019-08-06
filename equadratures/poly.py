@@ -192,8 +192,8 @@ class Poly(object):
 
         """
         if self.statistics_object is None:
-            self.statistics_object = Statistics(self.coefficients, self.basis, self.parameters)
-        return self.statistics_object.mean, self.statistics_object.variance
+            self.statistics_object = Statistics(self.parameters , self.basis,  self.coefficients)
+        return self.statistics_object.get_mean(), self.statistics_object.get_variance()
     def get_skewness_and_kurtosis(self):
         """
         Computes the skewness and kurtosis of the model.
@@ -207,8 +207,10 @@ class Poly(object):
             **kurtosis**: The approximated kurtosis of the polynomial fit; output as a float.
 
         """
-        self.statistics_object = Statistics(self.coefficients, self.basis, self.parameters, self.quadrature_points, self.quadrature_weights)
-        return self.statistics_object.skewness, self.statistics_object.kurtosis
+        poly_vandermonde_matrix = self.get_poly(self.quadrature_points)
+        self.statistics_object = Statistics(self.parameters, self.basis,  self.coefficients,  self.quadrature_points, self.quadrature_weights, \
+            poly_vandermonde_matrix)
+        return self.statistics_object.get_skewness(), self.statistics_object.get_kurtosis()
     def get_sobol_indices(self, highest_sobol_order_to_compute=1):
         """
         Computes the Sobol' indices.
@@ -221,7 +223,7 @@ class Poly(object):
         :return:
             **sobol_indices**: A dict comprising of Sobol' indices and constitutent mixed orders of the parameters.
         """
-        self.statistics_object = Statistics(self.coefficients, self.basis, self.parameters, max_sobol_order=highest_sobol_order_to_compute)
+        self.statistics_object = Statistics(self.parameters, self.basis, self.coefficients, max_sobol_order=highest_sobol_order_to_compute)
         return self.statistics_object.sobol
     def set_model(self, model=None, model_grads=None):
         """

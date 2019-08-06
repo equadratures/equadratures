@@ -18,7 +18,7 @@ class Quadrature(object):
         self.points = points
         self.correlation = correlation
         self.mesh = mesh
-        if self.mesh == 'tensor-grid':
+        if self.mesh == 'tensor-grid' or self.mesh == 'univariate':
             self.samples = Tensorgrid(self.parameters, self.basis)
             self.list = None
         elif self.mesh == 'sparse-grid':
@@ -57,4 +57,4 @@ class Quadrature(object):
         """
         return self.samples.points, self.samples.weights
 def error_message():
-    raise(ValueError, 'Oh no. Something went wrong in samples.py!')
+    raise(ValueError, 'Oh no. Something went wrong in quadrature.py!')

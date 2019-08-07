@@ -168,7 +168,8 @@ class Parameter(object):
 			i = np.array(i) # convert to array
 			V = V[:,i]
 		return V
-	def get_jacobi_matrix(self, order=None):
+
+	def get_jacobi_matrix(self, order=None, ab=None):
 		"""
         Computes the Jacobi matrix---a tridiagonal matrix of the recurrence coefficients.
         :param Parameter self:
@@ -176,11 +177,13 @@ class Parameter(object):
 		:param int order:
 			Order of the recurrence coefficients.
         """
-		if order is None:
+		if order is None and ab is None:
 			ab = self.get_recurrence_coefficients()
 			order = self.order + 1
-		else:
+                elif ab is None:
 			ab = self.get_recurrence_coefficients(order)
+                else:
+                    ab = ab[0:order, :]
 
 		order = int(order)
 		# The case of order 1~
@@ -252,7 +255,7 @@ class Parameter(object):
 
 		return orthopoly, derivative_orthopoly, dderivative_orthopoly
 
-	def _get_local_quadrature(self, order=None):
+	def _get_local_quadrature(self, order=None, ab=None):
 		"""
 		Returns the 1D quadrature points and weights for the parameter. WARNING: Should not be called under normal circumstances.
 		:param Parameter self:
@@ -265,22 +268,26 @@ class Parameter(object):
 			A 1-by-N matrix that contains the quadrature weights
 		"""
 		if self.endpoints is False:
-			return get_local_quadrature(self, order)
+			return get_local_quadrature(self, order, ab)
 		elif self.endpoints is True:
-			return get_local_quadrature_lobatto(self, order)
+			return get_local_quadrature_lobatto(self, order, ab)
 		else:
 			raise(ValueError, '_getLocalQuadrature:: Error with Endpoints entry!')
 
-def get_local_quadrature(self, order=None):
+def get_local_quadrature(self, order=None, ab=None):
     # Check for extra input argument!
     if order is None:
         order = self.order + 1
     else:
         order = order + 1
 
-    # Get the recurrence coefficients & the jacobi matrix
-    JacobiMat = self.get_jacobi_matrix(order)
-    ab = self.get_recurrence_coefficients(order+1)
+    if ab is None and JacobiMat is None:
+        # Get the recurrence coefficients & the jacobi matrix
+        JacobiMat = self.jacobiMatrix(order)
+        ab = self.getRecurrenceCoefficients(order+1)
+    else:
+        ab = ab[0:order+1,:]
+        JacobiMat = self.jacobiMatrix(order,ab)
 
     # If statement to handle the case where order = 1
     if order == 1:
@@ -306,7 +313,7 @@ def get_local_quadrature(self, order=None):
                 p[u,0] = np.abs(p[u,0])
     return p, w
 
-def get_local_quadrature_lobatto(self, order=None):
+def get_local_quadrature_lobatto(self, order=None, ab=None):
     # Check for extra input argument!
     if order is None:
         order = self.order - 2
@@ -316,7 +323,10 @@ def get_local_quadrature_lobatto(self, order=None):
     b = self.distribution.shape_parameter_B
     N = order
     # Get the recurrence coefficients & the jacobi matrix
-    ab = self.get_recurrence_coefficients(order+2)
+    if ab is None:
+        ab = self.getRecurrenceCoefficients(order+2)
+    else:
+        ab = ab[0:order+2, :]
     ab[N+2, 0] = (a - b) / (2 * float(N+1) + a + b + 2)
     ab[N+2, 1] = 4 * (float(N+1) + a + 1) * (float(N+1) + b + 1) * (float(N+1) + a + b + 1) / ((2 * float(N+1) + a + b + 1) *
     (2 * float(N+1) + a + b + 2)**2)

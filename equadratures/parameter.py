@@ -280,8 +280,8 @@ def get_local_quadrature(self, order=None, ab=None):
         order = self.order + 1
     else:
         order = order + 1
-
-    if ab is None and JacobiMat is None:
+    
+    if ab is None:
         # Get the recurrence coefficients & the jacobi matrix
         JacobiMat = self.jacobiMatrix(order)
         ab = self.getRecurrenceCoefficients(order+1)

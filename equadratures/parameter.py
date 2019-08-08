@@ -13,8 +13,9 @@ from equadratures.distributions.truncated_gaussian import TruncatedGaussian
 from equadratures.distributions.custom import Custom
 import numpy as np
 
+
 class Parameter(object):
-	"""
+    """
     This class defines a univariate parameter. Below are details of its constructor.
     :param float lower:
         Lower bound for the parameter.
@@ -280,14 +281,14 @@ def get_local_quadrature(self, order=None, ab=None):
         order = self.order + 1
     else:
         order = order + 1
-    
+
     if ab is None:
         # Get the recurrence coefficients & the jacobi matrix
         JacobiMat = self.jacobiMatrix(order)
         ab = self.getRecurrenceCoefficients(order+1)
     else:
-        ab = ab[0:order+1,:]
-        JacobiMat = self.jacobiMatrix(order,ab)
+        ab = ab[0:order+1, ]
+        JacobiMat = self.jacobiMatrix(order, ab)
 
     # If statement to handle the case where order = 1
     if order == 1:
@@ -299,13 +300,13 @@ def get_local_quadrature(self, order=None, ab=None):
         w = [1.0]
     else:
         # Compute eigenvalues & eigenvectors of Jacobi matrix
-        D,V = np.linalg.eig(JacobiMat)
+        D, V  = np.linalg.eig(JacobiMat)
         V = np.mat(V) # convert to matrix
         local_points = np.sort(D) # sort by the eigenvalues
         i = np.argsort(D) # get the sorted indices
         i = np.array(i) # convert to array
-        w = np.linspace(1,order+1,order) # create space for weights
-        p = np.ones((int(order),1))
+        w = np.linspace(1, order+1, order) # create space for weights
+        p = np.ones((int(order), ))
         for u in range(0, len(i) ):
             w[u] = ab[0,1] * (V[0,i[u]]**2) # replace weights with right value
             p[u,0] = local_points[u]
@@ -334,22 +335,22 @@ def get_local_quadrature_lobatto(self, order=None, ab=None):
     n0, __ = ab.shape
     if n0 < K:
         raise(ValueError, 'getlocalquadraturelobatto: Recurrence coefficients size misalignment!')
-    J = np.zeros((K+1,K+1))
+    J = np.zeros((K+1, +1))
     for n in range(0, K+1):
-        J[n,n] = ab[n, 0]
+        J[n, ] = ab[n, 0]
     for n in range(1, K+1):
-        J[n, n-1] = np.sqrt(ab[n,1])
+        J[n, n-1] = np.sqrt(ab[n, ])
         J[n-1, n] = J[n, n-1]
     D, V = np.linalg.eig(J)
     V = np.mat(V) # convert to matrix
     local_points = np.sort(D) # sort by the eigenvalues
     i = np.argsort(D) # get the sorted indices
     i = np.array(i) # convert to array
-    w = np.linspace(1,K+1,K+1) # create space for weights
-    p = np.ones((int(K+1),1))
+    w = np.linspace(1, +1, +1) # create space for weights
+    p = np.ones((int(K+1), ))
     for u in range(0, len(i) ):
-        w[u] = ab[0,1] * (V[0,i[u]]**2) # replace weights with right value
-        p[u,0] = local_points[u]
+        w[u] = ab[0, ] * (V[0, [u]]**2) # replace weights with right value
+        p[u, ] = local_points[u]
     return p, w
 
 def distribution_error():

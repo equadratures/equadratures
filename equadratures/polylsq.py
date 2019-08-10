@@ -8,7 +8,6 @@ from equadratures.qr import solveCLSQ
 from equadratures.convex import maxdet, binary2indices
 
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.linalg import qr, svd, lu
 
 class Polylsq(Poly):

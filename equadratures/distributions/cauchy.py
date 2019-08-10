@@ -1,8 +1,6 @@
 """The Cauchy distribution."""
-
 from equadratures.distributions.template import Distribution
 from equadratures.distributions.recurrence_utils import custom_recurrence_coefficients
-
 import numpy as np
 from scipy.stats import cauchy
 RECURRENCE_PDF_SAMPLES = 8000
@@ -10,7 +8,7 @@ RECURRENCE_PDF_SAMPLES = 8000
 class Cauchy(Distribution):
     """
     The class defines a Cauchy object. It is the child of Distribution.
-    
+
     :param double location:
 		Location parameter of the Cauchy distribution.
     :param double scale:
@@ -19,22 +17,20 @@ class Cauchy(Distribution):
     def __init__(self, location=None, scale=None):
         self.location = location
         self.scale = scale
-        self.bounds = np.array([-np.inf, np.inf])    
-        #self.mean = np.nan 
-        #self.variance = np.nan
+        self.bounds = np.array([-np.inf, np.inf])
         self.skewness = np.nan
         self.kurtosis = np.nan
         if self.scale is not None:
             self.x_range_for_pdf = np.linspace(-15*self.scale, 15*self.scale, RECURRENCE_PDF_SAMPLES)
             self.parent = cauchy(loc=self.location, scale=self.scale)
-            self.mean = np.mean(self.getSamples(m=1000))
-            self.variance = np.var(self.getSamples(m=1000))
-                
-    
-    def getDescription(self):
+            self.mean = np.mean(self.get_samples(m=1000))
+            self.variance = np.var(self.get_samples(m=1000))
+
+
+    def get_description(self):
         """
         A description of the Cauchy distribution.
-        
+
         :param Cauchy self:
             An instance of the Cauchy class.
         :return:
@@ -42,11 +38,11 @@ class Cauchy(Distribution):
         """
         text = "A Cauchy distribution has an undefined mean and variance; its location parameter is "+str(self.location)+", and its scale parameter is "+str(self.scale)+"."
         return text
-    
-    def getPDF(self, points=None):
+
+    def get_pdf(self, points=None):
         """
         A Cauchy probability density function.
-        
+
         :param Cauchy self:
             An instance of the Cauchy class.
         :param array points:
@@ -60,12 +56,10 @@ class Cauchy(Distribution):
             return self.parent.pdf(points)
         else:
             raise(ValueError, 'Please digit an input for getPDF method')
-
-
-    def getCDF(self, points=None):
+    def get_cdf(self, points=None):
         """
         A Cauchy cumulative density function.
-        
+
         :param Cauchy self:
             An instance of the Cauchy class.
         :param array points:
@@ -79,11 +73,10 @@ class Cauchy(Distribution):
             return self.parent.cdf(points)
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
-
-    def getiCDF(self, xx):
+    def get_icdf(self, xx):
         """
         An inverse Cauchy cumulative density function.
-        
+
         :param Cauchy self:
             An instance of the Cauchy class.
         :param array xx:
@@ -92,8 +85,7 @@ class Cauchy(Distribution):
             Inverse CDF samples associated with the Cauchy distribution.
         """
         return self.parent.ppf(xx)
-
-    def getSamples(self, m):
+    def get_samples(self, m):
         """
          Generates samples from the Gaussian distribution.
         :param Gaussian self:
@@ -108,4 +100,3 @@ class Cauchy(Distribution):
         else:
             number = 500000
         return self.parent.rvs(size=number)
-

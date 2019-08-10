@@ -5,9 +5,11 @@ from equadratures.basis import Basis
 from equadratures.solver import Solver
 from equadratures.subsampling import Subsampling
 from equadratures.quadrature import Quadrature
+from equadratures.dimension_reduction import Subspaces
 import pickle
 import numpy as np
 from copy import deepcopy
+MAXIMUM_ORDER_FOR_STATS = 8
 class Poly(object):
     """
     Definition of a polynomial object.
@@ -19,7 +21,6 @@ class Poly(object):
     :param dict args:
         Optional arguments centered around the specific sampling strategy and
         correlations within the samples.
-
         :string mesh: Avaliable options are: ``monte-carlo``, ``induced-sampling``, ``sparse-grid``, ``tensor-grid`` or ``user-defined``.
             Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1]
             is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
@@ -36,6 +37,10 @@ class Poly(object):
         :numpy.ndarray sample-points: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
         :numpy.ndarray sample-outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points. Note that
             if ``sample-points`` is provided as an input, then the code expects ``sample-outputs`` too.
+        :string dimension-reduction: The ``dimension-reduction`` input refers to the technique used for computing a dimension-reducing subspace. The default value set for
+            this parameter is ``False``. If the user sets this input to ``True``, a polynomial-based active subspaces [7] recipe is used. This outcome may also be achieved by
+            setting the input to ``active-subspaces``. Other options for this input include: ``variable-projection`` and ``linear-model``. The former is based on the polynomial
+            variable projectoin technique of [8], while the latter is a simple linear trick based on [9].
 
     **Sample constructor initialisations**::
 
@@ -60,6 +65,10 @@ class Poly(object):
         basis = Basis('sparse-grid', level=7, growth_rule='exponential')
         poly = Poly(parameters=[param, param], basis=basis, method='numerical-integration')
 
+        # Data-driven dimension-reduction
+        # Examples goes here!
+
+
 
     **References**
         1. Constantine, P. G., Eldred, M. S., Phipps, E. T., (2012) Sparse Pseudospectral Approximation Method. Computer Methods in Applied Mechanics and Engineering. 1-12. `Paper <https://www.sciencedirect.com/science/article/pii/S0045782512000953>`__
@@ -68,7 +77,9 @@ class Poly(object):
         4. Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations. SIAM/ASA Journal on Uncertainty Quantification, 5(1). `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
         5. Bos, L., De Marchi, S., Sommariva, A., Vianello, M., (2010) Computing Multivariate Fekete and Leja points by Numerical Linear Algebra. SIAM Journal on Numerical Analysis, 48(5). `Paper <https://epubs.siam.org/doi/abs/10.1137/090779024>`__
         6. Joshi, S., Boyd, S., (2009) Sensor Selection via Convex Optimization. IEEE Transactions on Signal Processing, 57(2). `Paper <https://ieeexplore.ieee.org/document/4663892>`__
-
+        7. active subspaces
+        8. polynomial varpro
+        9. linear trick
     """
     def __init__(self, parameters, basis, method, args=None):
         try:
@@ -87,42 +98,23 @@ class Poly(object):
         if not self.basis.orders :
             self.basis.set_orders(self.orders)
         # Initialize some default values!
+        self.inputs = None
+        self.outputs = None
+        self.dimension_reduction_strategy = None
+        self.correlation_matrix = None
+        self.subsampling_algorithm_name = None
+        self.sampling_ratio = 1.0
         if self.method == 'numerical-integration' or self.method == 'integration':
             self.mesh = self.basis.basis_type
-            self.sampling_ratio = 1.0
-            self.subsampling_algorithm_name = None
-            self.correlation_matrix = None
-            self.inputs = None
-            self.outputs = None
         elif self.method == 'least-squares':
             self.mesh = 'tensor-grid'
-            self.sampling_ratio = 1.0
-            self.subsampling_algorithm_name = None
-            self.correlation_matrix = None
-            self.inputs = None
-            self.outputs = None
         elif self.method == 'least-squares-with-gradients':
             self.gradient_flag = 1
             self.mesh = 'tensor-grid'
-            self.sampling_ratio = 1.0
-            self.subsampling_algorithm_name = None
-            self.correlation_matrix = None
-            self.inputs = None
-            self.outputs = None
         elif self.method == 'compressed-sensing' or self.method == 'compressive-sensing':
             self.mesh = 'monte-carlo'
-            self.sampling_ratio = 1.0
-            self.subsampling_algorithm_name = None
-            self.correlation_matrix = None
-            self.inputs = None
-            self.outputs = None
         elif self.method == 'minimum-norm':
             self.mesh = 'monte-carlo'
-            self.sampling_ratio = 1.0
-            self.subsampling_algorithm_name = None
-            self.correlation_matrix = None
-            self.inputs = None
-            self.outputs = None
         # Now depending on user inputs, override these default values!
         if self.args is not None:
             if 'mesh' in args: self.mesh = args.get('mesh')
@@ -133,10 +125,14 @@ class Poly(object):
                 self.mesh = 'user-defined'
             if 'sample-outputs' in args: self.outputs = args.get('sample-outputs')
             if 'correlation' in args: self.correlation_matrix = args.get('correlation')
+            if 'dimension-reduction' in args: self.dimension_reduction_strategy = args.get('dimension-reduction')
         self.__set_solver()
         self.__set_subsampling_algorithm()
         self.__set_points_and_weights()
         self.statistics_object = None
+        self.parameters_order = [ parameter.order for parameter in self.parameters]
+        self.highest_order = np.max(self.parameters_order)
+        self.dimensons = self.basis.dimensions
     def __set_subsampling_algorithm(self):
         """
         Private function that sets the subsampling algorithm based on the user-defined method.
@@ -191,8 +187,7 @@ class Poly(object):
             **variance**: The approximated variance of the polynomial fit; output as a float.
 
         """
-        if self.statistics_object is None:
-            self.statistics_object = Statistics(self.parameters , self.basis,  self.coefficients)
+        self.__set_statistics()
         return self.statistics_object.get_mean(), self.statistics_object.get_variance()
     def get_skewness_and_kurtosis(self):
         """
@@ -207,11 +202,30 @@ class Poly(object):
             **kurtosis**: The approximated kurtosis of the polynomial fit; output as a float.
 
         """
-        poly_vandermonde_matrix = self.get_poly(self.quadrature_points)
-        self.statistics_object = Statistics(self.parameters, self.basis,  self.coefficients,  self.quadrature_points, self.quadrature_weights, \
-            poly_vandermonde_matrix)
+        self.__set_statistics()
         return self.statistics_object.get_skewness(), self.statistics_object.get_kurtosis()
-    def get_sobol_indices(self, highest_sobol_order_to_compute=1):
+    def __set_statistics(self):
+        """
+        Private method that is used withn the statistics routines.
+
+        """
+        if self.statistics_object is None:
+            if self.method != 'numerical-integration' and self.dimensions <= 6 and self.highest_order <= MAXIMUM_ORDER_FOR_STATS:
+                quad = Quadrature(parameters=self.parameters, basis=Basis('tensor-grid', orders= np.array(self.parameters_order) + 1), \
+                    mesh='tensor-grid', outputs=None, points=None, correlation=None)
+                quad_pts, quad_wts = quad.get_points_and_weights()
+                poly_vandermonde_matrix = self.get_poly(quad_pts)
+            else:
+                poly_vandermonde_matrix = self.get_poly(self.quadrature_points)
+                quad_pts, quad_wts = self.get_points_and_weights()
+
+            if self.highest_order <= MAXIMUM_ORDER_FOR_STATS:
+                self.statistics_object = Statistics(self.parameters, self.basis,  self.coefficients,  quad_pts, \
+                        quad_wts, poly_vandermonde_matrix, max_sobol_order=self.highest_order)
+            else:
+                self.statistics_object = Statistics(self.parameters, self.basis,  self.coefficients,  quad_pts, \
+                        quad_wts, poly_vandermonde_matrix, max_sobol_order=MAXIMUM_ORDER_FOR_STATS)
+    def get_sobol_indices(self, order):
         """
         Computes the Sobol' indices.
 
@@ -223,8 +237,48 @@ class Poly(object):
         :return:
             **sobol_indices**: A dict comprising of Sobol' indices and constitutent mixed orders of the parameters.
         """
-        self.statistics_object = Statistics(self.parameters, self.basis, self.coefficients, max_sobol_order=highest_sobol_order_to_compute)
-        return self.statistics_object.sobol
+        self.__set_statistics()
+        return self.statistics_object.get_sobol(order)
+    def get_total_sobol_indices(self):
+        """
+        Computes the total Sobol' indices.
+
+        :param Poly self:
+            An instance of the Poly class.
+
+        :return:
+            **total_sobol_indices**: Sobol
+        """
+        self.__set_statistics()
+        return self.statistics_object.get_sobol_total()
+    def get_conditional_skewness_indices(self, order):
+        """
+        Computes the skewness indices.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param int order:
+            The highest order of the skewness indices required.
+
+        :return:
+            **skewness_indices**: A dict comprising of skewness indices and constitutent mixed orders of the parameters.
+        """
+        self.__set_statistics()
+        return self.statistics_object.get_conditional_skewness(order)
+    def get_conditional_kurtosis_indices(self, order):
+        """
+        Computes the kurtosis indices.
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param int order:
+            The highest order of the kurtosis indices required.
+
+        :return:
+            **kurtosis_indices**: A dict comprising of kurtosis indices and constitutent mixed orders of the parameters.
+        """
+        self.__set_statistics()
+        return self.statistics_object.get_conditional_kurtosis(order)
     def set_model(self, model=None, model_grads=None):
         """
         Computes the coefficients of the polynomial via the method selected.
@@ -262,6 +316,31 @@ class Poly(object):
                 del d, grad_values
                 dP = self.get_poly_grad(self.quadrature_points)
         self.__set_coefficients()
+        self.__compute_dimension_reducing_subspace()
+    def __compute_dimension_reducing_subspace(self):
+        """
+        Computes a dimension reducing subspace.
+
+        :param Poly self:
+            An instance of the Poly class.
+        """
+        if self.dimension_reduction_strategy is None:
+            self.dimension_reducing_subspace = None
+        elif self.dimension_reduction_strategy == 'active-subspaces':
+            mysubspaces = Subspaces(self, method='active-subspaces')
+            e = mysubspaces.get_eigenvalues()
+            W = mysubspaces.get_eigenvectors()
+    def get_subspace_vectors(self):
+        """
+        Returns the vectors of the subspace.
+        """
+        return 0
+    def get_subspace_eigenvalues(self):
+        """
+        Not valid for all subspaces.
+
+        """
+        return 0
     def __set_coefficients(self):
         """
         Computes the polynomial approximation coefficients.
@@ -602,6 +681,12 @@ class Poly(object):
                 H.append(polynomialhessian)
 
         return H
+    def poly_subspace(self):
+        """
+        A polynomial defined over a subspace.
+
+        """
+        return 0
 def evaluate_model_gradients(points, fungrad, format):
     """
     Evaluates the model gradient at given values.

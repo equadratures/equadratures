@@ -11,7 +11,7 @@ RECURRENCE_PDF_SAMPLES = 8000
 class Chebyshev(Distribution):
     """
     The class defines a Chebyshev object. It is the child of Distribution.
-    
+
     :param double lower:
 		Lower bound of the support of the Chebyshev (arcsine) distribution.
 	:param double upper:
@@ -28,12 +28,12 @@ class Chebyshev(Distribution):
         self.skewness = 0.0
         self.shape_parameter_A = -0.5
         self.shape_parameter_B = -0.5
-        
-    
+
+
     def getDescription(self):
         """
         A description of the Chebyshev (arcsine) distribution.
-            
+
         :param Chebyshev self:
             An instance of the Chebyshev (arcsine) class.
         :return:
@@ -45,7 +45,7 @@ class Chebyshev(Distribution):
     def getPDF(self, points=None):
         """
         A Chebyshev probability density function.
-        
+
         :param Chebyshev self:
             An instance of the Chebyshev (arcsine) class.
         :param points:
@@ -63,7 +63,7 @@ class Chebyshev(Distribution):
     def getCDF(self, points=None):
         """
         A Chebyshev cumulative density function.
-        
+
         :param Chebyshev self:
             An instance of the Chebyshev class.
         :param points:
@@ -81,7 +81,7 @@ class Chebyshev(Distribution):
     def getRecurrenceCoefficients(self, order):
         """
         Recurrence coefficients for the Chebyshev distribution.
-        
+
         :param Chebyshev self:
             An instance of the Chebyshev class.
         :param array order:
@@ -95,7 +95,7 @@ class Chebyshev(Distribution):
     def getiCDF(self, xx):
         """
         A Arcisine inverse cumulative density function.
-        
+
         :param Arcsine self:
             An instance of Arcisine class.
         :param xx:
@@ -119,4 +119,4 @@ class Chebyshev(Distribution):
             number = m
         else:
             number = 500000
-        return arcsine.rvs(size=number) 
+        return arcsine.rvs(size=number)

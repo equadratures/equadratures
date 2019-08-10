@@ -53,6 +53,12 @@ class Parameter(object):
 		self.__set_bounds()
 		self.__set_moments()
 	def __set_distribution(self):
+		"""
+        Private function that sets the distribution.
+
+        :param Parameter self:
+            An instance of the Parameter object.
+        """
 		choices = {'gaussian': Gaussian(self.shape_parameter_A, self.shape_parameter_B),
 			       'normal': Gaussian(self.shape_parameter_A, self.shape_parameter_B),
 			       'uniform' : Uniform(self.lower, self.upper),
@@ -115,23 +121,53 @@ class Parameter(object):
 			return x, self.distribution.getCDF(x)
 		else:
 			return self.distribution.getCDF(points)
-	def get_icdf(self, xx):
+	def get_icdf(self, cdf_values):
 		"""
         Computes the inverse cumulative density function associated with the Parameter.
 
         :param Parameter self:
             An instance of the Parameter object.
-		:param numpy.ndarray xx:
+		:param numpy.ndarray cdf_values:
 			Values of the cumulative density function for which its inverse needs to be computed.
         """
-		return self.distribution.get_icdf(xx)
-	def get_samples(self, m):
-		return self.distribution.getSamples(m)
+		return self.distribution.get_icdf(cdf_values)
+	def get_samples(self, number_of_samples_required):
+		"""
+        Generates samples from the distribution associated with the Parameter.
+
+        :param Parameter self:
+            An instance of the Parameter object.
+		:param int number_of_samples_required:
+			Number of samples that are required.
+        """
+		return self.distribution.getSamples(number_of_samples_required)
 	def get_description(self):
+		"""
+		Provides a description of the Parameter.
+
+        :param Parameter self:
+            An instance of the Parameter object.
+        """
 		return self.distribution.getDescription()
 	def get_recurrence_coefficients(self, order=None):
+		"""
+        Generates the recurrence coefficients.
+
+        :param Parameter self:
+            An instance of the Parameter object.
+		:param int order:
+			Order of the recurrence coefficients.
+        """
 		return self.distribution.get_recurrence_coefficients(order)
 	def get_jacobi_eigenvectors(self, order=None):
+		"""
+        Computes the eigenvectors of the Jacobi matrix.
+
+        :param Parameter self:
+            An instance of the Parameter object.
+		:param int order:
+			Order of the recurrence coefficients.
+        """
 		if order is None:
 			order = self.order + 1
 			JacobiMat = self.get_jacobi_matrix(order)
@@ -145,6 +181,14 @@ class Parameter(object):
 			V = V[:,i]
 		return V
 	def get_jacobi_matrix(self, order=None):
+		"""
+        Computes the Jacobi matrix---a tridiagonal matrix of the recurrence coefficients.
+
+        :param Parameter self:
+            An instance of the Parameter object.
+		:param int order:
+			Order of the recurrence coefficients.
+        """
 		if order is None:
 			ab = self.get_recurrence_coefficients()
 			order = self.order + 1
@@ -170,6 +214,16 @@ class Parameter(object):
 			JacobiMatrix[order-1, order-2] = np.sqrt(ab[order-1,1])
 		return JacobiMatrix
 	def _get_orthogonal_polynomial(self, points, order=None):
+		"""
+        Private function that evaluates the univariate orthogonal polynomial at quadrature points.
+
+        :param Parameter self:
+            An instance of the Parameter object.
+		:param numpy.ndarray points:
+			Points at which the orthogonal polynomial must be evaluated.
+		:param int order:
+			Order up to which the orthogonal polynomial must be obtained.
+        """
 		if order is None:
 			order = self.order + 1
 		else:

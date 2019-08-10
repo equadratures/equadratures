@@ -1,6 +1,7 @@
 from equadratures.parameter import Parameter
 from equadratures.poly import Poly
 from equadratures.stats import Statistics
+from equadratures.dimension_reduction import Subspaces
 from equadratures.basis import Basis
 from equadratures.poly import evaluate_model, evaluate_model_gradients, vector_to_2D_grid
 import numpy as np

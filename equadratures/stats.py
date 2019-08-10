@@ -24,10 +24,10 @@ class Statistics(object):
         self.coefficients = np.reshape(np.asarray(coefficients), (mm, 1))
         self.basis = basis
         self.parameters = parameters #should be a list containing instances of Parameter
+        self.max_sobol_order = max_sobol_order
         self.__mean = private_get_mean(self.coefficients)
         self.__variance = private_get_variance(self.coefficients)
         self.__sobol = private_get_all_sobol_indices(self.coefficients, self.basis, max_sobol_order)
-
         # Only required when computing skewness and kurtosis.
         if (quadrature_points is None) and (quadrature_weights is None) and (polynomial_matrix is None):
             pass
@@ -83,7 +83,7 @@ class Statistics(object):
             **kurtosis**: The approximated kurtosis of the polynomial fit; output as a float.
         """
         return self.__kurtosis
-    def get_sobol(self, order = 1):
+    def get_sobol(self, order=1):
         """
         Get Sobol' indices at specified order.
 
@@ -101,7 +101,7 @@ class Statistics(object):
 
         """
         return {key: value for key, value in self.__sobol.items() if len(key) == order}
-    def get_conditional_skewness(self, order = 1):
+    def get_conditional_skewness(self, order=1):
         """
         Get conditional skewness indices at specified order.
 
@@ -118,8 +118,8 @@ class Statistics(object):
             first_order_skewness = stats.getCondSkewness(1)
 
         """
-        return __conditional_skewness(order, self.quadrature_weights, self.weighted_evals, self.basis, self.__variance, self.skewness)
-    def get_conditional_kurtosis(self, order = 1):
+        return private_conditional_skewness(order, self.quadrature_weights, self.__weighted_evals, self.basis, self.__variance, self.__skewness)
+    def get_conditional_kurtosis(self, order=1):
         """
         Get conditional kurtosis indices at specified order.
 
@@ -136,34 +136,27 @@ class Statistics(object):
             first_order_kurtosis = stats.getCondKurtosis(1)
 
         """
-        return __conditional_kurtosis(order, self.quadrature_weights, self.weighted_evals, self.basis, self.__variance, self.kurtosis)
-
-    #Calculates the total sensitivity based on list of input dicts
-    #Assumes they are ordered so that the first element is the first order indices!
-    @staticmethod
-    def calc_TSI(list_of_indices_dicts):
-        dim = len(list_of_indices_dicts[0].keys())
-        TSI = np.zeros((dim))
-        for i in range(len(list_of_indices_dicts)):
-            for j in range(dim):
-                for k in list_of_indices_dicts[i].keys():
-                    if j in k:
-                        TSI[j] = TSI[j] + list_of_indices_dicts[i][k]
-
+        return private_conditional_kurtosis(order, self.quadrature_weights, self.__weighted_evals, self.basis, self.__variance, self.__skewness)
+    def get_sobol_total(self):
+        """
+        Get total Sobol' indices
+        :return: list: Totol Sobol' indices for each parameter
+        """
+        all_sobols = self.__sobol
+        dims = len(self.parameters)
+        TSI = np.zeros(dims)
+        for i in all_sobols.keys():
+            for p in i:
+                TSI[p] += all_sobols[i]
         return TSI
-
-# Private functions!
 def private_get_mean(coefficients):
     return float(coefficients[0])
-
 def private_get_variance(coefficients):
     result = 0.
     for i in range(1, len(coefficients)):
         variance = result + float(coefficients[i]**2)
         result = variance
     return variance
-
-# Function that computes the Sobol' indices of all orders up to dimension of i/p
 def private_get_all_sobol_indices(coefficients, basis, max_order):
     variance = private_get_variance(coefficients)
     if not(isinstance(basis, np.ndarray)):
@@ -191,58 +184,34 @@ def private_get_all_sobol_indices(coefficients, basis, max_order):
         check_sum = sum(combo_index.values())
         if (abs(check_sum - 1.0) >= 1e-2):
             print("Possible discrepancy in calculation, sum of indices = " + str(check_sum))
-
         return combo_index
-
-# Return global skewness
 def private_get_skewness(quadrature_weights, weighted_evals, basis, variance):
     total_evals = np.sum(weighted_evals[1:],0)
-#    print weighted_evals[0]
     third_total_evals = total_evals**3
-#    print third_total_evals.shape
-#    print quadrature_weights.shape
-
     return np.dot(third_total_evals,quadrature_weights)/(variance**1.5)
-
-# Return global kurtosis
 def private_get_kurtosis(quadrature_weights, weighted_evals, basis, variance):
     total_evals = np.sum(weighted_evals[1:],0)
     fourth_total_evals = total_evals**4
-
     return np.dot(fourth_total_evals,quadrature_weights)/(variance**2)
-
-# Return conditional skewness of specified order, in dictionary format similar to Sobol' indices
-#Unfortunately, to compute conditional indices, this slow method must be used!
 def private_conditional_skewness(order, quadrature_weights, weighted_evals, basis, variance, skewness):
-    #Get all polynomials evaluated at the quad. pts and corresponding wts
-
     dimensions = basis.elements.shape[1]
     norm_ind = basis.elements.copy()
     norm_ind = list(map(tuple,(norm_ind > 0).astype(int)))
     combo_index = {}
-#    for tot_order in range(1,dimensions+1): #loop over order
     for i in combinations(range(dimensions), order):
-        #initialize each index of the specified order to be 0
-#        if sum(i) != order:
-#            continue
-#        combo_index[i] = 0.0
         index = np.zeros(dimensions).astype(int)
         index[list(i)] = 1
         combo_index[tuple(index)] = 0.0
-
     #1st term
     cubed_evals = weighted_evals**3
     integral1 = np.dot(cubed_evals, quadrature_weights)
     for i in range(1, integral1.shape[0]):
         if sum(norm_ind[i]) == order:
             combo_index[norm_ind[i]] = combo_index[norm_ind[i]] + integral1[i] /(variance**1.5 * skewness)
-
-#    print combo_index
     valid_indices = []
     for i in range(1, basis.cardinality):
         if sum(norm_ind[i]) <= order:
             valid_indices.append(i)
-#    print valid_indices
     #2nd term (Can we avoid for loops in the future?)
     for p in range(1,basis.cardinality):
         for q in range(1,basis.cardinality):
@@ -257,18 +226,10 @@ def private_conditional_skewness(order, quadrature_weights, weighted_evals, basi
                     break
             if delta:
                 continue
-#            print basis.elements[p]
-#            print basis.elements[q]
             evals2 = (weighted_evals[p,:]**2)*weighted_evals[q,:]
             integral2 = np.dot(evals2, quadrature_weights)
-#            print basis.elements[p]
-#            print basis.elements[q]
-#            print 3* integral2 /(variance**1.5* skewness)
             combo_index[summed_norm_index] = combo_index[summed_norm_index] + 3 * integral2 /(variance**1.5* skewness)
-
-#    print combo_index
     temp_ind = basis.elements.copy()
-    #3rd term (Can we avoid for loops in the future?)
     i = 0
     for a in range(len(valid_indices)):
         for b in range(a+1, len(valid_indices)):
@@ -280,13 +241,10 @@ def private_conditional_skewness(order, quadrature_weights, weighted_evals, basi
                 summed_norm_index =tuple(np.logical_or(np.logical_or(norm_ind[p], norm_ind[q]), norm_ind[r]).astype(int))
                 if sum(summed_norm_index) != order:
                     continue
-                #check if selection function is zero, in which case delta = True
-#                print [p,q,r]
                 delta = False
                 for d in range(dimensions):
                     if delta_pqr([temp_ind[p,:],temp_ind[q,:],temp_ind[r,:]]):
                         delta = True
-#                        print "hi"
                         break
                 if delta:
                     continue
@@ -298,20 +256,13 @@ def private_conditional_skewness(order, quadrature_weights, weighted_evals, basi
                 combo_index[summed_norm_index] = combo_index[summed_norm_index] + 6 * integral3 /(variance**1.5* skewness)
     combo_index = {tuple(np.nonzero(key)[0]): value for key, value in combo_index.items()}
     return combo_index
-
-# Return conditional kurtosis of specified order, in dictionary format similar to Sobol' indices
 def private_conditional_kurtosis(order, quadrature_weights, weighted_evals, basis, variance, kurtosis):
     #Get all polynomials evaluated at the quad. pts and corresponding wts
     dimensions = basis.elements.shape[1]
     norm_ind = basis.elements.copy()
     norm_ind = list(map(tuple,(norm_ind > 0).astype(int)))
     combo_index = {}
-#    for tot_order in range(1,dimensions+1): #loop over order
     for i in combinations(range(dimensions), order):
-        #initialize each index to be 0
-#            if sum(i) != order:
-#                continue
-#            combo_index[i] = 0.0
         index = np.zeros(dimensions).astype(int)
         index[list(i)] = 1
         combo_index[tuple(index)] = 0.0
@@ -326,7 +277,6 @@ def private_conditional_kurtosis(order, quadrature_weights, weighted_evals, basi
     for i in range(1, basis.cardinality):
         if sum(norm_ind[i]) <= order:
             valid_indices.append(i)
-#    print combo_index
     #2nd term (Can we avoid for loops in the future?)
     for p in valid_indices:
         for q in valid_indices:
@@ -344,7 +294,6 @@ def private_conditional_kurtosis(order, quadrature_weights, weighted_evals, basi
             evals2 = (weighted_evals[p,:]**3)*weighted_evals[q,:]
             integral2 = np.dot(evals2, quadrature_weights)
             combo_index[summed_norm_index] = combo_index[summed_norm_index] + 4 * integral2 /(variance**2 * kurtosis)
-#    print combo_index
     #3rd term (Can we avoid for loops in the future?)
     for a in range(len(valid_indices)):
         for b in range(a+1,len(valid_indices)):
@@ -356,8 +305,6 @@ def private_conditional_kurtosis(order, quadrature_weights, weighted_evals, basi
             evals3 = (weighted_evals[p,:]**2)*(weighted_evals[q,:]**2)
             integral3 = np.dot(evals3, quadrature_weights)
             combo_index[summed_norm_index] = combo_index[summed_norm_index] + 6 * integral3 /(variance**2 * kurtosis)
-
-#    print combo_index
     #4th term (Can we avoid for loops in the future?)
     for a in range(len(valid_indices)):
         for b in range(len(valid_indices)):
@@ -383,7 +330,6 @@ def private_conditional_kurtosis(order, quadrature_weights, weighted_evals, basi
                 integral4 = np.dot(evals4, quadrature_weights)
 
                 combo_index[summed_norm_index] = combo_index[summed_norm_index] + 12 * integral4 /(variance**2 * kurtosis)
-#    print combo_index
     #5th term (Can we avoid for loops in the future?) (especially this. Scales poorly!)
     temp_ind = basis.elements.copy()
     for a in range(len(valid_indices)):
@@ -411,7 +357,6 @@ def private_conditional_kurtosis(order, quadrature_weights, weighted_evals, basi
                     summed_norm_index = tuple(np.logical_or(np.logical_or(np.logical_or(norm_ind[p], norm_ind[q]), norm_ind[r]), norm_ind[t]).astype(int))
                     combo_index[summed_norm_index] = combo_index[summed_norm_index] + 24 * integral5 /(variance**2 * kurtosis)
     combo_index = {tuple(np.nonzero(key)[0]): value for key, value in combo_index.items()}
-#    print combo_index
     return combo_index
 
 

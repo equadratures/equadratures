@@ -95,18 +95,17 @@ class Statistics(object):
         """
         return CondKurtosis(order, self.quad_wts, self.weighted_evals, self.basis, self.variance, self.kurtosis)
 
-    #Calculates the total sensitivity based on list of input dicts
-    #Assumes they are ordered so that the first element is the first order indices!
-    @staticmethod
-    def calc_TSI(list_of_indices_dicts):
-        dim = len(list_of_indices_dicts[0].keys())
-        TSI = np.zeros((dim))
-        for i in range(len(list_of_indices_dicts)):
-            for j in range(dim):
-                for k in list_of_indices_dicts[i].keys():
-                    if j in k:
-                        TSI[j] = TSI[j] + list_of_indices_dicts[i][k]
-
+    def calc_TSI(self):
+        """
+        Get total Sobol' indices
+        :return: list: Totol Sobol' indices for each parameter
+        """
+        all_sobols = self.sobol
+        dims = len(self.parameters)
+        TSI = np.zeros(dims)
+        for i in all_sobols.keys():
+            for p in i:
+                TSI[p] += all_sobols[i]
         return TSI
 
 # Private functions!

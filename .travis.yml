@@ -24,7 +24,7 @@ branches:
 # Only Build and Test changes of the master branch
 branches:
   only:
-  - master
+  - new_version
 
 before_install:
  - travis_retry wget http://repo.continuum.io/miniconda/Miniconda-3.8.3-Linux-x86_64.sh -O miniconda.sh

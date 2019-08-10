@@ -14,9 +14,19 @@ class Subspaces(object):
         An instance of the Poly class.
 
     """
-    def __init__(self, poly, method=None):
+    def __init__(self, poly, method=None, dimension_reduction_args=None):
         self.poly = poly
         self.method = method
+        if self.dimension_reduction_args is not None:
+            if 'subspace-dimension' in dimension_reduction_args: self.subspace_dimension = dimension_reduction_args.get('subspace-dimension')
+            if 'bootstrap-replicates' in dimension_reduction_args: self.bootstrap_trials = dimension_reduction_args.get('bootstrap-replicates')
+            if ''
+
+        if self.method.lower() == 'active-subspaces' or self.method.lower() is 'default':
+            self.active_subspace, self.inactive_subspace, self.eigenvalues = self.compute_active_subspace()
+        elif self.method.lower() == 'variable-projection':
+            self.active_subspace, self.inactive_subspace = self.variable_projection()
+
     def computeActiveSubspaces(self, poly=None, samples=None, alpha=None, k=None, bootstrap=False, bs_trials = 50):
         """
         Computes the eigenvalues and corresponding eigenvectors for the high dimensional kernel matrix via polynomial model.
@@ -122,7 +132,6 @@ class Subspaces(object):
         if update_self:
             self.training_input = X_stnd.copy()
         return X_stnd
-
 
     def variable_projection(self,n,p,X=None,f=None,gamma=None,beta=None,tol=None,maxiter=1000,U0=None, verbose=False):
         """

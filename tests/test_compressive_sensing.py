@@ -27,7 +27,7 @@ class TestB(TestCase):
         chosen_valid_pts = np.random.choice(remaining_pts, size = 30, replace = False)
         x_eval = X[chosen_valid_pts]
 
-        poly = Poly(params, basis, method='compressive-sensing', args={'sample-points':X_red, 'sample-outputs':Y_red})
+        poly = Poly(params, basis, method='compressive-sensing', sampling_args={'sample-points':X_red, 'sample-outputs':Y_red})
         poly.set_model()
         y_eval = poly.get_polyfit(X)
         y_valid = Y

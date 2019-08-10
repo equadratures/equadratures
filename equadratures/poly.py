@@ -18,7 +18,7 @@ class Poly(object):
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     :param str method: The method used for computing the coefficients. Should be one of: ``compressive-sensing``,
         ``numerical-integration``, ``least-squares`` or ``minimum-norm``.
-    :param dict args:
+    :param dict sampling_args:
         Optional arguments centered around the specific sampling strategy and
         correlations within the samples.
         :string mesh: Avaliable options are: ``monte-carlo``, ``induced-sampling``, ``sparse-grid``, ``tensor-grid`` or ``user-defined``.
@@ -37,7 +37,13 @@ class Poly(object):
         :numpy.ndarray sample-points: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
         :numpy.ndarray sample-outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points. Note that
             if ``sample-points`` is provided as an input, then the code expects ``sample-outputs`` too.
-        :string dimension-reduction: The ``dimension-reduction`` input refers to the technique used for computing a dimension-reducing subspace. The default value set for
+    :param str subspaces: The method used for computing a dimension reducing subspace. Should one of: ``active-subspace``, ``variable-projection``,
+        ``linear-model``, ``quadratic-model`` or ``active-subspace-with-gradients``.
+    :param str dimension_reduction_args:
+
+
+
+            :string dimension-reduction: The ``dimension-reduction`` input refers to the technique used for computing a dimension-reducing subspace. The default value set for
             this parameter is ``False``. If the user sets this input to ``True``, a polynomial-based active subspaces [7] recipe is used. This outcome may also be achieved by
             setting the input to ``active-subspaces``. Other options for this input include: ``variable-projection`` and ``linear-model``. The former is based on the polynomial
             variable projectoin technique of [8], while the latter is a simple linear trick based on [9].
@@ -50,14 +56,14 @@ class Poly(object):
         # Subsampling from a tensor grid
         param = Parameter(distribution='uniform', lower=-1., upper=1., order=3)
         basis = Basis('total order')
-        poly = Poly(parameters=[param, param], basis=basis, method='least-squares' , args={'mesh':'tensor-grid', 'subsampling-algorithm':'svd', 'sampling-ratio':1.0})
+        poly = Poly(parameters=[param, param], basis=basis, method='least-squares' , sampling_args={'mesh':'tensor-grid', 'subsampling-algorithm':'svd', 'sampling-ratio':1.0})
 
         # User-defined data with compressive sensing
         X = np.loadtxt('inputs.txt')
         y = np.loadtxt('outputs.txt')
         param = Parameter(distribution='uniform', lower=-1., upper=1., order=3)
         basis = Basis('total order')
-        poly = Poly([param, param], basis, method='compressive-sensing', args={'sample-points':X_red, \
+        poly = Poly([param, param], basis, method='compressive-sensing', sampling_args={'sample-points':X_red, \
                                                                'sample-outputs':Y_red})
 
         # Using a sparse grid
@@ -81,7 +87,7 @@ class Poly(object):
         8. polynomial varpro
         9. linear trick
     """
-    def __init__(self, parameters, basis, method, args=None):
+    def __init__(self, parameters, basis, method, sampling_args=None, subspaces=None, dimension_reduction_args=None):
         try:
             len(parameters)
         except TypeError:
@@ -89,7 +95,7 @@ class Poly(object):
         self.parameters = parameters
         self.basis = basis
         self.method = method
-        self.args = args
+        self.sampling_args = sampling_args
         self.dimensions = len(parameters)
         self.orders = []
         self.gradient_flag = 0
@@ -116,16 +122,16 @@ class Poly(object):
         elif self.method == 'minimum-norm':
             self.mesh = 'monte-carlo'
         # Now depending on user inputs, override these default values!
-        if self.args is not None:
-            if 'mesh' in args: self.mesh = args.get('mesh')
-            if 'sampling-ratio' in args: self.sampling_ratio = float(args.get('sampling-ratio'))
-            if 'subsampling-algorithm' in args: self.subsampling_algorithm_name = args.get('subsampling-algorithm')
-            if 'sample-points' in args:
-                self.inputs = args.get('sample-points')
+        if self.sampling_args is not None:
+            if 'mesh' in sampling_args: self.mesh = sampling_args.get('mesh')
+            if 'sampling-ratio' in sampling_args: self.sampling_ratio = float(sampling_args.get('sampling-ratio'))
+            if 'subsampling-algorithm' in sampling_args: self.subsampling_algorithm_name = sampling_args.get('subsampling-algorithm')
+            if 'sample-points' in sampling_args:
+                self.inputs = sampling_args.get('sample-points')
                 self.mesh = 'user-defined'
-            if 'sample-outputs' in args: self.outputs = args.get('sample-outputs')
-            if 'correlation' in args: self.correlation_matrix = args.get('correlation')
-            if 'dimension-reduction' in args: self.dimension_reduction_strategy = args.get('dimension-reduction')
+            if 'sample-outputs' in sampling_args: self.outputs = sampling_args.get('sample-outputs')
+            if 'correlation' in sampling_args: self.correlation_matrix = sampling_args.get('correlation')
+            if 'dimension-reduction' in sampling_args: self.dimension_reduction_strategy = sampling_args.get('dimension-reduction')
         self.__set_solver()
         self.__set_subsampling_algorithm()
         self.__set_points_and_weights()

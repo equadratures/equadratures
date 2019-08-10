@@ -78,10 +78,10 @@ class TestD(TestCase):
         condkurt2 = my_poly.get_conditional_kurtosis_indices(2)
         condkurt3 = my_poly.get_conditional_kurtosis_indices(3)
         # Verification required!
-        np.testing.assert_almost_equal(condkurt1[(0, )],  0.016329, decimal=5)
-        np.testing.assert_almost_equal(condkurt2[(1, 2)], 0.14880, decimal=5)
-        np.testing.assert_almost_equal(condkurt3[(0,1,2)], 0.122474, decimal=5)
-        np.testing.assert_almost_equal(condkurt3[(1,2,3)], 2.433813, decimal=5)
+        np.testing.assert_almost_equal(condkurt1[(0, )],  0.0009232, decimal=5)
+        np.testing.assert_almost_equal(condkurt2[(1, 2)], 0.008413, decimal=5)
+        np.testing.assert_almost_equal(condkurt3[(0,1,2)], 0.006924, decimal=5)
+        np.testing.assert_almost_equal(condkurt3[(1,2,3)], 0.137596, decimal=5)
     def test_total_sobol_indices(self):
         order_parameters = 3
         mass = Parameter(distribution='uniform', lower=30.0, upper=60.0, order=order_parameters)

@@ -118,7 +118,8 @@ class Statistics(object):
             first_order_skewness = stats.getCondSkewness(1)
 
         """
-        return private_conditional_skewness(order, self.quadrature_weights, self.__weighted_evals, self.basis, self.__variance, self.__skewness)
+        return private_conditional_skewness(order, self.quadrature_weights, \
+            self.__weighted_evals, self.basis, self.__variance, self.__skewness)
     def get_conditional_kurtosis(self, order=1):
         """
         Get conditional kurtosis indices at specified order.
@@ -136,7 +137,8 @@ class Statistics(object):
             first_order_kurtosis = stats.getCondKurtosis(1)
 
         """
-        return private_conditional_kurtosis(order, self.quadrature_weights, self.__weighted_evals, self.basis, self.__variance, self.__skewness)
+        return private_conditional_kurtosis(order, self.quadrature_weights, \
+            self.__weighted_evals, self.basis, self.__variance, self.__kurtosis)
     def get_sobol_total(self):
         """
         Get total Sobol' indices

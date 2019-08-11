@@ -40,6 +40,8 @@ class Poly(object):
     :param str subspaces: The method used for computing a dimension reducing subspace. Should one of: ``active-subspace``, ``variable-projection``,
         ``linear-model``, ``quadratic-model`` or ``active-subspace-with-gradients``.
     :param str dimension_reduction_args:
+        Optional arguments centered around the specific dimension reduction strategy used.
+        :string
 
 
 

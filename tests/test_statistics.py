@@ -63,7 +63,7 @@ class TestD(TestCase):
         my_params = [Parameter(order=p_order, distribution='uniform', lower=-1, upper=1) for _ in range(4)]
         X = np.random.uniform(-1, 1, (10000, 4))
         y = evaluate_model(X, fun)
-        my_poly = Poly(my_params, my_basis,  method='least-squares', args={'sample-inputs':X, 'sample-outputs': y})
+        my_poly = Poly(my_params, my_basis,  method='least-squares', sampling_args={'sample-inputs':X, 'sample-outputs': y})
         my_poly.set_model(fun)
         mean, variance = my_poly.get_mean_and_variance()
         skewness, kurtosis = my_poly.get_skewness_and_kurtosis()
@@ -101,7 +101,7 @@ class TestD(TestCase):
             return C
         mybasis = Basis('total-order')
         pistonmodel = Poly(parameters, mybasis, method='least-squares', \
-                    args={'mesh':'tensor-grid', 'subsampling-algorithm':'qr', \
+                    sampling_args={'mesh':'tensor-grid', 'subsampling-algorithm':'qr', \
                             'sampling-ratio':1.0})
         pts_for_evaluation = pistonmodel.get_points()
         model_evals = evaluate_model(pts_for_evaluation, piston)

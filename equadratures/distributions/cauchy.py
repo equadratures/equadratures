@@ -25,8 +25,6 @@ class Cauchy(Distribution):
             self.parent = cauchy(loc=self.location, scale=self.scale)
             self.mean = np.mean(self.get_samples(m=1000))
             self.variance = np.var(self.get_samples(m=1000))
-
-
     def get_description(self):
         """
         A description of the Cauchy distribution.

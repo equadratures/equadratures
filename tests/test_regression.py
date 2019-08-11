@@ -17,7 +17,7 @@ class TestC(TestCase):
         y_train = np.reshape(y_train, (M, 1))
 
         myBasis = Basis('univariate')
-        poly = Poly(myParameters, myBasis, method='least-squares', args={'sample-points':x_train, 'sample-outputs':y_train})
+        poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':x_train, 'sample-outputs':y_train})
         poly.set_model()
         coefficients = poly.get_coefficients().reshape(3, )
         true_coefficients = np.asarray([22.47470337, 17.50891379, 4.97964868])

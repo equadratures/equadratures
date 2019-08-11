@@ -17,24 +17,24 @@ class Subspaces(object):
     def __init__(self, poly, method=None, dimension_reduction_args=None):
         self.poly = poly
         self.method = method
+        self.subspace_dimension = 2
+        self.bootstrap_trials = 50
+        self.active_subspace_samples = None
+        self.variable_projection_iterations = 1000
         if self.dimension_reduction_args is not None:
             if 'subspace-dimension' in dimension_reduction_args: self.subspace_dimension = dimension_reduction_args.get('subspace-dimension')
             if 'bootstrap-replicates' in dimension_reduction_args: self.bootstrap_trials = dimension_reduction_args.get('bootstrap-replicates')
-            if ''
-
+            if 'active-subspace-samples' in dimension_reduction_args: self.active_subspace_samples = dimension_reduction_args.get('active-subspace-samples')
+            if 'variable-projection-iterations' in dimension_reduction_args: self.variable_projection_iterations = dimension_reduction_args.get('variable-projection-iterations')
         if self.method.lower() == 'active-subspaces' or self.method.lower() is 'default':
             self.active_subspace, self.inactive_subspace, self.eigenvalues = self.compute_active_subspace()
         elif self.method.lower() == 'variable-projection':
             self.active_subspace, self.inactive_subspace = self.variable_projection()
-
-    def computeActiveSubspaces(self, poly=None, samples=None, alpha=None, k=None, bootstrap=False, bs_trials = 50):
+        else:
+            raise(ValueError)
+    def computeActiveSubspaces(self):
         """
-        Computes the eigenvalues and corresponding eigenvectors for the high dimensional kernel matrix via polynomial model.
-        :param PolynomialObject: an instance of PolynomialObject class
-        :param samples: ndarray, sample vector points, default to None
-        :return:
-            * **eigs (numpy array)**: Eigenvalues obtained
-            * **eigVecs (numpy array)**: Eigenvectors obtained
+        Computes
         """
         if not(hasattr(self,'poly')) and poly is None:
             raise(Exception('Must declare poly!'))
@@ -85,8 +85,7 @@ class Subspaces(object):
             return eigs,eigVecs,eigs_bs_lower,eigs_bs_upper
         else:
             return eigs,eigVecs
-
-    def linearModel(self, training_input=None, training_output=None, r=False):
+    def linearModel(self):
         """
         Computes the coefficients for a linear model between inputs and outputs
         :param Xtrain: ndarray, the input values
@@ -110,29 +109,6 @@ class Subspaces(object):
             r2 = 1-residual/(training_output.size * training_output.var())
             return u,c,r2
         return u,c
-
-    def standard(self,bounds,X=None):
-        """
-        Standardize the inputs before Dimension Reduction
-        :param X: ndarray, the undimensioned input values
-        :param bounds: ndarray, M-by-2 array, where the first column contains the lower bounds of
-        the M variables, the second column the upper bounds.
-        :return:
-            * **X_stnd (numpy array)**: Standardized input values
-        """
-        update_self = False
-        if X is None:
-            X = self.training_input
-            update_self = True
-        M,m=X.shape
-        X_stnd=np.zeros((M,m))
-        for i in range(0,M):
-            for j in range(0,m):
-                X_stnd[i,j]=2*(X[i,j]-bounds[j,0])/(bounds[j,1]-bounds[j,0])-1
-        if update_self:
-            self.training_input = X_stnd.copy()
-        return X_stnd
-
     def variable_projection(self,n,p,X=None,f=None,gamma=None,beta=None,tol=None,maxiter=1000,U0=None, verbose=False):
         """
         Variable Projection function to obtain an active subspace in inputs design space
@@ -148,7 +124,6 @@ class Subspaces(object):
             * **U (ndarray)**: The active subspace found
             * **R (double)**: Cost of deviation in fitting
         """
-
         if gamma is None:
             gamma=0.1
         if beta is None:
@@ -264,71 +239,6 @@ class Subspaces(object):
             print("VP finished with %d iterations" % iteration)
 
         return U,R
-
-    def vector_AS(self, list_of_polys, R = None, alpha=None, k=None, samples=None, bootstrap=False, bs_trials = 50
-                  , J = None, save_path = None):
-        # Find AS directions to vector val func
-        # analogous to computeActiveSubspace
-        # Since we are dealing with *one* vector val func we should have just one input space
-        # Take the first of the polys.
-        poly = list_of_polys[0]
-        if samples is None:
-            d = poly.dimensions
-            if alpha is None:
-                alpha = 4
-            if k is None or k > d:
-                k = d
-            M = int(alpha * k * np.log(d))
-            X = np.zeros((M, d))
-            for j in range(0, d):
-                X[:, j] = np.reshape(poly.parameters[j].getSamples(M), M)
-        else:
-            X = samples
-            M, d = X.shape
-        n = len(list_of_polys) # number of outputs
-        if R is None:
-            R = np.eye(n)
-        elif len(R.shape) == 1:
-            R = np.diag(R)
-        if J is None:
-            J = jacobian_vec(list_of_polys,X)
-            if not(save_path is None):
-                np.save(save_path,J)
-
-
-        J_new = np.matmul(sqrtm(R), np.transpose(J,[2,0,1]))
-        JtJ = np.matmul(np.transpose(J_new,[0,2,1]), J_new)
-        H = np.mean(JtJ,axis=0)
-
-        # Compute P_r by solving generalized eigenvalue problem...
-        # Assume sigma = identity for now
-        e, W = np.linalg.eigh(H)
-        eigs = np.flipud(e)
-        eigVecs = np.fliplr(W)
-        if bootstrap:
-            all_bs_eigs = np.zeros((bs_trials, d))
-            all_bs_W = []
-            for t in range(bs_trials):
-                print("Starting bootstrap trial %d"%t)
-                bs_samples = X[np.random.randint(0,M,size=M), :]
-                J_bs = jacobian_vec(list_of_polys, bs_samples)
-                J_new_bs = np.matmul(sqrtm(R), np.transpose(J_bs,[2,0,1]))
-                JtJ_bs = np.matmul(np.transpose(J_new_bs, [0, 2, 1]), J_new_bs)
-                H_bs = np.mean(JtJ_bs, axis=0)
-
-                # Compute P_r by solving generalized eigenvalue problem...
-                # Assume sigma = identity for now
-                e_bs, W_bs = np.linalg.eigh(H_bs)
-                all_bs_eigs[t,:] = np.flipud(e_bs)
-                eigVecs_bs = np.fliplr(W_bs)
-                all_bs_W.append(eigVecs_bs)
-
-            eigs_bs_lower = np.min(all_bs_eigs, axis = 0)
-            eigs_bs_upper = np.max(all_bs_eigs, axis = 0)
-            return eigs,eigVecs,eigs_bs_lower,eigs_bs_upper, all_bs_W
-        else:
-            return eigs,eigVecs
-
 def vandermonde(eta,p):
     """
     Internal function to variable_projection
@@ -354,7 +264,6 @@ def vandermonde(eta,p):
     V=Polybasis.getPolynomial(eta)
     V=V.T
     return V,Polybasis
-
 def jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
     """
     Internal function to variable_projection

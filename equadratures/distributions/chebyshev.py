@@ -28,9 +28,7 @@ class Chebyshev(Distribution):
         self.skewness = 0.0
         self.shape_parameter_A = -0.5
         self.shape_parameter_B = -0.5
-
-
-    def getDescription(self):
+    def get_description(self):
         """
         A description of the Chebyshev (arcsine) distribution.
 
@@ -41,8 +39,7 @@ class Chebyshev(Distribution):
         """
         text = "A Chebyshev (arcsine) distribution is characterised by its lower bound, which is"+str(self.lower)+" and its upper bound, which is"+str(self.upper)+"."
         return text
-
-    def getPDF(self, points=None):
+    def get_pdf(self, points=None):
         """
         A Chebyshev probability density function.
 
@@ -59,8 +56,7 @@ class Chebyshev(Distribution):
             return arcsine.pdf(points)
         else:
             raise(ValueError, 'Please digit an input for getPDF method')
-
-    def getCDF(self, points=None):
+    def get_cdf(self, points=None):
         """
         A Chebyshev cumulative density function.
 
@@ -77,8 +73,7 @@ class Chebyshev(Distribution):
              return arcsine.cdf(points)
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
-
-    def getRecurrenceCoefficients(self, order):
+    def get_recurrence_coefficients(self, order):
         """
         Recurrence coefficients for the Chebyshev distribution.
 
@@ -91,8 +86,7 @@ class Chebyshev(Distribution):
         """
         ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, order)
         return ab
-
-    def getiCDF(self, xx):
+    def get_icdf(self, xx):
         """
         A Arcisine inverse cumulative density function.
 
@@ -104,8 +98,7 @@ class Chebyshev(Distribution):
             Inverse cumulative density function values of the Arcisine distribution.
         """
         return arcsine.ppf(xx)
-
-    def getSamples(self, m=None):
+    def get_samples(self, m=None):
         """
         Generates samples from the Arcsine distribution.
 

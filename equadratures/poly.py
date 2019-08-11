@@ -140,7 +140,7 @@ class Poly(object):
         self.statistics_object = None
         self.parameters_order = [ parameter.order for parameter in self.parameters]
         self.highest_order = np.max(self.parameters_order)
-        self.dimensons = self.basis.dimensions
+
     def __set_subsampling_algorithm(self):
         """
         Private function that sets the subsampling algorithm based on the user-defined method.

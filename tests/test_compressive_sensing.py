@@ -7,8 +7,8 @@ import scipy.stats as st
 class TestB(TestCase):
 
     def test_cs(self):
-        X = np.loadtxt("tests/h_X.dat")
-        Y = np.loadtxt("tests/h_Y.dat")
+        X = np.loadtxt("h_X.dat")
+        Y = np.loadtxt("h_Y.dat")
         N = X.shape[0]
         p_order = 2
         params = []

@@ -34,14 +34,10 @@ class Subspaces(object):
             raise(ValueError)
     def computeActiveSubspaces(self):
         """
-        Computes
-        """
-        if not(hasattr(self,'poly')) and poly is None:
-            raise(Exception('Must declare poly!'))
-        elif poly is None:
-            poly = self.poly
+        Computes the active subspace.
 
-        if samples is None:
+        """
+        if self.poly.quadrature_points is None:
             d = poly.dimensions
             if alpha is None:
                 alpha = 4
@@ -50,17 +46,15 @@ class Subspaces(object):
             M = int(alpha * k * np.log(d))
             X = np.zeros((M, d))
             for j in range(0, d):
-                X[:, j] =  np.reshape(poly.parameters[j].getSamples(M), M)
+                X[:, j] =  np.reshape(self.poly.parameters[j].get_samples(M), M)
         else:
-            X = samples
+            X = self.poly.quadrature_points
             M, d = X.shape
-
         # Gradient matrix!
-        polygrad = poly.evaluatePolyGradFit(X)
+        polygrad = self.poly.get_polyfit_grad(X)
         weights = np.ones((M, 1)) / M
         R = polygrad.transpose() * weights
         C = np.dot(polygrad, R )
-
         # Compute eigendecomposition!
         e, W = np.linalg.eigh(C)
         idx = e.argsort()[::-1]
@@ -68,18 +62,14 @@ class Subspaces(object):
         eigVecs = W[:, idx]
         if bootstrap:
             all_bs_eigs = np.zeros((bs_trials, d))
-            # all_bs_W = np.zeros((bs_trials, d, d))
             for t in range(bs_trials):
                 bs_samples = X[np.random.randint(0, M, size=M), :]
                 polygrad_bs = poly.evaluatePolyGradFit(bs_samples)
                 weights_bs = np.ones((M, 1)) / M
                 R_bs = polygrad_bs.transpose() * weights_bs
                 C_bs = np.dot(polygrad_bs, R_bs)
-
                 e_bs, W_bs = np.linalg.eigh(C_bs)
                 all_bs_eigs[t,:] = np.flipud(e_bs)
-                # eigVecs_bs = np.fliplr(W_bs)
-
             eigs_bs_lower = np.min(all_bs_eigs, axis = 0)
             eigs_bs_upper = np.max(all_bs_eigs, axis = 0)
             return eigs,eigVecs,eigs_bs_lower,eigs_bs_upper

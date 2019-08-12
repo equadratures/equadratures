@@ -152,7 +152,8 @@ class Subspaces(object):
             for j in range(0,n):
                 eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
         #Construct the Vandermonde matrix step 6
-        V,Polybasis=vandermonde(eta,self.polynomial_degree)
+        # --> V,Polybasis=vandermonde(eta,self.polynomial_degree)
+
         V_plus=np.linalg.pinv(V)
         coeff=np.dot(V_plus,f)
         res=f-np.dot(V,coeff)

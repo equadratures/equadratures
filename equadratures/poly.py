@@ -312,7 +312,7 @@ class Poly(object):
         # to least squares!
         indices_with_nans = np.argwhere(np.isnan(self.model_evaluations))[:,0]
         if len(indices_with_nans) is not 0:
-            print('WARNING: One or more of your model evaluations have resulted in an NaN. We found '+len(indices_with_nans)+' NaNs out of '+len(self.model_evaluations)+'.')
+            print('WARNING: One or more of your model evaluations have resulted in an NaN. We found '+str(len(indices_with_nans))+' NaNs out of '+str(len(self.model_evaluations))+'.')
             print('The code will now use a least-squares technique that will ignore input-output pairs of your model that have NaNs. This will likely compromise computed statistics.')
             self.inputs = np.delete(self.quadrature_points, indices_with_nans, axis=0)
             self.outputs = np.delete(self.model_evaluations, indices_with_nans, axis=0)

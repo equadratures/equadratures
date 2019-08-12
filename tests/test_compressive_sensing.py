@@ -10,8 +10,8 @@ class TestB(TestCase):
     def test_cs(self):
         cwd = os.getcwd()
         print(cwd)
-        X = np.loadtxt('./h_X.dat')
-        Y = np.loadtxt('./h_Y.dat')
+        X = np.loadtxt('tests/test_h_X.dat')
+        Y = np.loadtxt('tests/test_h_Y.dat')
         N = X.shape[0]
         p_order = 2
         params = []

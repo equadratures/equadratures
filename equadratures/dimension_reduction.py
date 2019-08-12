@@ -14,6 +14,17 @@ class Subspaces(object):
     :param Poly poly:
         An instance of the Poly class.
 
+        :param str dimension_reduction: The method used for computing a dimension reducing subspace. Should one of: ``active-subspaces`` (see [7] and references therein), ``variable-projection`` [8], or
+        ``linear-model`` [9].
+    :param str dimension_reduction_args:
+        Optional arguments centered around the specific dimension reduction strategy used.
+        :int subspace_dimension: Default value is assumed to be ``2``, when used. This represents the dimension of *reduced subspace* (i.e., the number of columns).
+        :int polynomial_degree: The degree of the polynomial used for the ``variable-projection`` strategy. The default value is set to ``2``.
+        :int bootstrap_trials: The number of bootstrap replicates used when computing the dimension reducing subspace via the ``active-subspaces`` method.
+        :int variable_projection_iterations: The number of variable projection iterations used. The default value is set to ``1000``.
+
+
+
     """
     def __init__(self, method, args=None, poly=None):
         self.method = method

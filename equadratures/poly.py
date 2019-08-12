@@ -37,14 +37,6 @@ class Poly(object):
         :numpy.ndarray sample-points: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
         :numpy.ndarray sample-outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points. Note that
             if ``sample-points`` is provided as an input, then the code expects ``sample-outputs`` too.
-    :param str dimension_reduction: The method used for computing a dimension reducing subspace. Should one of: ``active-subspaces`` (see [7] and references therein), ``variable-projection`` [8], or
-        ``linear-model`` [9].
-    :param str dimension_reduction_args:
-        Optional arguments centered around the specific dimension reduction strategy used.
-        :int subspace_dimension: Default value is assumed to be ``2``, when used. This represents the dimension of *reduced subspace* (i.e., the number of columns).
-        :int polynomial_degree: The degree of the polynomial used for the ``variable-projection`` strategy. The default value is set to ``2``.
-        :int bootstrap_trials: The number of bootstrap replicates used when computing the dimension reducing subspace via the ``active-subspaces`` method.
-        :int variable_projection_iterations: The number of variable projection iterations used. The default value is set to ``1000``.
 
     **Sample constructor initialisations**::
 
@@ -85,7 +77,7 @@ class Poly(object):
         8. polynomial varpro
         9. linear trick
     """
-    def __init__(self, parameters, basis, method, sampling_args=None, dimension_reduction=None, dimension_reduction_args=None):
+    def __init__(self, parameters, basis, method, sampling_args=None):
         try:
             len(parameters)
         except TypeError:
@@ -104,8 +96,6 @@ class Poly(object):
         # Initialize some default values!
         self.inputs = None
         self.outputs = None
-        self.dimension_reduction_strategy = dimension_reduction
-        self.dimension_reduction_args = dimension_reduction_args
         self.correlation_matrix = None
         self.subsampling_algorithm_name = None
         self.sampling_ratio = 1.0
@@ -320,37 +310,6 @@ class Poly(object):
                 del d, grad_values
                 dP = self.get_poly_grad(self.quadrature_points)
         self.__set_coefficients()
-        self.__get_dimension_reducing_subspace()
-    def __get_dimension_reducing_subspace(self):
-        """
-        Computes a dimension reducing subspace.
-
-        :param Poly self:
-            An instance of the Poly class.
-        """
-        if self.dimension_reduction_strategy is not None:
-            self.mysubspaces = Subspaces(self, method=self.dimension_reduction_strategy, args=self.dimension_reduction_args)
-    def get_reduced_subspace_vectors(self):
-        """
-        Returns the vectors of the subspace.
-        """
-        return self.mysubspaces.get_reduced_subspace()
-    def get_remaining_subspace_vectors(self):
-        """
-
-        """
-        return self.mysubspaces.get_remaining_subspace()
-    def get_subspace_eigenvalues(self):
-        """
-        Not valid for all subspaces.
-
-        """
-        return self.mysubspaces.get_eigenvalues()
-    def __set_subspace(self):
-        """
-        Sets the subspace of the polynomial.
-        """
-        return 0
     def __set_coefficients(self):
         """
         Computes the polynomial approximation coefficients.

@@ -1,20 +1,15 @@
 """ The Custom distribution"""
-
 from equadratures.distributions.recurrence_utils import jacobi_recurrence_coefficients
 from equadratures.distributions.template import Distribution
-
 import numpy as np
 import scipy.stats as stats
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 
 RECURRENCE_PDF_SAMPLES = 8000
 
-#-----------------#
-import matplotlib.pyplot as plt
-#-----------------#
 class Custom(Distribution):
     """ The class defines a Custom object.
-            
+
         :param data:
               A numpy array with data values (x-y column format). Note this option is only invoked if the user uses the Custom param_type.
     """
@@ -30,11 +25,10 @@ class Custom(Distribution):
              self.bounds   = np.array([self.lower, self.upper])
              self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
              self.skewness = stats.skew(self.data)
-             self.kurtosis = stats.kurtosis(self.data) 
-        
-    def getDescription(self):
+             self.kurtosis = stats.kurtosis(self.data)
+    def get_description(self):
         """ A destription of custom distribution.
-            
+
             :param Custom self:
                 An instance of Custom class.
             :return:
@@ -42,10 +36,9 @@ class Custom(Distribution):
         """
         text = "A Custom distribution has been defined over a suppor from "+str(self.lower)+" to "+str(self.upper)+". It has a mean value equal to "+str(self.mean)+" and a variance equal to "+str(self.variance)+"."
         return text
-    
-    def getPDF(self, points=None):
+    def get_pdf(self, points=None):
         """ A custom probability density function.
-            
+
             :param Custom self:
                 An instance of Custom class.
             :param points:
@@ -57,7 +50,7 @@ class Custom(Distribution):
         """
         X = np.array(points)
         kernel = stats.gaussian_kde(self.data)
-        if points is not None: 
+        if points is not None:
             # check dimensions:
             points = np.matrix(points)
             dimension = np.shape(points)
@@ -78,7 +71,7 @@ class Custom(Distribution):
 
     """def getCDF(self, points=None):
         # A cumulative density function associated with a given data set.
-            
+
             :param points:
                 An array of points in which the cumulative distribution function needs to be evaluated.
             :return:
@@ -88,7 +81,7 @@ class Custom(Distribution):
             x = sorted(points)
             #y = self.getPDF(self.data)
             y = self.getPDF(x)
-           
+
             c = []
             c.append(0.0)
             for i in range(1, len(x)):
@@ -100,37 +93,36 @@ class Custom(Distribution):
             print 'An input array has to be given to the getCDF method.'
     """
     #------------------------------------------------------------------------#
-    def getCDF(self, points=None):
+    def get_cdf(self, points=None):
         # Approssimation of PDF integral (not into the original version of custom class)
         #    given a set of points: what is the cdf, staring from the PDF of data?
         #------------------------------------
         # version 1:
         #---------------------------------------------------------------------
         #x = sorted(points) # points can be different from self.data
-        # 
+        #
         #y = self.getPDF(x) # pdf function associated with self.data and points
-        # 
+        #
         #c     = [] # list for future CDF array
         #c.append( 0.) # initialization
-        #      
+        #
         #for i in range(1,len(points)):
         #    c.append((y[i-1]+y[i] )*.5*(x[i]-x[i-1])+c[i-1] )
         #for i in range(1,len(points)):
-        #    c[i] = c[i]/c[len(points)-1]     
+        #    c[i] = c[i]/c[len(points)-1]
         #return c
         #--------------------------------------------------------------------
         # version 2
         points = np.matrix(points)
 
-        y = self.getPDF(self.data) 
-        summ = np.sum(y) 
+        y = self.get_pdf(self.data)
+        summ = np.sum(y)
         p = np.array(y/summ)
-        custom = stats.rv_discrete(name='custom', values=(self.data, p)) 
+        custom = stats.rv_discrete(name='custom', values=(self.data, p))
 
         return custom.cdf(points)
         #------------------------------------------------------------------------#
-            
-    def getRecurrenceCoefficients(self, order):
+    def get_recurrence_coefficients(self, order):
         """
         Recurrence coefficients for the custom distribution.
 
@@ -142,34 +134,34 @@ class Custom(Distribution):
             Recurrence coefficients associated with the custom distribution.
         """
         x = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
-        w = self.getPDF(points = x)
+        w = self.get_pdf(points = x)
         # Allocate memory for recurrence coefficients
         order = int(order)+1
         w = w / np.sum(w)
         ab = np.zeros((order+1,2))
-    
+
         # Negate "zero" components
         nonzero_indices = []
         for i in range(0, len(x)):
             if w[i] != 0:
                 nonzero_indices.append(i)
-    
+
         ncap = len(nonzero_indices)
         x = x[nonzero_indices] # only keep entries at the non-zero indices!
         w = w[nonzero_indices]
         s = np.sum(w)
-    
+
         temp = w/s
         ab[0,0] = np.dot(x, temp.T)
         ab[0,1] = s
-    
-    
+
+
         if order == 1:
             return ab
-    
+
         p1 = np.zeros((1, ncap))
         p2 = np.ones((1, ncap))
-    
+
         for j in range(0, order):
             p0 = p1
             p1 = p2
@@ -181,13 +173,12 @@ class Custom(Distribution):
             ab[j+1,0] = s2/s1
             ab[j+1,1] = s1/s
             s = s1
-    
-        return ab
 
-    def getiCDF(self, xx):
-        """ 
+        return ab
+    def get_icdf(self, xx):
+        """
         A custom inverse cumulative distribution function.
-        
+
         :param Custom self:
             An instance of Custom class.
         :param array xx:
@@ -195,7 +186,7 @@ class Custom(Distribution):
         :return:
             Inverse cumulative density function values of the Custom distribution.
         """
-        #x  = self.data 
+        #x  = self.data
         #y  = self.getPDF(x)
         #c  = []
         #yy = []
@@ -212,9 +203,8 @@ class Custom(Distribution):
         #            break
         #return yy
         xx = np.matrix(xx)
-        y = self.getPDF(self.data)
+        y = self.get_pdf(self.data)
         summ = np.sum(y)
         p = np.array(y/summ)
         custom = stats.rv_discrete(name='custom', values=(self.data, p))
         return custom.ppf(xx)
-

@@ -3,9 +3,13 @@ import unittest
 from equadratures import *
 import numpy as np
 import scipy.stats as st
+import os
+
 class TestB(TestCase):
 
     def test_cs(self):
+        cwd = os.getcwd()
+        print(cwd)
         X = np.loadtxt('./h_X.dat')
         Y = np.loadtxt('./h_Y.dat')
         N = X.shape[0]

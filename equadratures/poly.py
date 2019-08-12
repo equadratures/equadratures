@@ -709,12 +709,6 @@ class Poly(object):
                 H.append(polynomialhessian)
 
         return H
-    def poly_subspace(self):
-        """
-        A polynomial defined over a subspace.
-
-        """
-        return 0
 def evaluate_model_gradients(points, fungrad, format):
     """
     Evaluates the model gradient at given values.

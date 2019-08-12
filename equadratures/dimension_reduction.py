@@ -1,5 +1,6 @@
 from equadratures.parameter import Parameter
 from equadratures.basis import Basis
+from equadratures.poly import Poly
 import numpy as np
 import scipy
 import scipy.io
@@ -14,8 +15,7 @@ class Subspaces(object):
         An instance of the Poly class.
 
     """
-    def __init__(self, poly, method, args=None):
-        self.poly = poly
+    def __init__(self, method, args=None, poly=None):
         self.method = method
         self.subspace_dimension = 2
         self.polynomial_degree = 2
@@ -48,7 +48,7 @@ class Subspaces(object):
         return self.__active_subspace
     def get_remaining_subspace(self):
         return self.__inactive_subspace
-    def __get_active_subspaces(self):
+    def __get_active_subspaces(self, poly):
         """
         Computes the active subspace.
 
@@ -152,8 +152,7 @@ class Subspaces(object):
             for j in range(0,n):
                 eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
         #Construct the Vandermonde matrix step 6
-        # --> V,Polybasis=vandermonde(eta,self.polynomial_degree)
-
+        V,Polybasis=vandermonde(eta,self.polynomial_degree)
         V_plus=np.linalg.pinv(V)
         coeff=np.dot(V_plus,f)
         res=f-np.dot(V,coeff)

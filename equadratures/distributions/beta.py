@@ -38,8 +38,6 @@ class Beta(Distribution):
                 self.parent = beta(self.shape_A, self.shape_B)
         if (self.lower is not None) and (self.upper is not None):
             self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
-
-
     def get_description(self):
         """
         A description of the beta distribution.

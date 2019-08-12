@@ -6,7 +6,9 @@ import scipy.stats as st
 class TestB(TestCase):
 
     def test_cs(self):
-        X = np.loadtxt("h_X.dat")
+        repo = np.DataSource('.')
+        file_object = repo.open('https://raw.githubusercontent.com/psesh/turbodata/master/three_blades/blade_A/design_parameters.dat')
+        X = np.loadtxt(file_object)
         Y = np.loadtxt("h_Y.dat")
         N = X.shape[0]
         p_order = 2

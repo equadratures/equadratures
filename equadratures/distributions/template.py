@@ -70,7 +70,7 @@ class Distribution(object):
         :return:
             Recurrence coefficients associated with the distribution.
         """
-        w_pdf = self.getPDF(self.x_range_for_pdf)
+        w_pdf = self.get_pdf(self.x_range_for_pdf)
         ab = custom_recurrence_coefficients(self.x_range_for_pdf, w_pdf, order)
         return ab
     def get_samples(self, m=None):

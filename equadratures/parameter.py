@@ -104,9 +104,9 @@ class Parameter(object):
         """
 		if points is None:
 			x = self.distribution.x_range_for_pdf
-			return x, self.distribution.getPDF(x)
+			return x, self.distribution.get_pdf(x)
 		else:
-			return self.distribution.getPDF(points)
+			return self.distribution.get_pdf(points)
 	def get_cdf(self, points=None):
 		"""
         Computes the cumulative density function associated with the Parameter.
@@ -118,9 +118,9 @@ class Parameter(object):
         """
 		if points is None:
 			x = self.distribution.x_range_for_pdf
-			return x, self.distribution.getCDF(x)
+			return x, self.distribution.get_cdf(x)
 		else:
-			return self.distribution.getCDF(points)
+			return self.distribution.get_cdf(points)
 	def get_icdf(self, cdf_values):
 		"""
         Computes the inverse cumulative density function associated with the Parameter.
@@ -140,7 +140,7 @@ class Parameter(object):
 		:param int number_of_samples_required:
 			Number of samples that are required.
         """
-		return self.distribution.getSamples(number_of_samples_required)
+		return self.distribution.get_samples(number_of_samples_required)
 	def get_description(self):
 		"""
 		Provides a description of the Parameter.
@@ -148,7 +148,7 @@ class Parameter(object):
         :param Parameter self:
             An instance of the Parameter object.
         """
-		return self.distribution.getDescription()
+		return self.distribution.get_description()
 	def get_recurrence_coefficients(self, order=None):
 		"""
         Generates the recurrence coefficients.

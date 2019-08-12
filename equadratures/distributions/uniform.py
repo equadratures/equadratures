@@ -27,6 +27,17 @@ class Uniform(Distribution):
         self.skewness = 0.0
         self.shape_parameter_A = 0.
         self.shape_parameter_B = 0.
+    def get_description(self):
+        """
+        A description of the Gaussian.
+
+        :param Gaussian self:
+            An instance of the Gaussian class.
+        :return:
+            A string describing the Gaussian.
+        """
+        text = "A uniform distribution over the support "+str(self.lower)+" to "+str(self.upper)+"."
+        return text
     def get_cdf(self, points=None):
         """
         A uniform cumulative density function.

@@ -141,7 +141,13 @@ class Basis(object):
             raise(ValueError, 'invalid value for basis_type!')
             basis = [0]
         return basis
+    def get_elements(self):
+        """
+        Returns the elements of an index set.
 
+        :param Basis object: An instance of the Basis class.
+        """
+        return self.elements
 
 
 #---------------------------------------------------------------------------------------------------

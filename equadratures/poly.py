@@ -5,7 +5,6 @@ from equadratures.basis import Basis
 from equadratures.solver import Solver
 from equadratures.subsampling import Subsampling
 from equadratures.quadrature import Quadrature
-from equadratures.dimension_reduction import Subspaces
 import pickle
 import numpy as np
 from copy import deepcopy
@@ -61,11 +60,6 @@ class Poly(object):
         basis = Basis('sparse-grid', level=7, growth_rule='exponential')
         poly = Poly(parameters=[param, param], basis=basis, method='numerical-integration')
 
-        # Data-driven dimension-reduction
-        # Examples goes here!
-
-
-
     **References**
         1. Constantine, P. G., Eldred, M. S., Phipps, E. T., (2012) Sparse Pseudospectral Approximation Method. Computer Methods in Applied Mechanics and Engineering. 1-12. `Paper <https://www.sciencedirect.com/science/article/pii/S0045782512000953>`__
         2. Xiu, D., Karniadakis, G. E., (2002) The Wiener-Askey Polynomial Chaos for Stochastic Differential Equations. SIAM Journal on Scientific Computing,  24(2), `Paper <https://epubs.siam.org/doi/abs/10.1137/S1064827501387826?journalCode=sjoce3>`__
@@ -73,9 +67,6 @@ class Poly(object):
         4. Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations. SIAM/ASA Journal on Uncertainty Quantification, 5(1). `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
         5. Bos, L., De Marchi, S., Sommariva, A., Vianello, M., (2010) Computing Multivariate Fekete and Leja points by Numerical Linear Algebra. SIAM Journal on Numerical Analysis, 48(5). `Paper <https://epubs.siam.org/doi/abs/10.1137/090779024>`__
         6. Joshi, S., Boyd, S., (2009) Sensor Selection via Convex Optimization. IEEE Transactions on Signal Processing, 57(2). `Paper <https://ieeexplore.ieee.org/document/4663892>`__
-        7. active subspaces
-        8. polynomial varpro
-        9. linear trick
     """
     def __init__(self, parameters, basis, method, sampling_args=None):
         try:
@@ -321,7 +312,8 @@ class Poly(object):
         # to least squares!
         indices_with_nans = np.argwhere(np.isnan(self.model_evaluations))[:,0]
         if len(indices_with_nans) is not 0:
-            print('One or more of your model evaluations have resulted in an NaN. Adopting a different technique.')
+            print('WARNING: One or more of your model evaluations have resulted in an NaN. We found '+len(indices_with_nans)+' NaNs out of '+len(self.model_evaluations)+'.')
+            print('The code will now use a least-squares technique that will ignore input-output pairs of your model that have NaNs. This will likely compromise computed statistics.')
             self.inputs = np.delete(self.quadrature_points, indices_with_nans, axis=0)
             self.outputs = np.delete(self.model_evaluations, indices_with_nans, axis=0)
             self.subsampling_algorithm_name = None

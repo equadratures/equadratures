@@ -1,6 +1,6 @@
 """ Utilities for dealing with correlated inputs."""
 from equadratures.parameter import Parameter
-from equadratures.polyint import Poly
+from equadratures.poly import Poly
 from equadratures.basis import Basis
 import numpy as np
 from scipy import stats

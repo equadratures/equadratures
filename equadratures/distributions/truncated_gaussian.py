@@ -67,24 +67,7 @@ class TruncatedGaussian(Distribution):
             return self.parents.pdf(points)
         else:
             raise(ValueError, 'Please digit an input for getPDF method')
-    def get_icdf(self, points = None):
-        """
-        A truncated Gaussian cumulative density function.
-
-        :param truncated Gaussian self:
-            An instance of the Gaussian class.
-        :param matrix points:
-            Matrix of points for defining the cumulative density function; default value is 500.
-        :return:
-            An array of N values over the support of the truncated Gaussian.
-        :return:
-            Gaussian cumulative density values.
-        """
-        if points is not None:
-            return self.parents.cdf(points)
-        else:
-            raise(ValueError, 'Please digit an input for getCDF method')
-    def get_iCDF(self, xx):
+    def get_icdf(self, xx):
         """ A truncated gaussian inverse cumulative density function,
         :param truncnorm:
             An instance of Truncated-Gaussian class.

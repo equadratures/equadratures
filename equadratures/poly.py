@@ -18,8 +18,7 @@ class Poly(object):
     :param str method: The method used for computing the coefficients. Should be one of: ``compressive-sensing``,
         ``numerical-integration``, ``least-squares`` or ``minimum-norm``.
     :param dict sampling_args:
-        Optional arguments centered around the specific sampling strategy and
-        correlations within the samples.
+        Optional arguments centered around the specific sampling strategy.
         :string mesh: Avaliable options are: ``monte-carlo``, ``induced-sampling``, ``sparse-grid``, ``tensor-grid`` or ``user-defined``.
             Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1]
             is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
@@ -31,8 +30,6 @@ class Poly(object):
             argument is a total order index set, hyperbolic basis or a tensor order index set.
         :float sampling-ratio: Denotes the extent of undersampling or oversampling required. For values equal to unity (default), the number of rows
             and columns of the associated Vandermonde-type matrix are equal.
-        :numpy.ndarray correlation-matrix: In the case where the inputs are correlated, a user-defined correlation matrix must be provided. This matrix
-            input must be symmetric, positive-definite and be of shape (number_of_inputs, number_of_inputs).
         :numpy.ndarray sample-points: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
         :numpy.ndarray sample-outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points. Note that
             if ``sample-points`` is provided as an input, then the code expects ``sample-outputs`` too.
@@ -68,7 +65,7 @@ class Poly(object):
         5. Bos, L., De Marchi, S., Sommariva, A., Vianello, M., (2010) Computing Multivariate Fekete and Leja points by Numerical Linear Algebra. SIAM Journal on Numerical Analysis, 48(5). `Paper <https://epubs.siam.org/doi/abs/10.1137/090779024>`__
         6. Joshi, S., Boyd, S., (2009) Sensor Selection via Convex Optimization. IEEE Transactions on Signal Processing, 57(2). `Paper <https://ieeexplore.ieee.org/document/4663892>`__
     """
-    def __init__(self, parameters, basis, method, sampling_args=None):
+    def __init__(self, parameters, basis, method=None, sampling_args=None):
         try:
             len(parameters)
         except TypeError:
@@ -87,7 +84,6 @@ class Poly(object):
         # Initialize some default values!
         self.inputs = None
         self.outputs = None
-        self.correlation_matrix = None
         self.subsampling_algorithm_name = None
         self.sampling_ratio = 1.0
         self.statistics_object = None
@@ -114,7 +110,6 @@ class Poly(object):
                     self.inputs = sampling_args.get('sample-points')
                     self.mesh = 'user-defined'
                 if 'sample-outputs' in sampling_args: self.outputs = sampling_args.get('sample-outputs')
-                if 'correlation' in sampling_args: self.correlation_matrix = sampling_args.get('correlation')
             self.__set_solver()
             self.__set_subsampling_algorithm()
             self.__set_points_and_weights()
@@ -144,7 +139,7 @@ class Poly(object):
             An instance of the Poly object.
         """
         self.quadrature = Quadrature(parameters=self.parameters, basis=self.basis, \
-                        points=self.inputs, outputs=self.outputs, correlation = self.correlation_matrix, \
+                        points=self.inputs, outputs=self.outputs, \
                         mesh=self.mesh)
         quadrature_points, quadrature_weights = self.quadrature.get_points_and_weights()
         if self.subsampling_algorithm_name is not None:
@@ -197,7 +192,7 @@ class Poly(object):
         if self.statistics_object is None:
             if self.method != 'numerical-integration' and self.dimensions <= 6 and self.highest_order <= MAXIMUM_ORDER_FOR_STATS:
                 quad = Quadrature(parameters=self.parameters, basis=Basis('tensor-grid', orders= np.array(self.parameters_order) + 1), \
-                    mesh='tensor-grid', outputs=None, points=None, correlation=None)
+                    mesh='tensor-grid', outputs=None, points=None)
                 quad_pts, quad_wts = quad.get_points_and_weights()
                 poly_vandermonde_matrix = self.get_poly(quad_pts)
             else:
@@ -441,6 +436,7 @@ class Poly(object):
         :return:
             **p**: A numpy.ndarray of shape (dimensions, number_of_observations) corresponding to the polynomial gradient approximation of the model.
         """
+        N = len(self.coefficients)
         if stack_of_points.ndim == 1:
             no_of_points = 1
         else:
@@ -448,9 +444,9 @@ class Poly(object):
         H = self.get_poly_grad(stack_of_points, dim_index=dim_index)
         grads = np.zeros((self.dimensions, no_of_points ) )
         if self.dimensions == 1:
-            return np.dot(self.coefficients,  H)
+            return np.dot(self.coefficients.reshape(N,),  H)
         for i in range(0, self.dimensions):
-            grads[i,:] = np.dot(self.coefficients , H[i] )
+            grads[i,:] = np.dot(self.coefficients.reshape(N,) , H[i] )
         return grads
     def get_polyfit_hess(self, stack_of_points):
         """
@@ -485,7 +481,8 @@ class Poly(object):
         :return:
             A callable function.
         """
-        return lambda x: np.array(self.get_poly(x).T *  np.mat(self.coefficients))
+        N = len(self.coefficients)
+        return lambda x: np.array(self.get_poly(x).T *  self.coefficients.reshape(N, 1) )
     def get_polyfit_grad_function(self):
         """
         Returns a callable for the gradients of the polynomial approximation of a function (or model data).
@@ -495,7 +492,7 @@ class Poly(object):
         :return:
             A callable function.
         """
-        return lambda x : self.evaluatePolyGradFit(x)
+        return lambda x : self.get_polyfit_grad(x)
     def get_polyfit_hess_function(self):
         """
         Returns a callable for the hessian of the polynomial approximation of a function (or model data).
@@ -505,7 +502,7 @@ class Poly(object):
         :return:
             A callable function.
         """
-        return lambda x : self.evaluatePolyHessFit(x)
+        return lambda x : self.get_polyfit_hess(x)
     def get_poly(self, stack_of_points, custom_multi_index=None):
         """
         Evaluates the value of each polynomial basis function at a set of points.

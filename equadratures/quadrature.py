@@ -12,11 +12,10 @@ class Quadrature(object):
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     """
-    def __init__(self, parameters, basis, points, outputs, correlation, mesh):
+    def __init__(self, parameters, basis, points, outputs, mesh):
         self.parameters = parameters
         self.basis = basis
         self.points = points
-        self.correlation = correlation
         self.mesh = mesh
         if self.mesh == 'tensor-grid' or self.mesh == 'univariate':
             self.samples = Tensorgrid(self.parameters, self.basis)

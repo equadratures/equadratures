@@ -25,9 +25,9 @@ def get_active_subspace(poly, bootstrap=False, bs_trials=50):
         M = int(alpha * k * np.log(d))
         X = np.zeros((M, d))
         for j in range(0, d):
-            X[:, j] =  np.reshape(self.poly.parameters[j].get_samples(M), M)
+            X[:, j] =  np.reshape(poly.parameters[j].get_samples(M), M)
     else:
-        X = self.poly.quadrature_points
+        X = poly.quadrature_points
         M, d = X.shape
     polygrad = poly.get_polyfit_grad(X)
     weights = np.ones((M, 1)) / M
@@ -179,7 +179,7 @@ def variable_projection(X,f,n=2,p=2,gamma=None,beta=None,tol=None,maxiter=1000,U
         print("VP finished with %d iterations" % iteration)
 
     return U,R
-def vector_AS(self, list_of_polys, R = None, alpha=None, k=None, samples=None, bootstrap=False, bs_trials = 50
+def vector_AS(list_of_polys, R = None, alpha=None, k=None, samples=None, bootstrap=False, bs_trials = 50
                 , J = None, save_path = None):
     # Find AS directions to vector val func
     # analogous to computeActiveSubspace

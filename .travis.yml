@@ -1,6 +1,9 @@
 cache: apt
 sudo: false
 
+file:
+  - tests/*
+
 language: python
 python:
   - "2.7"

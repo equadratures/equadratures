@@ -37,18 +37,14 @@ class Poly(object):
         :numpy.ndarray sample-points: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
         :numpy.ndarray sample-outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points. Note that
             if ``sample-points`` is provided as an input, then the code expects ``sample-outputs`` too.
-    :param str subspaces: The method used for computing a dimension reducing subspace. Should one of: ``active-subspace``, ``variable-projection``,
-        ``linear-model``, ``quadratic-model`` or ``active-subspace-with-gradients``.
+    :param str dimension_reduction: The method used for computing a dimension reducing subspace. Should one of: ``active-subspaces`` (see [7] and references therein), ``variable-projection`` [8], or
+        ``linear-model`` [9].
     :param str dimension_reduction_args:
         Optional arguments centered around the specific dimension reduction strategy used.
-        :string
-
-
-
-            :string dimension-reduction: The ``dimension-reduction`` input refers to the technique used for computing a dimension-reducing subspace. The default value set for
-            this parameter is ``False``. If the user sets this input to ``True``, a polynomial-based active subspaces [7] recipe is used. This outcome may also be achieved by
-            setting the input to ``active-subspaces``. Other options for this input include: ``variable-projection`` and ``linear-model``. The former is based on the polynomial
-            variable projectoin technique of [8], while the latter is a simple linear trick based on [9].
+        :int subspace_dimension: Default value is assumed to be ``2``, when used. This represents the dimension of *reduced subspace* (i.e., the number of columns).
+        :int polynomial_degree: The degree of the polynomial used for the ``variable-projection`` strategy. The default value is set to ``2``.
+        :int bootstrap_trials: The number of bootstrap replicates used when computing the dimension reducing subspace via the ``active-subspaces`` method.
+        :int variable_projection_iterations: The number of variable projection iterations used. The default value is set to ``1000``.
 
     **Sample constructor initialisations**::
 
@@ -89,7 +85,7 @@ class Poly(object):
         8. polynomial varpro
         9. linear trick
     """
-    def __init__(self, parameters, basis, method, sampling_args=None, subspaces=None, dimension_reduction_args=None):
+    def __init__(self, parameters, basis, method, sampling_args=None, dimension_reduction=None, dimension_reduction_args=None):
         try:
             len(parameters)
         except TypeError:
@@ -108,38 +104,39 @@ class Poly(object):
         # Initialize some default values!
         self.inputs = None
         self.outputs = None
-        self.dimension_reduction_strategy = None
+        self.dimension_reduction_strategy = dimension_reduction
+        self.dimension_reduction_args = dimension_reduction_args
         self.correlation_matrix = None
         self.subsampling_algorithm_name = None
         self.sampling_ratio = 1.0
-        if self.method == 'numerical-integration' or self.method == 'integration':
-            self.mesh = self.basis.basis_type
-        elif self.method == 'least-squares':
-            self.mesh = 'tensor-grid'
-        elif self.method == 'least-squares-with-gradients':
-            self.gradient_flag = 1
-            self.mesh = 'tensor-grid'
-        elif self.method == 'compressed-sensing' or self.method == 'compressive-sensing':
-            self.mesh = 'monte-carlo'
-        elif self.method == 'minimum-norm':
-            self.mesh = 'monte-carlo'
-        # Now depending on user inputs, override these default values!
-        if self.sampling_args is not None:
-            if 'mesh' in sampling_args: self.mesh = sampling_args.get('mesh')
-            if 'sampling-ratio' in sampling_args: self.sampling_ratio = float(sampling_args.get('sampling-ratio'))
-            if 'subsampling-algorithm' in sampling_args: self.subsampling_algorithm_name = sampling_args.get('subsampling-algorithm')
-            if 'sample-points' in sampling_args:
-                self.inputs = sampling_args.get('sample-points')
-                self.mesh = 'user-defined'
-            if 'sample-outputs' in sampling_args: self.outputs = sampling_args.get('sample-outputs')
-            if 'correlation' in sampling_args: self.correlation_matrix = sampling_args.get('correlation')
-            if 'dimension-reduction' in sampling_args: self.dimension_reduction_strategy = sampling_args.get('dimension-reduction')
-        self.__set_solver()
-        self.__set_subsampling_algorithm()
-        self.__set_points_and_weights()
         self.statistics_object = None
         self.parameters_order = [ parameter.order for parameter in self.parameters]
         self.highest_order = np.max(self.parameters_order)
+        if self.method is not None:
+            if self.method == 'numerical-integration' or self.method == 'integration':
+                self.mesh = self.basis.basis_type
+            elif self.method == 'least-squares':
+                self.mesh = 'tensor-grid'
+            elif self.method == 'least-squares-with-gradients':
+                self.gradient_flag = 1
+                self.mesh = 'tensor-grid'
+            elif self.method == 'compressed-sensing' or self.method == 'compressive-sensing':
+                self.mesh = 'monte-carlo'
+            elif self.method == 'minimum-norm':
+                self.mesh = 'monte-carlo'
+            # Now depending on user inputs, override these default values!
+            if self.sampling_args is not None:
+                if 'mesh' in sampling_args: self.mesh = sampling_args.get('mesh')
+                if 'sampling-ratio' in sampling_args: self.sampling_ratio = float(sampling_args.get('sampling-ratio'))
+                if 'subsampling-algorithm' in sampling_args: self.subsampling_algorithm_name = sampling_args.get('subsampling-algorithm')
+                if 'sample-points' in sampling_args:
+                    self.inputs = sampling_args.get('sample-points')
+                    self.mesh = 'user-defined'
+                if 'sample-outputs' in sampling_args: self.outputs = sampling_args.get('sample-outputs')
+                if 'correlation' in sampling_args: self.correlation_matrix = sampling_args.get('correlation')
+            self.__set_solver()
+            self.__set_subsampling_algorithm()
+            self.__set_points_and_weights()
 
     def __set_subsampling_algorithm(self):
         """
@@ -332,21 +329,27 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly class.
         """
-        if self.dimension_reduction_strategy is None:
-            self.dimension_reducing_subspace = None
-        elif self.dimension_reduction_strategy == 'active-subspaces':
-            mysubspaces = Subspaces(self, method='active-subspaces')
-            e = mysubspaces.get_eigenvalues()
-            W = mysubspaces.get_eigenvectors()
-    def get_subspace_vectors(self):
+        if self.dimension_reduction_strategy is not None:
+            self.mysubspaces = Subspaces(self, method=self.dimension_reduction_strategy, args=self.dimension_reduction_args)
+    def get_reduced_subspace_vectors(self):
         """
         Returns the vectors of the subspace.
         """
-        return 0
+        return self.mysubspaces.get_reduced_subspace()
+    def get_remaining_subspace_vectors(self):
+        """
+
+        """
+        return self.mysubspaces.get_remaining_subspace()
     def get_subspace_eigenvalues(self):
         """
         Not valid for all subspaces.
 
+        """
+        return self.mysubspaces.get_eigenvalues()
+    def __set_subspace(self):
+        """
+        Sets the subspace of the polynomial.
         """
         return 0
     def __set_coefficients(self):
@@ -356,6 +359,22 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
+        # Check to ensure that if there any NaNs, a different basis must be used and solver must be changed
+        # to least squares!
+        indices_with_nans = np.argwhere(np.isnan(self.model_evaluations))[:,0]
+        if len(indices_with_nans) is not 0:
+            print('One or more of your model evaluations have resulted in an NaN. Adopting a different technique.')
+            self.inputs = np.delete(self.quadrature_points, indices_with_nans, axis=0)
+            self.outputs = np.delete(self.model_evaluations, indices_with_nans, axis=0)
+            self.subsampling_algorithm_name = None
+            number_of_basis_to_prune_down = self.basis.cardinality - len(self.outputs)
+            if number_of_basis_to_prune_down > 0:
+                self.basis.prune(number_of_basis_to_prune_down + self.dimensions) # To make it an over-determined system!
+            self.method = 'least-squares'
+            self.mesh = 'user-defined'
+            self.__set_solver()
+            self.__set_points_and_weights()
+            self.set_model(self.outputs)
         if self.mesh == 'sparse-grid':
             counter = 0
             multi_index = []
@@ -458,7 +477,8 @@ class Poly(object):
         :return:
             **p**: A numpy.ndarray of shape (1, number_of_observations) corresponding to the polynomial approximation of the model.
         """
-        return self.get_poly(stack_of_points).T *  np.mat(self.coefficients)
+        N = len(self.coefficients)
+        return np.dot(self.get_poly(stack_of_points).T , self.coefficients.reshape(N, 1))
     def get_polyfit_grad(self, stack_of_points, dim_index = None):
         """
         Evaluates the gradient of the polynomial approximation of a function (or model data) at prescribed points.
@@ -478,9 +498,9 @@ class Poly(object):
         H = self.get_poly_grad(stack_of_points, dim_index=dim_index)
         grads = np.zeros((self.dimensions, no_of_points ) )
         if self.dimensions == 1:
-            return np.mat(self.coefficients).T * H
+            return np.dot(self.coefficients,  H)
         for i in range(0, self.dimensions):
-            grads[i,:] = np.mat(self.coefficients).T * H[i]
+            grads[i,:] = np.dot(self.coefficients , H[i] )
         return grads
     def get_polyfit_hess(self, stack_of_points):
         """

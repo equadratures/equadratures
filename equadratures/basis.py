@@ -87,6 +87,7 @@ class Basis(object):
         :param integer number_of_elements_to_delete: The number of multi-indices the user would like to delete.
 
         """
+        self.sort()
         index_entries = self.elements
         total_elements = self.cardinality
         new_elements = total_elements - number_of_elements_to_delete

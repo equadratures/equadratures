@@ -3,7 +3,6 @@ import unittest
 from equadratures import *
 import numpy as np
 import scipy.stats as st
-
 class TestB(TestCase):
 
     def test_cs(self):

@@ -137,7 +137,6 @@ class Poly(object):
             self.__set_solver()
             self.__set_subsampling_algorithm()
             self.__set_points_and_weights()
-
     def __set_subsampling_algorithm(self):
         """
         Private function that sets the subsampling algorithm based on the user-defined method.
@@ -321,8 +320,8 @@ class Poly(object):
                 del d, grad_values
                 dP = self.get_poly_grad(self.quadrature_points)
         self.__set_coefficients()
-        self.__compute_dimension_reducing_subspace()
-    def __compute_dimension_reducing_subspace(self):
+        self.__get_dimension_reducing_subspace()
+    def __get_dimension_reducing_subspace(self):
         """
         Computes a dimension reducing subspace.
 

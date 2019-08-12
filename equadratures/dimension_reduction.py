@@ -1,6 +1,6 @@
-from equadratures.parameter import Parameter
-from equadratures.basis import Basis
-from equadratures.poly import Poly
+#from equadratures.parameter import Parameter
+#from equadratures.basis import Basis
+#from equadratures.poly import Poly
 import numpy as np
 import scipy
 import scipy.io

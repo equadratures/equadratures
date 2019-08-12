@@ -2,7 +2,7 @@ cache: apt
 sudo: false
 
 file:
-  - tests/*
+  - ../tests/*
 
 language: python
 python:

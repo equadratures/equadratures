@@ -9,8 +9,8 @@ class TestB(TestCase):
         repo = np.DataSource('.')
         file_object = repo.open('https://raw.githubusercontent.com/psesh/turbodata/master/three_blades/blade_A/design_parameters.dat')
         X = np.loadtxt(file_object)
-        file_object = repo.open('https://raw.githubusercontent.com/psesh/turbodata/master/three_blades/blade_A/non_dimensionalized_efficiency.dat')
-        Y = np.loadtxt("h_Y.dat")
+        file_object2 = repo.open('https://raw.githubusercontent.com/psesh/turbodata/master/three_blades/blade_A/non_dimensionalized_efficiency.dat')
+        Y = np.loadtxt(file_object2)
         N = X.shape[0]
         p_order = 2
         params = []

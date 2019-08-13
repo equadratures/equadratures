@@ -110,7 +110,7 @@ class Test_optimisation(TestCase):
         g1param = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degg1)
         g1Parameters = [g1param for i in range(n)]
         myBasis = eq.Basis('total-order')
-        g1poly = eq.Poly(g1Parameters, myBasis,  method='least-squares', sampling_args={'sample-points':X, 'sample-outputs':f})
+        g1poly = eq.Poly(g1Parameters, myBasis,  method='least-squares', sampling_args={'sample-points':X, 'sample-outputs':g1})
         g1poly.set_model()
         for method in ['trust-constr', 'SLSQP', 'COBYLA']:
             Opt = eq.Optimisation(method=method)
@@ -139,7 +139,7 @@ class Test_optimisation(TestCase):
         for method in ['trust-constr', 'SLSQP']:
             Opt = eq.Optimisation(method=method)
             Opt.add_objective(poly=fpoly)
-            Opt.add_nonlinear_ineq_con(self.boundsg1, g1Func, g1Grad, g1Hess)
+            Opt.add_nonlinear_ineq_con(self.boundsg1, function=g1Func, jac_function=g1Grad, hess_function=g1Hess)
             Opt.add_linear_eq_con(np.eye(n), np.ones(n))
             x0 = np.zeros(n)
             sol = Opt.optimise_poly(x0)

@@ -1,6 +1,10 @@
 from equadratures.sampling_methods.sampling_template import Sampling
 import numpy as np
 from scipy.special import betaln
+<<<<<<< HEAD:equadratures/sampling_methods/induced.py
+=======
+# for bisection search of an ordered list
+>>>>>>> Complete and test the induced sampling Jacobi routine:equadratures/induced_sampling.py
 import bisect
 from scipy.optimize import bisect as bisect_root_solve
 from scipy.linalg import qr
@@ -177,6 +181,7 @@ class Induced(Sampling):
 
         # Use Markov-Stiltjies inequality for initial x value interval guess
         order = int(parameter.order)
+<<<<<<< HEAD:equadratures/sampling_methods/induced.py
         zeroes, _ = parameter._get_local_quadrature(order-1)
         # obtain current recurrence coefficient
         ab = parameter.getRecurrenceCoefficients((order)*2 + 360 + 1)
@@ -184,6 +189,15 @@ class Induced(Sampling):
             ab = self.quadratic_modification(ab, root)
             ab[0, 1] = 1
         induced_points, induced_weights = parameter._get_local_quadrature(358, ab)
+=======
+        zeroes, _ = parameter._getLocalQuadrature(order-1)
+        # obtain current recurrence coefficient
+        ab = parameter.getRecurrenceCoefficients((order)*2 + 400 + 1)
+        for root in zeroes:
+            ab = self.quadratic_modification(ab, root)
+            ab[0, 1] = 1
+        induced_points, induced_weights = parameter._getLocalQuadrature(398, ab)
+>>>>>>> Complete and test the induced sampling Jacobi routine:equadratures/induced_sampling.py
         # insert lower bound of x in jacobi distribution
         interval_points = np.insert(induced_points, 0, -1)
         # Cumulative sums of induced quadrature weights are a strict bound for the cdf
@@ -191,11 +205,16 @@ class Induced(Sampling):
         strict_bounds = np.insert(strict_bounds, len(strict_bounds), 1)
         strict_bounds = np.insert(strict_bounds, 0, 0)
         interval_index = bisect.bisect_left(strict_bounds, uniform_cdf_value)
+<<<<<<< HEAD:equadratures/sampling_methods/induced.py
         interval_index_hi = interval_index+1
         if interval_index_hi >= 360:
             interval_index_hi = 359
         interval_lo = interval_points[interval_index-1]
         interval_hi = interval_points[interval_index_hi]
+=======
+        interval_lo = interval_points[interval_index-2]
+        interval_hi = interval_points[interval_index+2]
+>>>>>>> Complete and test the induced sampling Jacobi routine:equadratures/induced_sampling.py
 
         # Solver function for inverse CDF where F(x)-u = 0
         def F(x):
@@ -249,6 +268,7 @@ class Induced(Sampling):
         if x > median:
             x = -x
             _complementary = True
+<<<<<<< HEAD:equadratures/sampling_methods/induced.py
             alpha, beta = beta, alpha
             parameter.shape_parameter_A, parameter.shape_parameter_B = \
                 parameter.shape_parameter_B, parameter.shape_parameter_A
@@ -256,6 +276,15 @@ class Induced(Sampling):
         # Obtain the zeroes of this particlar polynomial
         zeroes, _ = parameter.__get_local_quadrature(order-1)
         ab = parameter.get_recurrence_coefficients(order)
+=======
+            # alpha, beta = beta, alpha
+            # parameter.shape_parameter_A, parameter.shape_parameter_B = \
+            #    parameter.shape_parameter_B, parameter.shape_parameter_A
+
+        # Obtain the zeroes of this particlar polynomial
+        zeroes, _ = parameter._getLocalQuadrature(order-1)
+        ab = parameter.getRecurrenceCoefficients(order)
+>>>>>>> Complete and test the induced sampling Jacobi routine:equadratures/induced_sampling.py
 
         # This is the (inverse) n'th root of the leading coefficient square of p_n
         # We'll use it for scaling later
@@ -264,7 +293,11 @@ class Induced(Sampling):
 
         # Recurrence coefficients for the quadrature rule
         A = np.floor(abs(alpha))
+<<<<<<< HEAD:equadratures/sampling_methods/induced.py
         recurrence_ab = parameter.get_recurrence_coefficients(2*order+A+M)
+=======
+        recurrence_ab = parameter.getRecurrenceCoefficients(2*order+A+M)
+>>>>>>> Complete and test the induced sampling Jacobi routine:equadratures/induced_sampling.py
         logfactor = 0.0  # factor to keep the modified distribution as a pdf
 
         # n quadratic modifications
@@ -299,6 +332,14 @@ class Induced(Sampling):
                    betaln(beta+1.0, alpha+1.0) -
                    np.log(beta+1.0)+(beta+1)*np.log((x+1.0)/2.0))*integral
         F = np.asscalar(F)
+<<<<<<< HEAD:equadratures/sampling_methods/induced.py
+=======
+
+        if _complementary:
+            F = 1-F
+
+        return F
+>>>>>>> Complete and test the induced sampling Jacobi routine:equadratures/induced_sampling.py
 
         if _complementary:
             F = 1-F
@@ -371,7 +412,11 @@ class Induced(Sampling):
         alpha = alphabeta[:, 0]
         beta = alphabeta[:, 1]
 
+<<<<<<< HEAD:equadratures/sampling_methods/induced.py
         C = np.reshape(self.__christoffel_normalised_polynomials(alpha,
+=======
+        C = np.reshape(self.christoffel_normalised_polynomials(alpha,
+>>>>>>> Complete and test the induced sampling Jacobi routine:equadratures/induced_sampling.py
                                                                beta,
                                                                x0,
                                                                (N-1)),
@@ -438,7 +483,12 @@ class Induced(Sampling):
             r[q] = r1
 
         return r
+<<<<<<< HEAD:equadratures/sampling_methods/induced.py
     def __christoffel_normalised_polynomials(self, a, b, x, N):
+=======
+
+    def christoffel_normalised_polynomials(self, a, b, x, N):
+>>>>>>> Complete and test the induced sampling Jacobi routine:equadratures/induced_sampling.py
         """
         Computes the Christoffel normalized
         orthogonal polynomial values

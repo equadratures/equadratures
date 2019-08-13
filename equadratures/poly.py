@@ -482,7 +482,7 @@ class Poly(object):
             A callable function.
         """
         N = len(self.coefficients)
-        return lambda x: np.array(self.get_poly(x).T *  self.coefficients.reshape(N, 1) )
+        return lambda x: np.dot( self.get_poly(x).T ,  self.coefficients.reshape(N, 1) )
     def get_polyfit_grad_function(self):
         """
         Returns a callable for the gradients of the polynomial approximation of a function (or model data).

@@ -1127,6 +1127,7 @@ class TestG(TestCase):
                                                                'sample-outputs':Y_red})
         poly.set_model()
         e, W = get_active_subspace(poly)
+        e2, W2, low, up = get_active_subspace(poly, bootstrap=True)
         U, R = variable_projection(X_red, Y_red)
 if __name__== '__main__':
     unittest.main()

@@ -40,9 +40,9 @@ class Optimisation:
             f = poly.get_polyfit_function()
             jac = poly.get_polyfit_grad_function()
             hess = poly.get_polyfit_hess_function()
-            function = lambda x: k*np.asscalar(f(x.reshape(1,-1)))
-            jac_function = lambda x: k*jac(x.reshape(1,-1))[:,0]
-            hess_function = lambda x: k*hess(x.reshape(1,-1))[:,:,0]
+            function = lambda x: k*np.asscalar(f(x))
+            jac_function = lambda x: k*jac(x)[:,0]
+            hess_function = lambda x: k*hess(x)[:,:,0]
         elif function is not None:
             if jac_function is None:
                 jac_function = '2-point'
@@ -119,15 +119,15 @@ class Optimisation:
             a lambda function of the Hessian of the constraint
         """
         assert self.method in ['SLSQP', 'trust-constr', 'COBYLA']
-        assert poly is not None or Function is not None
+        assert poly is not None or function is not None
         if poly is not None:
             # Get lambda functions for function, gradient, and Hessians from poly object
             g = poly.get_polyfit_function()
             jac = poly.get_polyfit_grad_function()
             hess = poly.get_polyfit_hess_function()
-            function = lambda x: g(x.reshape(1,-1))[0]
-            jac_function = lambda x: jac(x.reshape(1,-1))[:,0]
-            hess_function = lambda x, v: hess(x.reshape(1,-1))[:,:,0]
+            function = lambda x: g(x)[0]
+            jac_function = lambda x: jac(x)[:,0]
+            hess_function = lambda x, v: hess(x)[:,:,0]
         elif function is not None:
             if jac_function is None:
                 jac_function = '2-point'
@@ -167,7 +167,7 @@ class Optimisation:
             a float value specifying what nonlinear function must be equal to
         :param poly poly (optional):
             an instance of the poly class
-        :param function Function (optional):
+        :param function function (optional):
             a lambda function of constraint
         :param function jac_function (optional):
             a lambda function of the gradient of the constraint
@@ -181,9 +181,9 @@ class Optimisation:
             g = poly.get_polyfit_function()
             jac = poly.get_polyfit_grad_function()
             hess = poly.get_polyfit_hess_function()
-            function = lambda x: np.asscalar(g(x.reshape(1,-1)))
-            jac_function = lambda x: jac(x.reshape(1,-1))[:,0]
-            hess_function = lambda x, v: hess(x.reshape(1,-1))[:,:,0]
+            function = lambda x: np.asscalar(g(x))
+            jac_function = lambda x: jac(x)[:,0]
+            hess_function = lambda x, v: hess(x)[:,:,0]
         elif function is not None:
             if jac_function is None:
                 jac_function = '2-point'

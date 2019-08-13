@@ -89,5 +89,5 @@ class Distribution(object):
         else:
             number_of_random_samples = m
         uniform_samples = np.random.random((number_of_random_samples, 1))
-        yy = self.getiCDF(uniform_samples)
+        yy = self.get_icdf(uniform_samples)
         return yy

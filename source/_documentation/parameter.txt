@@ -1,6 +1,6 @@
 Parameter
 ===========
-A parameter---i.e., the definition of a univariate variable :math:`x`---is one the main building blocks in Effective Quadratures. It characterized by its distribution (and support) :math:`\rho(x)`. 
+A parameter---i.e., the definition of a univariate variable---is one the main building blocks in Effective Quadratures. It characterized by its distribution (and support).
 
 .. automodule:: equadratures.parameter
     :members:

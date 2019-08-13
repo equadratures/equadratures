@@ -5,13 +5,11 @@ Modules
 .. toctree::
    :maxdepth: 4
 
+   
    parameter
    basis
    poly
-   distributions
-   utilities
    
-
 
 .. automodule:: equadratures
     :members:

@@ -10,7 +10,7 @@ Our goal is to find a ridge approximation of a scalar-valued quantity. Suppose t
 	h(\mathbf{x}) = \int \omega(s) f(\mathbf{x}, s) ds
 
 
-where :math:`\mathbf{x}` are design parameters and $s$ is a spatial parameter for the field. The goal is to seek a tall matrix :math:`\mathbf{U}` and a low-dimensional function $g_h(.)$ such that
+where :math:`\mathbf{x}` are design parameters and :math:`s` is a spatial parameter for the field. The goal is to seek a tall matrix :math:`\mathbf{U}` and a low-dimensional function :math:`g_h(.)` such that
 
 .. math::
 	h(\mathbf{x}) \approx g_h(\mathbf{U}^T \mathbf{x})

@@ -3,6 +3,7 @@
 from equadratures.distributions.template import Distribution
 
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.stats import norm
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 
@@ -27,8 +28,8 @@ class Gaussian(Distribution):
         self.skewness = 0.0
         self.kurtosis = 0.0
         self.bounds = np.array([-np.inf, np.inf])
-        
-    def getDescription(self):
+
+    def get_description(self):
         """
         A description of the Gaussian.
 
@@ -40,7 +41,7 @@ class Gaussian(Distribution):
         text = "A Gaussian distribution with a mean of "+str(self.mean)+" and a variance of "+str(self.variance)+"."
         return text
 
-    def getSamples(self, m=None):
+    def get_samples(self, m=None):
         """
         Generates samples from the Gaussian distribution.
         :param Gaussian self:
@@ -52,11 +53,11 @@ class Gaussian(Distribution):
         """
         if m is not None:
             number = m
-        else: 
+        else:
             number = 500000
         return self.parent.rvs(size=number)
 
-    def getPDF(self, points=None):
+    def get_pdf(self, points=None):
         """
         A Gaussian probability distribution.
 
@@ -67,22 +68,20 @@ class Gaussian(Distribution):
         :return:
             Probability density values along the support of the Gaussian distribution.
         """
-        return self.parent.pdf(points )
-
-    def getCDF(self, points=None):
+        return self.parent.pdf(points)
+    def get_cdf(self, points=None):
         """
         A Gaussian cumulative density function.
 
 	    :param Gaussian self:
             An instance of the Gaussian class.
-        :param array points 
+        :param array points
             Points for which the cumulative density function is required.
         :return:
             Gaussian cumulative density values.
         """
-        return self.parent.cdf(points )
-
-    def getiCDF(self, xx):
+        return self.parent.cdf(points)
+    def get_icdf(self, xx):
         """
         An inverse Gaussian cumulative density function.
 

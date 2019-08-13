@@ -1,5 +1,5 @@
 # Effective Quadratures
-**Version 7.6**
+**Version 8.0**
 
 Tools for machine learning with polynomials.
 

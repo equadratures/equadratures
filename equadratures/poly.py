@@ -466,11 +466,11 @@ class Poly(object):
             no_of_points, _ = stack_of_points.shape
         H = self.get_poly_hess(stack_of_points)
         if self.dimensions == 1:
-            return np.mat(self.coefficients).T * H
+            return np.dot(self.coefficients.T , H)
         hess = np.zeros((self.dimensions, self.dimensions, no_of_points))
         for i in range(0, self.dimensions):
             for j in range(0, self.dimensions):
-                hess[i, j, :] = np.mat(self.coefficients).T * H[i * self.dimensions + j]
+                hess[i, j, :] = np.dot(self.coefficients.T , H[i * self.dimensions + j])
         return hess
     def get_polyfit_function(self):
         """

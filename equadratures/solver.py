@@ -54,19 +54,33 @@ def basis_pursuit_denoising(Ao, bo):
     mean_errors = np.zeros(len(epsilon))
     # 5 fold cross validation
     for e in range(len(epsilon)):
-        for n in range(5):
-            indices = [int(i) for i in n * np.ceil(N/5.0) + range(int(np.ceil(N/5.0))) if i < N]
-            A_ver = A[indices]
-            A_train = np.delete(A, indices, 0)
-            y_ver = y[indices].flatten()
-            y_train = np.delete(y, indices).flatten()
-            x_train = __bp_denoise(A_train, y_train, epsilon[e])
-            y_trained = np.reshape(np.dot(A_ver, x_train), len(y_ver))
-            assert y_trained.shape == y_ver.shape
-            errors[n] = np.mean(np.abs(y_trained - y_ver))/len(y_ver)
+        try:
+            for n in range(5):
+                indices = [int(i) for i in n * np.ceil(N/5.0) + range(int(np.ceil(N/5.0))) if i < N]
+                A_ver = A[indices]
+                A_train = np.delete(A, indices, 0)
+                y_ver = y[indices].flatten()
+                y_train = np.delete(y, indices).flatten()
+                x_train = bp_denoise(A_train, y_train, epsilon[e])
+                y_trained = np.reshape(np.dot(A_ver, x_train), len(y_ver))
+
+                assert y_trained.shape == y_ver.shape
+                errors[n] = np.mean(np.abs(y_trained - y_ver))/len(y_ver)
+        except:
+            errors = np.inf*np.ones(5)
         mean_errors[e] = np.mean(errors)
     best_epsilon = epsilon[np.argmin(mean_errors)]
     x = __bp_denoise(A, y, best_epsilon)
+    sorted_ind = np.argsort(mean_errors)
+    x = None
+    ind = 0
+    while x is None:
+        if ind >= len(log_epsilon):
+            raise ValueError('Singular matrix!! Reconsider sample points!')
+        try:
+            x = __bp_denoise(A, y, epsilon[sorted_ind[ind]])
+        except:
+            ind += 1
     residue = np.linalg.norm(np.dot(A, x).flatten() - y.flatten())
     return np.reshape(x, (len(x),1))
 def __CG_solve(A, b, max_iters, tol):
@@ -181,8 +195,7 @@ def __bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, 
     if verbose:
         print('Original l1 norm = ' + str(np.sum(np.abs(x0))) + ', original functional = ' + str(np.sum(u)) )
     tau = np.max([(2.0*N+1)/np.sum(np.abs(x0)), 1.0])
-
-    lbiter = int(np.ceil((np.log(2.0*N+1) - np.log(lbtol) - np.log(tau)) / np.log(mu)))
+    lbiter = int(np.max([np.ceil((np.log(2.0*N+1) - np.log(lbtol) - np.log(tau)) / np.log(mu)), 0.0]))
     if verbose:
         print('Number of log barrier iterations = ' + str(lbiter) )
     totaliter = 0

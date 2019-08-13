@@ -1131,7 +1131,7 @@ class TestB(TestCase):
         y_valid = Y
         a,b,r,_,_ = st.linregress(y_eval.flatten(),y_valid.flatten())
         r2 = np.round(r**2, 4)
-        np.testing.assert_array_less(0.88, r2, err_msg='Problem!')
+        np.testing.assert_array_less(0.80, r2, err_msg='Problem!')
 
 if __name__== '__main__':
     unittest.main()

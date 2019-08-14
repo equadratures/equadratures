@@ -11,8 +11,6 @@ class Statistics(object):
         * **self.mean**: (double) Mean of the polynomial expansion.
         * **self.variance**: (double) Variance of the polynomial expansion.
         * **self.sobol**:(dict) Sobol' indices of order up to number of dimensions.
-    **Notes:** 
-    In a future release we will be incorporating second order Sobol indices, skewness and kurtosis based indices. Stay tuned!
     """
 
     # constructor
@@ -32,27 +30,11 @@ class Statistics(object):
         else:
             nn = len(quadrature_weights)
             weighted_evals = np.zeros((mm, nn))
-#            for i in range(0, mm):
-#                for j in range(0, nn):
-#                    weighted_evals[i, j] = polynomial_evals[i, j] * coefficients[i]
             weighted_evals = polynomial_evals * self.coefficients
             self.weighted_evals = weighted_evals
             self.quad_wts = quadrature_weights
-        self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
-        self.kurtosis = getKurtosis(self.quad_wts, self.weighted_evals, self.basis, self.variance)
-        
-    
-    def plot(self, filename=None):
-        """
-        Produces a bar graph of the first order Sobol indices
-        :param Statistics object: An instance of the Statistics class.
-        :param string filename: A file name in case the user wishes to save the bar graph. The default output is an eps file.
-        **Sample usage:** 
-        For useage please see the ipython-notebooks at www.effective-quadratures.org
-        """
-        # A bar graph plot of the first order Sobol indices!
-        x = range(len(self.getSobol(1).keys()))
-        barplot(x, self.getSobol(1).values(), 'Parameters', 'Sobol indices', self.getSobol(1).keys())
+            self.skewness = getSkewness(self.quad_wts, self.weighted_evals, self.basis, self.variance)
+            self.kurtosis = getKurtosis(self.quad_wts, self.weighted_evals, self.basis, self.variance)
     
     def getSobol(self, order = 1):
         """
@@ -223,10 +205,11 @@ def getAllSobol(coefficients, basis, max_order):
         combo_index = {}
         if max_order is None or max_order > dimensions:
             max_order = dimensions
-        for order in range(1,max_order+1): #loop over order            
+        for order in range(1,max_order+1): #loop over order           
             for i in combinations(range(dimensions),order):
                 #initialize each index to be 0                
                 combo_index[i] = 0
+                
                 
             for i in range(0,basis_entries): #loop over rows
                 row = basis[i,:]
@@ -234,7 +217,6 @@ def getAllSobol(coefficients, basis, max_order):
                 non_zero_entries.sort()    #just in case
                 if len(non_zero_entries) == order: #neglect entries that should actually be zero (what constitutes as zero?)
                     combo_index[tuple(non_zero_entries)] = float(combo_index[tuple(non_zero_entries)] + coefficients[i]**2 / variance)
-        
         check_sum = sum(combo_index.values())
         if (abs(check_sum - 1.0) >= 1e-2):
             print "Possible discrepancy in calculation, sum of indices = " + str(check_sum) 
@@ -268,8 +250,7 @@ def CondSkewness(order, quad_wts, weighted_evals, basis, variance, skewness):
     norm_ind = map(tuple,(norm_ind > 0).astype(int))
     
     combo_index = {}
-#    for tot_order in range(1,dimensions+1): #loop over order
-    print dimensions, order            
+#    for tot_order in range(1,dimensions+1): #loop over order          
     for i in combinations(range(dimensions), order):
         #initialize each index of the specified order to be 0                
 #        if sum(i) != order:

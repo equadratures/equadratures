@@ -1,0 +1,17 @@
+Sitemap
+==========================
+
+.. toctree::
+   :maxdepth: 5 
+
+   introduction
+   team
+   modules
+   tutorials
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

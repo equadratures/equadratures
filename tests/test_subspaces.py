@@ -1130,5 +1130,25 @@ class TestG(TestCase):
 
         #e2, W2, low, up = get_active_subspace(poly, bootstrap=True)
         #U, R = variable_projection(X_red, Y_red)
+    def test_get_zonotope_vertices(self):
+        X, Y = data()
+        N = X.shape[0]
+        num_obs = 500
+        chosen_points = np.random.choice(range(N), size = num_obs, replace = False)
+        X_red = X[chosen_points,:]
+        Y_red = Y[chosen_points]
+        
+        mysubspace = Subspaces(method='active-subspace', sample_points=X_red, sample_outputs=Y_red) 
+        Y, X = mysubspace.get_zonotope_vertices()
+    def test_get_linear_inequalities(self):
+        X, Y = data()
+        N = X.shape[0]
+        num_obs = 500
+        chosen_points = np.random.choice(range(N), size = num_obs, replace = False)
+        X_red = X[chosen_points,:]
+        Y_red = Y[chosen_points]
+        
+        mysubspace = Subspaces(method='active-subspace', sample_points=X_red, sample_outputs=Y_red) 
+        A, b = mysubspace.get_linear_inequalities()
 if __name__== '__main__':
     unittest.main()

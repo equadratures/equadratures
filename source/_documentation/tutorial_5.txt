@@ -1,0 +1,126 @@
+Sparse and tensor grid quadrature rules
+========================================
+
+This tutorial replicates part of Figure 5 from Constantine's 2012 CMAME paper [1], *Sparse Pseudospectral Approximation Method*. This paper demonstrates how sparse grids should be used to compute coefficients for polynomial approximations by evaluating the model on a sparse grid as opposed to a full tensor grid.
+
+.. code::
+	
+	from equadratures import *
+	import numpy as np
+
+Our goal is to approximate the following function
+
+.. math::
+
+	f(x_1, x_2) = \frac{1}{2 + 16(x_1 - 0.1)^2 + 25(x_2 + 0.1)^2 },
+
+where :math:`x_1` and :math:`x_2` are bounded in the hypercube :math:`[-1, 1]^2`. As before, our first step is to declare the function.
+
+.. code::
+
+	def function(x):
+    		return 1.0/(2.0 + 16*(x[0] - 0.1)**2 + 25*(x[1] + 0.1)**2 )
+	
+	order = 100
+	x1 = Parameter(lower=-1, upper=1, order=order, distribution='Uniform')
+	x2 = Parameter(lower=-1, upper=1, order=order, distribution ='Uniform')
+
+
+We will first aim to approximate this function using a full tensor grid. This should provide some basis for comparison. We begin by defining the parameters and the tensor grid.
+
+.. code::
+
+	tensor = Basis('Tensor grid')
+	myPoly = Polyint([x1, x2], tensor)
+	myPoly.computeCoefficients(function)
+
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	plt.scatter(myPoly.quadraturePoints[:,0], myPoly.quadraturePoints[:,1] , marker='o', s=2, color='tomato')
+	adjust_spines(ax, ['left', 'bottom'])
+	plt.xlabel('$\zeta_1$', fontsize=13)
+	plt.ylabel('$\zeta_2$', fontsize=13)
+	plt.xticks(fontsize=13)
+	plt.yticks(fontsize=13)
+	plt.savefig('Figure_ten_pts.png' , dpi=200, bbox_inches='tight', pad_inches=0.1)
+
+	x, y, z, max_order = twoDgrid(myPoly.coefficients, myPoly.multi_index)
+	G = np.log10(np.abs(z))
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	cax = plt.scatter(x, y, s=30, marker='o', c=G, cmap='jet', alpha=1.0, vmin=-16.0, vmax=0.)
+	plt.xlim(-0.5, max_order)
+	plt.ylim(-0.5, max_order)
+	adjust_spines(ax, ['left', 'bottom'])
+	ax.set_axisbelow(True)
+	plt.xlabel('$i_1$', fontsize=13)
+	plt.ylabel('$i_2$', fontsize=13)
+	cbar = plt.colorbar(extend='neither', spacing='proportional',
+                orientation='vertical', shrink=0.8, format="%.0f")
+	cbar.ax.tick_params(labelsize=13)
+	plt.savefig('Pseudo_1.png',   dpi=300, bbox_inches='tight')
+
+.. figure:: Figures/Pseudo_1.png
+   :scale: 30 %
+
+.. figure:: Figures/Figure_ten_pts.png
+   :scale: 40%
+
+The figures above show us the coefficient magnitude (log base-10 scale) and the corresponding quadrature points. Now, let us try to obtain the same result using SPAM. This can be easily done in Effective Quadratures. We start by declaring a sparse grid multi-index.
+
+.. code::
+	
+	sparse = Basis('Sparse grid', level=7, growth_rule='exponential')
+
+Then we proceed to compute the coefficients using the SPAM. The calls to the Polyint subroutine are unchanged, apart from the basis.
+
+.. code::
+
+	sparse = Basis('Sparse grid', level=7, growth_rule='exponential')
+	mySparsePoly = Polyint([x1, x2], sparse)
+	mySparsePoly.computeCoefficients(function)
+
+And again, for the plots we have:
+
+.. code::
+
+	x, y, z, max_order = twoDgrid(mySparsePoly.coefficients, mySparsePoly.multi_index)
+	G = np.log10(np.abs(z))
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	cax = plt.scatter(x, y, s=30, marker='o', c=G, cmap='jet', alpha=1.0, vmin=-16.0, vmax=0.)
+	plt.xlim(-0.5, max_order)
+	plt.ylim(-0.5, max_order)
+	adjust_spines(ax, ['left', 'bottom'])
+	ax.set_axisbelow(True)
+	plt.xlabel('$i_1$', fontsize=13)
+	plt.ylabel('$i_2$', fontsize=13)
+	cbar = plt.colorbar(extend='neither', spacing='proportional',
+                orientation='vertical', shrink=0.8, format="%.0f")
+	cbar.ax.tick_params(labelsize=13)
+	plt.savefig('Pseudo_2.png',   dpi=300, bbox_inches='tight')
+
+
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	plt.scatter(mySparsePoly.quadraturePoints[:,0], mySparsePoly.quadraturePoints[:,1] , marker='o', s=2, color='tomato')
+	adjust_spines(ax, ['left', 'bottom'])
+	plt.xlabel('$\zeta_1$', fontsize=13)
+	plt.ylabel('$\zeta_2$', fontsize=13)
+	plt.xticks(fontsize=13)
+	plt.yticks(fontsize=13)
+	plt.savefig('FigureDD.png' , dpi=200, bbox_inches='tight', pad_inches=0.1)
+	print len(np.unique(mySparsePoly.quadraturePoints, axis=0))
+	>> 1421
+
+.. figure:: Figures/Pseudo_2.png
+   :scale: 30 %
+
+.. figure:: Figures/FigureDD.png
+   :scale: 40%
+
+The total number of points in the sparse grid is 1421 compared to 10,201 in the full tensor grid; the savings is evident. SPAM leverages the anistropic nature of the coefficients to deliver nearly the same level of approximation.
+
+**References**
+
+.. [1]  Constantine, P. G., Eldred, M. S. and Phipps, E. T., (2012) Sparse pseudospectral approximation method. Computer Methods in Applied Mechanics and Engineering 229: 1-12.

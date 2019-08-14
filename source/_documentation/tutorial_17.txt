@@ -1,0 +1,200 @@
+Polynomial surrogate optimisation 
+=================================
+In this tutorial, we demonstrate how one may perform optimization of orthogonal polynomials constructed in Effective Quadratures. Orthogonal polynomials :math:`\psi_{i}` and their derivatives :math:`\psi_{i}^{(d)}` may be found using the standard four-term recurrence
+
+.. math::
+
+		\sqrt{\beta_{i+1}} \psi_{i+1}^{(d)} = (r-\alpha_i) \psi_i^{(d)} - \sqrt{\beta_i} \psi_{i-1}^{(d)} + d \psi_i^{(d-1)}
+
+for :math:`d,i \geq 0` where :math:`\psi_i^{(d)} \equiv 0` for :math:`n < d, n < 0`. The recurrence coefficients :math:`\alpha_i, \beta_i`, whose values are determined by the user-specified distribution of the weight function, indicate the class of orthogonal polynomial :math:`\psi_{i}`. Using this recurrence relation, derivatives of all orders may be calculated by Effective Quadratures very efficiently, allowing the user to have easy access to gradient information for optimization of orthogonal polynomials. Effective Quadratures has a built-in :code:`Optimization` class that will calculate derivatives of orthogonal polynomials and perform optimization using the `minimize <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html>`__ method from `Scipy optimize <https://docs.scipy.org/doc/scipy/reference/optimize.html>`__. 
+
+To demonstrate a simple example, we consider the following constrained optimization problem:
+
+.. math::
+
+	   	\begin{eqnarray}
+      		\min_{x,y} 	\quad    	& (1-x)^2 + 100(y-x^2)^2 	\\
+      		\textrm{ subject to } 	& (x-1)^3 - y + 1 \leq 0 	\\
+      								& x + y = 2 				\\
+      								& -1 \leq x \leq 1 			\\
+      								& -1 \leq y \leq 1.
+		\end{eqnarray}
+
+First, let's use :code:`Polyreg` to construct the objective function and the first constraint in terms of Legendre polynomials defined over a total order basis.
+
+.. code::
+
+		import numpy as np
+		import scipy as sp
+		from equadratures import *
+
+		def ObjFun(x):
+		    f = np.zeros((x.shape[0]))
+		    for i in range(x.shape[0]):
+		        f[i] = sp.optimize.rosen(x[i,:])
+		    return f
+
+		def ConFun1(x):
+		    g = np.zeros((x.shape[0]))
+		    for i in range(g.shape[0]):
+		        g[i] = (x[i,0]-1.0)**3 - x[i,1] + 1.0
+		    return g 
+
+		n = 2
+		N = 20
+
+		X = np.random.uniform(-1.0, 1.0, (N, n))
+		#Construct f using Legendre polynomials with a total order basis
+		f = ObjFun(X)
+		fparam = Parameter(distribution='uniform', lower=-1., upper=1., order=4)
+		fParameters = [fparam for i in range(n)]
+		myBasis = Basis('Total order')
+		fpoly = Polyreg(fParameters, myBasis, training_inputs=X, training_outputs=f)
+		#Construct g1 using Legendre polynomials with a total order basis
+		g1 = ConFun1(X)
+		g1param = Parameter(distribution='uniform', lower=-1., upper=1., order=3)
+		g1Parameters = [g1param for i in range(n)]
+		myBasis = Basis('Total order')
+		g1poly = Polyreg(g1Parameters, myBasis, training_inputs=X, training_outputs=g1) 
+
+The coefficient of determination (R-squared) value of the fit of both of these functions can be computed via:
+
+.. code::
+		
+		print(fpoly.getfitStatistics())
+		print(g1poly.getfitStatistics())
+
+Both of these functions give a fit of :math:`1.0`, indicating an exact fit.
+
+.. figure:: Figures/Rosenbrock.png
+	:scale: 60 %
+	
+	Figure. Contours of the objective function.
+
+Now that the nonlinear functions have been constructed using orthogonal polynomials, we can use :code:`Optimization` to solve the aforementioned optimization problem.
+
+.. code::
+
+		#Initialise optimization problem by specifying optimization method
+		Opt = Optimization(method='trust-constr')
+		#Add objective function by specifying Poly object
+		Opt.addObjective(Poly=fpoly)
+		#Add nonlinear inequality constraints lb <= g1poly <= ub
+		Opt.addNonLinearIneqCon([-np.inf, 0.0], Poly=g1poly)
+		#Add linear equality constraints Ax = b
+		Opt.addLinearEqCon(np.array([1.0,1.0]), np.array([2.0]))
+		#Add lower and upper bounds
+		Opt.addBounds(-np.ones(n), np.ones(n))
+		#Initialize starting point
+		x0 = np.zeros(n)
+		#Solve optimization problem
+		sol = Opt.optimizePoly(x0)
+
+The above code returns the solution :math:`-2.13e-14` found at :math:`x = [1,1]`, which very closely responds to the true optimal solution of :math:`0`.
+
+Alternatively, if one already has access to function and derivatives and does not want to construct a :code:`Polyreg` object for the function, user-provided functions may be supplied to the optimization routine. The following code demonstrates how to do this for the first constraint of the same optimization problem.
+
+.. code::
+
+		def ConFun1(x):
+		    g = np.zeros((x.shape[0]))
+		    for i in range(g.shape[0]):
+		        g[i] = (x[i,0]-1.0)**3 - x[i,1] + 1.0
+		    return g 
+
+		def ConFun1_Deriv(x):
+		    return np.array([3.0*(x[0]-1.0)**2, -1.0])
+
+		def ConFun1_Hess(x):
+		    g_Hess = np.zeros((2, 2))
+		    g_Hess[0, 0] = 6.0*(x[0]-1.0)
+		    return g_Hess
+
+		#Construct lambda functions of the constraint, its derivative, and its Hessian
+		g1Func = lambda x: ConFun1(x.reshape(1,-1))
+		g1Grad = lambda x: ConFun1_Deriv(x.flatten())
+		g1Hess = lambda x, v: ConFun1_Hess(x.flatten())
+		#Initialise optimization problem by specifying optimization method
+		Opt = Optimization(method='trust-constr')
+		#Add objective function by specifying Poly object
+		Opt.addObjective(Poly=fpoly)
+		#Add lower and upper bounds
+		Opt.addBounds(-np.ones(n), np.ones(n))
+		#Add linear equality constraints Ax = b
+		Opt.addLinearEqCon(np.array([1.0,1.0]), np.array([2.0]))
+		#Add nonlinear inequality constraints lb <= g1Func <= ub
+		Opt.addNonLinearIneqCon([-np.inf,0], Function=g1Func, jacFunction=g1Grad, hessFunction=g1Hess)
+		#Initialize starting point
+		x0 = np.zeros(n)
+		#Solve optimization problem
+		sol = Opt.optimizePoly(x0)
+
+The above code returns the solution :math:`4.76e-14` found at :math:`x = [1,1]`. 
+
+The main benefit of using Effective Quadratures for optimization is best realized in cases where derivatives are not known a priori or are very expensive to calculate. Such situations are commonplace in the scientific community e.g. for 'black-box' functions whose values are obtained through the use of expensive computer simulations. Derivative-free optimization strategies, such as stochastic optimization or trust-region methods, may be used in such situations; however, the number of function evaluations required may be prohibitively high in some cases. On the other hand, using Effective Quadratures, one can readily construct surrogate models of the function of interest using orthogonal polynomials and then optimize over the surrogate to approximate the optimal solution.
+
+To demonstrate this, we consider the following constrained optimization problem:
+
+.. math::
+
+	   	\begin{eqnarray}
+      		\min_{x,y} 	\quad    	& (1-x)^2 + 100(y-x^2)^2 	\\
+      		\textrm{ subject to } 	& x^2 + y^2 \leq 2.
+		\end{eqnarray}
+
+Although, the gradients of these functions can be easily calculated analytically, we will show that if a derivative-free optimization strategy is used, the number of function evaluations can be prohibitively high. 
+
+The new constraint can be defined using the following 
+
+.. code::
+
+		def ConFun2(x):
+		    g = np.zeros((x.shape[0]))
+		    for i in range(g.shape[0]):
+		        g[i] = x[i,0]**2 + x[i,1]**2
+		    return g 
+
+and using `COBYLA <https://en.wikipedia.org/wiki/COBYLA>`__ (a very common derivative-free optimization strategy), we can find a solution to this optimization problem using the following code:
+
+.. code::
+
+		constraints = {'type': 'ineq', 'fun': lambda x: ConFun2(x.reshape(1,-1)) - 2.0}
+		sol2 = sp.optimize.minimize(lambda x: ObjFun(x.reshape(1,-1)), x0, method='COBYLA', constraints=constraints)
+
+On the other hand, we can use Effective Quadratures to construct accurate surrogates and optimize over these surrogates using the following code:
+
+.. code::
+
+		#Construct Poly object of constraint
+		g2 = ConFun2(X)
+		g2param = Parameter(distribution='uniform', lower=-1., upper=1., order=2)
+		g2Parameters = [g2param for i in range(n)]
+		myBasis = Basis('Total order')
+		g2poly = Polyreg(fParameters, myBasis, training_inputs=X, training_outputs=g2)
+
+		#Initialise optimization problem by specifying optimization method
+		Opt = Optimization(method='trust-constr')
+		#Add objective function by specifying Poly object
+		Opt.addObjective(Poly=fpoly)
+		#Add nonlinear inequality constraints lb <= g2poly <= ub
+		Opt.addNonLinearIneqCon([-np.inf,2.0], Poly=g2poly)
+		#Initialize starting point
+		x0 = np.zeros(n)
+		#Solve optimization problem
+		sol = Opt.optimizePoly(x0)
+
+.. list-table:: Optimization results
+   :widths: 33 33 33
+   :header-rows: 1
+
+   * - Optimization strategy
+     - Function evaluations
+     - Solution
+   * - COBYLA
+     - 990
+     - 0.011 
+   * - Surrogate-based optimisation
+     - 20
+     - 5.04e-13
+
+The above table demonstrates the possible benefits of using Effective Quadratures for surrogate-based optimization, as a better solution is obtained with fewer function evaluations. It should be noted that the effectiveness of this approach is highly dependent on the accuracy of the surrogate models. In this rather contrived example, orthogonal polynomials defined over the domain of interest provide a very good approximation of the true function; however, in many other cases, this is not necessarily true. To mitigate this, Effective Quadratures may be coupled with a trust-region method to construct local polynomial approximations, thereby increasing the accuracy in smaller regions of interest.

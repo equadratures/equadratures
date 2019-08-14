@@ -149,11 +149,19 @@ class Poly(object):
             mm, nn = A.shape
             m_refined = int(np.round(self.sampling_ratio * nn))
             z = self.subsampling_algorithm_function(A, m_refined)
-            self.quadrature_points = quadrature_points[z,:]
-            self.quadrature_weights =  quadrature_weights[z] / np.sum(quadrature_weights[z])
+            self.__quadrature_points = quadrature_points[z,:]
+            self.__quadrature_weights =  quadrature_weights[z] / np.sum(quadrature_weights[z])
         else:
-            self.quadrature_points = quadrature_points
-            self.quadrature_weights = quadrature_weights
+            self.__quadrature_points = quadrature_points
+            self.__quadrature_weights = quadrature_weights
+    def get_model_evaluations(self):
+        """
+        Returns the points at which the model was evaluated at.
+
+        :param Poly self:
+            An instance of the Poly class.
+        """
+        return self.__model_evaluations
     def get_mean_and_variance(self):
         """
         Computes the mean and variance of the model.
@@ -196,7 +204,7 @@ class Poly(object):
                 quad_pts, quad_wts = quad.get_points_and_weights()
                 poly_vandermonde_matrix = self.get_poly(quad_pts)
             else:
-                poly_vandermonde_matrix = self.get_poly(self.quadrature_points)
+                poly_vandermonde_matrix = self.get_poly(self.__quadrature_points)
                 quad_pts, quad_wts = self.get_points_and_weights()
 
             if self.highest_order <= MAXIMUM_ORDER_FOR_STATS:
@@ -271,19 +279,19 @@ class Poly(object):
             The gradient of the function that needs to be approximated. In the absence of a callable gradient function, the input can be a matrix of gradient evaluations at the quadrature points.
         """
         if (model is None) and (self.outputs is not None):
-            self.model_evaluations = self.outputs
+            self.__model_evaluations = self.outputs
         else:
             if callable(model):
-                y = evaluate_model(self.quadrature_points, model)
+                y = evaluate_model(self.__quadrature_points, model)
             else:
                 y = model
-                assert(y.shape[0] == self.quadrature_points.shape[0])
+                assert(y.shape[0] == self.__quadrature_points.shape[0])
             if y.shape[1] != 1:
                 raise(ValueError, 'model values should be a column vector.')
-            self.model_evaluations = y
+            self.__model_evaluations = y
             if self.gradient_flag == 1:
                 if callable(model_grads):
-                    grad_values = evaluate_model_gradients(self.quadrature_points, model_grads, 'matrix')
+                    grad_values = evaluate_model_gradients(self.__quadrature_points, model_grads, 'matrix')
                 else:
                     grad_values = model_grads
                 p, q = grad_values.shape
@@ -294,7 +302,7 @@ class Poly(object):
                         self.gradient_evaluations[counter] = W[i,i] * grad_values[i,j]
                         counter = counter + 1
                 del d, grad_values
-                dP = self.get_poly_grad(self.quadrature_points)
+                dP = self.get_poly_grad(self.__quadrature_points)
         self.__set_coefficients()
     def __set_coefficients(self):
         """
@@ -305,12 +313,12 @@ class Poly(object):
         """
         # Check to ensure that if there any NaNs, a different basis must be used and solver must be changed
         # to least squares!
-        indices_with_nans = np.argwhere(np.isnan(self.model_evaluations))[:,0]
+        indices_with_nans = np.argwhere(np.isnan(self.__model_evaluations))[:,0]
         if len(indices_with_nans) is not 0:
-            print('WARNING: One or more of your model evaluations have resulted in an NaN. We found '+str(len(indices_with_nans))+' NaNs out of '+str(len(self.model_evaluations))+'.')
+            print('WARNING: One or more of your model evaluations have resulted in an NaN. We found '+str(len(indices_with_nans))+' NaNs out of '+str(len(self.__model_evaluations))+'.')
             print('The code will now use a least-squares technique that will ignore input-output pairs of your model that have NaNs. This will likely compromise computed statistics.')
-            self.inputs = np.delete(self.quadrature_points, indices_with_nans, axis=0)
-            self.outputs = np.delete(self.model_evaluations, indices_with_nans, axis=0)
+            self.inputs = np.delete(self.__quadrature_points, indices_with_nans, axis=0)
+            self.outputs = np.delete(self.__model_evaluations, indices_with_nans, axis=0)
             self.subsampling_algorithm_name = None
             number_of_basis_to_prune_down = self.basis.cardinality - len(self.outputs)
             if number_of_basis_to_prune_down > 0:
@@ -329,9 +337,9 @@ class Poly(object):
                 P = self.get_poly(tensor.points, tensor.basis.elements)
                 W = np.diag(np.sqrt(tensor.weights))
                 A = np.dot(W , P.T)
-                __, __ , counts = np.unique( np.vstack( [tensor.points, self.quadrature_points]), axis=0, return_index=True, return_counts=True)
+                __, __ , counts = np.unique( np.vstack( [tensor.points, self.__quadrature_points]), axis=0, return_index=True, return_counts=True)
                 indices = [i for i in range(0, len(counts)) if  counts[i] == 2]
-                b = np.dot(W , self.model_evaluations[indices])
+                b = np.dot(W , self.__model_evaluations[indices])
                 del counts, indices
                 coefficients_i = self.solver(A, b)  * self.quadrature.sparse_weights[counter]
                 multindices_i =  tensor.basis.elements
@@ -349,10 +357,10 @@ class Poly(object):
             self.coefficients = coefficients_final
             self.basis.elements = unique_indices
         else:
-            P = self.get_poly(self.quadrature_points)
-            W = np.diag(np.sqrt(self.quadrature_weights))
+            P = self.get_poly(self.__quadrature_points)
+            W = np.diag(np.sqrt(self.__quadrature_weights))
             A = np.dot(W , P.T)
-            b = np.dot(W , self.model_evaluations)
+            b = np.dot(W , self.__model_evaluations)
             if self.gradient_flag == 1:
                 C = cell2matrix(dPcell, W)
                 self.coefficients = self.solver(A, b, C, self.gradient_evaluations)
@@ -387,7 +395,7 @@ class Poly(object):
         :return:
             **points**: A numpy.ndarray of sampled quadrature points with shape (number_of_samples, dimension).
         """
-        return self.quadrature_points
+        return self.__quadrature_points
     def get_weights(self):
         """
         Computes quadrature weights.
@@ -398,7 +406,7 @@ class Poly(object):
             **weights**: A numpy.ndarray of the corresponding quadrature weights with shape (number_of_samples, 1).
 
         """
-        return self.quadrature_weights
+        return self.__quadrature_weights
     def get_points_and_weights(self):
         """
         Returns the samples and weights based on the sampling strategy.
@@ -410,7 +418,7 @@ class Poly(object):
 
             **w**: A numpy.ndarray of the corresponding quadrature weights with shape (number_of_samples, 1).
         """
-        return self.quadrature_points, self.quadrature_weights
+        return self.__quadrature_points, self.__quadrature_weights
     def get_polyfit(self, stack_of_points):
         """
         Evaluates the the polynomial approximation of a function (or model data) at prescribed points.

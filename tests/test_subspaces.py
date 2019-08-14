@@ -1108,14 +1108,6 @@ class TestG(TestCase):
     def test_find_subspaces(self):
         X, Y = data()
         N = X.shape[0]
-        p_order = 2
-        params = []
-        basis_orders = []
-        for i in range(25):
-                params.append(Parameter(p_order, distribution = 'Custom', data = np.reshape(X[:,i], (N,))))
-                basis_orders.append(p_order)
-
-        basis = Basis("total-order", orders = basis_orders)
         num_obs = 500
         chosen_points = np.random.choice(range(N), size = num_obs, replace = False)
         X_red = X[chosen_points,:]
@@ -1123,11 +1115,20 @@ class TestG(TestCase):
         remaining_pts = np.delete(np.arange(N), chosen_points)
         chosen_valid_pts = np.random.choice(remaining_pts, size = 30, replace = False)
         x_eval = X[chosen_valid_pts]
-        poly = Poly(params, basis, method='least-squares', sampling_args={'sample-points':X_red, \
-                                                               'sample-outputs':Y_red})
-        poly.set_model()
-        e, W = get_active_subspace(poly)
-        e2, W2, low, up = get_active_subspace(poly, bootstrap=True)
-        U, R = variable_projection(X_red, Y_red)
+
+        # Active subspace
+        mysubspace = Subspaces(method='active-subspace', sample_points=X_red, sample_outputs=Y_red)
+        eigs = mysubspace.get_eigenvalues()
+        W = mysubspace.get_subspace()
+        e = mysubspace.get_eigenvalues()
+
+        # Variable projection
+        mysubspace2 = Subspaces(method='variable-projection', sample_points=X_red, sample_outputs=Y_red)
+        W = mysubspace2.get_subspace()
+        poly = mysubspace2.get_subspace_polynomial()
+        # Test subspace polynomial
+
+        #e2, W2, low, up = get_active_subspace(poly, bootstrap=True)
+        #U, R = variable_projection(X_red, Y_red)
 if __name__== '__main__':
     unittest.main()

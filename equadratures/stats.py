@@ -137,14 +137,24 @@ class Statistics(object):
             first_order_kurtosis = stats.getCondKurtosis(1)
 
         """
+<<<<<<< HEAD
         return private_conditional_kurtosis(order, self.quadrature_weights, \
             self.__weighted_evals, self.basis, self.__variance, self.__kurtosis)
     def get_sobol_total(self):
+=======
+        return CondKurtosis(order, self.quad_wts, self.weighted_evals, self.basis, self.variance, self.kurtosis)
+
+    def calc_TSI(self):
+>>>>>>> c8e6b636b5b5a1f8c95bb385c61791a179f3ca21
         """
         Get total Sobol' indices
         :return: list: Totol Sobol' indices for each parameter
         """
+<<<<<<< HEAD
         all_sobols = self.__sobol
+=======
+        all_sobols = self.sobol
+>>>>>>> c8e6b636b5b5a1f8c95bb385c61791a179f3ca21
         dims = len(self.parameters)
         TSI = np.zeros(dims)
         for i in all_sobols.keys():

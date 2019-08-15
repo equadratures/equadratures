@@ -52,30 +52,6 @@ class Test_optimisation(TestCase):
             g2[i] = x[i,0]**3 - x[i,1]
         return g2
 
-    @staticmethod
-    def ObjFun_Subspace(x,a):
-        u = np.dot(x,a)
-        f = np.zeros((u.shape[0]))
-        for i in range(u.shape[0]):
-            f[i] = sp.optimize.rosen(u[i,:])
-        return u, f
-
-    @staticmethod
-    def ConFun1_Subspace(x,a):
-        w = np.dot(x,a)
-        g1 = np.zeros((w.shape[0]))
-        for i in range(g1.shape[0]):
-            g1[i] = w[i,0] + w[i,1]
-        return w, g1
-
-    @staticmethod
-    def ConFun2_Subspace(x,a):
-        v = np.dot(x,a)
-        g2 = np.zeros((v.shape[0]))
-        for i in range(g2.shape[0]):
-            g2[i] = v[i,0]**3 - v[i,1]
-        return v, g2
-
     def test_optimise_poly_unconstrained_poly(self):
         n = 2
         N = 20
@@ -116,7 +92,7 @@ class Test_optimisation(TestCase):
             Opt = eq.Optimisation(method=method)
             Opt.add_objective(poly=fpoly)
             Opt.add_bounds(-np.ones(n), np.ones(n))
-            Opt.add_nonlinear_ineq_con(self.boundsg1, poly=g1poly)
+            Opt.add_nonlinear_ineq_con({'poly': g1poly, 'bounds': self.boundsg1})
             x0 = np.zeros(n)
             sol = Opt.optimise_poly(x0)
             if sol['status'] == 0:
@@ -132,14 +108,14 @@ class Test_optimisation(TestCase):
         myBasis = eq.Basis('total-order')
         fpoly = eq.Poly(fParameters, myBasis, method='least-squares', sampling_args={'sample-points':X, 'sample-outputs':f})
         fpoly.set_model()
-        g1Func = lambda x: self.ConFun1(x.reshape(1,-1))
-        g1Grad = lambda x: self.ConFun1_Deriv(x.flatten())
-        g1Hess = lambda x, v: self.ConFun1_Hess(x.flatten())
+        g1Func = lambda x: self.boundsg1[1] - self.ConFun1(x.reshape(1,-1))
+        g1Grad = lambda x: -self.ConFun1_Deriv(x.flatten())
+        g1Hess = lambda x: -self.ConFun1_Hess(x.flatten())
 
         for method in ['trust-constr', 'SLSQP']:
             Opt = eq.Optimisation(method=method)
             Opt.add_objective(poly=fpoly)
-            Opt.add_nonlinear_ineq_con(self.boundsg1, function=g1Func, jac_function=g1Grad, hess_function=g1Hess)
+            Opt.add_nonlinear_ineq_con(custom={'function': g1Func, 'jac_function': g1Grad, 'hess_function': g1Hess})
             Opt.add_linear_eq_con(np.eye(n), np.ones(n))
             x0 = np.zeros(n)
             sol = Opt.optimise_poly(x0)

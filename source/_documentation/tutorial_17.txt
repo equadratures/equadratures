@@ -48,14 +48,14 @@ First, let's use :code:`Polyreg` to construct the objective function and the fir
 		f = ObjFun(X)
 		fparam = Parameter(distribution='uniform', lower=-1., upper=1., order=4)
 		fParameters = [fparam for i in range(n)]
-		myBasis = Basis('Total order')
-		fpoly = Polyreg(fParameters, myBasis, training_inputs=X, training_outputs=f)
+		myBasis = Basis('total-order')
+		fpoly = Poly(fParameters, myBasis, method='least-squares', sampling_args={'sample-points':X, 'sample-outputs':f})
 		#Construct g1 using Legendre polynomials with a total order basis
 		g1 = ConFun1(X)
 		g1param = Parameter(distribution='uniform', lower=-1., upper=1., order=3)
 		g1Parameters = [g1param for i in range(n)]
-		myBasis = Basis('Total order')
-		g1poly = Polyreg(g1Parameters, myBasis, training_inputs=X, training_outputs=g1) 
+		myBasis = Basis('total-order')
+		g1poly = Poly(g1Parameters, myBasis, method='least-squares', sampling_args={'sample-points':X, 'sample-outputs':g1}) 
 
 The coefficient of determination (R-squared) value of the fit of both of these functions can be computed via:
 
@@ -78,17 +78,17 @@ Now that the nonlinear functions have been constructed using orthogonal polynomi
 		#Initialise optimization problem by specifying optimization method
 		Opt = Optimization(method='trust-constr')
 		#Add objective function by specifying Poly object
-		Opt.addObjective(Poly=fpoly)
+		Opt.add_objective(poly=fpoly)
 		#Add nonlinear inequality constraints lb <= g1poly <= ub
-		Opt.addNonLinearIneqCon([-np.inf, 0.0], Poly=g1poly)
+		Opt.add_nonlinear_ineq_con(poly={'poly': g1poly, 'bounds': [-np.inf, 0.0]})
 		#Add linear equality constraints Ax = b
-		Opt.addLinearEqCon(np.array([1.0,1.0]), np.array([2.0]))
+		Opt.add_linear_eq_con(np.array([1.0,1.0]), np.array([2.0]))
 		#Add lower and upper bounds
-		Opt.addBounds(-np.ones(n), np.ones(n))
+		Opt.add_bounds(-np.ones(n), np.ones(n))
 		#Initialize starting point
 		x0 = np.zeros(n)
 		#Solve optimization problem
-		sol = Opt.optimizePoly(x0)
+		sol = Opt.optimize_poly(x0)
 
 The above code returns the solution :math:`-2.13e-14` found at :math:`x = [1,1]`, which very closely responds to the true optimal solution of :math:`0`.
 
@@ -111,23 +111,23 @@ Alternatively, if one already has access to function and derivatives and does no
 		    return g_Hess
 
 		#Construct lambda functions of the constraint, its derivative, and its Hessian
-		g1Func = lambda x: ConFun1(x.reshape(1,-1))
-		g1Grad = lambda x: ConFun1_Deriv(x.flatten())
-		g1Hess = lambda x, v: ConFun1_Hess(x.flatten())
+		g1Func = lambda x: -ConFun1(x.reshape(1,-1))
+		g1Grad = lambda x: -ConFun1_Deriv(x.flatten())
+		g1Hess = lambda x: -ConFun1_Hess(x.flatten())
 		#Initialise optimization problem by specifying optimization method
 		Opt = Optimization(method='trust-constr')
 		#Add objective function by specifying Poly object
-		Opt.addObjective(Poly=fpoly)
+		Opt.add_objective(poly=fpoly)
 		#Add lower and upper bounds
-		Opt.addBounds(-np.ones(n), np.ones(n))
+		Opt.add_bounds(-np.ones(n), np.ones(n))
 		#Add linear equality constraints Ax = b
-		Opt.addLinearEqCon(np.array([1.0,1.0]), np.array([2.0]))
+		Opt.add_linear_eq_con(np.array([1.0,1.0]), np.array([2.0]))
 		#Add nonlinear inequality constraints lb <= g1Func <= ub
-		Opt.addNonLinearIneqCon([-np.inf,0], Function=g1Func, jacFunction=g1Grad, hessFunction=g1Hess)
+		Opt.add_nonlinear_ineq_con(custom={'function': g1Func, 'jac_function': g1Grad, 'hessFunction': g1Hess)
 		#Initialize starting point
 		x0 = np.zeros(n)
 		#Solve optimization problem
-		sol = Opt.optimizePoly(x0)
+		sol = Opt.optimize_poly(x0)
 
 The above code returns the solution :math:`4.76e-14` found at :math:`x = [1,1]`. 
 
@@ -169,19 +169,19 @@ On the other hand, we can use Effective Quadratures to construct accurate surrog
 		g2 = ConFun2(X)
 		g2param = Parameter(distribution='uniform', lower=-1., upper=1., order=2)
 		g2Parameters = [g2param for i in range(n)]
-		myBasis = Basis('Total order')
-		g2poly = Polyreg(fParameters, myBasis, training_inputs=X, training_outputs=g2)
+		myBasis = Basis('total-order')
+		g2poly = Poly(g2Parameters, myBasis, method='least-squares', sampling_args={'sample-points':X, 'sample-outputs':g2})
 
 		#Initialise optimization problem by specifying optimization method
 		Opt = Optimization(method='trust-constr')
 		#Add objective function by specifying Poly object
-		Opt.addObjective(Poly=fpoly)
+		Opt.add_objective(Poly=fpoly)
 		#Add nonlinear inequality constraints lb <= g2poly <= ub
-		Opt.addNonLinearIneqCon([-np.inf,2.0], Poly=g2poly)
+		Opt.add_nonlinear_ineq_con(poly={'poly': g2poly, 'bounds': [-np.inf,2.0]})
 		#Initialize starting point
 		x0 = np.zeros(n)
 		#Solve optimization problem
-		sol = Opt.optimizePoly(x0)
+		sol = Opt.optimize_poly(x0)
 
 .. list-table:: Optimization results
    :widths: 33 33 33

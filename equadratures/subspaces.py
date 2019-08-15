@@ -38,8 +38,6 @@ class Subspaces(object):
             self.__get_active_subspace()
         elif self.method == 'variable-projection':
             self.__get_variable_projection(None,None,None,1000,None,False)
-        elif self.method == 'polynomial-neural-network':
-            self.__get_polynomial_neural_network(self)
     def get_subspace_polynomial(self):
         """
         Outputs the polynomial defined over the [active] subspace.
@@ -239,7 +237,7 @@ class Subspaces(object):
             print("VP finished with %d iterations" % iteration)
         active_subspace = U
         inactive_subspace = scipy.linalg.null_space(active_subspace.T)
-        self.__subspace = np.hstack([active_subspace, inactive_subspace])     
+        self.__subspace = np.hstack([active_subspace, inactive_subspace])
     def get_zonotope_vertices(self, num_samples=10000, max_count=100000):
         """
         Returns the vertices of the zonotope.
@@ -263,12 +261,12 @@ class Subspaces(object):
             for i in range(n):
                 total_vertices += comb(m-1,i)
             total_vertices = int(2*total_vertices)
-            
+
             Z = np.random.normal(size=(num_samples, n))
             X = get_unique_rows(np.sign(np.dot(Z, W.transpose())))
             X = get_unique_rows(np.vstack((X, -X)))
             N = X.shape[0]
-            
+
             count = 0
             while N < total_vertices:
                 Z = np.random.normal(size=(num_samples, n))
@@ -279,11 +277,11 @@ class Subspaces(object):
                 count += 1
                 if count > max_count:
                     break
-            
+
             num_vertices = X.shape[0]
             if total_vertices > num_vertices:
                 print('Warning: {} of {} vertices found.'.format(num_vertices, total_vertices))
-            
+
             Y = np.dot(X, W)
             return Y.reshape((num_vertices, n)), X.reshape((num_vertices, m))
     def get_linear_inequalities(self, Y = None, X = None):
@@ -332,8 +330,6 @@ class Subspaces(object):
         U = np.hstack([W1, W2])
         m, n = W1.shape
 
-        # get an initial feasible point using the Chebyshev center. huge props to
-        # David Gleich for showing Paul the Chebyshev center.
         s = np.dot(W1, y).reshape((m, 1))
         normW2 = np.sqrt(np.sum(np.power(W2, 2), axis=1)).reshape((m, 1))
         A = np.hstack((np.vstack((W2, -W2.copy())), np.vstack((normW2, normW2.copy()))))
@@ -578,7 +574,7 @@ def linear_program_ineq(c, A, b):
 def get_unique_rows(X0):
     """
     Function that returns unique rows from ndarray.
-    
+
     :param matrix X0:
         A matrix which may have multiple equivalent rows
     :return:
@@ -586,7 +582,7 @@ def get_unique_rows(X0):
     Notes
     -----
     http://stackoverflow.com/questions/16970982/find-unique-rows-in-numpy-array
-        
+
     """
     X1 = X0.view(np.dtype((np.void, X0.dtype.itemsize * X0.shape[1])))
     return np.unique(X1).view(X0.dtype).reshape(-1, X0.shape[1])

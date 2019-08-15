@@ -304,15 +304,21 @@ class Poly(object):
                 del d, grad_values
                 dP = self.get_poly_grad(self.__quadrature_points)
         self.__set_coefficients()
-    def __set_coefficients(self):
+    def __set_coefficients(self, user_defined_coefficients=None):
         """
         Computes the polynomial approximation coefficients.
 
         :param Poly self:
             An instance of the Poly object.
+
+        :param numpy.ndarray user_defined_coefficients:
+            A numpy.ndarray of shape (N, 1) where N corresponds to the N coefficients provided by the user
         """
         # Check to ensure that if there any NaNs, a different basis must be used and solver must be changed
         # to least squares!
+        if user_defined_coefficients is not None:
+            self.coefficients = user_defined_coefficients
+            return
         indices_with_nans = np.argwhere(np.isnan(self.__model_evaluations))[:,0]
         if len(indices_with_nans) is not 0:
             print('WARNING: One or more of your model evaluations have resulted in an NaN. We found '+str(len(indices_with_nans))+' NaNs out of '+str(len(self.__model_evaluations))+'.')

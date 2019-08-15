@@ -303,6 +303,7 @@ class Poly(object):
                         counter = counter + 1
                 del d, grad_values
                 dP = self.get_poly_grad(self.__quadrature_points)
+        self.statistics_object = None
         self.__set_coefficients()
     def __set_coefficients(self, user_defined_coefficients=None):
         """

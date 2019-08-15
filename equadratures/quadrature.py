@@ -3,6 +3,7 @@ from equadratures.sampling_methods.montecarlo import Montecarlo
 from equadratures.sampling_methods.tensorgrid import Tensorgrid
 from equadratures.sampling_methods.sparsegrid import Sparsegrid
 from equadratures.sampling_methods.userdefined import Userdefined
+from equadratures.sampling_methods.induced import Induced
 from equadratures.sampling_methods.sampling_template import Sampling
 import numpy as np
 class Quadrature(object):
@@ -27,6 +28,8 @@ class Quadrature(object):
         elif self.mesh == 'monte-carlo':
             self.samples = Montecarlo(self.parameters, self.basis)
             self.list = None
+        elif self.mesh == 'induced':
+            self.samokes = Induced(self.parameters, self.basis)
         elif self.mesh == 'user-defined':
             self.samples = Userdefined(self.parameters, self.basis, self.points)
         else:

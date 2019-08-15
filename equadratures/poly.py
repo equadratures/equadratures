@@ -33,6 +33,11 @@ class Poly(object):
         :numpy.ndarray sample-points: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
         :numpy.ndarray sample-outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points. Note that
             if ``sample-points`` is provided as an input, then the code expects ``sample-outputs`` too.
+    :param dict solver_args:
+        Optional arguments centered around the specific solver used for computing the coefficients.
+        :float noise-level: The scalar-valued noise level used
+        :bool verbose: The default value is set to ``False``; when set to ``True`` details on the convergence of the solution will be provided. Note for direct methods, this
+            will simply output the condition number of the matrix.
 
     **Sample constructor initialisations**::
 
@@ -65,7 +70,7 @@ class Poly(object):
         5. Bos, L., De Marchi, S., Sommariva, A., Vianello, M., (2010) Computing Multivariate Fekete and Leja points by Numerical Linear Algebra. SIAM Journal on Numerical Analysis, 48(5). `Paper <https://epubs.siam.org/doi/abs/10.1137/090779024>`__
         6. Joshi, S., Boyd, S., (2009) Sensor Selection via Convex Optimization. IEEE Transactions on Signal Processing, 57(2). `Paper <https://ieeexplore.ieee.org/document/4663892>`__
     """
-    def __init__(self, parameters, basis, method=None, sampling_args=None):
+    def __init__(self, parameters, basis, method=None, sampling_args=None, solver_args=None):
         try:
             len(parameters)
         except TypeError:
@@ -74,6 +79,7 @@ class Poly(object):
         self.basis = basis
         self.method = method
         self.sampling_args = sampling_args
+        self.solver_args = solver_args
         self.dimensions = len(parameters)
         self.orders = []
         self.gradient_flag = 0
@@ -129,7 +135,7 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
-        polysolver = Solver(self.method)
+        polysolver = Solver(self.method, self.solver_args)
         self.solver = polysolver.get_solver()
     def __set_points_and_weights(self):
         """

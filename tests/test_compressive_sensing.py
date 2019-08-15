@@ -1133,5 +1133,15 @@ class TestB(TestCase):
         r2 = np.round(r**2, 4)
         np.testing.assert_array_less(0.80, r2, err_msg='Problem!')
 
+        poly = Poly(params, basis, method='compressive-sensing', sampling_args={'sample-points':X_red, 'sample-outputs':Y_red}, \
+                                                                solver_args={'noise-level': 0.01, 'verbose': True})
+        poly.set_model()
+        y_eval = poly.get_polyfit(X)
+        y_valid = Y
+        a,b,r,_,_ = st.linregress(y_eval.flatten(),y_valid.flatten())
+        r2 = np.round(r**2, 4)
+        np.testing.assert_array_less(0.80, r2, err_msg='Problem!')
+
+
 if __name__== '__main__':
     unittest.main()

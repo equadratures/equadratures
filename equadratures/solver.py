@@ -8,12 +8,18 @@ class Solver(object):
 
     :param string method:
     """
-    def __init__(self, method):
+    def __init__(self, method, solver_args):
         self.method = method
-        if self.method.lower() == 'compressive-sensing' or self.method.lower() == 'compressed-sensing':
-            self.solver = lambda A, b: basis_pursuit_denoising(A, b)
+        self.solver_args = solver_args
+        self.noise_level = None
+        self.verbose = False
+        if self.solver_args is not None:
+            if 'noise-level' in self.solver_args: self.noise_level = solver_args.get('noise-level')
+            if 'verbose' is self.solver_args: self.verbose = solver_args.get('verbose')
+        if self.method.lower() == 'compressed sensing' or self.method.lower() == 'compressive-sensing':
+            self.solver = lambda A, b: basis_pursuit_denoising(A, b, self.noise_level, self.verbose)
         elif self.method.lower() == 'least-squares':
-            self.solver = lambda A, b: least_squares(A, b)
+            self.solver = lambda A, b: least_squares(A, b, self.verbose)
         elif self.method.lower() == 'minimum-norm':
             self.solver = lambda A, b: minimum_norm(A, b)
         elif self.method.lower() == 'numerical-integration':
@@ -22,11 +28,13 @@ class Solver(object):
             self.solver = lambda A, b, C, d: constrained_least_squares(A, b, C, d)
     def get_solver(self):
         return self.solver
-def least_squares(A, b):
+def least_squares(A, b, verbose):
     alpha = np.linalg.lstsq(A, b, rcond=None)
+    if verbose is True:
+        print('The condition number of the matrix is '+str(np.linalg.cond(A))+'.')
     return alpha[0]
 def minimum_norm(A, b):
-    Q, R, pvec = qr(A, pivoting=True )
+    Q, R, pvec = qr(A, pivoting=True)
     m, n = A.shape
     r = np.linalg.matrix_rank(A)
     Q1 = Q[0:r, 0:r]
@@ -43,17 +51,24 @@ def orthogonal_linear_system(A, b):
     return coefficients
 def constrained_least_squares(A, b, C, d):
     return 0
-def basis_pursuit_denoising(Ao, bo):
+def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
     A = deepcopy(Ao)
     y = deepcopy(bo)
     N = A.shape[0]
     # Possible noise levels
-    log_epsilon = [-8,-7,-6,-5,-4,-3,-2,-1]
-    epsilon = [float(10**i) for i in log_epsilon]
+    log_eta = [-8,-7,-6,-5,-4,-3,-2,-1]
+    if noise_level is None:
+        eta = [float(10**i) for i in log_eta]
+    else:
+        try:
+            len(noise_level)
+        except TypeError:
+            eta = [noise_level]
+        log_eta =  [np.log10(i) for i in eta]
     errors = np.zeros(5)
-    mean_errors = np.zeros(len(epsilon))
+    mean_errors = np.zeros(len(eta))
     # 5 fold cross validation
-    for e in range(len(epsilon)):
+    for e in range(len(eta)):
         try:
             for n in range(5):
                 indices = [int(i) for i in n * np.ceil(N/5.0) + range(int(np.ceil(N/5.0))) if i < N]
@@ -61,7 +76,7 @@ def basis_pursuit_denoising(Ao, bo):
                 A_train = np.delete(A, indices, 0)
                 y_ver = y[indices].flatten()
                 y_train = np.delete(y, indices).flatten()
-                x_train = bp_denoise(A_train, y_train, epsilon[e])
+                x_train = __bp_denoise(A_train, y_train, eta[e])
                 y_trained = np.reshape(np.dot(A_ver, x_train), len(y_ver))
 
                 assert y_trained.shape == y_ver.shape
@@ -69,19 +84,21 @@ def basis_pursuit_denoising(Ao, bo):
         except:
             errors = np.inf*np.ones(5)
         mean_errors[e] = np.mean(errors)
-    # best_epsilon = epsilon[np.argmin(mean_errors)]
-    # x = __bp_denoise(A, y, best_epsilon)
+    best_eta = eta[np.argmin(mean_errors)]
+    x = __bp_denoise(A, y, best_eta)
     sorted_ind = np.argsort(mean_errors)
     x = None
     ind = 0
     while x is None:
-        if ind >= len(log_epsilon):
+        if ind >= len(log_eta):
             raise ValueError('Singular matrix!! Reconsider sample points!')
         try:
-            x = __bp_denoise(A, y, epsilon[sorted_ind[ind]])
+            x = __bp_denoise(A, y, eta[sorted_ind[ind]])
         except:
             ind += 1
     residue = np.linalg.norm(np.dot(A, x).flatten() - y.flatten())
+    if verbose is not None:
+        print('The noise level used is '+str(best_eta)+'.')
     return np.reshape(x, (len(x),1))
 def __CG_solve(A, b, max_iters, tol):
     """
@@ -259,7 +276,7 @@ def __l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, c
 
       du = (1.0/sig11) * ntgu - (sig12/sig11)*dx
 
-#     minimum step size that stays in the interior
+      # minimum step size that stays in the interior
       aqe = np.dot(Adx.T, Adx)
       bqe = 2.0*np.dot(r.T, Adx)
       cqe = np.asscalar(np.dot(r.T,r)) - epsilon**2

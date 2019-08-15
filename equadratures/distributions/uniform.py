@@ -23,7 +23,7 @@ class Uniform(Distribution):
             self.variance = 1.0/12.0 * (self.upper - self.lower)**2
             self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
             self.parent = uniform(loc=(self.lower), scale=(self.upper-self.lower))
-
+        self.mean = 0.0
         self.skewness = 0.0
         self.shape_parameter_A = 0.
         self.shape_parameter_B = 0.

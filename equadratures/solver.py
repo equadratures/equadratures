@@ -69,8 +69,8 @@ def basis_pursuit_denoising(Ao, bo):
         except:
             errors = np.inf*np.ones(5)
         mean_errors[e] = np.mean(errors)
-    best_epsilon = epsilon[np.argmin(mean_errors)]
-    x = __bp_denoise(A, y, best_epsilon)
+    # best_epsilon = epsilon[np.argmin(mean_errors)]
+    # x = __bp_denoise(A, y, best_epsilon)
     sorted_ind = np.argsort(mean_errors)
     x = None
     ind = 0

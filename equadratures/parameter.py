@@ -329,9 +329,9 @@ def get_local_quadrature_lobatto(self, order=None, ab=None):
     N = order
     # Get the recurrence coefficients & the jacobi matrix
     if ab is None:
-	        ab = self.get_recurrence_coefficients(order+2)
-	    else:
-	        ab = ab[0:order+2, :]
+	    ab = self.get_recurrence_coefficients(order+2)
+	else:
+	    ab = ab[0:order+2, :]
     ab[N+2, 0] = (a - b) / (2 * float(N+1) + a + b + 2)
     ab[N+2, 1] = 4 * (float(N+1) + a + 1) * (float(N+1) + b + 1) * (float(N+1) + a + b + 1) / ((2 * float(N+1) + a + b + 1) *
     (2 * float(N+1) + a + b + 2)**2)

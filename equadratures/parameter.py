@@ -16,7 +16,6 @@ import numpy as np
 class Parameter(object):
 	"""
     This class defines a univariate parameter. Below are details of its constructor.
-
     :param float lower:
         Lower bound for the parameter.
     :param float upper:
@@ -24,7 +23,6 @@ class Parameter(object):
     :param int order:
         Order of the parameter.
     :param str param_type:
-
 		The type of distribution that characterizes the parameter. Options include `chebyshev (arcsine) <https://en.wikipedia.org/wiki/Arcsine_distribution>`_, `gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_,
 		`truncated-gaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_, `beta <https://en.wikipedia.org/wiki/Beta_distribution>`_,
 		`cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_, `exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_,
@@ -55,7 +53,6 @@ class Parameter(object):
 	def __set_distribution(self):
 		"""
         Private function that sets the distribution.
-
         :param Parameter self:
             An instance of the Parameter object.
         """
@@ -79,7 +76,6 @@ class Parameter(object):
 	def __set_moments(self):
 		"""
         Private function that sets the mean and the variance of the distribution.
-
         :param Parameter self:
             An instance of the Parameter object.
         """
@@ -88,7 +84,6 @@ class Parameter(object):
 	def __set_bounds(self):
 		"""
         Private function that sets the bounds of the distribution.
-
         :param Parameter self:
             An instance of the Parameter object.
         """
@@ -96,7 +91,6 @@ class Parameter(object):
 	def get_pdf(self, points=None):
 		"""
         Computes the probability density function associated with the Parameter.
-
         :param Parameter self:
             An instance of the Parameter object.
 		:param numpy.ndarray points:
@@ -110,7 +104,6 @@ class Parameter(object):
 	def get_cdf(self, points=None):
 		"""
         Computes the cumulative density function associated with the Parameter.
-
         :param Parameter self:
             An instance of the Parameter object.
 		:param numpy.ndarray points:
@@ -124,7 +117,6 @@ class Parameter(object):
 	def get_icdf(self, cdf_values):
 		"""
         Computes the inverse cumulative density function associated with the Parameter.
-
         :param Parameter self:
             An instance of the Parameter object.
 		:param numpy.ndarray cdf_values:
@@ -134,7 +126,6 @@ class Parameter(object):
 	def get_samples(self, number_of_samples_required):
 		"""
         Generates samples from the distribution associated with the Parameter.
-
         :param Parameter self:
             An instance of the Parameter object.
 		:param int number_of_samples_required:
@@ -144,7 +135,6 @@ class Parameter(object):
 	def get_description(self):
 		"""
 		Provides a description of the Parameter.
-
         :param Parameter self:
             An instance of the Parameter object.
         """
@@ -152,7 +142,6 @@ class Parameter(object):
 	def get_recurrence_coefficients(self, order=None):
 		"""
         Generates the recurrence coefficients.
-
         :param Parameter self:
             An instance of the Parameter object.
 		:param int order:
@@ -162,7 +151,6 @@ class Parameter(object):
 	def get_jacobi_eigenvectors(self, order=None):
 		"""
         Computes the eigenvectors of the Jacobi matrix.
-
         :param Parameter self:
             An instance of the Parameter object.
 		:param int order:
@@ -180,22 +168,20 @@ class Parameter(object):
 			i = np.array(i) # convert to array
 			V = V[:,i]
 		return V
-	def get_jacobi_matrix(self, order=None, ab=None):
+	def get_jacobi_matrix(self, order=None):
 		"""
         Computes the Jacobi matrix---a tridiagonal matrix of the recurrence coefficients.
-
         :param Parameter self:
             An instance of the Parameter object.
 		:param int order:
 			Order of the recurrence coefficients.
         """
-		if order is None and ab is None:
+		if order is None:
 			ab = self.get_recurrence_coefficients()
 			order = self.order + 1
-		elif ab is None:
-			ab = self.get_recurrence_coefficients(order)
 		else:
-			ab = ab[0:order,:]
+			ab = self.get_recurrence_coefficients(order)
+
 		order = int(order)
 		# The case of order 1~
 		if int(order) == 1:
@@ -217,7 +203,6 @@ class Parameter(object):
 	def _get_orthogonal_polynomial(self, points, order=None):
 		"""
         Private function that evaluates the univariate orthogonal polynomial at quadrature points.
-
         :param Parameter self:
             An instance of the Parameter object.
 		:param numpy.ndarray points:
@@ -286,18 +271,20 @@ class Parameter(object):
 		else:
 			raise(ValueError, '_getLocalQuadrature:: Error with Endpoints entry!')
 
-def get_local_quadrature(self, order=None, ab=None):
+def get_local_quadrature(self, order=None):
+    # Check for extra input argument!
     if order is None:
         order = self.order + 1
     else:
         order = order + 1
-	if ab is None:
-		JacobiMat = self.get_jacobi_matrix(order)
-		ab = self.get_recurrence_coefficients(order+1)
-	else:
-		ab = ab[0:order+1,:]
-		JacobiMat = self.get_jacobi_matrix(order,ab)
+
+    # Get the recurrence coefficients & the jacobi matrix
+    JacobiMat = self.get_jacobi_matrix(order)
+    ab = self.get_recurrence_coefficients(order+1)
+
+    # If statement to handle the case where order = 1
     if order == 1:
+        # Check to see whether upper and lower bound are defined:
         if not self.lower or not self.upper:
             p = np.asarray(self.distribution.mean).reshape((1,1))
         else:
@@ -318,7 +305,8 @@ def get_local_quadrature(self, order=None, ab=None):
             if (p[u,0] < 1e-16) and (-1e-16 < p[u,0]):
                 p[u,0] = np.abs(p[u,0])
     return p, w
-def get_local_quadrature_lobatto(self, order=None, ab=None):
+
+def get_local_quadrature_lobatto(self, order=None):
     # Check for extra input argument!
     if order is None:
         order = self.order - 2
@@ -328,10 +316,7 @@ def get_local_quadrature_lobatto(self, order=None, ab=None):
     b = self.distribution.shape_parameter_B
     N = order
     # Get the recurrence coefficients & the jacobi matrix
-    if ab is None:
-	    ab = self.get_recurrence_coefficients(order+2)
-	else:
-	    ab = ab[0:order+2, :]
+    ab = self.get_recurrence_coefficients(order+2)
     ab[N+2, 0] = (a - b) / (2 * float(N+1) + a + b + 2)
     ab[N+2, 1] = 4 * (float(N+1) + a + 1) * (float(N+1) + b + 1) * (float(N+1) + a + b + 1) / ((2 * float(N+1) + a + b + 1) *
     (2 * float(N+1) + a + b + 2)**2)

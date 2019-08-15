@@ -1,3 +1,4 @@
+from equadratures.sampling_methods.sampling_template import Sampling
 import numpy as np
 from scipy.special import betaln
 import bisect
@@ -31,22 +32,22 @@ class Induced(Sampling):
         :param list orders:
             A list of the highest polynomial orders along each dimension.
         """
-        quadrature_points = np.zeros((self.samples_number, self.dimension))
+        quadrature_points = np.zeros((self.samples_number, self.dimensions))
         quadrature_points = np.apply_along_axis(self.__additive_mixture_sampling,
                                                 1, quadrature_points)
         p = {}
-        if self.dimension == 1:
-            poly, _, _ = self.parameters[0]._getOrthoPoly(quadrature_points,
+        if self.dimensions == 1:
+            poly, _, _ = self.parameters[0]._get_orthogonal_polynomial(quadrature_points,
                                                           int(np.max(self.basis.elements))
                                                           )
             return poly
         else:
-            for i in range(0, self.dimension):
-                p[i], _, _ = self.parameters[i]._getOrthoPoly(quadrature_points[:, i],
+            for i in range(0, self.dimensions):
+                p[i], _, _ = self.parameters[i]._get_orthogonal_polynomial(quadrature_points[:, i],
                                                               int(np.max(self.basis.elements[:, i])))
         # One loop for polynomials
         polynomial = np.ones((self.basis_entries, self.samples_number))
-        for k in range(self.dimension):
+        for k in range(self.dimensions):
             basis_entries_this_dim = self.basis.elements[:, k].astype(int)
             polynomial *= p[k][basis_entries_this_dim]
         wts = 1.0/np.sum(polynomial**2, 0)
@@ -76,7 +77,7 @@ class Induced(Sampling):
         index_set_used = indexset[sampled_row_number, :]
 
         # Sample uniformly for inverse CDF
-        sampled_cdf_values = np.random.rand(self.dimension, 1)
+        sampled_cdf_values = np.random.rand(self.dimensions, 1)
 
         x = self.__multi_variate_sampling(sampled_cdf_values, index_set_used)
 
@@ -176,13 +177,13 @@ class Induced(Sampling):
 
         # Use Markov-Stiltjies inequality for initial x value interval guess
         order = int(parameter.order)
-        zeroes, _ = parameter._getLocalQuadrature(order-1)
+        zeroes, _ = parameter._get_local_quadrature(order-1)
         # obtain current recurrence coefficient
         ab = parameter.getRecurrenceCoefficients((order)*2 + 360 + 1)
         for root in zeroes:
             ab = self.quadratic_modification(ab, root)
             ab[0, 1] = 1
-        induced_points, induced_weights = parameter._getLocalQuadrature(358, ab)
+        induced_points, induced_weights = parameter._get_local_quadrature(358, ab)
         # insert lower bound of x in jacobi distribution
         interval_points = np.insert(induced_points, 0, -1)
         # Cumulative sums of induced quadrature weights are a strict bound for the cdf

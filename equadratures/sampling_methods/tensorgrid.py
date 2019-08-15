@@ -1,6 +1,5 @@
 """Tensor grid based sampling."""
 from equadratures.sampling_methods.sampling_template import Sampling
-#from equadratures.basis import Basis
 import numpy as np
 class Tensorgrid(Sampling):
     """

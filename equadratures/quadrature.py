@@ -29,7 +29,7 @@ class Quadrature(object):
             self.samples = Montecarlo(self.parameters, self.basis)
             self.list = None
         elif self.mesh == 'induced':
-            self.samokes = Induced(self.parameters, self.basis)
+            self.samples = Induced(self.parameters, self.basis)
         elif self.mesh == 'user-defined':
             self.samples = Userdefined(self.parameters, self.basis, self.points)
         else:

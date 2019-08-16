@@ -25,7 +25,7 @@ class Induced(Sampling):
         sampling_ratio = 7 * self.dimensions
         self.samples_number = int(sampling_ratio * np.max(self.basis.orders))
         self._set_points(orders)
-        super(Induced, self)._init_(self.parameters,
+        super(Induced, self).__init__(self.parameters,
                                       self.basis,
                                       self.points,
                                       self.weights)

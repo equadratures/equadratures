@@ -45,10 +45,10 @@ class Parameter(object):
         self.upper = upper
         self.endpoints = endpoints
         self.data = data
-        self.__set_distribution()
-        self.__set_bounds()
-        self.__set_moments()
-    def __set_distribution(self):
+        self._set_distribution()
+        self._set_bounds()
+        self._set_moments()
+    def _set_distribution(self):
         """
         Private function that sets the distribution.
         :param Parameter self:
@@ -71,7 +71,7 @@ class Parameter(object):
                    }
         distribution = choices.get(self.name.lower(), distribution_error)
         self.distribution = distribution
-    def __set_moments(self):
+    def _set_moments(self):
         """
         Private function that sets the mean and the variance of the distribution.
         :param Parameter self:
@@ -79,7 +79,7 @@ class Parameter(object):
         """
         self.mean = self.distribution.mean
         self.variance = self.distribution.variance
-    def __set_bounds(self):
+    def _set_bounds(self):
         """
         Private function that sets the bounds of the distribution.
         :param Parameter self:
@@ -328,7 +328,7 @@ def get_local_quadrature_lobatto(self, order=None, ab=None):
     ab[N+2, 1] = 4 * (float(N+1) + a + 1) * (float(N+1) + b + 1) * (float(N+1) + a + b + 1) / ((2 * float(N+1) + a + b + 1) *
     (2 * float(N+1) + a + b + 2)**2)
     K = N + 2
-    n0, __ = ab.shape
+    n0, _ = ab.shape
     if n0 < K:
         raise(ValueError, 'getlocalquadraturelobatto: Recurrence coefficients size misalignment!')
     J = np.zeros((K+1,K+1))

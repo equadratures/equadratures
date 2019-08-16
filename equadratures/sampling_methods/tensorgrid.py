@@ -14,9 +14,9 @@ class Tensorgrid(Sampling):
         if orders is not None:
             self.basis.set_orders(orders)
         self.dimensions = len(self.parameters)
-        self.__set_points(orders)
+        self._set_points(orders)
         super(Tensorgrid, self).__init__(self.parameters, self.basis, self.points, self.weights)
-    def __set_points(self, orders=None):
+    def _set_points(self, orders=None):
         """
         Generates a tensor grid quadrature rule based on the parameters in Poly.
 

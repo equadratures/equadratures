@@ -25,9 +25,9 @@ class Statistics(object):
         self.basis = basis
         self.parameters = parameters #should be a list containing instances of Parameter
         self.max_sobol_order = max_sobol_order
-        self.__mean = private_get_mean(self.coefficients)
-        self.__variance = private_get_variance(self.coefficients)
-        self.__sobol = private_get_all_sobol_indices(self.coefficients, self.basis, max_sobol_order)
+        self._mean = private_get_mean(self.coefficients)
+        self._variance = private_get_variance(self.coefficients)
+        self._sobol = private_get_all_sobol_indices(self.coefficients, self.basis, max_sobol_order)
         # Only required when computing skewness and kurtosis.
         if (quadrature_points is None) and (quadrature_weights is None) and (polynomial_matrix is None):
             pass
@@ -35,10 +35,10 @@ class Statistics(object):
             nn = len(quadrature_weights)
             weighted_evals = np.zeros((mm, nn))
             weighted_evals = polynomial_matrix * self.coefficients
-            self.__weighted_evals = weighted_evals
+            self._weighted_evals = weighted_evals
             self.quadrature_weights = quadrature_weights
-            self.__skewness = private_get_skewness(self.quadrature_weights, self.__weighted_evals, self.basis, self.__variance)
-            self.__kurtosis = private_get_kurtosis(self.quadrature_weights, self.__weighted_evals, self.basis, self.__variance)
+            self._skewness = private_get_skewness(self.quadrature_weights, self._weighted_evals, self.basis, self._variance)
+            self._kurtosis = private_get_kurtosis(self.quadrature_weights, self._weighted_evals, self.basis, self._variance)
     def get_mean(self):
         """
         Compute the mean of the polynomial expansion.
@@ -49,7 +49,7 @@ class Statistics(object):
         :return:
             **mean**: The approximated mean of the polynomial fit; output as a float.
         """
-        return self.__mean
+        return self._mean
     def get_variance(self):
         """
         Compute the variance of the polynomial expansion.
@@ -60,7 +60,7 @@ class Statistics(object):
         :return:
             **variance**: The approximated variance of the polynomial fit; output as a float.
         """
-        return self.__variance
+        return self._variance
     def get_skewness(self):
         """
         Compute the skewness of the polynomial expansion.
@@ -71,7 +71,7 @@ class Statistics(object):
         :return:
             **skewness**: The approximated skewness of the polynomial fit; output as a float.
         """
-        return self.__skewness
+        return self._skewness
     def get_kurtosis(self):
         """
         Compute the kurtosis of the polynomial expansion.
@@ -82,7 +82,7 @@ class Statistics(object):
         :return:
             **kurtosis**: The approximated kurtosis of the polynomial fit; output as a float.
         """
-        return self.__kurtosis
+        return self._kurtosis
     def get_sobol(self, order=1):
         """
         Get Sobol' indices at specified order.
@@ -100,7 +100,7 @@ class Statistics(object):
             fosi = stats.getSobol(1)
 
         """
-        return {key: value for key, value in self.__sobol.items() if len(key) == order}
+        return {key: value for key, value in self._sobol.items() if len(key) == order}
     def get_conditional_skewness(self, order=1):
         """
         Get conditional skewness indices at specified order.
@@ -119,7 +119,7 @@ class Statistics(object):
 
         """
         return private_conditional_skewness(order, self.quadrature_weights, \
-            self.__weighted_evals, self.basis, self.__variance, self.__skewness)
+            self._weighted_evals, self.basis, self._variance, self._skewness)
     def get_conditional_kurtosis(self, order=1):
         """
         Get conditional kurtosis indices at specified order.
@@ -138,13 +138,13 @@ class Statistics(object):
 
         """
         return private_conditional_kurtosis(order, self.quadrature_weights, \
-            self.__weighted_evals, self.basis, self.__variance, self.__kurtosis)
+            self._weighted_evals, self.basis, self._variance, self._kurtosis)
     def get_sobol_total(self):
         """
         Get total Sobol' indices
         :return: list: Totol Sobol' indices for each parameter
         """
-        all_sobols = self.__sobol
+        all_sobols = self._sobol
         dims = len(self.parameters)
         TSI = np.zeros(dims)
         for i in all_sobols.keys():

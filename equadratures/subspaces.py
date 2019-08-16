@@ -62,9 +62,9 @@ class Subspaces(object):
                 self.full_space_poly = mypoly
             self.sample_points = self.full_space_poly.get_points()
             self.sample_outputs = self.full_space_poly.get_model_evaluations()
-            self.__get_active_subspace()
+            self._get_active_subspace()
         elif self.method == 'variable-projection':
-            self.__get_variable_projection(None,None,None,1000,None,False)
+            self._get_variable_projection(None,None,None,1000,None,False)
     def get_subspace_polynomial(self):
         """
         Returns a polynomial defined over the dimension reducing subspace.
@@ -77,7 +77,7 @@ class Subspaces(object):
             assumed to be uniform and the maximum and minimum bounds for each parameter are defined by the maximum and minimum values
             of the project samples.
         """
-        active_subspace = self.__subspace[:, 0:self.subspace_dimension]
+        active_subspace = self._subspace[:, 0:self.subspace_dimension]
         projected_points = np.dot(self.sample_points, active_subspace)
         myparameters = []
         for i in range(0, self.subspace_dimension):
@@ -101,7 +101,7 @@ class Subspaces(object):
             **eigenvalues**: A numpy.ndarray of shape (dimensions,) corresponding to the eigenvalues of the above mentioned covariance matrix.
         """
         if self.method == 'active-subspace':
-            return self.__eigenvalues
+            return self._eigenvalues
         else:
             print('Only the active-subspace method yields eigenvalues.')
     def get_subspace(self):
@@ -115,8 +115,8 @@ class Subspaces(object):
             **subspace**: A numpy.ndarray of shape (dimensions, dimensions) where the first ``subspace_dimension`` columns
             contain the dimension reducing subspace, while the remaining columns contain its orthogonal complement.
         """
-        return self.__subspace
-    def __get_active_subspace(self):
+        return self._subspace
+    def _get_active_subspace(self):
         """
         Active subspaces.
         """
@@ -157,14 +157,14 @@ class Subspaces(object):
                 all_bs_eigs[t,:] = np.flipud(e_bs)
             eigs_bs_lower = np.min(all_bs_eigs, axis = 0)
             eigs_bs_upper = np.max(all_bs_eigs, axis = 0)
-            self.__subspace = eigVecs
-            self.__eigenvalues = eigs
-            self.__eigenvalues_lower = eigs_bs_lower
-            self.__eigenvalues_upper = eigs_bs_upper
+            self._subspace = eigVecs
+            self._eigenvalues = eigs
+            self._eigenvalues_lower = eigs_bs_lower
+            self._eigenvalues_upper = eigs_bs_upper
         else:
-            self.__subspace = eigVecs
-            self.__eigenvalues = eigs
-    def __get_variable_projection(self, gamma,beta,tol,maxiter,U0, verbose):
+            self._subspace = eigVecs
+            self._eigenvalues = eigs
+    def _get_variable_projection(self, gamma,beta,tol,maxiter,U0, verbose):
         """
         Variable Projection function to obtain an active subspace in inputs design space
         Note: It may help to standardize outputs to zero mean and unit variance
@@ -202,7 +202,7 @@ class Subspaces(object):
             for j in range(0,self.subspace_dimension):
                 eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
 
-        #Construct the __vandermonde matrix step 6
+        #Construct the _vandermonde matrix step 6
         V,Polybasis=vandermonde(eta, self.polynomial_degree)
         V_plus=np.linalg.pinv(V)
         coeff=np.dot(V_plus, self.sample_outputs)
@@ -284,7 +284,7 @@ class Subspaces(object):
             print("VP finished with %d iterations" % iteration)
         active_subspace = U
         inactive_subspace = scipy.linalg.null_space(active_subspace.T)
-        self.__subspace = np.hstack([active_subspace, inactive_subspace])
+        self._subspace = np.hstack([active_subspace, inactive_subspace])
     def get_zonotope_vertices(self, num_samples=10000, max_count=100000):
         """
         Returns the vertices of the zonotope -- the projection of the high-dimensional space over the computed
@@ -296,9 +296,9 @@ class Subspaces(object):
         :return:
             **subspace**: A numpy.ndarray of shape (dimens
         """
-        m = self.__subspace.shape[0]
+        m = self._subspace.shape[0]
         n = self.subspace_dimension
-        W = self.__subspace[:, :n]
+        W = self._subspace[:, :n]
         if n == 1:
             y0 = np.dot(W.T, np.sign(W))[0]
             if y0 < -y0:

@@ -98,7 +98,7 @@ class Correlations(object):
         w1 = np.zeros((len(c),len(self.D)))
         for i in range(len(self.D)):
             for j in range(len(c)):
-                w1[j,i] = self.D[i].getCDF(points=X[j,i])
+                w1[j,i] = self.D[i].get_cdf(points=X[j,i])
                 if (w1[j,i] >= 1.0):
                     w1[j,i] = 1.0 - 10**(-10)
                 elif (w1[j,i] <= 0.0):

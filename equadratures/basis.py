@@ -7,14 +7,14 @@ class Basis(object):
     Basis class constructor.
 
     :param string basis_type: The type of index set to be used. Options include: ``univariate``, ``total-order``, ``tensor-grid``,
-        ``sparse-grid``, ``hyperbolic-basis`` and ``euclidean-degree``; all basis are isotropic.
+        ``sparse-grid``, ``hyperbolic-basis`` and ``euclidean-degree``(see [1, 2]); all basis are isotropic.
     :param ndarray orders: List of integers corresponding to the highest polynomial order in each direction.
     :param string growth_rule: The type of growth rule associated with sparse grids.
-        Options include: `linear' and `exponential'. This input is only required when using a sparse grid.
-    :param double q: The `q' parameter is used to control the number of basis terms used in a hyperbolic basis.
+        Options include: ``linear`` and ``exponential``. This input is only required when using a sparse grid.
+    :param double q: The ``q`` parameter is used to control the number of basis terms used in a hyperbolic basis.
         It varies between 0.0 to 1.0. A value of 1.0 yields a total order basis.
 
-    **Notes:**
+    **References:**
 
     For details on the Euclidean degree see: `Trefethen 2016 <https://arxiv.org/pdf/1608.02216v1.pdf>`_.
     Note that all index sets are sorted in the constructor automatically, by their total orders. We will be adding non-isotropic index sets in a future release. Stay tuned!
@@ -124,6 +124,9 @@ class Basis(object):
         Gets the index set elements for the Basis object.
 
         :param Basis object: An instance of the Basis class.
+
+        :return:
+            **basis**: Basis
         """
         name = self.basis_type
         if name == "total-order":

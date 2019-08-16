@@ -10,12 +10,19 @@ from equadratures.distributions.weibull import Weibull
 from equadratures.distributions.rayleigh import Rayleigh
 from equadratures.distributions.chisquared import Chisquared
 from equadratures.distributions.truncated_gaussian import TruncatedGaussian
+#from equadratures.distributions.pareto import Pareto
+#from equadratures.distributions.lognormal import Lognormal
+#from equadratures.distributions.studentt import Studentt
+#from equadratures.distributions.logistic import Logistic
+#from equadratures.distributions.gumbel import Gumbel
+#from equadratures.distributions.chi import Chi
 from equadratures.distributions.custom import Custom
 import numpy as np
 
 class Parameter(object):
     """
     This class defines a univariate parameter. Below are details of its constructor.
+
     :param float lower: Lower bound for the parameter.
     :param float upper: Upper bound for the parameter.
     :param int order: Order of the parameter.
@@ -25,8 +32,11 @@ class Parameter(object):
         `cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_, `exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_,
         `uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_, `gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_,
         `weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_, `rayleigh  <https://en.wikipedia.org/wiki/Rayleigh_distribution>`_,
-        `pareto <https://en.wikipedia.org/wiki/Pareto_distribution>`_. If no string is provided, a ``uniform`` distribution is assumed. If the user provides data, and would like to generate orthogonal
-        polynomials (and quadrature rules) based on the data, they can set this option to be ``custom``.
+        `pareto <https://en.wikipedia.org/wiki/Pareto_distribution>`_, `lognormal <https://en.wikipedia.org/wiki/Log-normal_distribution>`_,
+        `student's t <https://en.wikipedia.org/wiki/Student%27s_t-distribution>`_, `logistic <https://en.wikipedia.org/wiki/Log-normal_distribution>`_,
+        `gumbel <https://en.wikipedia.org/wiki/Gumbel_distribution>`_, `chi <https://en.wikipedia.org/wiki/Chi_distribution>`_.
+        If no string is provided, a ``uniform`` distribution is assumed. If the user provides data, and would like to generate orthogonal
+        polynomials (and quadrature rules) based on the data, they can set this option to be ``custom`` (see [1, 2]).
     :param float shape_parameter_A:
         Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a ``gaussian`` (or ``truncated-gaussian``), this represents the mean. In the case of a beta distribution this represents the alpha value. For a ``uniform`` distribution this input is not required.
     :param float shape_parameter_B:
@@ -35,6 +45,22 @@ class Parameter(object):
         A data-set with shape (number_of_data_points, 2), where the first column comprises of parameter values, while the second column corresponds to the data observations. This input should only be used with the ``custom`` distribution.
     :param bool endpoints:
         If set to ``True``, then the quadrature points and weights will have end-points, based on Gauss-Lobatto quadrature rules.
+
+
+    **Sample constructor initialisations**::
+
+        import numpy as np
+        from equadratures import *
+
+        # uniform parameter.
+        param = Parameter(distribution='uniform', lower=-2, upper=2., order=3)
+
+        # beta parameter
+        param = Parameter(distribution='beta', lower=-2., upper=15., order=4, shape_parameter_A=3.2, shape_parameter_B=1.7)
+
+    **References**
+        1. Xiu, D., Karniadakis, G. E., (2002) The Wiener-Askey Polynomial Chaos for Stochastic Differential Equations. SIAM Journal on Scientific Computing,  24(2), `Paper <https://epubs.siam.org/doi/abs/10.1137/S1064827501387826?journalCode=sjoce3>`__
+        2. Gautschi, W., (1985) Orthogonal Polynomials—Constructive Theory and Applications. Journal of Computational and Applied Mathematics 12 (1985), pp. 61-76. `Paper <https://www.sciencedirect.com/science/article/pii/037704278590007X>`__
     """
     def __init__(self, order, distribution, endpoints=False, shape_parameter_A=None, shape_parameter_B=None, lower=None, upper=None, data=None):
         self.name = distribution
@@ -74,6 +100,7 @@ class Parameter(object):
     def _set_moments(self):
         """
         Private function that sets the mean and the variance of the distribution.
+
         :param Parameter self:
             An instance of the Parameter object.
         """
@@ -82,6 +109,7 @@ class Parameter(object):
     def _set_bounds(self):
         """
         Private function that sets the bounds of the distribution.
+
         :param Parameter self:
             An instance of the Parameter object.
         """
@@ -89,6 +117,7 @@ class Parameter(object):
     def get_pdf(self, points=None):
         """
         Computes the probability density function associated with the Parameter.
+
         :param Parameter self:
             An instance of the Parameter object.
         :param numpy.ndarray points:
@@ -102,6 +131,7 @@ class Parameter(object):
     def get_cdf(self, points=None):
         """
         Computes the cumulative density function associated with the Parameter.
+
         :param Parameter self:
             An instance of the Parameter object.
         :param numpy.ndarray points:
@@ -115,6 +145,7 @@ class Parameter(object):
     def get_icdf(self, cdf_values):
         """
         Computes the inverse cumulative density function associated with the Parameter.
+
         :param Parameter self:
             An instance of the Parameter object.
         :param numpy.ndarray cdf_values:
@@ -124,6 +155,7 @@ class Parameter(object):
     def get_samples(self, number_of_samples_required):
         """
         Generates samples from the distribution associated with the Parameter.
+
         :param Parameter self:
             An instance of the Parameter object.
         :param int number_of_samples_required:
@@ -133,6 +165,7 @@ class Parameter(object):
     def get_description(self):
         """
         Provides a description of the Parameter.
+
         :param Parameter self:
             An instance of the Parameter object.
         """
@@ -140,6 +173,7 @@ class Parameter(object):
     def get_recurrence_coefficients(self, order=None):
         """
         Generates the recurrence coefficients.
+
         :param Parameter self:
             An instance of the Parameter object.
         :param int order:
@@ -149,6 +183,7 @@ class Parameter(object):
     def get_jacobi_eigenvectors(self, order=None):
         """
         Computes the eigenvectors of the Jacobi matrix.
+
         :param Parameter self:
             An instance of the Parameter object.
         :param int order:
@@ -169,6 +204,7 @@ class Parameter(object):
     def get_jacobi_matrix(self, order=None, ab=None):
         """
         Computes the Jacobi matrix---a tridiagonal matrix of the recurrence coefficients.
+
         :param Parameter self:
             An instance of the Parameter object.
         :param int order:
@@ -203,6 +239,7 @@ class Parameter(object):
     def _get_orthogonal_polynomial(self, points, order=None):
         """
         Private function that evaluates the univariate orthogonal polynomial at quadrature points.
+
         :param Parameter self:
             An instance of the Parameter object.
         :param numpy.ndarray points:
@@ -255,6 +292,7 @@ class Parameter(object):
     def _get_local_quadrature(self, order=None, ab=None):
         """
         Returns the 1D quadrature points and weights for the parameter. WARNING: Should not be called under normal circumstances.
+
         :param Parameter self:
             An instance of the Parameter class
         :param int N:

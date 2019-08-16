@@ -24,6 +24,18 @@ class Subspaces(object):
     :param int subspace_dimension: The dimension of the *active* subspace.
     :param bool bootstrap: Bootstrap trials for computing the dimension reducing subspace.
 
+
+    **Sample constructor initialisations**::
+
+        import numpy as np
+        from equadratures import *
+
+        # Active subspaces with a global order 2 polynomial.
+        mysubspace = Subspaces(method='active-subspace', sample_points=X_red, sample_outputs=Y_red)
+        eigs = mysubspace.get_eigenvalues()
+        W = mysubspace.get_subspace()
+        e = mysubspace.get_eigenvalues()
+
     **References**
         1. Constantine, P., (2015) Active Subspaces: Emerging Ideas for Dimension Reduction in Parameter Studies. SIAM Spotlights.
         2. Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery Active Subspace Performance Maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__.
@@ -55,9 +67,15 @@ class Subspaces(object):
             self.__get_variable_projection(None,None,None,1000,None,False)
     def get_subspace_polynomial(self):
         """
-        Retruns a polynomial defined over the dimension reducing subspace.
+        Returns a polynomial defined over the dimension reducing subspace.
 
+        :param Subspaces self:
+            An instance of the Subspaces object.
 
+         :return:
+            **subspacepoly**: A Poly object that defines a polynomial over the subspace. The distribution of parameters is
+            assumed to be uniform and the maximum and minimum bounds for each parameter are defined by the maximum and minimum values
+            of the project samples.
         """
         active_subspace = self.__subspace[:, 0:self.subspace_dimension]
         projected_points = np.dot(self.sample_points, active_subspace)
@@ -72,20 +90,32 @@ class Subspaces(object):
         subspacepoly.set_model()
         return subspacepoly
     def get_eigenvalues(self):
+        """
+        Returns the eigenvalues of the dimension reducing subspace. Note: this option is
+        currently only valid for method ``active-subspace``.
+
+        :param Subspaces self:
+            An instance of the Subspaces object.
+
+        :return:
+            **eigenvalues**: A numpy.ndarray of shape (dimensions,) corresponding to the eigenvalues of the above mentioned covariance matrix.
+        """
         if self.method == 'active-subspace':
             return self.__eigenvalues
         else:
             print('Only the active-subspace method yields eigenvalues.')
     def get_subspace(self):
         """
-        Returns the active and inactive subspace.
+        Returns the dimension reducing subspace.
+
+        :param Subspaces self:
+            An instance of the Subspaces object.
+
+        :return:
+            **subspace**: A numpy.ndarray of shape (dimensions, dimensions) where the first ``subspace_dimension`` columns
+            contain the dimension reducing subspace, while the remaining columns contain its orthogonal complement.
         """
         return self.__subspace
-    def __get_polynomial_neural_network(self):
-        """
-        A data-hungry neural network approach.
-        """
-        self.__subspace = 0
     def __get_active_subspace(self):
         """
         Active subspaces.
@@ -257,7 +287,14 @@ class Subspaces(object):
         self.__subspace = np.hstack([active_subspace, inactive_subspace])
     def get_zonotope_vertices(self, num_samples=10000, max_count=100000):
         """
-        Returns the vertices of the zonotope.
+        Returns the vertices of the zonotope -- the projection of the high-dimensional space over the computed
+        subspace.
+
+        :param Subspaces self:
+            An instance of the Subspaces object.
+
+        :return:
+            **subspace**: A numpy.ndarray of shape (dimens
         """
         m = self.__subspace.shape[0]
         n = self.subspace_dimension

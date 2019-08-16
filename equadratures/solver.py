@@ -15,7 +15,7 @@ class Solver(object):
         self.verbose = False
         if self.solver_args is not None:
             if 'noise-level' in self.solver_args: self.noise_level = solver_args.get('noise-level')
-            if 'verbose' is self.solver_args: self.verbose = solver_args.get('verbose')
+            if 'verbose' in self.solver_args: self.verbose = solver_args.get('verbose')
         if self.method.lower() == 'compressed sensing' or self.method.lower() == 'compressive-sensing':
             self.solver = lambda A, b: basis_pursuit_denoising(A, b, self.noise_level, self.verbose)
         elif self.method.lower() == 'least-squares':
@@ -97,7 +97,7 @@ def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
         except:
             ind += 1
     residue = np.linalg.norm(np.dot(A, x).flatten() - y.flatten())
-    if verbose is not None:
+    if verbose:
         print('The noise level used is '+str(best_eta)+'.')
     return np.reshape(x, (len(x),1))
 def __CG_solve(A, b, max_iters, tol):

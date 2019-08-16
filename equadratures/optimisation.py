@@ -4,7 +4,8 @@ import numpy as np
 class Optimisation:
     """
     This class performs unconstrained or constrained optimisation of poly objects using scipy.optimize.minimize.
-    :param string method (optional):
+
+    :param string method:
         A string specifying the method that will be used for optimisation. All of the available choices come from scipy.optimize.minimize
         (see <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html> for a list of methods and further information).
         In the case of general constrained optimisation, the options are 'COBYLA', 'SLSQP', and 'trust-constr'. The default is 'trust-constr'.
@@ -25,7 +26,7 @@ class Optimisation:
             :function function: lambda function for objective function
             :function jac_function (optional): lambda function for derivative of the objective function
             :function hess_function (optional): lambda function for Hessian of the objective function
-            a dictionary containing 
+            a dictionary containing
         :param bool maximise (optional):
             a flag to specify if the user would like to maximize
         """
@@ -104,17 +105,17 @@ class Optimisation:
                 self.constraints.append({'type':'ineq', 'fun': lambda x: -np.dot(A,x) + b_u, 'jac': lambda x: -A})
     def add_nonlinear_ineq_con(self, poly=None, custom=None):
         """
-        Adds nonlinear inequality constraints lb <= g(x) <= ub (for poly option) with lb, ub = bounds or 
+        Adds nonlinear inequality constraints lb <= g(x) <= ub (for poly option) with lb, ub = bounds or
         g(x) >= 0 (for function option) to the optimisation problem.
         Only 'trust-constr', 'COBYLA, and 'SLSQP' methods can handle general constraints.
         If Poly object is provided in the poly dictionary, gradients and Hessians will be computed automatically.
-        If a lambda function is provided in the 'function' dictionary, the user may also provide 
-        'jac_function' for gradients and 'hess_function' for Hessians; otherwise, a 2-point differentiation rule 
+        If a lambda function is provided in the 'function' dictionary, the user may also provide
+        'jac_function' for gradients and 'hess_function' for Hessians; otherwise, a 2-point differentiation rule
         will be used to approximate the derivative and a BFGS update will be used to approximate the Hessian.
         :param poly dictionary (optional):
             Arguments for poly dictionary
             :poly poly: an instance of the poly class
-            :ndarray bounds: array with 2 entries specifying the lower and upper bounds of the inequality. 
+            :ndarray bounds: array with 2 entries specifying the lower and upper bounds of the inequality.
             If there is no lower bound, set bounds[0] = -np.inf.If there is no upper bound, set bounds[1] = np.inf.
         :param dict custom (optional):
             Arguments for custom dictionary
@@ -186,13 +187,13 @@ class Optimisation:
             self.constraints.append({'type':'eq', 'fun': lambda x: A.dot(x) - b, 'jac': lambda x: A})
     def add_nonlinear_eq_con(self, poly=None, custom=None):
         """
-        Adds nonlinear inequality constraints g(x) = value (for poly option) or 
+        Adds nonlinear inequality constraints g(x) = value (for poly option) or
         g(x) = 0 (for function option) to the optimisation routine.
         Only 'trust-constr' and 'SLSQP' methods can handle equality constraints.
         If poly object is providedin the poly dictionary, gradients and Hessians will be computed automatically.
-        If a lambda function is provided in the function dictionary, the user may provide 
+        If a lambda function is provided in the function dictionary, the user may provide
         'jac_function' for gradients and 'hess_function' for Hessians;
-        otherwise, a 2-point differentiation rule will be used to approximate the gradient 
+        otherwise, a 2-point differentiation rule will be used to approximate the gradient
         and a BFGS update strategy will be used for the Hessian.
         :param poly dictionary (optional):
             Arguments for poly dictionary

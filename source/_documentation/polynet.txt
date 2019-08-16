@@ -1,5 +1,5 @@
-Deep learning
-=====================
+Deep learning with polynomials
+==================================
 
 .. automodule:: equadratures.polynet
     :members:

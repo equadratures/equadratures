@@ -16,18 +16,17 @@ import numpy as np
 class Parameter(object):
 	"""
     This class defines a univariate parameter. Below are details of its constructor.
-    :param float lower:
-        Lower bound for the parameter.
-    :param float upper:
-        Upper bound for the parameter.
-    :param int order:
-        Order of the parameter.
+
+    :param float lower: Lower bound for the parameter.
+    :param float upper: Upper bound for the parameter.
+    :param int order: Order of the parameter.
     :param str param_type:
 		The type of distribution that characterizes the parameter. Options include `chebyshev (arcsine) <https://en.wikipedia.org/wiki/Arcsine_distribution>`_, `gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_,
 		`truncated-gaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_, `beta <https://en.wikipedia.org/wiki/Beta_distribution>`_,
 		`cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_, `exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_,
 		`uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_, `gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_,
-		`weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_. If no string is provided, a ``uniform`` distribution is assumed. If the user provides data, and would like to generate orthogonal
+		`weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_, `rayleigh  <https://en.wikipedia.org/wiki/Rayleigh_distribution>`_,
+		`pareto <https://en.wikipedia.org/wiki/Pareto_distribution>`_. If no string is provided, a ``uniform`` distribution is assumed. If the user provides data, and would like to generate orthogonal
 		polynomials (and quadrature rules) based on the data, they can set this option to be ``custom``.
     :param float shape_parameter_A:
         Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a ``gaussian`` (or ``truncated-gaussian``), this represents the mean. In the case of a beta distribution this represents the alpha value. For a ``uniform`` distribution this input is not required.
@@ -76,6 +75,7 @@ class Parameter(object):
 	def __set_moments(self):
 		"""
         Private function that sets the mean and the variance of the distribution.
+
         :param Parameter self:
             An instance of the Parameter object.
         """
@@ -84,6 +84,7 @@ class Parameter(object):
 	def __set_bounds(self):
 		"""
         Private function that sets the bounds of the distribution.
+
         :param Parameter self:
             An instance of the Parameter object.
         """
@@ -91,6 +92,7 @@ class Parameter(object):
 	def get_pdf(self, points=None):
 		"""
         Computes the probability density function associated with the Parameter.
+
         :param Parameter self:
             An instance of the Parameter object.
 		:param numpy.ndarray points:
@@ -104,6 +106,7 @@ class Parameter(object):
 	def get_cdf(self, points=None):
 		"""
         Computes the cumulative density function associated with the Parameter.
+
         :param Parameter self:
             An instance of the Parameter object.
 		:param numpy.ndarray points:
@@ -117,6 +120,7 @@ class Parameter(object):
 	def get_icdf(self, cdf_values):
 		"""
         Computes the inverse cumulative density function associated with the Parameter.
+
         :param Parameter self:
             An instance of the Parameter object.
 		:param numpy.ndarray cdf_values:
@@ -126,6 +130,7 @@ class Parameter(object):
 	def get_samples(self, number_of_samples_required):
 		"""
         Generates samples from the distribution associated with the Parameter.
+
         :param Parameter self:
             An instance of the Parameter object.
 		:param int number_of_samples_required:
@@ -135,6 +140,7 @@ class Parameter(object):
 	def get_description(self):
 		"""
 		Provides a description of the Parameter.
+
         :param Parameter self:
             An instance of the Parameter object.
         """
@@ -142,6 +148,7 @@ class Parameter(object):
 	def get_recurrence_coefficients(self, order=None):
 		"""
         Generates the recurrence coefficients.
+
         :param Parameter self:
             An instance of the Parameter object.
 		:param int order:
@@ -151,6 +158,7 @@ class Parameter(object):
 	def get_jacobi_eigenvectors(self, order=None):
 		"""
         Computes the eigenvectors of the Jacobi matrix.
+
         :param Parameter self:
             An instance of the Parameter object.
 		:param int order:
@@ -171,6 +179,7 @@ class Parameter(object):
 	def get_jacobi_matrix(self, order=None):
 		"""
         Computes the Jacobi matrix---a tridiagonal matrix of the recurrence coefficients.
+
         :param Parameter self:
             An instance of the Parameter object.
 		:param int order:
@@ -203,6 +212,7 @@ class Parameter(object):
 	def _get_orthogonal_polynomial(self, points, order=None):
 		"""
         Private function that evaluates the univariate orthogonal polynomial at quadrature points.
+
         :param Parameter self:
             An instance of the Parameter object.
 		:param numpy.ndarray points:
@@ -255,6 +265,7 @@ class Parameter(object):
 	def _get_local_quadrature(self, order=None):
 		"""
 		Returns the 1D quadrature points and weights for the parameter. WARNING: Should not be called under normal circumstances.
+
 		:param Parameter self:
 			An instance of the Parameter class
 		:param int N:

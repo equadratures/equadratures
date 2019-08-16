@@ -1,5 +1,0 @@
-Nataf utilities   
-==================
-
-.. automodule:: equadratures.nataf
-    :members:

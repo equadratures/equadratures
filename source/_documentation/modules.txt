@@ -9,7 +9,10 @@ Modules
    parameter
    basis
    poly
-   
+   subspaces
+   optimisation
+   polynet
+   correlated
 
 .. automodule:: equadratures
     :members:

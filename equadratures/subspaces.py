@@ -12,11 +12,26 @@ from time import time
 
 class Subspaces(object):
     """
-    Definition of a subspaces object.
+    This class defines a subspaces object. It can be used for polynomial-based subspace dimension reduction.
+
+    :param string method: The method to be used for subspace-based dimension reduction. One option is ``active-subspace``, which uses
+        ideas in [1] and [2] to compute a dimension-reducing subspace with a global polynomial approximant. Gradients evaluations of the polynomial
+        approximation are used to compute the averaged outer product of the gradient covariance matrix. Another option is ``variable-projection`` [3],
+        where a Gauss-Newton optimisation problem is solved to compute both the polynomial coefficients and its subspace.
+    :param numpy.ndarray sample_points: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
+    :param numpy.ndarray sample_outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points.
+    :param int polynomial_degree: The degree of the polynomial used in the subspace-based approximation.
+    :param int subspace_dimension: The dimension of the *active* subspace.
+    :param bool bootstrap: Bootstrap trials for computing the dimension reducing subspace.
+
+    **References**
+        1. Constantine, P., (2015) Active Subspaces: Emerging Ideas for Dimension Reduction in Parameter Studies. SIAM Spotlights.
+        2. Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery Active Subspace Performance Maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__.
+        3. Hokanson, J., Constantine, P., (2018) Data-driven Polynomial Ridge Approximation Using Variable Projection. SIAM Journal of Scientific Computing, 40(3), A1566-A1589. `Paper <https://epubs.siam.org/doi/abs/10.1137/17M1117690>`__.
     """
     def __init__(self, method, full_space_poly=None, sample_points=None, sample_outputs=None, polynomial_degree=2, subspace_dimension=2, bootstrap=False):
         self.full_space_poly = full_space_poly
-        self.sample_points = standardise(sample_points)
+        self.sample_points = __standardise(sample_points)
         self.sample_outputs = sample_outputs
         self.method = method
         self.subspace_dimension = subspace_dimension
@@ -40,7 +55,9 @@ class Subspaces(object):
             self.__get_variable_projection(None,None,None,1000,None,False)
     def get_subspace_polynomial(self):
         """
-        Outputs the polynomial defined over the [active] subspace.
+        Retruns a polynomial defined over the dimension reducing subspace.
+
+
         """
         active_subspace = self.__subspace[:, 0:self.subspace_dimension]
         projected_points = np.dot(self.sample_points, active_subspace)
@@ -155,8 +172,8 @@ class Subspaces(object):
             for j in range(0,self.subspace_dimension):
                 eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
 
-        #Construct the Vandermonde matrix step 6
-        V,Polybasis=vandermonde(eta, self.polynomial_degree)
+        #Construct the ____vandermonde matrix step 6
+        V,Polybasis=__vandermonde(eta, self.polynomial_degree)
         V_plus=np.linalg.pinv(V)
         coeff=np.dot(V_plus, self.sample_outputs)
         res= self.sample_outputs - np.dot(V,coeff)
@@ -165,7 +182,7 @@ class Subspaces(object):
 
         for iteration in range(0,maxiter):
             #Construct the Jacobian step 9
-            J=jacobian_vp(V,V_plus,U,y, self.sample_outputs,Polybasis,eta,minmax, self.sample_points)
+            J=__jacobian_vp(V,V_plus,U,y, self.sample_outputs,Polybasis,eta,minmax, self.sample_points)
             #Calculate the gradient of Jacobian #step 10
             G=np.zeros((m, self.subspace_dimension))
             for i in range(0,M):
@@ -211,7 +228,7 @@ class Subspaces(object):
                     for j in range(0,self.subspace_dimension):
                         eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
 
-                V_new,Polybasis=vandermonde(eta, self.polynomial_degree)
+                V_new,Polybasis=__vandermonde(eta, self.polynomial_degree)
                 V_plus_new=np.linalg.pinv(V_new)
                 coeff_new=np.dot(V_plus_new, self.sample_outputs)
                 res_new= self.sample_outputs  -  np.dot(V_new,coeff_new)
@@ -221,7 +238,7 @@ class Subspaces(object):
                     break
                 t=t*gamma
 
-            dist_change = subspace_dist(U, U_new)
+            dist_change = __subspace_dist(U, U_new)
             U = U_new
             V = V_new
             coeff = coeff_new
@@ -451,10 +468,10 @@ def vector_AS(list_of_polys, R = None, alpha=None, k=None, samples=None, bootstr
         return eigs,eigVecs,eigs_bs_lower,eigs_bs_upper, all_bs_W
     else:
         return eigs,eigVecs
-def vandermonde(eta,p):
+def __vandermonde(eta,p):
     """
     Internal function to variable_projection
-    Calculates the Vandermonde matrix using polynomial basis functions
+    Calculates the __vandermonde matrix using polynomial basis functions
     :param eta: ndarray, the affine transformed projected values of inputs in active subspace
     :param p: int, the maximum degree of polynomials
     :return:
@@ -476,7 +493,7 @@ def vandermonde(eta,p):
     V=Polybasis.get_poly(eta)
     V=V.T
     return V,Polybasis
-def jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
+def __jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
     """
     Internal function to variable_projection
     Calculates the Jacobian tensor using polynomial basis functions
@@ -533,12 +550,12 @@ def jacobian_vec(list_of_poly, X):
     for p in range(len(list_of_poly)):
         J[p,:,:] = list_of_poly[p].get_polyfit_grad(X)
     return J
-def subspace_dist(U, V):
+def __subspace_dist(U, V):
     if len(U.shape) == 1:
         return np.linalg.norm(np.outer(U, U) - np.outer(V, V), ord=2)
     else:
         return np.linalg.norm(np.dot(U, U.T) - np.dot(V, V.T), ord=2)
-def standardise(X):
+def __standardise(X):
     """
 
     """

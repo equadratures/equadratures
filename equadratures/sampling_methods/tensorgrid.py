@@ -1,6 +1,5 @@
 """Tensor grid based sampling."""
 from equadratures.sampling_methods.sampling_template import Sampling
-#from equadratures.basis import Basis
 import numpy as np
 class Tensorgrid(Sampling):
     """
@@ -25,10 +24,6 @@ class Tensorgrid(Sampling):
             An instance of the Poly class.
         :param list orders:
             A list of the highest polynomial orders along each dimension.
-        :return:
-            **x**: A numpy.ndarray of sampled quadrature points with shape (number_of_samples, dimension).
-
-            **w**: A numpy.ndarray of the corresponding quadrature weights with shape (number_of_samples, 1).
         """
         # Initialize points and weights
         pp = [1.0]

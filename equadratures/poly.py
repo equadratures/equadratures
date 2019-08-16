@@ -19,7 +19,7 @@ class Poly(object):
         ``numerical-integration``, ``least-squares`` or ``minimum-norm``.
     :param dict sampling_args:
         Optional arguments centered around the specific sampling strategy.
-        :string mesh: Avaliable options are: ``monte-carlo``, ``induced-sampling``, ``sparse-grid``, ``tensor-grid`` or ``user-defined``.
+        :string mesh: Avaliable options are: ``monte-carlo``, ``induced-sampling``, ``sparse-grid``, ``tensor-grid``, ``induced``, or ``user-defined``.
             Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1]
             is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
         :string subsampling-algorithm: The ``subsampling-algorithm`` input refers to the optimisation technique for subsampling. In the aforementioned four sampling strategies,
@@ -33,6 +33,11 @@ class Poly(object):
         :numpy.ndarray sample-points: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
         :numpy.ndarray sample-outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points. Note that
             if ``sample-points`` is provided as an input, then the code expects ``sample-outputs`` too.
+    :param dict solver_args:
+        Optional arguments centered around the specific solver used for computing the coefficients.
+        :numpy.ndarray noise-level: The noise level to be used. Can take in both scalar- and vector-valued inputs.
+        :bool verbose: The default value is set to ``False``; when set to ``True`` details on the convergence of the solution will be provided. Note for direct methods, this
+            will simply output the condition number of the matrix.
 
     **Sample constructor initialisations**::
 
@@ -65,7 +70,7 @@ class Poly(object):
         5. Bos, L., De Marchi, S., Sommariva, A., Vianello, M., (2010) Computing Multivariate Fekete and Leja points by Numerical Linear Algebra. SIAM Journal on Numerical Analysis, 48(5). `Paper <https://epubs.siam.org/doi/abs/10.1137/090779024>`__
         6. Joshi, S., Boyd, S., (2009) Sensor Selection via Convex Optimization. IEEE Transactions on Signal Processing, 57(2). `Paper <https://ieeexplore.ieee.org/document/4663892>`__
     """
-    def __init__(self, parameters, basis, method=None, sampling_args=None):
+    def __init__(self, parameters, basis, method=None, sampling_args=None, solver_args=None):
         try:
             len(parameters)
         except TypeError:
@@ -74,6 +79,7 @@ class Poly(object):
         self.basis = basis
         self.method = method
         self.sampling_args = sampling_args
+        self.solver_args = solver_args
         self.dimensions = len(parameters)
         self.orders = []
         self.gradient_flag = 0
@@ -129,7 +135,7 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
-        polysolver = Solver(self.method)
+        polysolver = Solver(self.method, self.solver_args)
         self.solver = polysolver.get_solver()
     def __set_points_and_weights(self):
         """
@@ -303,16 +309,23 @@ class Poly(object):
                         counter = counter + 1
                 del d, grad_values
                 dP = self.get_poly_grad(self.__quadrature_points)
+        self.statistics_object = None
         self.__set_coefficients()
-    def __set_coefficients(self):
+    def __set_coefficients(self, user_defined_coefficients=None):
         """
         Computes the polynomial approximation coefficients.
 
         :param Poly self:
             An instance of the Poly object.
+
+        :param numpy.ndarray user_defined_coefficients:
+            A numpy.ndarray of shape (N, 1) where N corresponds to the N coefficients provided by the user
         """
         # Check to ensure that if there any NaNs, a different basis must be used and solver must be changed
         # to least squares!
+        if user_defined_coefficients is not None:
+            self.coefficients = user_defined_coefficients
+            return
         indices_with_nans = np.argwhere(np.isnan(self.__model_evaluations))[:,0]
         if len(indices_with_nans) is not 0:
             print('WARNING: One or more of your model evaluations have resulted in an NaN. We found '+str(len(indices_with_nans))+' NaNs out of '+str(len(self.__model_evaluations))+'.')

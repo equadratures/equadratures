@@ -9,9 +9,7 @@ from scipy import optimize
 class Correlations(object):
     """
     The class defines a Nataf transformation.
-    References for theory:
-        Melchers, R., E. (Robert E.), 1945- Structural reliability analysis
-        and predictions - 2nd edition - John Wiley & Sons Ltd.
+
     The input correlated marginals are mapped from their physical space to a new
     standard normal space, in which points are uncorrelated.
     Attributes of the class:
@@ -25,6 +23,10 @@ class Correlations(object):
             The Cholesky decomposition of Fictive matrix R0,
             associated with the set of normal intermediate
             correlated distributions.
+
+    References for theory:
+        Melchers, R., E. (Robert E.), 1945- Structural reliability analysis
+        and predictions - 2nd edition - John Wiley & Sons Ltd.
     """
     def __init__(self, D=None, R=None):
         if D is None:

@@ -1,18 +1,18 @@
 Defining a parameter
 ====================
-A **parameter** is one of the main building blocks in Effective Quadratures. Let :math:`\zeta` be a parameter defined on a domain :math:`\mathcal{D} \in \mathbb{R}`. The support of the domain :math:`\mathcal{D}` may be:
+A **parameter** is one of the main building blocks in Effective Quadratures. Let :math:`s` be a parameter defined on a domain :math:`\mathcal{D} \in \mathbb{R}`. The support of the domain :math:`\mathcal{D}` may be:
 
 * closed :math:`[a,b]`;
 * semi-infinite :math:`(-\infty, b)` or :math:`[a, \infty)`;
 * infinite :math:`(-\infty, \infty)`.
 
-Further, let us assume that this parameter is characterized by a positive weight function :math:`\rho(\zeta)`, which may be interpreted as the probability density function (PDF) of :math:`\zeta`, which readily implies that 
+Further, let us assume that this parameter is characterized by a positive weight function :math:`\rho(s)`, which may be interpreted as the probability density function (PDF) of :math:`s`, which readily implies that 
 
 .. math::
 
-	\int_{\mathcal{D}}\rho\left(\zeta\right)d\zeta=1.
+	\int_{\mathcal{D}}\rho\left(s\right)d\zeta=1.
 
-We now demonstrate some basic functionality of this parameter. First consider the case where :math:`\rho(\zeta) = \mathcal{N} (0, 1)` is a standard Gaussian distribution with a mean of 0.0 and a variance of 1.0. We then plot its PDF and cumulative density function (CDF) and demonstrate how we can generate random samples from this distribution.
+We now demonstrate some basic functionality of this parameter. First consider the case where :math:`\rho(s) = \mathcal{N} (0, 1)` is a standard Gaussian distribution with a mean of 0.0 and a variance of 1.0. We then plot its PDF and cumulative density function (CDF) and demonstrate how we can generate random samples from this distribution.
 
 .. code::
 
@@ -25,9 +25,9 @@ Now for some plots; first let us plot the PDF,
 
 .. code::
 
-	z, pdf = zeta.getPDF()
-	z, cdf = zeta.getCDF()
-	z_samples = zeta.getSamples(6000)
+	s_values, pdf = s.get_pdf()
+	s_values, cdf = s.get_cdf()
+	s_samples = s.get_samples()(6000)
 	
 	fig = plt.figure()
 	ax = fig.add_subplot(1,1,1)

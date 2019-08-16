@@ -1,5 +1,5 @@
-Optimization with polynomial surrogates
+Optimisation with polynomials
 ===========================================
 
-.. automodule:: equadratures.optimization
+.. automodule:: equadratures.optimisation
     :members:

@@ -1,9 +1,9 @@
-"""The Rayleigh distribution."""
+"""The Pareto distribution."""
 from equadratures.distributions.template import Distribution
 import numpy as np
-from scipy.stats import rayleigh
+from scipy.stats import pareto
 RECURRENCE_PDF_SAMPLES = 8000
-class Rayleigh(Distribution):
+class Pareto(Distribution):
     """
     The class defines a Rayleigh object. It is the child of Distribution.
 
@@ -12,7 +12,7 @@ class Rayleigh(Distribution):
     """
     def __init__(self, scale):
         self.scale = scale
-        self.bounds = np.array([0.0, np.inf])
+        self.bounds = np.array([, np.inf])
         if self.scale is not None:
             if self.scale > 0:
                 self.mean = self.scale * np.sqrt(np.pi / 2.0)
@@ -32,7 +32,7 @@ class Rayleigh(Distribution):
         :return:
             Inverse cumulative density function values of the Rayleigh distribution.
         """
-        return rayleigh.ppf(xx, loc=0, scale=self.scale)
+        return pareto.ppf(xx, loc=0, scale=self.scale)
 
     def get_description(self):
         """
@@ -57,7 +57,7 @@ class Rayleigh(Distribution):
         :return:
             Probability density values along the support of the Rayleigh distribution.
         """
-        return rayleigh.pdf(points, loc=0, scale=self.scale )
+        return pareto.pdf(points, loc=0, scale=self.scale )
 
 
     def get_cdf(self, points=None):
@@ -71,7 +71,7 @@ class Rayleigh(Distribution):
         :return:
             Cumulative density values along the support of the Rayleigh distribution.
         """
-        return rayleigh.cdf(points, loc=0, scale=self.scale )
+        return pareto.cdf(points, loc=0, scale=self.scale )
 
     def get_samples(self, m=None):
         """
@@ -88,4 +88,4 @@ class Rayleigh(Distribution):
            number = m
         else:
             number = 500000
-        return rayleigh.rvs(loc=0.0, scale=self.scale, size=number, random_state=None)
+        return pareto.rvs(loc=0.0, scale=self.scale, size=number, random_state=None)

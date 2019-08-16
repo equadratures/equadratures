@@ -13,9 +13,10 @@ class Montecarlo(Sampling):
         self.parameters = parameters
         self.basis = basis
         number_of_samples = int(self.basis.cardinality * len(self.parameters) * CONST)
-        self.__set_points(number_of_samples)
+        self._set_points(number_of_samples)
         super(Montecarlo, self).__init__(self.parameters, self.basis, self.points)
-    def __set_points(self, number_of_samples):
+
+    def _set_points(self, number_of_samples):
         """
         Sets the quadrature points and weights.
 

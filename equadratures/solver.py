@@ -76,7 +76,7 @@ def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
                 A_train = np.delete(A, indices, 0)
                 y_ver = y[indices].flatten()
                 y_train = np.delete(y, indices).flatten()
-                x_train = __bp_denoise(A_train, y_train, eta[e])
+                x_train = _bp_denoise(A_train, y_train, eta[e])
                 y_trained = np.reshape(np.dot(A_ver, x_train), len(y_ver))
 
                 assert y_trained.shape == y_ver.shape
@@ -85,7 +85,7 @@ def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
             errors = np.inf*np.ones(5)
         mean_errors[e] = np.mean(errors)
     best_eta = eta[np.argmin(mean_errors)]
-    x = __bp_denoise(A, y, best_eta)
+    x = _bp_denoise(A, y, best_eta)
     sorted_ind = np.argsort(mean_errors)
     x = None
     ind = 0
@@ -93,14 +93,14 @@ def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
         if ind >= len(log_eta):
             raise ValueError('Singular matrix!! Reconsider sample points!')
         try:
-            x = __bp_denoise(A, y, eta[sorted_ind[ind]])
+            x = _bp_denoise(A, y, eta[sorted_ind[ind]])
         except:
             ind += 1
     residue = np.linalg.norm(np.dot(A, x).flatten() - y.flatten())
     if verbose:
         print('The noise level used is '+str(best_eta)+'.')
     return np.reshape(x, (len(x),1))
-def __CG_solve(A, b, max_iters, tol):
+def _CG_solve(A, b, max_iters, tol):
     """
     Solves Ax = b iteratively using conjugate gradient, assuming A is a symmetric positive definite matrix.
 
@@ -153,7 +153,7 @@ def __CG_solve(A, b, max_iters, tol):
         iterations += 1
 
     return x.flatten(), residual, iterations
-def __bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cgmaxiter = 200, verbose = False, use_CG = False):
+def _bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cgmaxiter = 200, verbose = False, use_CG = False):
     """
     Solving the basis pursuit de-noising problem.
 
@@ -178,7 +178,7 @@ def __bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, 
             if verbose:
                 print('Starting point infeasible  using x0 = At*inv(AAt)*y.')
             if use_CG:
-                w, cgres, cgiter =  __CG_solve(np.dot(A,A.T),b,cgmaxiter,cgtol)
+                w, cgres, cgiter =  _CG_solve(np.dot(A,A.T),b,cgmaxiter,cgtol)
             else:
                 w = np.linalg.solve(np.dot(A,A.T),b).flatten()
                 cgres = np.linalg.norm(np.dot(np.dot(A,A.T), w).flatten() - b.flatten()) / np.linalg.norm(b)
@@ -194,7 +194,7 @@ def __bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, 
         if verbose:
             print('No x0. Using x0 = At*inv(AAt)*y.')
         if use_CG:
-            w, cgres, cgiter =  __CG_solve(np.dot(A,A.T),b,cgmaxiter,cgtol)
+            w, cgres, cgiter =  _CG_solve(np.dot(A,A.T),b,cgmaxiter,cgtol)
         else:
             w = np.linalg.solve(np.dot(A,A.T),b).flatten()
             cgres = np.linalg.norm(np.dot(np.dot(A,A.T), w).flatten() - b.flatten()) / np.linalg.norm(b)
@@ -217,7 +217,7 @@ def __bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, 
         print('Number of log barrier iterations = ' + str(lbiter) )
     totaliter = 0
     for ii in range(lbiter+1):
-      xp, up, ntiter =  __l1qc_newton(x, u, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter, verbose, use_CG)
+      xp, up, ntiter =  _l1qc_newton(x, u, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter, verbose, use_CG)
       totaliter += ntiter
       if verbose:
           print('Log barrier iter = ' + str(ii) + ', l1 = ' + str(np.sum(np.abs(xp))) + ', functional = ' + str(np.sum(up)) + \
@@ -228,7 +228,7 @@ def __bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, 
       tau *= mu
 
     return xp
-def __l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter, verbose, use_CG):
+def _l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter, verbose, use_CG):
     # line search parameters
     alpha = 0.01
     beta = 0.5
@@ -259,7 +259,7 @@ def __l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, c
 
       H11p = np.diag(sigx.reshape(len(sigx))) - (1.0/fe) * AtA + (1.0/fe)**2 * np.outer(atr,atr)
       if use_CG:
-          dx, cgres, cgiter =  __CG_solve(H11p, w1p, cgmaxiter, cgtol)
+          dx, cgres, cgiter =  _CG_solve(H11p, w1p, cgmaxiter, cgtol)
       else:
           dx = np.linalg.solve(H11p, w1p).flatten()
           cgres = np.linalg.norm(np.dot(H11p, dx).flatten() - w1p.flatten()) / np.linalg.norm(w1p)

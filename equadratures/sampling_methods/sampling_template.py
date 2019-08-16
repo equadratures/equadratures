@@ -13,9 +13,9 @@ class Sampling(object):
         self.points = points
         self.weights = weights
         if self.weights is None:
-            self.__set_weights()
-    def __set_weights(self):
-        P = self.__get_multivariate_orthogonal_polynomial()
+            self._set_weights()
+    def _set_weights(self):
+        P = self._get_multivariate_orthogonal_polynomial()
         wts =  1.0/np.sum( P**2 , 0)
         self.weights = wts * 1.0/np.sum(wts)
     def get_points(self):
@@ -42,7 +42,7 @@ class Sampling(object):
                 An instance of the sampling class.
         """
         return self.points, self.weights
-    def __get_multivariate_orthogonal_polynomial(self):
+    def _get_multivariate_orthogonal_polynomial(self):
         """
         Utility for evaluating a multivariate orthogonal polynomial at given points.
 
@@ -55,7 +55,7 @@ class Sampling(object):
         if self.points.shape[0] == 1:
             no_of_points = 1
         else:
-            no_of_points, __ = self.points.shape
+            no_of_points, _ = self.points.shape
 
         # Save time by returning if univariate!
         if dimensions == 1:

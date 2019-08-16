@@ -31,7 +31,7 @@ class Subspaces(object):
     """
     def __init__(self, method, full_space_poly=None, sample_points=None, sample_outputs=None, polynomial_degree=2, subspace_dimension=2, bootstrap=False):
         self.full_space_poly = full_space_poly
-        self.sample_points = __standardise(sample_points)
+        self.sample_points = standardise(sample_points)
         self.sample_outputs = sample_outputs
         self.method = method
         self.subspace_dimension = subspace_dimension
@@ -172,8 +172,8 @@ class Subspaces(object):
             for j in range(0,self.subspace_dimension):
                 eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
 
-        #Construct the ____vandermonde matrix step 6
-        V,Polybasis=__vandermonde(eta, self.polynomial_degree)
+        #Construct the __vandermonde matrix step 6
+        V,Polybasis=vandermonde(eta, self.polynomial_degree)
         V_plus=np.linalg.pinv(V)
         coeff=np.dot(V_plus, self.sample_outputs)
         res= self.sample_outputs - np.dot(V,coeff)
@@ -182,7 +182,7 @@ class Subspaces(object):
 
         for iteration in range(0,maxiter):
             #Construct the Jacobian step 9
-            J=__jacobian_vp(V,V_plus,U,y, self.sample_outputs,Polybasis,eta,minmax, self.sample_points)
+            J=jacobian_vp(V,V_plus,U,y, self.sample_outputs,Polybasis,eta,minmax, self.sample_points)
             #Calculate the gradient of Jacobian #step 10
             G=np.zeros((m, self.subspace_dimension))
             for i in range(0,M):
@@ -228,7 +228,7 @@ class Subspaces(object):
                     for j in range(0,self.subspace_dimension):
                         eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
 
-                V_new,Polybasis=__vandermonde(eta, self.polynomial_degree)
+                V_new,Polybasis=vandermonde(eta, self.polynomial_degree)
                 V_plus_new=np.linalg.pinv(V_new)
                 coeff_new=np.dot(V_plus_new, self.sample_outputs)
                 res_new= self.sample_outputs  -  np.dot(V_new,coeff_new)
@@ -238,7 +238,7 @@ class Subspaces(object):
                     break
                 t=t*gamma
 
-            dist_change = __subspace_dist(U, U_new)
+            dist_change = subspace_dist(U, U_new)
             U = U_new
             V = V_new
             coeff = coeff_new
@@ -468,16 +468,7 @@ def vector_AS(list_of_polys, R = None, alpha=None, k=None, samples=None, bootstr
         return eigs,eigVecs,eigs_bs_lower,eigs_bs_upper, all_bs_W
     else:
         return eigs,eigVecs
-def __vandermonde(eta,p):
-    """
-    Internal function to variable_projection
-    Calculates the __vandermonde matrix using polynomial basis functions
-    :param eta: ndarray, the affine transformed projected values of inputs in active subspace
-    :param p: int, the maximum degree of polynomials
-    :return:
-        * **V (numpy array)**: The resulting Vandermode matrix
-        * **Polybasis (Poly object)**: An instance of Poly object containing the polynomial basis derived
-    """
+def vandermonde(eta,p):
     _,n=eta.shape
     listing=[]
     for i in range(0,n):
@@ -493,22 +484,7 @@ def __vandermonde(eta,p):
     V=Polybasis.get_poly(eta)
     V=V.T
     return V,Polybasis
-def __jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
-    """
-    Internal function to variable_projection
-    Calculates the Jacobian tensor using polynomial basis functions
-    :param V: ndarray, the affine transformed outputs
-    :param V_plus: ndarray, psuedoinverse matrix
-    :param U: ndarray, the active subspace directions
-    :param y: array, the untransformed projected values of inputs in active subspace
-    :param f: array, the untransformed outputs
-    :param Polybasis: Poly object, an instance of Poly class
-    :param eta: ndarray, the affine transformed projected values of inputs in active subspace
-    :param minmax: ndarray, the upper and lower bounds of input projections in each dimension
-    :param X: ndarray, the input
-    :return:
-        * **J (ndarray)**: The Jacobian tensor
-    """
+def jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
     M,N=V.shape
     m,n=U.shape
     Gradient=Polybasis.get_poly_grad(eta)
@@ -537,28 +513,18 @@ def __jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
 
     return J
 def jacobian_vec(list_of_poly, X):
-    """
-    Evaluates the Jacobian tensor for a list of polynomials.
-    :param list_of_poly: list. Contains all m polynomials.
-    :param X: ndarray, input points. N-by-d where N is the number of points, d the input dimension.
-    :return:
-        * **J (ndarray)**: The Jacobian tensor, m-by-d-by-N, where J[a,b,c] = dP_a/dx_c_b (b-th dimension of P_a's gradient at x_c)
-    """
     m = len(list_of_poly)
     [N,d] = X.shape
     J = np.zeros((m,d,N))
     for p in range(len(list_of_poly)):
         J[p,:,:] = list_of_poly[p].get_polyfit_grad(X)
     return J
-def __subspace_dist(U, V):
+def subspace_dist(U, V):
     if len(U.shape) == 1:
         return np.linalg.norm(np.outer(U, U) - np.outer(V, V), ord=2)
     else:
         return np.linalg.norm(np.dot(U, U.T) - np.dot(V, V.T), ord=2)
-def __standardise(X):
-    """
-
-    """
+def standardise(X):
     M,d=X.shape
     X_stnd=np.zeros((M,d))
     for j in range(0,d):

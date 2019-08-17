@@ -43,7 +43,9 @@ class Subspaces(object):
     """
     def __init__(self, method, full_space_poly=None, sample_points=None, sample_outputs=None, polynomial_degree=2, subspace_dimension=2, bootstrap=False):
         self.full_space_poly = full_space_poly
-        self.sample_points = standardise(sample_points)
+        self.sample_points = sample_points
+        if self.sample_points is not None:
+            self.sample_points = standardise(sample_points)
         self.sample_outputs = sample_outputs
         self.method = method
         self.subspace_dimension = subspace_dimension
@@ -60,7 +62,7 @@ class Subspaces(object):
                                                                     'sample-outputs':self.sample_outputs})
                 mypoly.set_model()
                 self.full_space_poly = mypoly
-            self.sample_points = self.full_space_poly.get_points()
+            self.sample_points = standardise(self.full_space_poly.get_points())
             self.sample_outputs = self.full_space_poly.get_model_evaluations()
             self._get_active_subspace()
         elif self.method == 'variable-projection':
@@ -72,7 +74,7 @@ class Subspaces(object):
         :param Subspaces self:
             An instance of the Subspaces object.
 
-         :return:
+        :return:
             **subspacepoly**: A Poly object that defines a polynomial over the subspace. The distribution of parameters is
             assumed to be uniform and the maximum and minimum bounds for each parameter are defined by the maximum and minimum values
             of the project samples.

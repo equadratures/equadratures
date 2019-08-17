@@ -7,42 +7,47 @@ class Basis(object):
     Basis class constructor.
 
     :param string basis_type: The type of index set to be used. Options include: ``univariate``, ``total-order``, ``tensor-grid``,
-        ``sparse-grid``, ``hyperbolic-basis`` and ``euclidean-degree``(see [1, 2]); all basis are isotropic.
+        ``sparse-grid``, ``hyperbolic-basis`` [1] and ``euclidean-degree`` [2]; all basis are isotropic.
     :param ndarray orders: List of integers corresponding to the highest polynomial order in each direction.
     :param string growth_rule: The type of growth rule associated with sparse grids.
         Options include: ``linear`` and ``exponential``. This input is only required when using a sparse grid.
-    :param double q: The ``q`` parameter is used to control the number of basis terms used in a hyperbolic basis.
+    :param double q: The ``q`` parameter is used to control the number of basis terms used in a hyperbolic basis (see [1]).
         It varies between 0.0 to 1.0. A value of 1.0 yields a total order basis.
 
-    **References:**
 
-    For details on the Euclidean degree see: `Trefethen 2016 <https://arxiv.org/pdf/1608.02216v1.pdf>`_.
-    Note that all index sets are sorted in the constructor automatically, by their total orders. We will be adding non-isotropic index sets in a future release. Stay tuned!
+    **Sample constructor initialisations**::
+
+        import numpy as np
+        from equadratures import *
+
+        # Total order basis
+        mybasis = Basis(method='total-order', orders=[3,3,3])
+        mybasis2 = Basis(method='euclidean-degree', orders=[2,2])
+        mybasis3 = Basis(method='sparse-grid', growth_rule='linear', level=3)
+
+    **References**
+        1. Blatman, G., Sudret, B., (2011) Adaptive Sparse Polynomial Chaos Expansion Based on Least Angle Regression. Journal of Computational Physics, 230(6), 2345-2367.
+        2. Trefethen, L., (2017) Multivariate Polynomial Approximation in the Hypercube. Proceedings of the American Mathematical Society, 145(11), 4837-4844. `Pre-print <https://arxiv.org/pdf/1608.02216v1.pdf>`_.
 
     """
     def __init__(self, basis_type, orders=None, level=None, growth_rule=None, q=None):
-
         # Required
         self.basis_type = basis_type # string
-
         # Check for the levels (only for sparse grids)
         if level is None:
             self.level = []
         else:
             self.level = level
-
         # Check for the growth rule (only for sparse grids)
         if growth_rule is None:
             self.growth_rule = []
         else:
             self.growth_rule = growth_rule
-
         # For hyperbolic basis index set, there is a "q" parameter:
         if q is None:
             self.q = []
         else:
             self.q = q
-
         # Orders
         if orders is None:
             self.orders = []
@@ -126,7 +131,7 @@ class Basis(object):
         :param Basis object: An instance of the Basis class.
 
         :return:
-            **basis**: Basis
+            **basis**: Elements associated with the multi-index set. For ``total-order``, ``tensor-grid``, ``hyperbolic-basis``, ``hyperbolic-basis`` and ``euclidean-degree`` these correspond to the multi-index set elements within the set. For a ``sparse-grid`` the output will comprise of three arguments: (i) list of tensor grid orders (anisotropic), (ii) the positive and negative weights, and (iii) the individual sparse grid multi-index elements.
         """
         name = self.basis_type
         if name == "total-order":
@@ -149,10 +154,11 @@ class Basis(object):
         Returns the elements of an index set.
 
         :param Basis object: An instance of the Basis class.
+
+        :return:
+            **elements**: The multi-index elements of the basis.
         """
         return self.elements
-
-
 #---------------------------------------------------------------------------------------------------
 # PRIVATE FUNCTIONS
 #---------------------------------------------------------------------------------------------------

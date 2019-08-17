@@ -7,6 +7,7 @@ Our goal in developing Effective Quadratures has always been underscored by an e
 Current developers and contributors are:
 
 - 2016 - Present: **Dr Pranay Seshadri** (University of Cambridge, The Alan Turing Institute)
+- 2017 - Present: **Prof Tiziano Ghisu** (University of Cagliari)
 - 2018 - Present: **Chun Yui Wong** (University of Cambridge)
 - 2019 - Present: **James Gross** (University of Cambridge)
 - 2018 - Present: **Irene Virdis** (University of Cagliari)

@@ -127,7 +127,6 @@ class Test_Distributions(TestCase):
       eq_v = float('%.4f' %variance)
       mc_v = float('%.4f' %np.var(yi))
       error_var = np.testing.assert_almost_equal(eq_v, xo.variance, decimal=1, err_msg="difference greater than imposed tolerance for variance value")
-
     def test_arcsine(self):
       a = 0.0#0.001
       b = 1.0#0.99
@@ -157,7 +156,6 @@ class Test_Distributions(TestCase):
       eq_v = float('%.4f' %variance)
       mc_v = float('%.4f' %np.var(yi))
       error_var = np.testing.assert_almost_equal(eq_v, xo.variance, decimal=1, err_msg="difference greater than imposed tolerance for variance value")
-
     def test_cauchy(self):
       x0 = 0.0
       gamma = 0.5
@@ -175,6 +173,5 @@ class Test_Distributions(TestCase):
       b = xo.get_pdf(a)
       samples = xo.get_samples(1000)
       yi = samples
-
 if __name__ == '__main__':
     unittest.main()

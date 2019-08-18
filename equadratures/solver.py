@@ -6,7 +6,11 @@ class Solver(object):
     """
     Returns solver functions for solving Ax=b
 
-    :param string method:
+    :param string method: The method used for solving the linear system. Options include: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration`` and ``least-squares-with-gradients``.
+    :param dict solver_args: Optional arguments centered around the specific solver.
+
+            :param numpy.ndarray noise-level: The noise-level to be used in the basis pursuit de-noising solver.
+            :param bool verbose: Default value of this input is set to ``False``; when ``True`` a string is printed to the screen detailing the solver convergence and condition number of the matrix.
     """
     def __init__(self, method, solver_args):
         self.method = method
@@ -226,7 +230,6 @@ def _bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, c
       x = xp.copy()
       u = up.copy()
       tau *= mu
-
     return xp
 def _l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter, verbose, use_CG):
     # line search parameters

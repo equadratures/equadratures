@@ -32,7 +32,7 @@ class Pareto(Distribution):
         :return:
             A string describing the Pareto distribution.
         """
-        text = "A pareto distribution is characterised by its shape parameter, which here is"+str(self.shape_parameter)+". While the distribution can be characterized by a shape parameter and a scale parameter, in Effective Quadratures we use only the one, that is the scale parameter is set to 1. "
+        text = "is a pareto distribution which is characterised by its shape parameter, which here is"+str(self.shape_parameter)+". While the distribution can be characterized by a shape parameter and a scale parameter, in Effective Quadratures we use only the one, that is the scale parameter is set to 1. "
         return text
     def get_pdf(self, points=None):
         """

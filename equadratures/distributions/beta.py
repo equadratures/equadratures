@@ -47,7 +47,7 @@ class Beta(Distribution):
         :return:
             A string describing the beta distribution.
         """
-        text = "A beta distribution is defined over a support; given here as "+str(self.lower)+", to "+str(self.upper)+". It has two shape parameters, given here to be "+str(self.shape_A)+" and "+str(self.shape_B)+"."
+        text = "is a beta distribution is defined over a support; given here as "+str(self.lower)+", to "+str(self.upper)+". It has two shape parameters, given here to be "+str(self.shape_A)+" and "+str(self.shape_B)+"."
         return text
 
     def get_pdf(self, points=None):

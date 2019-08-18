@@ -33,7 +33,7 @@ class Exponential(Distribution):
         :return:
             A string describing the Exponential distribution.
         """
-        text = "An exponential distribution with a rate parameter of"+str(self.rate)+"."
+        text = "is an exponential distribution with a rate parameter of"+str(self.rate)+"."
         return text
     def get_pdf(self, points=None):
         """

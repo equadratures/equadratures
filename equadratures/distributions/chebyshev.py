@@ -33,7 +33,7 @@ class Chebyshev(Distribution):
         :return:
             A string describing the Chebyshev (arcsine) distribution.
         """
-        text = "A Chebyshev (arcsine) distribution is characterised by its lower bound, which is"+str(self.lower)+" and its upper bound, which is"+str(self.upper)+"."
+        text = "is a Chebyshev or arcsine distribution that is characterised by its lower bound, which is"+str(self.lower)+" and its upper bound, which is"+str(self.upper)+"."
         return text
     def get_pdf(self, points=None):
         """

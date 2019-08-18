@@ -38,7 +38,7 @@ class Gaussian(Distribution):
         :return:
             A string describing the Gaussian.
         """
-        text = "A Gaussian distribution with a mean of "+str(self.mean)+" and a variance of "+str(self.variance)+"."
+        text = "is a Gaussian distribution with a mean of "+str(self.mean)+" and a variance of "+str(self.variance)+"."
         return text
 
     def get_samples(self, m=None):

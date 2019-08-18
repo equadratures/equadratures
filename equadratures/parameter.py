@@ -14,7 +14,7 @@ from equadratures.distributions.pareto import Pareto
 #from equadratures.distributions.lognormal import Lognormal
 #from equadratures.distributions.studentt import Studentt
 #from equadratures.distributions.logistic import Logistic
-#from equadratures.distributions.gumbel import Gumbel
+from equadratures.distributions.gumbel import Gumbel
 from equadratures.distributions.chi import Chi
 from equadratures.distributions.custom import Custom
 import numpy as np
@@ -95,6 +95,7 @@ class Parameter(object):
                    'chi-squared' : Chisquared(self.shape_parameter_A),
                    'chi' : Chi(self.shape_parameter_A),
                    'pareto' : Pareto(self.shape_parameter_A),
+                   'gumbel' : Gumbel(self.shape_parameter_A, self.shape_parameter_B),
                    'truncated-gaussian': TruncatedGaussian(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
                    }
         distribution = choices.get(self.name.lower(), distribution_error)
@@ -290,7 +291,6 @@ class Parameter(object):
                 dderivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * dderivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * dderivative_orthopoly[u-2,:] ) +  2.0 * derivative_orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
 
         return orthopoly, derivative_orthopoly, dderivative_orthopoly
-
     def _get_local_quadrature(self, order=None, ab=None):
         """
         Returns the 1D quadrature points and weights for the parameter. WARNING: Should not be called under normal circumstances.
@@ -310,7 +310,6 @@ class Parameter(object):
             return get_local_quadrature_lobatto(self, order, ab)
         else:
             raise(ValueError, '_get_local_quadrature:: Error with Endpoints entry!')
-
 def get_local_quadrature(self, order=None, ab=None):
     # Check for extra input argument!
     if order is None:
@@ -349,7 +348,6 @@ def get_local_quadrature(self, order=None, ab=None):
             if (p[u,0] < 1e-16) and (-1e-16 < p[u,0]):
                 p[u,0] = np.abs(p[u,0])
     return p, w
-
 def get_local_quadrature_lobatto(self, order=None, ab=None):
     # Check for extra input argument!
     if order is None:
@@ -388,6 +386,5 @@ def get_local_quadrature_lobatto(self, order=None, ab=None):
         w[u] = ab[0,1] * (V[0,i[u]]**2) # replace weights with right value
         p[u,0] = local_points[u]
     return p, w
-
 def distribution_error():
     raise(ValueError, 'Please select a valid distribution for your parameter; documentation can be found at www.effective-quadratures.org')

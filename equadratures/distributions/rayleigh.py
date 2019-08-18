@@ -43,7 +43,7 @@ class Rayleigh(Distribution):
         :return:
             A string describing the Rayleigh distribution.
         """
-        text = "A Rayleigh distribution is characterised by its scale parameter, which has been set to "+str(self.scale)+"."
+        text = "is a Rayleigh distribution; characterised by its scale parameter, which has been set to "+str(self.scale)+"."
         return text
 
     def get_pdf(self, points=None):

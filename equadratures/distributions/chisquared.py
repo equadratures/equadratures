@@ -34,7 +34,7 @@ class Chisquared(Distribution):
         :return:
             A string describing the Chi-squared distribution.
         """
-        text = "A chi-squared distribution is characterised by its degrees of freedom, which here is"+str(self.dofs)+"."
+        text = "is a chi-squared distribution; characterised by its degrees of freedom, which here is"+str(self.dofs)+"."
         return text
     def get_pdf(self, points=None):
         """

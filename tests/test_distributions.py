@@ -226,7 +226,17 @@ class Test_Distributions(TestCase):
       mean, variance = myPoly.get_mean_and_variance()
       np.testing.assert_almost_equal(mean, param.mean, decimal=1)
     def test_gumbel(self):
-      return 0
+      param = Parameter(order=1, distribution='gumbel', shape_parameter_A=2.0, shape_parameter_B=3.2)
+      s_values, pdf = param.get_pdf()
+      s_values, cdf = param.get_cdf()
+      s_samples = param.get_samples(6000)
+      param.get_description()
+      s_samples = param.get_icdf(np.linspace(0., 1., 30))
+      myBasis = Basis('univariate')
+      myPoly = Poly(param, myBasis, method='numerical-integration')
+      myPoly.set_model(blackbox)
+      mean, variance = myPoly.get_mean_and_variance()
+      np.testing.assert_almost_equal(mean, param.mean, decimal=1)
     def test_logistic(self):
       return 0
     def test_studentt(self):

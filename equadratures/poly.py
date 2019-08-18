@@ -5,7 +5,7 @@ from equadratures.basis import Basis
 from equadratures.solver import Solver
 from equadratures.subsampling import Subsampling
 from equadratures.quadrature import Quadrature
-import pickle
+import scipy.stats as st
 import numpy as np
 from copy import deepcopy
 MAXIMUM_ORDER_FOR_STATS = 8
@@ -116,19 +116,33 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
-        introduction = str('Your problem has been characterised by '+str(self.dimensions)+' parameters. ')
+        if self.dimensions == 1:
+            parameter_string = str('parameter.')
+        else:
+            parameter_string = str('parameters.')
+        introduction = str('Your problem has been defined by '+str(self.dimensions)+' '+parameter_string)
         added = str('Their distributions are given as follows:')
         for i in range(0, self.dimensions):
-            added = ('Parameter '+str(i+1)+' is '+str(self.parameters[i].name)+'. '+str(self.parameters[i].get_description() ))
+            added = ('\nParameter '+str(i+1)+' '+str(self.parameters[i].get_description()))
             if i == 0:
                 added = introduction + added
             else:
                 added =+ added
         if self.statistics_object is not None:
             mean_value, var_value = self.get_mean_and_variance()
-            statistics = str('\nA summary of output statistics is given below:\nThe mean is estimated to be '+str(np.around(mean_value, 3) )+' while the variance is '+str(np.around(var_value, 3))+'.')
+            X = self.get_points()
+            y_eval = self.get_polyfit(X)
+            y_valid = self._model_evaluations
+            a,b,r,_,_ = st.linregress(y_eval.flatten(),y_valid.flatten())
+            r2 = np.round(r**2, 3)
+            statistics = str('\n \nA summary of computed output statistics is given below:\nThe mean is estimated to be '+str(np.around(mean_value, 3) )+\
+                ' while the variance is '+str(np.around(var_value, 3))+'.\nFor the data avaliable, the polynomial approximation had a r square value of '+str(r2)+'.')
+            if self.dimensions > 1:
+                sobol_indices_array = np.argsort(self.get_total_sobol_indices())
+                final_value = sobol_indices_array[-1]
+                statistics_extra = str('\nAdditionally, the most important parameter--based on the total Sobol indices--was found to be parameter '+str(final_value)+'.')
+                statistics = statistics + statistics_extra
             added = added + statistics
-            # Something about which sobol index is the most important based on the tsi indices??
         if filename is None:
             filename = 'effective-quadratures-output.txt'
         output_file = open(filename, 'w')

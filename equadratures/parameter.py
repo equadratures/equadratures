@@ -11,9 +11,9 @@ from equadratures.distributions.rayleigh import Rayleigh
 from equadratures.distributions.chisquared import Chisquared
 from equadratures.distributions.truncated_gaussian import TruncatedGaussian
 from equadratures.distributions.pareto import Pareto
-#from equadratures.distributions.lognormal import Lognormal
-#from equadratures.distributions.studentt import Studentt
-#from equadratures.distributions.logistic import Logistic
+from equadratures.distributions.lognormal import Lognormal
+from equadratures.distributions.studentst import Studentst
+from equadratures.distributions.logistic import Logistic
 from equadratures.distributions.gumbel import Gumbel
 from equadratures.distributions.chi import Chi
 from equadratures.distributions.custom import Custom
@@ -33,7 +33,7 @@ class Parameter(object):
         `uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_, `gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_,
         `weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_, `rayleigh  <https://en.wikipedia.org/wiki/Rayleigh_distribution>`_,
         `pareto <https://en.wikipedia.org/wiki/Pareto_distribution>`_, `lognormal <https://en.wikipedia.org/wiki/Log-normal_distribution>`_,
-        `student's t <https://en.wikipedia.org/wiki/Student%27s_t-distribution>`_, `logistic <https://en.wikipedia.org/wiki/Log-normal_distribution>`_,
+        `students-t <https://en.wikipedia.org/wiki/Student%27s_t-distribution>`_, `logistic <https://en.wikipedia.org/wiki/Log-normal_distribution>`_,
         `gumbel <https://en.wikipedia.org/wiki/Gumbel_distribution>`_, `chi <https://en.wikipedia.org/wiki/Chi_distribution>`_  and `chi-squared <https://en.wikipedia.org/wiki/Chi-squared_distribution>`_.
         If no string is provided, a ``uniform`` distribution is assumed. If the user provides data, and would like to generate orthogonal
         polynomials (and quadrature rules) based on the data, they can set this option to be ``custom`` (see [1, 2]).
@@ -45,7 +45,6 @@ class Parameter(object):
         A data-set with shape (number_of_data_points, 2), where the first column comprises of parameter values, while the second column corresponds to the data observations. This input should only be used with the ``custom`` distribution.
     :param bool endpoints:
         If set to ``True``, then the quadrature points and weights will have end-points, based on Gauss-Lobatto quadrature rules.
-
 
     **Sample constructor initialisations**::
 
@@ -77,29 +76,48 @@ class Parameter(object):
     def _set_distribution(self):
         """
         Private function that sets the distribution.
+
         :param Parameter self:
             An instance of the Parameter object.
         """
-        choices = {'gaussian': Gaussian(self.shape_parameter_A, self.shape_parameter_B),
-                   'normal': Gaussian(self.shape_parameter_A, self.shape_parameter_B),
-                   'uniform' : Uniform(self.lower, self.upper),
-                   'custom': Custom(self.data),
-                   'beta': Beta(self.lower, self.upper, self.shape_parameter_A, self.shape_parameter_B),
-                   'cauchy' : Cauchy(self.shape_parameter_A, self.shape_parameter_B),
-                   'exponential': Exponential(self.shape_parameter_A),
-                   'gamma': Gamma(self.shape_parameter_A, self.shape_parameter_B),
-                   'weibull': Weibull(self.shape_parameter_A, self.shape_parameter_B),
-                   'arcsine': Chebyshev(self.lower, self.upper),
-                   'chebyshev': Chebyshev(self.lower, self.upper),
-                   'rayleigh' : Rayleigh(self.shape_parameter_A),
-                   'chi-squared' : Chisquared(self.shape_parameter_A),
-                   'chi' : Chi(self.shape_parameter_A),
-                   'pareto' : Pareto(self.shape_parameter_A),
-                   'gumbel' : Gumbel(self.shape_parameter_A, self.shape_parameter_B),
-                   'truncated-gaussian': TruncatedGaussian(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
-                   }
-        distribution = choices.get(self.name.lower(), distribution_error)
-        self.distribution = distribution
+        if self.name.lower() == 'gaussian' or self.name.lower() == 'normal':
+            self.distribution = Gaussian(self.shape_parameter_A, self.shape_parameter_B)
+        elif self.name.lower() == 'uniform':
+            self.distribution = Uniform(self.lower, self.upper)
+        elif self.name.lower() == 'custom':
+            self.distribution = Custom(self.data)
+        elif self.name.lower() == 'beta':
+            self.distribution = Beta(self.lower, self.upper, self.shape_parameter_A, self.shape_parameter_B)
+        elif self.name.lower() == 'truncated-gaussian':
+            self.distribution = TruncatedGaussian(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
+        elif self.name.lower() == 'cauchy':
+            self.distribution = Cauchy(self.shape_parameter_A, self.shape_parameter_B)
+        elif self.name.lower() == 'exponential':
+            self.distribution = Exponential(self.shape_parameter_A)
+        elif self.name.lower() == 'gamma':
+            self.distribution = Gamma(self.shape_parameter_A, self.shape_parameter_B)
+        elif self.name.lower() == 'weibull':
+            self.distribution = Weibull(self.shape_parameter_A, self.shape_parameter_B)
+        elif self.name.lower() == 'arcsine' or self.name.lower() == 'chebyshev':
+            self.distribution = Chebyshev(self.lower, self.upper)
+        elif self.name.lower() == 'rayleigh':
+            self.distribution = Rayleigh(self.shape_parameter_A)
+        elif self.name.lower() == 'chi-squared':
+            self.distribution = Chisquared(self.shape_parameter_A)
+        elif self.name.lower() == 'chi':
+            self.distribution = Chi(self.shape_parameter_A)
+        elif self.name.lower() == 'pareto':
+            self.distribution = Pareto(self.shape_parameter_A)
+        elif self.name.lower() == 'gumbel':
+            self.distribution = Gumbel(self.shape_parameter_A, self.shape_parameter_B)
+        elif self.name.lower() == 'logistic':
+            self.distribution = Logistic(self.shape_parameter_A, self.shape_parameter_B)
+        elif self.name.lower() == 'students-t' or self.name.lower() == 't' or self.name.lower() == 'studentt':
+            self.distribution = Studentst(self.shape_parameter_A)
+        elif self.name.lower() == 'lognormal' or self.name.lower() == 'log-normal':
+            self.distribution = Lognormal(self.shape_parameter_A)
+        else:
+            distribution_error()
     def _set_moments(self):
         """
         Private function that sets the mean and the variance of the distribution.

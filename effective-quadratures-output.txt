@@ -1,4 +1,0 @@
-Your problem has been characterised by 1 parameter.Parameter 1 is a Rayleigh distribution; characterised by its scale parameter, which has been set to 2.0.
-A summary of computed output statistics is given below:
-The mean is estimated to be 2.507 while the variance is 1.717.
-For the data avaliable, the polynomial approximation had a r square value of 1.0.

@@ -1,52 +1,51 @@
-"""The Logistic distribution."""
+"""The Lognormal distribution."""
 from equadratures.distributions.template import Distribution
 from equadratures.distributions.recurrence_utils import jacobi_recurrence_coefficients
 import numpy as np
-from scipy.stats import logistic
+from scipy.stats import lognorm
 RECURRENCE_PDF_SAMPLES = 50000
-class Logistic(Distribution):
+class Lognormal(Distribution):
     """
-    The class defines a Logistic object. It is the child of Distribution.
+    The class defines a Lognormal object. It is the child of Distribution.
 
     :param int shape_parameter:
-		The shape parameter associated with the Logistic distribution.
+		The shape parameter associated with the Lognormal distribution.
     """
-    def __init__(self, location, scale_parameter):
-        self.scale_parameter = scale_parameter
-        self.location = location
-        if self.scale_parameter is not None:
-            self.bounds = np.array([-np.inf, np.inf])
-            if self.scale_parameter > 0:
-                mean, var, skew, kurt = logistic.stats(loc=self.location, scale=self.scale_parameter, moments='mvsk')
-                self.parent = logistic(loc=self.location, scale=self.scale_parameter)
+    def __init__(self, shape_parameter):
+        self.shape_parameter = shape_parameter
+        if self.shape_parameter is not None:
+            self.bounds = np.array([0.0, np.inf])
+            if self.shape_parameter > 0:
+                mean, var, skew, kurt = lognorm.stats(s=self.shape_parameter, moments='mvsk')
+                self.parent = lognorm(s=self.shape_parameter)
                 self.mean = mean
                 self.variance = var
                 self.skewness = skew
                 self.kurtosis = kurt
-                self.x_range_for_pdf = np.linspace(self.location - 10.0, 20.0 + self.location, RECURRENCE_PDF_SAMPLES)
+                self.x_range_for_pdf = np.linspace(0., 20., RECURRENCE_PDF_SAMPLES)
     def get_description(self):
         """
-        A description of the Logistic distribution.
+        A description of the Lognormal distribution.
 
-        :param Logistic self:
-            An instance of the Logistic class.
+        :param Lognormal self:
+            An instance of the Lognormal class.
         :return:
-            A string describing the Logistic distribution.
+            A string describing the Lognormal distribution.
         """
-        text = "is a Logistic distribution is characterised by its scale parameter, which here is"+str(self.scale_parameter)+" and its location, given by "+str(self.location)+"."
+        text = "is a Lognormal distribution is characterised by its shape parameter, which here is"+str(self.shape_parameter)+"."
         return text
     def get_pdf(self, points=None):
         """
-        A Logistic probability density function.
+        A Lognormal probability density function.
 
-        :param Logistic self:
+        :param Lognormal self:
             An instance of the Logistic class.
         :param points:
             Matrix of points for defining the probability density function.
         :return:
-            An array of N equidistant values over the support of the Logistic distribution.
+            An array of N equidistant values over the support of the Lognormal distribution.
         :return:
-            Probability density values along the support of the Logistic distribution.
+            Probability density values along the support of the Lognormal distribution.
         """
         if points is not None:
             return self.parent.pdf(points)
@@ -54,16 +53,16 @@ class Logistic(Distribution):
             raise(ValueError, 'Please digit an input for get_pdf method')
     def get_cdf(self, points=None):
         """
-        A Logistic cumulative density function.
+        A Lognormal cumulative density function.
 
-        :param Logistic self:
+        :param Lognormal self:
             An instance of the Logistic class.
         :param matrix points:
             Matrix of points for defining the cumulative density function.
         :return:
-            An array of N equidistant values over the support of the Logistic distribution.
+            An array of N equidistant values over the support of the Lognormal distribution.
         :return:
-            Cumulative density values along the support of the Logistic distribution.
+            Cumulative density values along the support of the Lognormal distribution.
         """
         if points is not None:
             return self.parent.cdf(points)
@@ -71,22 +70,22 @@ class Logistic(Distribution):
             raise(ValueError, 'Please digit an input for get_cdf method')
     def get_icdf(self, xx):
         """
-        A Logistic inverse cumulative density function.
+        A Lognormal inverse cumulative density function.
 
         :param Gumbel:
             An instance of Logistic class
         :param matrix xx:
             A matrix of points at which the inverse cumulative density function need to be evaluated.
         :return:
-            Inverse cumulative density function values of the Logistic distribution.
+            Inverse cumulative density function values of the Lognormal distribution.
         """
         return self.parent.ppf(xx)
     def get_samples(self, m=None):
         """
-        Generates samples from the Logistic distribution.
+        Generates samples from the Lognormal distribution.
 
         :param Logistic self:
-            An instance of Logistic class
+            An instance of Lognormal class
         :param integer m:
             Number of random samples. If no value is provided, a default of 5e05 is assumed.
         :return:

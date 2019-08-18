@@ -1,91 +1,98 @@
 """The Pareto distribution."""
 from equadratures.distributions.template import Distribution
+from equadratures.distributions.recurrence_utils import jacobi_recurrence_coefficients
 import numpy as np
 from scipy.stats import pareto
-RECURRENCE_PDF_SAMPLES = 8000
+RECURRENCE_PDF_SAMPLES = 50000
 class Pareto(Distribution):
     """
-    The class defines a Rayleigh object. It is the child of Distribution.
+    The class defines a Pareto object. It is the child of Distribution.
 
-    :param double scale:
-		Scale parameter of the Rayleigh distribution.
+    :param int shape_parameter:
+		The shape parameter associated with the Pareto distribution.
     """
-    def __init__(self, scale):
-        self.scale = scale
-        self.bounds = np.array([, np.inf])
-        if self.scale is not None:
-            if self.scale > 0:
-                self.mean = self.scale * np.sqrt(np.pi / 2.0)
-                self.variance = self.scale**2 * (4.0 - np.pi)/ 2.0
-                self.skewness = 2.0 * np.sqrt(np.pi) * (np.pi - 3.0) / ((4.0 - np.pi)**(1.5))
-                self.kurtosis = -(6 * np.pi**2 - 24 * np.pi + 16.0 )/( (4 - np.pi)**(1.5)) + 3.0
-                self.x_range_for_pdf = np.linspace(0.0, 8.0 * self.scale, RECURRENCE_PDF_SAMPLES)
-
-    def get_icdf(self, xx):
-        """
-        A Rayleigh inverse cumulative density function.
-
-        :param Rayleigh self:
-            An instance of the Rayleigh class.
-        :param array xx:
-            Points at which the inverse cumulative density function needs to be evaluated.
-        :return:
-            Inverse cumulative density function values of the Rayleigh distribution.
-        """
-        return pareto.ppf(xx, loc=0, scale=self.scale)
-
+    def __init__(self, shape_parameter):
+        self.shape_parameter = shape_parameter
+        if self.shape_parameter is not None:
+            self.bounds = np.array([0.999, np.inf])
+            if self.shape_parameter > 0:
+                mean, var, skew, kurt = pareto.stats(self.shape_parameter, moments='mvsk')
+                self.parent = pareto(self.shape_parameter)
+                self.mean = mean
+                self.variance = var
+                self.skewness = skew
+                self.kurtosis = kurt
+                self.x_range_for_pdf = np.linspace(0.999, 20.0 + shape_parameter, RECURRENCE_PDF_SAMPLES)
     def get_description(self):
         """
-        A description of the Rayleigh distribution.
+        A description of the Pareto distribution.
 
-        :param Rayleigh self:
-            An instance of the Rayleigh class.
+        :param Pareto self:
+            An instance of the Pareto class.
         :return:
-            A string describing the Rayleigh distribution.
+            A string describing the Pareto distribution.
         """
-        text = "A Rayleigh distribution is characterised by its scale parameter, which is"+str(self.scale)+"."
+        text = "A pareto distribution is characterised by its shape parameter, which here is"+str(self.shape_parameter)+". While the distribution can be characterized by a shape parameter and a scale parameter, in Effective Quadratures we use only the one, that is the scale parameter is set to 1. "
         return text
-
     def get_pdf(self, points=None):
         """
-        A Rayleigh probability density function.
+        A Pareto probability density function.
 
-        :param Rayleigh self:
-            An instance of the Rayleigh class.
-        :param array points:
-            Points at which the PDF needs to be evaluated.
+        :param Pareto self:
+            An instance of the Pareto class.
+        :param points:
+            Matrix of points for defining the probability density function.
         :return:
-            Probability density values along the support of the Rayleigh distribution.
+            An array of N equidistant values over the support of the Pareto distribution.
+        :return:
+            Probability density values along the support of the Pareto distribution.
         """
-        return pareto.pdf(points, loc=0, scale=self.scale )
-
-
+        if points is not None:
+            return self.parent.pdf(points)
+        else:
+            raise(ValueError, 'Please digit an input for get_pdf method')
     def get_cdf(self, points=None):
         """
-        A Rayleigh cumulative density function.
+        A Pareto cumulative density function.
 
-        :param Rayleigh self:
-            An instance of the Rayleigh class.
-        :param array points:
-            Points at which the CDF needs to be evaluated.
+        :param Pareto self:
+            An instance of the Pareto class.
+        :param matrix points:
+            Matrix of points for defining the cumulative density function.
         :return:
-            Cumulative density values along the support of the Rayleigh distribution.
+            An array of N equidistant values over the support of the Pareto distribution.
+        :return:
+            Cumulative density values along the support of the Pareto distribution.
         """
-        return pareto.cdf(points, loc=0, scale=self.scale )
+        if points is not None:
+            return self.parent.cdf(points)
+        else:
+            raise(ValueError, 'Please digit an input for get_cdf method')
+    def get_icdf(self, xx):
+        """
+        A Pareto inverse cumulative density function.
 
+        :param Pareto:
+            An instance of Pareto class
+        :param matrix xx:
+            A matrix of points at which the inverse cumulative density function need to be evaluated.
+        :return:
+            Inverse cumulative density function values of the Pareto distribution.
+        """
+        return self.parent.ppf(xx)
     def get_samples(self, m=None):
         """
-         Generates samples from the Rayleigh distribution.
+        Generates samples from the Pareto distribution.
 
-         :param rayleigh self:
-             An instance of the Rayleigh class.
-         :param integer m:
-             Number of random samples. If no value is provided, a default of     5e5 is assumed.
-         :return:
-             A N-by-1 vector that contains the samples.
+        :param Pareto self:
+            An instance of Pareto class
+        :param integer m:
+            Number of random samples. If no value is provided, a default of 5e05 is assumed.
+        :return:
+            A N-by-1 vector that contains the samples.
         """
         if m is not None:
-           number = m
+            number = m
         else:
             number = 500000
-        return pareto.rvs(loc=0.0, scale=self.scale, size=number, random_state=None)
+        return self.parent.rvs(size= number)

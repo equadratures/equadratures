@@ -9,3 +9,5 @@ import equadratures.distributions.gamma
 import equadratures.distributions.rayleigh
 import equadratures.distributions.uniform
 import equadratures.distributions.weibull
+import equadratures.distributions.chi
+import equadratures.distributions.pareto

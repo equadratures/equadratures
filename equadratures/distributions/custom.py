@@ -4,8 +4,7 @@ from equadratures.distributions.template import Distribution
 import numpy as np
 import scipy.stats as stats
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
-
-RECURRENCE_PDF_SAMPLES = 8000
+RECURRENCE_PDF_SAMPLES = 50000
 
 class Custom(Distribution):
     """ The class defines a Custom object.

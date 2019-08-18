@@ -10,12 +10,12 @@ from equadratures.distributions.weibull import Weibull
 from equadratures.distributions.rayleigh import Rayleigh
 from equadratures.distributions.chisquared import Chisquared
 from equadratures.distributions.truncated_gaussian import TruncatedGaussian
-#from equadratures.distributions.pareto import Pareto
+from equadratures.distributions.pareto import Pareto
 #from equadratures.distributions.lognormal import Lognormal
 #from equadratures.distributions.studentt import Studentt
 #from equadratures.distributions.logistic import Logistic
 #from equadratures.distributions.gumbel import Gumbel
-#from equadratures.distributions.chi import Chi
+from equadratures.distributions.chi import Chi
 from equadratures.distributions.custom import Custom
 import numpy as np
 
@@ -34,7 +34,7 @@ class Parameter(object):
         `weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_, `rayleigh  <https://en.wikipedia.org/wiki/Rayleigh_distribution>`_,
         `pareto <https://en.wikipedia.org/wiki/Pareto_distribution>`_, `lognormal <https://en.wikipedia.org/wiki/Log-normal_distribution>`_,
         `student's t <https://en.wikipedia.org/wiki/Student%27s_t-distribution>`_, `logistic <https://en.wikipedia.org/wiki/Log-normal_distribution>`_,
-        `gumbel <https://en.wikipedia.org/wiki/Gumbel_distribution>`_, `chi <https://en.wikipedia.org/wiki/Chi_distribution>`_.
+        `gumbel <https://en.wikipedia.org/wiki/Gumbel_distribution>`_, `chi <https://en.wikipedia.org/wiki/Chi_distribution>`_  and `chi-squared <https://en.wikipedia.org/wiki/Chi-squared_distribution>`_.
         If no string is provided, a ``uniform`` distribution is assumed. If the user provides data, and would like to generate orthogonal
         polynomials (and quadrature rules) based on the data, they can set this option to be ``custom`` (see [1, 2]).
     :param float shape_parameter_A:
@@ -92,7 +92,9 @@ class Parameter(object):
                    'arcsine': Chebyshev(self.lower, self.upper),
                    'chebyshev': Chebyshev(self.lower, self.upper),
                    'rayleigh' : Rayleigh(self.shape_parameter_A),
-                   'chisquared' : Chisquared(self.shape_parameter_A),
+                   'chi-squared' : Chisquared(self.shape_parameter_A),
+                   'chi' : Chi(self.shape_parameter_A),
+                   'pareto' : Pareto(self.shape_parameter_A),
                    'truncated-gaussian': TruncatedGaussian(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
                    }
         distribution = choices.get(self.name.lower(), distribution_error)

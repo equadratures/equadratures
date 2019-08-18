@@ -20,10 +20,10 @@ The latest version of the code is version 8.0 and was released in August 2019.
 .. image:: https://badge.fury.io/py/equadratures.svg
 	:target: https://pypi.org/project/equadratures/
 
-.. image:: https://img.shields.io/pypi/pyversions/ansicolortags.svg
-
 .. image:: https://joss.theoj.org/papers/10.21105/joss.00166/status.svg
-	:target: https://doi.org/10.21105/joss.00166)
+	:target: https://doi.org/10.21105/joss.00166
+
+.. image:: https://img.shields.io/pypi/pyversions/ansicolortags.svg
 
 
 To download and install the code please use the python package index command:

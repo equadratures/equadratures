@@ -109,6 +109,31 @@ class Poly(object):
             self._set_solver()
             self._set_subsampling_algorithm()
             self._set_points_and_weights()
+    def get_summary(self, filename=None):
+        """
+        A simple utility that returns file summarising what the polynomial approximation has determined.
+
+        :param Poly self:
+            An instance of the Poly object.
+        """
+        introduction = str('Your problem has been characterised by '+str(self.dimensions)+' parameters. ')
+        added = str('Their distributions are given as follows:')
+        for i in range(0, self.dimensions):
+            added = ('Parameter '+str(i+1)+' is '+str(self.parameters[i].name)+'. '+str(self.parameters[i].get_description() ))
+            if i == 0:
+                added = introduction + added
+            else:
+                added =+ added
+        if self.statistics_object is not None:
+            mean_value, var_value = self.get_mean_and_variance()
+            statistics = str('\nA summary of output statistics is given below:\nThe mean is estimated to be '+str(np.around(mean_value, 3) )+' while the variance is '+str(np.around(var_value, 3))+'.')
+            added = added + statistics
+            # Something about which sobol index is the most important based on the tsi indices??
+        if filename is None:
+            filename = 'effective-quadratures-output.txt'
+        output_file = open(filename, 'w')
+        output_file.write(added)
+        output_file.close()
     def _set_subsampling_algorithm(self):
         """
         Private function that sets the subsampling algorithm based on the user-defined method.

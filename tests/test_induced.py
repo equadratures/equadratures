@@ -5,7 +5,6 @@ from equadratures.sampling_methods.induced import Induced
 from equadratures.parameter import Parameter
 from equadratures.basis import Basis
 import numpy as np
-# import time
 
 
 class TestSamplingGeneration(TestCase):

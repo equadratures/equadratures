@@ -4,6 +4,8 @@ from scipy.special import betaln
 import bisect
 from scipy.optimize import bisect as bisect_root_solve
 
+# import time
+
 
 class Induced(Sampling):
     """
@@ -20,15 +22,21 @@ class Induced(Sampling):
         self.basis = basis
         if orders is not None:
             self.basis.set_orders(orders)
+        else:
+            orders = []
+            for parameter in parameters:
+                orders.append(parameter.order)
+            self.basis.set_orders(orders)
         self.dimensions = len(self.parameters)
         self.basis_entries = basis.cardinality
         sampling_ratio = 7 * self.dimensions
         self.samples_number = int(sampling_ratio * np.max(self.basis.orders))
-        self._set_points(orders)
-        super(Induced, self).__init__(self.parameters,
-                                      self.basis,
-                                      self.points,
-                                      self.weights)
+        self.points = self._set_points(orders)
+        self._set_weights()
+        # super(Induced, self).__init__(self.parameters,
+        #                               self.basis,
+        #                               self.points,
+        #                               self.weights)
 
     def _set_points(self, orders=None):
         """
@@ -43,28 +51,7 @@ class Induced(Sampling):
         quadrature_points = np.zeros((self.samples_number, self.dimensions))
         quadrature_points = np.apply_along_axis(self._additive_mixture_sampling,
                                                 1, quadrature_points)
-        p = {}
-        if self.dimensions == 1:
-            poly, _, _ = self.parameters[0].\
-                         _get_orthogonal_polynomial(quadrature_points,
-                                                    int(np.max(self.basis.elements))
-                                                    )
-            return poly
-        else:
-            for i in range(0, self.dimensions):
-                p[i], _, _ = self.parameters[i].\
-                             _get_orthogonal_polynomial(quadrature_points[:, i],
-                                                        int(np.max(self.basis.elements[:, i]))
-                                                        )
-        # One loop for polynomials
-        polynomial = np.ones((self.basis_entries, self.samples_number))
-        for k in range(self.dimensions):
-            basis_entries_this_dim = self.basis.elements[:, k].astype(int)
-            polynomial *= p[k][basis_entries_this_dim]
-        wts = 1.0/np.sum(polynomial**2, 0)
-        weights = wts * 1.0/np.sum(wts)
-        self.points = quadrature_points
-        self.weights = weights
+        return quadrature_points
 
     def _additive_mixture_sampling(self, _placeholder):
         """
@@ -92,7 +79,6 @@ class Induced(Sampling):
         sampled_cdf_values = np.random.rand(self.dimensions, 1)
 
         x = self._multi_variate_sampling(sampled_cdf_values, index_set_used)
-
         return x
 
     def _multi_variate_sampling(self, sampled_cdf_values, index_set_used):
@@ -119,7 +105,10 @@ class Induced(Sampling):
             the additive mixture of the induced distributions
         """
         univariate_input = zip(self.parameters, sampled_cdf_values, index_set_used)
-        x = np.fromiter(map(self._univariate_sampling, univariate_input), float)
+        # start_time = time.time()
+        x = np.fromiter(map(self._univariate_sampling,
+                            univariate_input), float)
+        # print(f"time for a sample:{time.time() - start_time}")
         return x
 
     def _univariate_sampling(self, _input):
@@ -150,8 +139,7 @@ class Induced(Sampling):
         if order == 0.0:
             sampled_value = parameter.mean
             return sampled_value
-            # print("mean", parameter.mean)
-        if parameter.name == "Uniform":
+        if parameter.name in ["Uniform", "uniform"]:
             # TODO Only uniform between -1 and 1 is done for now
             # define shape parameters for the Jacobi matrix
             alpha = 0
@@ -161,7 +149,6 @@ class Induced(Sampling):
                                                           beta,
                                                           uniform_cdf_value,
                                                           parameter)
-
             return sampled_value
         elif parameter.name in ["Gaussian"]:
             # TODO add Freud sampling algorithm
@@ -206,23 +193,22 @@ class Induced(Sampling):
         strict_bounds = np.insert(strict_bounds, len(strict_bounds), 1)
         strict_bounds = np.insert(strict_bounds, 0, 0)
         interval_index = bisect.bisect_left(strict_bounds, uniform_cdf_value)
-        interval_index_hi = interval_index+1
+        interval_index_hi = interval_index+3
         if interval_index_hi >= 360:
             interval_index_hi = 359
-        interval_lo = interval_points[interval_index-1]
+        interval_lo = interval_points[interval_index-3]
         interval_hi = interval_points[interval_index_hi]
 
         # Solver function for inverse CDF where F(x)-u = 0
         def F(x):
             value = self.induced_jacobi_evaluation(alpha,
-                                                     beta,
-                                                     x,
-                                                     parameter)
+                                                   beta,
+                                                   x,
+                                                   parameter)
             value = value - uniform_cdf_value
             return value
-
         sampled_value = bisect_root_solve(F, interval_lo, interval_hi, xtol=0.00005)
-
+        
         return sampled_value
 
     def induced_jacobi_evaluation(self, alpha, beta, x, parameter):

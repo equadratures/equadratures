@@ -13,7 +13,7 @@ class Montecarlo(Sampling):
         self.parameters = parameters
         self.basis = basis
         number_of_samples = int(self.basis.cardinality * len(self.parameters) * CONST)
-        self._set_points(number_of_samples)
+        self.points = self._set_points(number_of_samples)
         super(Montecarlo, self).__init__(self.parameters, self.basis, self.points)
 
     def _set_points(self, number_of_samples):
@@ -28,3 +28,4 @@ class Montecarlo(Sampling):
             univariate_samples = self.parameters[i].getSamples(m_big)
             for j in range(0, m_big):
                 self.points[j, i] = univariate_samples[j]
+        return self.points

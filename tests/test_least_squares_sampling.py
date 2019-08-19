@@ -54,5 +54,20 @@ class TestC(TestCase):
         pts3 = myPoly3.get_points()
         model_evals3 = evaluate_model(pts3, fun)
         myPoly3.set_model(model_evals3)
+    def test_least_squares_monte_carlo(self):
+        myBasis3 = Basis('total-order')
+        order=5
+        params3 = Parameter(lower=-1, upper=1, order=order, distribution='uniform')
+        myPoly3 = Poly([params3, params3, params3], myBasis3, method='least-squares', \
+                                                            sampling_args={'mesh':'monte-carlo',
+                                                                'subsampling-algorithm':'qr',
+                                                                'sampling-ratio':1.4})
+        p3, w3 = myPoly3.get_points_and_weights()
+        P3 = myPoly3.get_poly(p3)
+        W3 = np.diag( np.sqrt(w3) )
+        A3 = np.dot(W3.T ,  P3.T)
+        G3 = np.dot(A3.T, A3)
+        cond_number = np.linalg.cond(G3)
+        np.testing.assert_array_less(cond_number, 200.0)
 if __name__== '__main__':
     unittest.main()

@@ -32,7 +32,6 @@ class TestSamplingGeneration(TestCase):
 
         initialise_time = time.time()
         induced_sampling = Induced(parameters, basis)
-        print(f"time taken to initialise class: {time.time()-initialise_time}")
 
         parameter = parameters[0]
         parameter.order = 3

@@ -1,0 +1,5 @@
+T (Student's T)
+====================
+
+.. automodule:: equadratures.distributions.studentst
+    :members:

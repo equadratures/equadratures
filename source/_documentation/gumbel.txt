@@ -1,0 +1,5 @@
+Gumbel
+====================
+
+.. automodule:: equadratures.distributions.gumbel
+    :members:

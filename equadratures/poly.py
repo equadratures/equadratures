@@ -330,14 +330,14 @@ class Poly(object):
                 else:
                     grad_values = model_grads
                 p, q = grad_values.shape
-                self.gradient_evaluations = np.zeros((p*q,1))
+                self._gradient_evaluations = np.zeros((p*q,1))
+                W = np.diag(np.sqrt(self._quadrature_weights))
                 counter = 0
                 for j in range(0,q):
                     for i in range(0,p):
-                        self.gradient_evaluations[counter] = W[i,i] * grad_values[i,j]
+                        self._gradient_evaluations[counter] = W[i,i] * grad_values[i,j]
                         counter = counter + 1
-                del d, grad_values
-                dP = self.get_poly_grad(self._quadrature_points)
+                del grad_values
         self.statistics_object = None
         self._set_coefficients()
     def _set_coefficients(self, user_defined_coefficients=None):
@@ -404,8 +404,12 @@ class Poly(object):
             A = np.dot(W , P.T)
             b = np.dot(W , self._model_evaluations)
             if self.gradient_flag == 1:
-                C = cell2matrix(dPcell, W)
-                self.coefficients = self.solver(A, b, C, self.gradient_evaluations)
+                # Now, we can reduce the number of rows!
+
+                dP = self.get_poly_grad(self._quadrature_points)
+                C = cell2matrix(dP, W)
+
+                self.coefficients = self.solver(A, b, C, self._gradient_evaluations)
             else:
                 self.coefficients = self.solver(A, b)
     def get_multi_index(self):
@@ -787,3 +791,18 @@ def vector_to_2D_grid(coefficients, index_set):
     coefficients = np.reshape(coefficients, (1, l))
     z[indices[:,0], indices[:,1]] = coefficients
     return x, y, z, max_order
+def cell2matrix(G, W):
+    dimensions = len(G)
+    G0 = G[0] # Which by default has to exist!
+    C0 = G0.T
+    rows, cols = C0.shape
+    BigC = np.zeros((dimensions*rows, cols))
+    counter = 0
+    for i in range(0, dimensions):
+        K = np.dot(W, G[i].T)
+        for j in range(0, rows):
+            for k in range(0,cols):
+                BigC[counter,k] = K[j,k]
+            counter = counter + 1
+    BigC = np.mat(BigC)
+    return BigC

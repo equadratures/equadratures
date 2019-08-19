@@ -29,7 +29,7 @@ class Solver(object):
         elif self.method.lower() == 'numerical-integration':
             self.solver = lambda A, b: orthogonal_linear_system(A, b)
         elif self.method.lower() == 'least-squares-with-gradients':
-            self.solver = lambda A, b, C, d: constrained_least_squares(A, b, C, d)
+            self.solver = lambda A, b, C, d: constrained_least_squares(A, b, C, d, self.verbose)
     def get_solver(self):
         return self.solver
 def least_squares(A, b, verbose):
@@ -53,8 +53,28 @@ def minimum_norm(A, b):
 def orthogonal_linear_system(A, b):
     coefficients = np.dot(A.T, b)
     return coefficients
-def constrained_least_squares(A, b, C, d):
-    return 0
+def constrained_least_squares(A, b, C, d, verbose):
+    # Size of matrices!
+    m, n = A.shape
+    p, q = b.shape
+    k, l = C.shape
+    s, t = d.shape
+
+    # Check that the number of elements in b are equivalent to the number of rows in A
+    if m != p:
+        raise(ValueError, 'solver: error: mismatch in sizes of A and b')
+    elif k != s:
+        raise(ValueError, 'solver: error: mismatch in sizes of C and d')
+
+    x = least_squares(np.mat(np.vstack([A, C])), np.mat(np.vstack([b, d])), verbose)
+    #elif technique.lower() == 'direct-elimination':
+    #    x, cond = directElimination(C, d, A, b)
+    #elif technique.lower() == 'null-space':
+    #    x, cond = nullSpaceMethod(C, d, A, b)
+    #else:
+    #    raise(ValueError, 'solveCLSQ: Incorrect choice for technique. Choose between weighted, direct-elimination or null-space, please.')
+    return x#, cond
+
 def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
     A = deepcopy(Ao)
     y = deepcopy(bo)

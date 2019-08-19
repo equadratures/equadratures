@@ -43,8 +43,8 @@ class Parameter(object):
         This is the second shape parameter that characterizes the distribution selected. In the case of a ``gaussian`` or ``truncated-gaussian``, this is the variance.
     :param numpy.ndarray data:
         A data-set with shape (number_of_data_points, 2), where the first column comprises of parameter values, while the second column corresponds to the data observations. This input should only be used with the ``custom`` distribution.
-    :param bool endpoints:
-        If set to ``True``, then the quadrature points and weights will have end-points, based on Gauss-Lobatto quadrature rules.
+    :param string endpoints:
+        If set to ``both``, then the quadrature points and weights will have end-points, based on Gauss-Lobatto quadrature rules. If set to ``upper`` or ``lower`` a Gauss-Radau rule is used to compute one end-point at either the upper or lower bound.
 
     **Sample constructor initialisations**::
 
@@ -61,7 +61,7 @@ class Parameter(object):
         1. Xiu, D., Karniadakis, G. E., (2002) The Wiener-Askey Polynomial Chaos for Stochastic Differential Equations. SIAM Journal on Scientific Computing,  24(2), `Paper <https://epubs.siam.org/doi/abs/10.1137/S1064827501387826?journalCode=sjoce3>`__
         2. Gautschi, W., (1985) Orthogonal Polynomials-Constructive Theory and Applications. Journal of Computational and Applied Mathematics 12 (1985), pp. 61-76. `Paper <https://www.sciencedirect.com/science/article/pii/037704278590007X>`__
     """
-    def __init__(self, order, distribution, endpoints=False, shape_parameter_A=None, shape_parameter_B=None, lower=None, upper=None, data=None):
+    def __init__(self, order, distribution, endpoints=None, shape_parameter_A=None, shape_parameter_B=None, lower=None, upper=None, data=None):
         self.name = distribution
         self.order = order
         self.shape_parameter_A = shape_parameter_A
@@ -322,12 +322,14 @@ class Parameter(object):
         :return:
             A 1-by-N matrix that contains the quadrature weights
         """
-        if self.endpoints is False:
+        if self.endpoints is None:
             return get_local_quadrature(self, order, ab)
-        elif self.endpoints is True:
+        elif self.endpoints.lower() == 'lower' or self.endpoints.lower() == 'upper':
+            return get_local_quadrature_radau(self, order, ab)
+        elif self.endpoints.lower() == 'both':
             return get_local_quadrature_lobatto(self, order, ab)
         else:
-            raise(ValueError, '_get_local_quadrature:: Error with Endpoints entry!')
+            raise(ValueError, 'Error in endpoints specification.')
 def get_local_quadrature(self, order=None, ab=None):
     # Check for extra input argument!
     if order is None:
@@ -342,7 +344,6 @@ def get_local_quadrature(self, order=None, ab=None):
     else:
         ab = ab[0:order+1,:]
         JacobiMat = self.get_jacobi_matrix(order, ab)
-
     # If statement to handle the case where order = 1
     if order == 1:
         # Check to see whether upper and lower bound are defined:
@@ -366,43 +367,54 @@ def get_local_quadrature(self, order=None, ab=None):
             if (p[u,0] < 1e-16) and (-1e-16 < p[u,0]):
                 p[u,0] = np.abs(p[u,0])
     return p, w
+def get_local_quadrature_radau(self, order=None, ab=None):
+    if self.endpoints.lower() == 'lower':
+        end0 = self.lower
+    elif self.endpoints.lower() == 'upper':
+        end0 = self.upper
+    if order is None:
+        order = self.order - 1
+    else:
+        order = order - 1
+    N = order
+    if ab is None:
+        ab = self.get_recurrence_coefficients(order+1)
+    else:
+        ab = ab[0:order+1, :]
+    p0 = 0.
+    p1 = 1.
+    for i in range(0, N+1):
+        pm1 = p0
+        p0 = p1
+        p1 = (end0 - ab[i, 0]) * p0 - ab[i, 1]*pm1
+    ab[N+1, 0] = end0 - ab[N+1, 1] * p0/p1
+    return get_local_quadrature(self, order=order+1, ab=ab)
 def get_local_quadrature_lobatto(self, order=None, ab=None):
-    # Check for extra input argument!
     if order is None:
         order = self.order - 2
     else:
         order = order - 2
-    a = self.distribution.shape_parameter_A
-    b = self.distribution.shape_parameter_B
     N = order
-    # Get the recurrence coefficients & the jacobi matrix
+    endl = self.lower
+    endr = self.upper
     if ab is None:
         ab = self.get_recurrence_coefficients(order+2)
     else:
         ab = ab[0:order+2, :]
-    ab[N+2, 0] = (a - b) / (2 * float(N+1) + a + b + 2)
-    ab[N+2, 1] = 4 * (float(N+1) + a + 1) * (float(N+1) + b + 1) * (float(N+1) + a + b + 1) / ((2 * float(N+1) + a + b + 1) *
-    (2 * float(N+1) + a + b + 2)**2)
-    K = N + 2
-    n0, _ = ab.shape
-    if n0 < K:
-        raise(ValueError, 'getlocalquadraturelobatto: Recurrence coefficients size misalignment!')
-    J = np.zeros((K+1,K+1))
-    for n in range(0, K+1):
-        J[n,n] = ab[n, 0]
-    for n in range(1, K+1):
-        J[n, n-1] = np.sqrt(ab[n,1])
-        J[n-1, n] = J[n, n-1]
-    D, V = np.linalg.eig(J)
-    V = np.mat(V) # convert to matrix
-    local_points = np.sort(D) # sort by the eigenvalues
-    i = np.argsort(D) # get the sorted indices
-    i = np.array(i) # convert to array
-    w = np.linspace(1,K+1,K+1) # create space for weights
-    p = np.ones((int(K+1),1))
-    for u in range(0, len(i) ):
-        w[u] = ab[0,1] * (V[0,i[u]]**2) # replace weights with right value
-        p[u,0] = local_points[u]
-    return p, w
+    p0l = 0.
+    p0r = 0.
+    p1l = 1.
+    p1r = 1.
+    for i in range(0, N+2):
+        pm1l = p0l
+        p0l = p1l
+        pm1r = p0r
+        p0r = p1r
+        p1l = (endl - ab[i, 0]) * p0l - ab[i, 1] * pm1l
+        p1r = (endr - ab[i, 0]) * p0r - ab[i, 1] * pm1r
+    det = p1l * p0r - p1r * p0l
+    ab[N+2, 0] = (endl*p1l*p0r-endr*p1r*p0l)/det
+    ab[N+2, 1] = (endr - endl) * p1l * p1r/det
+    return get_local_quadrature(self, order=order+2, ab=ab)
 def distribution_error():
     raise(ValueError, 'Please select a valid distribution for your parameter; documentation can be found at www.effective-quadratures.org')

@@ -7,6 +7,7 @@ from equadratures.basis import Basis
 import numpy as np
 import time
 
+
 class TestSamplingGeneration(TestCase):
     def test_sampling(self):
         d = 3
@@ -16,6 +17,7 @@ class TestSamplingGeneration(TestCase):
         mybasis2 = Basis('total-order')
         mypoly2 = Poly(myparameters, mybasis2, method='least-squares', sampling_args={'mesh':'induced', 'subsampling-algorithm':'qr', 'sampling-ratio':1.0})
         assert mypoly2._quadrature_points.shape == (mypoly2.basis.cardinality, d)
+
     def test_induced_jacobi_evaluation(self):
         dimension = 3
         parameters = [Parameter(1, "Uniform", upper=1, lower=-1)]*dimension
@@ -33,5 +35,6 @@ class TestSamplingGeneration(TestCase):
         np.testing.assert_allclose(cdf_value, 0.7462, atol=0.00005)
         cdf_value = induced_sampling.induced_jacobi_evaluation(0, 0, 0.999, parameter)
         np.testing.assert_allclose(cdf_value, 0.99652, atol=0.000005)
+
 if __name__ == '__main__':
     unittest.main()

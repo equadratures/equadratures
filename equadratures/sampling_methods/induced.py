@@ -3,6 +3,8 @@ import numpy as np
 from scipy.special import betaln
 import bisect
 from scipy.optimize import bisect as bisect_root_solve
+
+
 class Induced(Sampling):
     """
     The class defines an Induced sampling object.
@@ -202,7 +204,7 @@ class Induced(Sampling):
             value = value - uniform_cdf_value
             return value
         sampled_value = bisect_root_solve(F, interval_lo, interval_hi, xtol=0.00005)
-
+        
         return sampled_value
 
     def induced_jacobi_evaluation(self, alpha, beta, x, parameter):

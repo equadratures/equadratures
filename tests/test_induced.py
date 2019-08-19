@@ -6,21 +6,47 @@ from equadratures.parameter import Parameter
 from equadratures.basis import Basis
 import numpy as np
 import time
+<<<<<<< HEAD
 
 class TestSamplingGeneration(TestCase):
+=======
+
+
+class TestSamplingGeneration(TestCase):
+
+>>>>>>> fix induced sampling interface with poly and quadrature class
     def test_sampling(self):
         d = 3
         order = 3
         param = Parameter(distribution='uniform', order=order, lower=-1.0, upper=1.0)
         myparameters = [param for _ in range(d)]
+<<<<<<< HEAD
         mybasis2 = Basis('total-order')
         mypoly2 = Poly(myparameters, mybasis2, method='least-squares', sampling_args={'mesh':'induced', 'subsampling-algorithm':'qr', 'sampling-ratio':1.0})
         assert mypoly2._quadrature_points.shape == (mypoly2.basis.cardinality, d)
+=======
+        # mybasis = Basis('total-order')
+        # mypoly1 = Poly(myparameters, mybasis, method='least-squares', sampling_args={'mesh':'monte-carlo', 'subsampling-algorithm':'qr', 'sampling-ratio':1.0} )
+        # assert mypoly1._quadrature_points.shape == (order+1, d)
+        mybasis2 = Basis('total-order')
+        mypoly2 = Poly(myparameters, mybasis2, method='least-squares', sampling_args={'mesh':'induced', 'subsampling-algorithm':'qr', 'sampling-ratio':1.0})
+        print(mypoly2._quadrature_points.shape)
+        assert mypoly2._quadrature_points.shape == (mypoly2.basis.cardinality, d)
+
+>>>>>>> fix induced sampling interface with poly and quadrature class
     def test_induced_jacobi_evaluation(self):
         dimension = 3
         parameters = [Parameter(1, "Uniform", upper=1, lower=-1)]*dimension
         basis = Basis("total-order")
+<<<<<<< HEAD
         induced_sampling = Induced(parameters, basis)
+=======
+
+        initialise_time = time.time()
+        induced_sampling = Induced(parameters, basis)
+        print(f"time taken to initialise class: {time.time()-initialise_time}")
+
+>>>>>>> fix induced sampling interface with poly and quadrature class
         parameter = parameters[0]
         parameter.order = 3
         cdf_value = induced_sampling.induced_jacobi_evaluation(0, 0, 0, parameter)
@@ -33,5 +59,23 @@ class TestSamplingGeneration(TestCase):
         np.testing.assert_allclose(cdf_value, 0.7462, atol=0.00005)
         cdf_value = induced_sampling.induced_jacobi_evaluation(0, 0, 0.999, parameter)
         np.testing.assert_allclose(cdf_value, 0.99652, atol=0.000005)
+<<<<<<< HEAD
+=======
+
+    # def test_induced_sampling(self):
+    #     """
+    #     An integration test for the whole routine
+    #     """
+    #     dimension = 3
+    #     parameters = [Parameter(3, "Uniform", upper=1, lower=-1)]*dimension
+    #     basis = Basis("total-order", [3]*dimension)
+
+    #     induced_sampling = Induced(parameters, basis)
+
+    #     quadrature_points = induced_sampling.get_points()
+    #     assert quadrature_points.shape == (63, 3)
+
+
+>>>>>>> fix induced sampling interface with poly and quadrature class
 if __name__ == '__main__':
     unittest.main()

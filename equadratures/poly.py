@@ -109,6 +109,8 @@ class Poly(object):
             self._set_solver()
             self._set_subsampling_algorithm()
             self._set_points_and_weights()
+        else:
+            print('WARNING: Method not declared.')
     def get_summary(self, filename=None):
         """
         A simple utility that returns file summarising what the polynomial approximation has determined.
@@ -755,7 +757,7 @@ def evaluate_model(points, function):
 
     :param numpy.ndarray points:
         An ndarray with shape (number_of_observations, dimensions) at which the gradient must be evaluated.
-    :param callable fungrad:
+    :param callable function:
         A callable argument for the function.
 
     :return:

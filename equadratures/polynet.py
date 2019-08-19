@@ -11,9 +11,20 @@ class Polynet(object):
 
     :param numpy.ndarray sample_points: Sample training data inputs.
     :param numpy.ndarray sample_outputs: Sample training data outputs.
-    :param int num_ridges: The number of ridges.
+    :param int num_ridges: The number of ridges used in the neural network/
+    :param int max_iters: The maximum number of iterations for the gradient descent optimisation algorithm.
+    :param double learning_rate: The learning rate used in the optimisation.
+    :param numpy.ndarray W: An initial ridge for the optimisation algorithm.
+    :param numpy.ndarray coeffs: Coefficients for the polynomial 1D-ridge functions.
+    :param string opt: The optimisation strategy used. Options include: ``sd`` for steepest descent, ``mom`` for a momentum-rate-based approach or ``adapt`` for an adaptive learning rate based approach.
+    :param double momentum_rate: The momentum rate used.
+    :param int poly_deg: The degree of the polynomials used throughout the neural network.
+    :param bool verbose: A verbose flag.
 
     **Sample constructor initialisations**::
+
+        net = Polynet(X,Y,num_ridges,max_iters=20000, learning_rate=1e-4, momentum_rate=.001, opt='adapt')
+        net.fit()
     """
     def __init__(self, sample_points, sample_outputs, num_ridges, max_iters=1, learning_rate = 0.001,
                  W=None, coeffs=None, momentum_rate = .001, opt = 'sd', poly_deg = 2, verbose = False):
@@ -77,6 +88,16 @@ class Polynet(object):
                 reshaped_coeffs = np.reshape(current_coeffs, (len(current_coeffs),1))
                 (self.poly_array[k,j]).coefficients = reshaped_coeffs
     def evaluate_fit(self, x, train=False):
+        """
+        Evaluates the trained network on provided data.
+
+        :param Polynet self:
+            An instance of the Polynet object.
+
+        :param numpy.ndarray x:
+            A set of testing inputs of shape (M, d), where M represents the number of testing points and d the dimensionality of the input data.
+
+        """
         # evaluate nn
         # if train, update with training data and also updates Z
         Z = self.Z[:]
@@ -134,6 +155,13 @@ class Polynet(object):
                 phi[k][i,:,:] = np.squeeze(current_poly.get_poly(Z[k][i]))
         self.phi = phi[:]
     def fit(self):
+        """
+        Trains the neural network on the data.
+
+        :param Polynet self:
+            An instance of the Polynet object.
+
+        """
         n_data = self.sample_points.shape[0]
         W_change = self.W[:]
         for t in range(self.max_iters):

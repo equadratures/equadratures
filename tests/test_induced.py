@@ -6,7 +6,7 @@ from equadratures.parameter import Parameter
 from equadratures.basis import Basis
 
 import numpy as np
-import time
+# import time
 
 
 class TestSamplingGeneration(TestCase):
@@ -21,7 +21,7 @@ class TestSamplingGeneration(TestCase):
         # assert mypoly1._quadrature_points.shape == (order+1, d)
         mybasis2 = Basis('total-order')
         mypoly2 = Poly(myparameters, mybasis2, method='least-squares', sampling_args={'mesh':'induced', 'subsampling-algorithm':'qr', 'sampling-ratio':1.0})
-        print(mypoly2._quadrature_points.shape)
+        # print(mypoly2._quadrature_points.shape)
         assert mypoly2._quadrature_points.shape == (mypoly2.basis.cardinality, d)
 
     def test_induced_jacobi_evaluation(self):
@@ -30,9 +30,9 @@ class TestSamplingGeneration(TestCase):
         parameters = [Parameter(1, "Uniform", upper=1, lower=-1)]*dimension
         basis = Basis("total-order")
 
-        initialise_time = time.time()
+        # initialise_time = time.time()
         induced_sampling = Induced(parameters, basis)
-        print(f"time taken to initialise class: {time.time()-initialise_time}")
+        # print(f"time taken to initialise class: {time.time()-initialise_time}")
 
         parameter = parameters[0]
         parameter.order = 3

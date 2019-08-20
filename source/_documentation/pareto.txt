@@ -1,0 +1,5 @@
+Pareto
+====================
+
+.. automodule:: equadratures.distributions.pareto
+    :members:

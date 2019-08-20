@@ -1,51 +1,51 @@
-"""The Pareto distribution."""
+"""The Lognormal distribution."""
 from equadratures.distributions.template import Distribution
 from equadratures.distributions.recurrence_utils import jacobi_recurrence_coefficients
 import numpy as np
-from scipy.stats import pareto
+from scipy.stats import lognorm
 RECURRENCE_PDF_SAMPLES = 50000
-class Pareto(Distribution):
+class Lognormal(Distribution):
     """
-    The class defines a Pareto object. It is the child of Distribution.
+    The class defines a Lognormal object. It is the child of Distribution.
 
     :param int shape_parameter:
-		The shape parameter associated with the Pareto distribution.
+		The shape parameter associated with the Lognormal distribution.
     """
     def __init__(self, shape_parameter):
         self.shape_parameter = shape_parameter
         if self.shape_parameter is not None:
-            self.bounds = np.array([0.999, np.inf])
+            self.bounds = np.array([0.0, np.inf])
             if self.shape_parameter > 0:
-                mean, var, skew, kurt = pareto.stats(self.shape_parameter, moments='mvsk')
-                self.parent = pareto(self.shape_parameter)
+                mean, var, skew, kurt = lognorm.stats(s=self.shape_parameter, moments='mvsk')
+                self.parent = lognorm(s=self.shape_parameter)
                 self.mean = mean
                 self.variance = var
                 self.skewness = skew
                 self.kurtosis = kurt
-                self.x_range_for_pdf = np.linspace(0.999, 20.0 + shape_parameter, RECURRENCE_PDF_SAMPLES)
+                self.x_range_for_pdf = np.linspace(0., 20., RECURRENCE_PDF_SAMPLES)
     def get_description(self):
         """
-        A description of the Pareto distribution.
+        A description of the Lognormal distribution.
 
-        :param Pareto self:
-            An instance of the Pareto class.
+        :param Lognormal self:
+            An instance of the Lognormal class.
         :return:
-            A string describing the Pareto distribution.
+            A string describing the Lognormal distribution.
         """
-        text = "is a pareto distribution which is characterised by its shape parameter, which here is"+str(self.shape_parameter)+". While the distribution can be characterized by a shape parameter and a scale parameter, in Effective Quadratures we use only the one, that is the scale parameter is set to 1. "
+        text = "is a Lognormal distribution is characterised by its shape parameter, which here is"+str(self.shape_parameter)+"."
         return text
     def get_pdf(self, points=None):
         """
-        A Pareto probability density function.
+        A Lognormal probability density function.
 
-        :param Pareto self:
-            An instance of the Pareto class.
+        :param Lognormal self:
+            An instance of the Logistic class.
         :param points:
             Matrix of points for defining the probability density function.
         :return:
-            An array of N equidistant values over the support of the Pareto distribution.
+            An array of N equidistant values over the support of the Lognormal distribution.
         :return:
-            Probability density values along the support of the Pareto distribution.
+            Probability density values along the support of the Lognormal distribution.
         """
         if points is not None:
             return self.parent.pdf(points)
@@ -53,16 +53,16 @@ class Pareto(Distribution):
             raise(ValueError, 'Please digit an input for get_pdf method')
     def get_cdf(self, points=None):
         """
-        A Pareto cumulative density function.
+        A Lognormal cumulative density function.
 
-        :param Pareto self:
-            An instance of the Pareto class.
+        :param Lognormal self:
+            An instance of the Logistic class.
         :param matrix points:
             Matrix of points for defining the cumulative density function.
         :return:
-            An array of N equidistant values over the support of the Pareto distribution.
+            An array of N equidistant values over the support of the Lognormal distribution.
         :return:
-            Cumulative density values along the support of the Pareto distribution.
+            Cumulative density values along the support of the Lognormal distribution.
         """
         if points is not None:
             return self.parent.cdf(points)
@@ -70,22 +70,22 @@ class Pareto(Distribution):
             raise(ValueError, 'Please digit an input for get_cdf method')
     def get_icdf(self, xx):
         """
-        A Pareto inverse cumulative density function.
+        A Lognormal inverse cumulative density function.
 
-        :param Pareto:
-            An instance of Pareto class
+        :param Gumbel:
+            An instance of Logistic class
         :param matrix xx:
             A matrix of points at which the inverse cumulative density function need to be evaluated.
         :return:
-            Inverse cumulative density function values of the Pareto distribution.
+            Inverse cumulative density function values of the Lognormal distribution.
         """
         return self.parent.ppf(xx)
     def get_samples(self, m=None):
         """
-        Generates samples from the Pareto distribution.
+        Generates samples from the Lognormal distribution.
 
-        :param Pareto self:
-            An instance of Pareto class
+        :param Logistic self:
+            An instance of Lognormal class
         :param integer m:
             Number of random samples. If no value is provided, a default of 5e05 is assumed.
         :return:

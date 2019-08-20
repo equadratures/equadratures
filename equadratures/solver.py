@@ -5,8 +5,10 @@ from copy import deepcopy
 class Solver(object):
     """
     Returns solver functions for solving Ax=b
-
-    :param string method:
+    :param string method: The method used for solving the linear system. Options include: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration`` and ``least-squares-with-gradients``.
+    :param dict solver_args: Optional arguments centered around the specific solver.
+            :param numpy.ndarray noise-level: The noise-level to be used in the basis pursuit de-noising solver.
+            :param bool verbose: Default value of this input is set to ``False``; when ``True`` a string is printed to the screen detailing the solver convergence and condition number of the matrix.
     """
     def __init__(self, method, solver_args):
         self.method = method
@@ -25,7 +27,7 @@ class Solver(object):
         elif self.method.lower() == 'numerical-integration':
             self.solver = lambda A, b: orthogonal_linear_system(A, b)
         elif self.method.lower() == 'least-squares-with-gradients':
-            self.solver = lambda A, b, C, d: constrained_least_squares(A, b, C, d)
+            self.solver = lambda A, b, C, d: constrained_least_squares(A, b, C, d, self.verbose)
     def get_solver(self):
         return self.solver
 def least_squares(A, b, verbose):
@@ -49,8 +51,44 @@ def minimum_norm(A, b):
 def orthogonal_linear_system(A, b):
     coefficients = np.dot(A.T, b)
     return coefficients
-def constrained_least_squares(A, b, C, d):
-    return 0
+def constrained_least_squares(A, b, C, d, verbose):
+    # Size of matrices!
+    m, n = A.shape
+    p, q = b.shape
+    k, l = C.shape
+    s, t = d.shape
+
+    # Check that the number of elements in b are equivalent to the number of rows in A
+    if m != p:
+        raise(ValueError, 'solver: error: mismatch in sizes of A and b')
+    elif k != s:
+        raise(ValueError, 'solver: error: mismatch in sizes of C and d')
+    if m >= n:
+        return least_squares(np.vstack([A, C]), np.vstack([b, d]), verbose)
+    else:
+        return null_space_method(C, d, A, b, verbose)
+def null_space_method(Ao, bo, Co, do, verbose):
+    A = deepcopy(Ao)
+    C = deepcopy(Co)
+    b = deepcopy(bo)
+    d = deepcopy(do)
+    m, n = A.shape
+    p, n = C.shape
+    Q, R = np.linalg.qr(C.T, 'complete')
+    Q1 = Q[0:n, 0:p]
+    Q2 = Q[0:n, p:n]
+    # Lower triangular matrix!
+    L = R.T
+    L = L[0:p, 0:p]
+    y1 = least_squares(L, d, verbose)
+    c = b - np.dot( np.dot(A , Q1) , y1)
+    AQ2 = np.dot(A , Q2)
+    y2 = least_squares(AQ2 , c, verbose)
+    x = np.dot(Q1 , y1) + np.dot(Q2 , y2)
+    cond = np.linalg.cond(AQ2)
+    if verbose is True:
+        print('The condition number of the matrix is '+str(cond)+'.')
+    return x
 def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
     A = deepcopy(Ao)
     y = deepcopy(bo)
@@ -76,16 +114,14 @@ def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
                 A_train = np.delete(A, indices, 0)
                 y_ver = y[indices].flatten()
                 y_train = np.delete(y, indices).flatten()
-                x_train = __bp_denoise(A_train, y_train, eta[e])
+                x_train = _bp_denoise(A_train, y_train, eta[e])
                 y_trained = np.reshape(np.dot(A_ver, x_train), len(y_ver))
 
                 assert y_trained.shape == y_ver.shape
                 errors[n] = np.mean(np.abs(y_trained - y_ver))/len(y_ver)
+            mean_errors[e] = np.mean(errors)
         except:
-            errors = np.inf*np.ones(5)
-        mean_errors[e] = np.mean(errors)
-    best_eta = eta[np.argmin(mean_errors)]
-    x = __bp_denoise(A, y, best_eta)
+            mean_errors[e] = np.inf
     sorted_ind = np.argsort(mean_errors)
     x = None
     ind = 0
@@ -93,17 +129,15 @@ def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
         if ind >= len(log_eta):
             raise ValueError('Singular matrix!! Reconsider sample points!')
         try:
-            x = __bp_denoise(A, y, eta[sorted_ind[ind]])
+            x = _bp_denoise(A, y, eta[sorted_ind[ind]])
         except:
             ind += 1
-    residue = np.linalg.norm(np.dot(A, x).flatten() - y.flatten())
     if verbose:
         print('The noise level used is '+str(best_eta)+'.')
     return np.reshape(x, (len(x),1))
-def __CG_solve(A, b, max_iters, tol):
+def _CG_solve(A, b, max_iters, tol):
     """
     Solves Ax = b iteratively using conjugate gradient, assuming A is a symmetric positive definite matrix.
-
     :param numpy-matrix A:
         The matrix.
     :param numpy-array b:
@@ -112,7 +146,6 @@ def __CG_solve(A, b, max_iters, tol):
         Maximum number of iterations for the conjugate gradient algorithm.
     :param double tol:
         Tolerance for cut-off.
-
     """
     if not(np.all(np.linalg.eigvals(A) > 0)):
         raise ValueError('A is not symmetric positive definite.')
@@ -153,10 +186,9 @@ def __CG_solve(A, b, max_iters, tol):
         iterations += 1
 
     return x.flatten(), residual, iterations
-def __bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cgmaxiter = 200, verbose = False, use_CG = False):
+def _bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cgmaxiter = 200, verbose = False, use_CG = False):
     """
     Solving the basis pursuit de-noising problem.
-
     :param numpy-matrix A:
         The matrix.
     :param numpy-array b:
@@ -165,7 +197,6 @@ def __bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, 
         The noise.
     :param numpy-array x0:
         Initial solution  if not provided the least norm solution is used.
-
     """
     newtontol = lbtol
     newtonmaxiter = 50
@@ -178,7 +209,7 @@ def __bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, 
             if verbose:
                 print('Starting point infeasible  using x0 = At*inv(AAt)*y.')
             if use_CG:
-                w, cgres, cgiter =  __CG_solve(np.dot(A,A.T),b,cgmaxiter,cgtol)
+                w, cgres, cgiter =  _CG_solve(np.dot(A,A.T),b,cgmaxiter,cgtol)
             else:
                 w = np.linalg.solve(np.dot(A,A.T),b).flatten()
                 cgres = np.linalg.norm(np.dot(np.dot(A,A.T), w).flatten() - b.flatten()) / np.linalg.norm(b)
@@ -194,7 +225,7 @@ def __bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, 
         if verbose:
             print('No x0. Using x0 = At*inv(AAt)*y.')
         if use_CG:
-            w, cgres, cgiter =  __CG_solve(np.dot(A,A.T),b,cgmaxiter,cgtol)
+            w, cgres, cgiter =  _CG_solve(np.dot(A,A.T),b,cgmaxiter,cgtol)
         else:
             w = np.linalg.solve(np.dot(A,A.T),b).flatten()
             cgres = np.linalg.norm(np.dot(np.dot(A,A.T), w).flatten() - b.flatten()) / np.linalg.norm(b)
@@ -217,7 +248,7 @@ def __bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, 
         print('Number of log barrier iterations = ' + str(lbiter) )
     totaliter = 0
     for ii in range(lbiter+1):
-      xp, up, ntiter =  __l1qc_newton(x, u, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter, verbose, use_CG)
+      xp, up, ntiter =  _l1qc_newton(x, u, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter, verbose, use_CG)
       totaliter += ntiter
       if verbose:
           print('Log barrier iter = ' + str(ii) + ', l1 = ' + str(np.sum(np.abs(xp))) + ', functional = ' + str(np.sum(up)) + \
@@ -226,9 +257,8 @@ def __bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, 
       x = xp.copy()
       u = up.copy()
       tau *= mu
-
     return xp
-def __l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter, verbose, use_CG):
+def _l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter, verbose, use_CG):
     # line search parameters
     alpha = 0.01
     beta = 0.5
@@ -259,7 +289,7 @@ def __l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, c
 
       H11p = np.diag(sigx.reshape(len(sigx))) - (1.0/fe) * AtA + (1.0/fe)**2 * np.outer(atr,atr)
       if use_CG:
-          dx, cgres, cgiter =  __CG_solve(H11p, w1p, cgmaxiter, cgtol)
+          dx, cgres, cgiter =  _CG_solve(H11p, w1p, cgmaxiter, cgtol)
       else:
           dx = np.linalg.solve(H11p, w1p).flatten()
           cgres = np.linalg.norm(np.dot(H11p, dx).flatten() - w1p.flatten()) / np.linalg.norm(w1p)

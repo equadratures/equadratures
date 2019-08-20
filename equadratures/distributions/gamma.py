@@ -1,13 +1,9 @@
 """The Gamma distribution."""
-
 from equadratures.distributions.template import Distribution
-
 import numpy as np
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 from scipy.stats import gamma
-
 RECURRENCE_PDF_SAMPLES = 8000
-
 class Gamma(Distribution):
     """
     The class defines a Gamma object. It is the child of Distribution.
@@ -28,7 +24,6 @@ class Gamma(Distribution):
             self.kurtosis = 6.0 / self.shape # double-check!
             self.x_range_for_pdf = np.linspace(0, self.shape*self.scale*10, RECURRENCE_PDF_SAMPLES)
             self.parent = gamma(a=self.shape, scale=self.scale)
-
     def get_description(self):
         """
         A description of the gamma distribution.
@@ -38,9 +33,8 @@ class Gamma(Distribution):
         :return:
             A string describing the gamma distribution.
         """
-        text = "A gamma distribution with a shape parameter of "+str(self.shape)+", and a scale parameter of "+str(self.scale)+"."
+        text = "is a gamma distribution with a shape parameter of "+str(self.shape)+", and a scale parameter of "+str(self.scale)+"."
         return text
-
     def get_pdf(self, points=None):
         """
         A gamma probability density function.
@@ -76,7 +70,6 @@ class Gamma(Distribution):
             return self.parent.cdf(points)
         else:
             raise(ValueError, 'Please digit an input for getCDF method')
-
     def get_icdf(self, xx):
         """
         A gamma inverse cumulative density function.
@@ -89,7 +82,6 @@ class Gamma(Distribution):
             Inverse cumulative density function values of the Gamma distribution.
         """
         return self.parent.ppf(xx)
-
     def get_samples(self, m=None):
         """
          Generates samples from the Gamma distribution.

@@ -3,58 +3,57 @@ import numpy as np
 from scipy.special import betaln
 import bisect
 from scipy.optimize import bisect as bisect_root_solve
-from scipy.linalg import qr
+
+# import time
+
+
 class Induced(Sampling):
     """
     The class defines an Induced sampling object.
-
-    :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
-    :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
+    :param list parameters: A list of parameters,
+                            where each element of the list is
+                            an instance of the Parameter class.
+    :param Basis basis: An instance of the Basis class
+                        corresponding to the multi-index set used.
     """
+
     def __init__(self, parameters, basis, orders=None):
         self.parameters = parameters
         self.basis = basis
         if orders is not None:
             self.basis.set_orders(orders)
+        else:
+            orders = []
+            for parameter in parameters:
+                orders.append(parameter.order)
+            self.basis.set_orders(orders)
         self.dimensions = len(self.parameters)
         self.basis_entries = basis.cardinality
         sampling_ratio = 7 * self.dimensions
         self.samples_number = int(sampling_ratio * np.max(self.basis.orders))
-        self.__set_points(orders)
-        super(Induced, self).__init__(self.parameters, self.basis, self.points, self.weights)
-    def __set_points(self, orders=None):
-        """
-        Performs induced sampling on Jacobi/Freud/Half-Line Freud classes of measures and
-        produces the corresponding quadrature points for integration.
+        self.points = self._set_points(orders)
+        self._set_weights()
+        # super(Induced, self).__init__(self.parameters,
+        #                               self.basis,
+        #                               self.points,
+        #                               self.weights)
 
+    def _set_points(self, orders=None):
+        """
+        Performs induced sampling on
+        Jacobi/Freud/Half-Line Freud classes of measures and
+        produces the corresponding quadrature points for integration.
         :param Poly self:
             An instance of the Poly class.
         :param list orders:
             A list of the highest polynomial orders along each dimension.
         """
         quadrature_points = np.zeros((self.samples_number, self.dimensions))
-        quadrature_points = np.apply_along_axis(self.__additive_mixture_sampling,
+        quadrature_points = np.apply_along_axis(self._additive_mixture_sampling,
                                                 1, quadrature_points)
-        p = {}
-        if self.dimensions == 1:
-            poly, _, _ = self.parameters[0]._get_orthogonal_polynomial(quadrature_points,
-                                                          int(np.max(self.basis.elements))
-                                                          )
-            return poly
-        else:
-            for i in range(0, self.dimensions):
-                p[i], _, _ = self.parameters[i]._get_orthogonal_polynomial(quadrature_points[:, i],
-                                                              int(np.max(self.basis.elements[:, i])))
-        # One loop for polynomials
-        polynomial = np.ones((self.basis_entries, self.samples_number))
-        for k in range(self.dimensions):
-            basis_entries_this_dim = self.basis.elements[:, k].astype(int)
-            polynomial *= p[k][basis_entries_this_dim]
-        wts = 1.0/np.sum(polynomial**2, 0)
-        weights = wts * 1.0/np.sum(wts)
-        self.points = quadrature_points
-        self.weights = weights
-    def __additive_mixture_sampling(self, _placeholder):
+        return quadrature_points
+
+    def _additive_mixture_sampling(self, _placeholder):
         """
         Performs tensorial sampling from the additive mixture of induced distributions.
         Parameters:
@@ -79,10 +78,10 @@ class Induced(Sampling):
         # Sample uniformly for inverse CDF
         sampled_cdf_values = np.random.rand(self.dimensions, 1)
 
-        x = self.__multi_variate_sampling(sampled_cdf_values, index_set_used)
-
+        x = self._multi_variate_sampling(sampled_cdf_values, index_set_used)
         return x
-    def __multi_variate_sampling(self, sampled_cdf_values, index_set_used):
+
+    def _multi_variate_sampling(self, sampled_cdf_values, index_set_used):
         """
         Sample each dimension of the input vairable with their individual
         1. probablity measure parameters
@@ -106,9 +105,13 @@ class Induced(Sampling):
             the additive mixture of the induced distributions
         """
         univariate_input = zip(self.parameters, sampled_cdf_values, index_set_used)
-        x = np.fromiter(map(self.__univariate_sampling, univariate_input), float)
+        # start_time = time.time()
+        x = np.fromiter(map(self._univariate_sampling,
+                            univariate_input), float)
+        # print(f"time for a sample:{time.time() - start_time}")
         return x
-    def __univariate_sampling(self, _input):
+
+    def _univariate_sampling(self, _input):
         """
         Generate the class of probability measures
         the input distribution belongs to.
@@ -136,24 +139,23 @@ class Induced(Sampling):
         if order == 0.0:
             sampled_value = parameter.mean
             return sampled_value
-            # print("mean", parameter.mean)
-        if parameter.name == "Uniform":
+        if parameter.name in ["Uniform", "uniform"]:
             # TODO Only uniform between -1 and 1 is done for now
             # define shape parameters for the Jacobi matrix
             alpha = 0
             beta = 0
             parameter.order = order
-            sampled_value = self.__inverse_induced_jacobi(alpha,
-                                                        beta,
-                                                        uniform_cdf_value,
-                                                        parameter)
-
+            sampled_value = self.inverse_induced_jacobi(alpha,
+                                                          beta,
+                                                          uniform_cdf_value,
+                                                          parameter)
             return sampled_value
         elif parameter.name in ["Gaussian"]:
             # TODO add Freud sampling algorithm
             pass
         pass
-    def __inverse_induced_jacobi(self, alpha, beta, uniform_cdf_value, parameter):
+
+    def inverse_induced_jacobi(self, alpha, beta, uniform_cdf_value, parameter):
         """
         Sampling of a univariate inverse induced Jacobi distributions
         Parameters
@@ -179,9 +181,9 @@ class Induced(Sampling):
         order = int(parameter.order)
         zeroes, _ = parameter._get_local_quadrature(order-1)
         # obtain current recurrence coefficient
-        ab = parameter.getRecurrenceCoefficients((order)*2 + 360 + 1)
+        ab = parameter.get_recurrence_coefficients((order)*2 + 360 + 1)
         for root in zeroes:
-            ab = self.quadratic_modification(ab, root)
+            ab = self._quadratic_modification(ab, root)
             ab[0, 1] = 1
         induced_points, induced_weights = parameter._get_local_quadrature(358, ab)
         # insert lower bound of x in jacobi distribution
@@ -191,25 +193,24 @@ class Induced(Sampling):
         strict_bounds = np.insert(strict_bounds, len(strict_bounds), 1)
         strict_bounds = np.insert(strict_bounds, 0, 0)
         interval_index = bisect.bisect_left(strict_bounds, uniform_cdf_value)
-        interval_index_hi = interval_index+1
+        interval_index_hi = interval_index+3
         if interval_index_hi >= 360:
             interval_index_hi = 359
-        interval_lo = interval_points[interval_index-1]
+        interval_lo = interval_points[interval_index-3]
         interval_hi = interval_points[interval_index_hi]
 
         # Solver function for inverse CDF where F(x)-u = 0
         def F(x):
-            value = self.__induced_jacobi_evaluation(alpha,
+            value = self.induced_jacobi_evaluation(alpha,
                                                    beta,
                                                    x,
                                                    parameter)
             value = value - uniform_cdf_value
             return value
-
         sampled_value = bisect_root_solve(F, interval_lo, interval_hi, xtol=0.00005)
-
         return sampled_value
-    def __induced_jacobi_evaluation(self, alpha, beta, x, parameter):
+
+    def induced_jacobi_evaluation(self, alpha, beta, x, parameter):
         """
         Evaluate induced Jacobi distribution CDF value
         Parameters
@@ -254,7 +255,7 @@ class Induced(Sampling):
                 parameter.shape_parameter_B, parameter.shape_parameter_A
 
         # Obtain the zeroes of this particlar polynomial
-        zeroes, _ = parameter.__get_local_quadrature(order-1)
+        zeroes, _ = parameter._get_local_quadrature(order-1)
         ab = parameter.get_recurrence_coefficients(order)
 
         # This is the (inverse) n'th root of the leading coefficient square of p_n
@@ -272,8 +273,8 @@ class Induced(Sampling):
         # recurrence coefficients
         for i in range(0, int(order)):
             quadratic_root = (2.0/(x+1.0)) * (zeroes[i] + 1.0) - 1.0
-            recurrence_ab = self.__quadratic_modification(recurrence_ab,
-                                                        quadratic_root)
+            recurrence_ab = self._quadratic_modification(recurrence_ab,
+                                                          quadratic_root)
             logfactor += np.log(recurrence_ab[0, 1] *
                                 ((x+1.0)/2.0)**2 *
                                 scaling_kn_factor)
@@ -285,13 +286,13 @@ class Induced(Sampling):
         # for the induced distribution
         # recurrence coefficients
         for j in range(0, int(A)):
-            recurrence_ab = self.__linear_modification(recurrence_ab,
-                                                     linear_root)
+            recurrence_ab = self._linear_modification(recurrence_ab,
+                                                       linear_root)
             logfactor += logfactor + np.log(ab[0, 1] *
                                             1.0/2.0 *
                                             (x+1.0))
             recurrence_ab[0, 1] = 1
-        u, w = parameter._getLocalQuadrature(M-1, recurrence_ab)
+        u, w = parameter._get_local_quadrature(M-1, recurrence_ab)
         integral = np.dot(w, (2.0 - 1.0/2.0 * (u+1.) * (x+1.))**(alpha-A))
 
         F = np.exp(logfactor -
@@ -304,7 +305,8 @@ class Induced(Sampling):
             F = 1-F
 
         return F
-    def __linear_modification(self, ab, x0):
+
+    def _linear_modification(self, ab, x0):
         """
         Performs a linear modification of the
         orthogonal polynomial recurrence coefficients.
@@ -328,7 +330,7 @@ class Induced(Sampling):
         beta = ab[:, 1]
         sign_value = np.sign(alpha[0] - x0)
 
-        r = np.reshape(np.abs(self.polynomial_ratios(alpha,
+        r = np.reshape(np.abs(self._polynomial_ratios(alpha,
                                                      beta, x0, N-1)),
                        (N-1, 1))
 
@@ -349,7 +351,8 @@ class Induced(Sampling):
             ab[i, 0] = alpha[i] + sign_value * acorrect[i]
 
         return ab
-    def __quadratic_modification(self, alphabeta, x0):
+
+    def _quadratic_modification(self, alphabeta, x0):
         """
         Performs a linear modification of the
         orthogonal polynomial recurrence coefficients.
@@ -371,10 +374,10 @@ class Induced(Sampling):
         alpha = alphabeta[:, 0]
         beta = alphabeta[:, 1]
 
-        C = np.reshape(self.__christoffel_normalised_polynomials(alpha,
-                                                               beta,
-                                                               x0,
-                                                               (N-1)),
+        C = np.reshape(self._christoffel_normalised_polynomials(alpha,
+                                                                 beta,
+                                                                 x0,
+                                                                 (N-1)),
                        [N, 1])
         acorrect = np.zeros((N-2, 1))
         bcorrect = np.zeros((N-2, 1))
@@ -392,8 +395,8 @@ class Induced(Sampling):
             ab[i, 1] = beta[i+1] * bcorrect[i]
             ab[i, 0] = alpha[i+1] + acorrect[i]
         return ab
-    @staticmethod
-    def polynomial_ratios(self, a, b, x, N):
+
+    def _polynomial_ratios(self, a, b, x, N):
         """
         Evaluates the ratio between successive orthogonal polynomials
         This is a helper method to perform the linear modification
@@ -438,7 +441,8 @@ class Induced(Sampling):
             r[q] = r1
 
         return r
-    def __christoffel_normalised_polynomials(self, a, b, x, N):
+
+    def _christoffel_normalised_polynomials(self, a, b, x, N):
         """
         Computes the Christoffel normalized
         orthogonal polynomial values

@@ -36,7 +36,7 @@ class Weibull(Distribution):
         :return:
             A string describing the Weibull distribution.
         """
-        text = "A Weibull distribution with a shape parameter of "+str(self.shape)+" and a scale parameter of "+str(self.scale)
+        text = "is a Weibull distribution with a shape parameter of "+str(self.shape)+" and a scale parameter of "+str(self.scale)
         return text
 
     def get_pdf(self, points=None):

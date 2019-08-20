@@ -1,13 +1,9 @@
 """The Chebyshev / Arcsine distribution."""
-
 from equadratures.distributions.template import Distribution
 from equadratures.distributions.recurrence_utils import jacobi_recurrence_coefficients
-
 import numpy as np
 from scipy.stats import arcsine
-
 RECURRENCE_PDF_SAMPLES = 8000
-
 class Chebyshev(Distribution):
     """
     The class defines a Chebyshev object. It is the child of Distribution.
@@ -37,7 +33,7 @@ class Chebyshev(Distribution):
         :return:
             A string describing the Chebyshev (arcsine) distribution.
         """
-        text = "A Chebyshev (arcsine) distribution is characterised by its lower bound, which is"+str(self.lower)+" and its upper bound, which is"+str(self.upper)+"."
+        text = "is a Chebyshev or arcsine distribution that is characterised by its lower bound, which is"+str(self.lower)+" and its upper bound, which is"+str(self.upper)+"."
         return text
     def get_pdf(self, points=None):
         """

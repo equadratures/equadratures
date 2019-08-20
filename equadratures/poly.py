@@ -5,7 +5,7 @@ from equadratures.basis import Basis
 from equadratures.solver import Solver
 from equadratures.subsampling import Subsampling
 from equadratures.quadrature import Quadrature
-import pickle
+import scipy.stats as st
 import numpy as np
 from copy import deepcopy
 MAXIMUM_ORDER_FOR_STATS = 8
@@ -17,27 +17,17 @@ class Poly(object):
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     :param str method: The method used for computing the coefficients. Should be one of: ``compressive-sensing``,
         ``numerical-integration``, ``least-squares`` or ``minimum-norm``.
-    :param dict sampling_args:
-        Optional arguments centered around the specific sampling strategy.
-        :string mesh: Avaliable options are: ``monte-carlo``, ``induced-sampling``, ``sparse-grid``, ``tensor-grid``, ``induced``, or ``user-defined``.
-            Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1]
-            is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
-        :string subsampling-algorithm: The ``subsampling-algorithm`` input refers to the optimisation technique for subsampling. In the aforementioned four sampling strategies,
-            we generate a logarithm factor of samples above the required amount and prune down the samples using an optimisation
-            technique (see [1]). Existing optimisation strategies include: ``qr``, ``lu``, ``svd``, ``newton``. These refer to QR with column
-            pivoting [2], LU with row pivoting [3], singular value decomposition with subset selection [2] and a convex relaxation
-            via Newton's method for determinant maximization [4]. Note that if the ``tensor-grid`` option is selected, then subsampling will depend on whether the Basis
-            argument is a total order index set, hyperbolic basis or a tensor order index set.
-        :float sampling-ratio: Denotes the extent of undersampling or oversampling required. For values equal to unity (default), the number of rows
-            and columns of the associated Vandermonde-type matrix are equal.
-        :numpy.ndarray sample-points: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
-        :numpy.ndarray sample-outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points. Note that
-            if ``sample-points`` is provided as an input, then the code expects ``sample-outputs`` too.
-    :param dict solver_args:
-        Optional arguments centered around the specific solver used for computing the coefficients.
-        :numpy.ndarray noise-level: The noise level to be used. Can take in both scalar- and vector-valued inputs.
-        :bool verbose: The default value is set to ``False``; when set to ``True`` details on the convergence of the solution will be provided. Note for direct methods, this
-            will simply output the condition number of the matrix.
+    :param dict sampling_args: Optional arguments centered around the specific sampling strategy.
+
+            :string mesh: Avaliable options are: ``monte-carlo``, ``sparse-grid``, ``tensor-grid``, ``induced``, or ``user-defined``. Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1] is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
+            :string subsampling-algorithm: The ``subsampling-algorithm`` input refers to the optimisation technique for subsampling. In the aforementioned four sampling strategies, we generate a logarithm factor of samples above the required amount and prune down the samples using an optimisation technique (see [1]). Existing optimisation strategies include: ``qr``, ``lu``, ``svd``, ``newton``. These refer to QR with column pivoting [2], LU with row pivoting [3], singular value decomposition with subset selection [2] and a convex relaxation via Newton's method for determinant maximization [4]. Note that if the ``tensor-grid`` option is selected, then subsampling will depend on whether the Basis argument is a total order index set, hyperbolic basis or a tensor order index set.
+            :float sampling-ratio: Denotes the extent of undersampling or oversampling required. For values equal to unity (default), the number of rows and columns of the associated Vandermonde-type matrix are equal.
+            :numpy.ndarray sample-points: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
+            :numpy.ndarray sample-outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points. Note that if ``sample-points`` is provided as an input, then the code expects ``sample-outputs`` too.
+    :param dict solver_args: Optional arguments centered around the specific solver used for computing the coefficients.
+
+            :numpy.ndarray noise-level: The noise level to be used. Can take in both scalar- and vector-valued inputs.
+            :bool verbose: The default value is set to ``False``; when set to ``True`` details on the convergence of the solution will be provided. Note for direct methods, this will simply output the condition number of the matrix.
 
     **Sample constructor initialisations**::
 
@@ -116,10 +106,51 @@ class Poly(object):
                     self.inputs = sampling_args.get('sample-points')
                     self.mesh = 'user-defined'
                 if 'sample-outputs' in sampling_args: self.outputs = sampling_args.get('sample-outputs')
-            self.__set_solver()
-            self.__set_subsampling_algorithm()
-            self.__set_points_and_weights()
-    def __set_subsampling_algorithm(self):
+            self._set_solver()
+            self._set_subsampling_algorithm()
+            self._set_points_and_weights()
+        else:
+            print('WARNING: Method not declared.')
+    def get_summary(self, filename=None):
+        """
+        A simple utility that returns file summarising what the polynomial approximation has determined.
+
+        :param Poly self:
+            An instance of the Poly object.
+        """
+        if self.dimensions == 1:
+            parameter_string = str('parameter.')
+        else:
+            parameter_string = str('parameters.')
+        introduction = str('Your problem has been defined by '+str(self.dimensions)+' '+parameter_string)
+        added = str('Their distributions are given as follows:')
+        for i in range(0, self.dimensions):
+            added_new = ('\nParameter '+str(i+1)+' '+str(self.parameters[i].get_description()))
+            if i == 0:
+                added = introduction + added_new
+            else:
+                added = added + added_new
+        if self.statistics_object is not None:
+            mean_value, var_value = self.get_mean_and_variance()
+            X = self.get_points()
+            y_eval = self.get_polyfit(X)
+            y_valid = self._model_evaluations
+            a,b,r,_,_ = st.linregress(y_eval.flatten(),y_valid.flatten())
+            r2 = np.round(r**2, 3)
+            statistics = str('\n \nA summary of computed output statistics is given below:\nThe mean is estimated to be '+str(np.around(mean_value, 3) )+\
+                ' while the variance is '+str(np.around(var_value, 3))+'.\nFor the data avaliable, the polynomial approximation had a r square value of '+str(r2)+'.')
+            if self.dimensions > 1:
+                sobol_indices_array = np.argsort(self.get_total_sobol_indices())
+                final_value = sobol_indices_array[-1] + 1
+                statistics_extra = str('\nAdditionally, the most important parameter--based on the total Sobol indices--was found to be parameter '+str(final_value)+'.')
+                statistics = statistics + statistics_extra
+            added = added + statistics
+        if filename is None:
+            filename = 'effective-quadratures-output.txt'
+        output_file = open(filename, 'w')
+        output_file.write(added)
+        output_file.close()
+    def _set_subsampling_algorithm(self):
         """
         Private function that sets the subsampling algorithm based on the user-defined method.
 
@@ -128,7 +159,7 @@ class Poly(object):
         """
         polysubsampling = Subsampling(self.subsampling_algorithm_name)
         self.subsampling_algorithm_function = polysubsampling.get_subsampling_method()
-    def __set_solver(self):
+    def _set_solver(self):
         """
         Private function that sets the solver depending on the user-defined method.
 
@@ -137,7 +168,7 @@ class Poly(object):
         """
         polysolver = Solver(self.method, self.solver_args)
         self.solver = polysolver.get_solver()
-    def __set_points_and_weights(self):
+    def _set_points_and_weights(self):
         """
         Private function that sets the quadrature points.
 
@@ -155,11 +186,11 @@ class Poly(object):
             mm, nn = A.shape
             m_refined = int(np.round(self.sampling_ratio * nn))
             z = self.subsampling_algorithm_function(A, m_refined)
-            self.__quadrature_points = quadrature_points[z,:]
-            self.__quadrature_weights =  quadrature_weights[z] / np.sum(quadrature_weights[z])
+            self._quadrature_points = quadrature_points[z,:]
+            self._quadrature_weights =  quadrature_weights[z] / np.sum(quadrature_weights[z])
         else:
-            self.__quadrature_points = quadrature_points
-            self.__quadrature_weights = quadrature_weights
+            self._quadrature_points = quadrature_points
+            self._quadrature_weights = quadrature_weights
     def get_model_evaluations(self):
         """
         Returns the points at which the model was evaluated at.
@@ -167,7 +198,7 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly class.
         """
-        return self.__model_evaluations
+        return self._model_evaluations
     def get_mean_and_variance(self):
         """
         Computes the mean and variance of the model.
@@ -181,7 +212,7 @@ class Poly(object):
             **variance**: The approximated variance of the polynomial fit; output as a float.
 
         """
-        self.__set_statistics()
+        self._set_statistics()
         return self.statistics_object.get_mean(), self.statistics_object.get_variance()
     def get_skewness_and_kurtosis(self):
         """
@@ -196,9 +227,9 @@ class Poly(object):
             **kurtosis**: The approximated kurtosis of the polynomial fit; output as a float.
 
         """
-        self.__set_statistics()
+        self._set_statistics()
         return self.statistics_object.get_skewness(), self.statistics_object.get_kurtosis()
-    def __set_statistics(self):
+    def _set_statistics(self):
         """
         Private method that is used withn the statistics routines.
 
@@ -210,7 +241,7 @@ class Poly(object):
                 quad_pts, quad_wts = quad.get_points_and_weights()
                 poly_vandermonde_matrix = self.get_poly(quad_pts)
             else:
-                poly_vandermonde_matrix = self.get_poly(self.__quadrature_points)
+                poly_vandermonde_matrix = self.get_poly(self._quadrature_points)
                 quad_pts, quad_wts = self.get_points_and_weights()
 
             if self.highest_order <= MAXIMUM_ORDER_FOR_STATS:
@@ -231,7 +262,7 @@ class Poly(object):
         :return:
             **sobol_indices**: A dict comprising of Sobol' indices and constitutent mixed orders of the parameters.
         """
-        self.__set_statistics()
+        self._set_statistics()
         return self.statistics_object.get_sobol(order)
     def get_total_sobol_indices(self):
         """
@@ -243,7 +274,7 @@ class Poly(object):
         :return:
             **total_sobol_indices**: Sobol
         """
-        self.__set_statistics()
+        self._set_statistics()
         return self.statistics_object.get_sobol_total()
     def get_conditional_skewness_indices(self, order):
         """
@@ -257,7 +288,7 @@ class Poly(object):
         :return:
             **skewness_indices**: A dict comprising of skewness indices and constitutent mixed orders of the parameters.
         """
-        self.__set_statistics()
+        self._set_statistics()
         return self.statistics_object.get_conditional_skewness(order)
     def get_conditional_kurtosis_indices(self, order):
         """
@@ -271,7 +302,7 @@ class Poly(object):
         :return:
             **kurtosis_indices**: A dict comprising of kurtosis indices and constitutent mixed orders of the parameters.
         """
-        self.__set_statistics()
+        self._set_statistics()
         return self.statistics_object.get_conditional_kurtosis(order)
     def set_model(self, model=None, model_grads=None):
         """
@@ -285,33 +316,33 @@ class Poly(object):
             The gradient of the function that needs to be approximated. In the absence of a callable gradient function, the input can be a matrix of gradient evaluations at the quadrature points.
         """
         if (model is None) and (self.outputs is not None):
-            self.__model_evaluations = self.outputs
+            self._model_evaluations = self.outputs
         else:
             if callable(model):
-                y = evaluate_model(self.__quadrature_points, model)
+                y = evaluate_model(self._quadrature_points, model)
             else:
                 y = model
-                assert(y.shape[0] == self.__quadrature_points.shape[0])
+                assert(y.shape[0] == self._quadrature_points.shape[0])
             if y.shape[1] != 1:
                 raise(ValueError, 'model values should be a column vector.')
-            self.__model_evaluations = y
+            self._model_evaluations = y
             if self.gradient_flag == 1:
                 if callable(model_grads):
-                    grad_values = evaluate_model_gradients(self.__quadrature_points, model_grads, 'matrix')
+                    grad_values = evaluate_model_gradients(self._quadrature_points, model_grads, 'matrix')
                 else:
                     grad_values = model_grads
                 p, q = grad_values.shape
-                self.gradient_evaluations = np.zeros((p*q,1))
+                self._gradient_evaluations = np.zeros((p*q,1))
+                W = np.diag(np.sqrt(self._quadrature_weights))
                 counter = 0
                 for j in range(0,q):
                     for i in range(0,p):
-                        self.gradient_evaluations[counter] = W[i,i] * grad_values[i,j]
+                        self._gradient_evaluations[counter] = W[i,i] * grad_values[i,j]
                         counter = counter + 1
-                del d, grad_values
-                dP = self.get_poly_grad(self.__quadrature_points)
+                del grad_values
         self.statistics_object = None
-        self.__set_coefficients()
-    def __set_coefficients(self, user_defined_coefficients=None):
+        self._set_coefficients()
+    def _set_coefficients(self, user_defined_coefficients=None):
         """
         Computes the polynomial approximation coefficients.
 
@@ -326,20 +357,20 @@ class Poly(object):
         if user_defined_coefficients is not None:
             self.coefficients = user_defined_coefficients
             return
-        indices_with_nans = np.argwhere(np.isnan(self.__model_evaluations))[:,0]
+        indices_with_nans = np.argwhere(np.isnan(self._model_evaluations))[:,0]
         if len(indices_with_nans) is not 0:
-            print('WARNING: One or more of your model evaluations have resulted in an NaN. We found '+str(len(indices_with_nans))+' NaNs out of '+str(len(self.__model_evaluations))+'.')
+            print('WARNING: One or more of your model evaluations have resulted in an NaN. We found '+str(len(indices_with_nans))+' NaNs out of '+str(len(self._model_evaluations))+'.')
             print('The code will now use a least-squares technique that will ignore input-output pairs of your model that have NaNs. This will likely compromise computed statistics.')
-            self.inputs = np.delete(self.__quadrature_points, indices_with_nans, axis=0)
-            self.outputs = np.delete(self.__model_evaluations, indices_with_nans, axis=0)
+            self.inputs = np.delete(self._quadrature_points, indices_with_nans, axis=0)
+            self.outputs = np.delete(self._model_evaluations, indices_with_nans, axis=0)
             self.subsampling_algorithm_name = None
             number_of_basis_to_prune_down = self.basis.cardinality - len(self.outputs)
             if number_of_basis_to_prune_down > 0:
                 self.basis.prune(number_of_basis_to_prune_down + self.dimensions) # To make it an over-determined system!
             self.method = 'least-squares'
             self.mesh = 'user-defined'
-            self.__set_solver()
-            self.__set_points_and_weights()
+            self._set_solver()
+            self._set_points_and_weights()
             self.set_model(self.outputs)
         if self.mesh == 'sparse-grid':
             counter = 0
@@ -350,9 +381,9 @@ class Poly(object):
                 P = self.get_poly(tensor.points, tensor.basis.elements)
                 W = np.diag(np.sqrt(tensor.weights))
                 A = np.dot(W , P.T)
-                __, __ , counts = np.unique( np.vstack( [tensor.points, self.__quadrature_points]), axis=0, return_index=True, return_counts=True)
+                _, _ , counts = np.unique( np.vstack( [tensor.points, self._quadrature_points]), axis=0, return_index=True, return_counts=True)
                 indices = [i for i in range(0, len(counts)) if  counts[i] == 2]
-                b = np.dot(W , self.__model_evaluations[indices])
+                b = np.dot(W , self._model_evaluations[indices])
                 del counts, indices
                 coefficients_i = self.solver(A, b)  * self.quadrature.sparse_weights[counter]
                 multindices_i =  tensor.basis.elements
@@ -370,13 +401,22 @@ class Poly(object):
             self.coefficients = coefficients_final
             self.basis.elements = unique_indices
         else:
-            P = self.get_poly(self.__quadrature_points)
-            W = np.diag(np.sqrt(self.__quadrature_weights))
+            P = self.get_poly(self._quadrature_points)
+            W = np.diag(np.sqrt(self._quadrature_weights))
             A = np.dot(W , P.T)
-            b = np.dot(W , self.__model_evaluations)
+            b = np.dot(W , self._model_evaluations)
             if self.gradient_flag == 1:
-                C = cell2matrix(dPcell, W)
-                self.coefficients = self.solver(A, b, C, self.gradient_evaluations)
+                # Now, we can reduce the number of rows!
+                dP = self.get_poly_grad(self._quadrature_points)
+                C = cell2matrix(dP, W)
+                G = np.vstack([A, C])
+                r =  np.linalg.matrix_rank(G)
+                m, n = A. shape
+                print('Gradient computation: The rank of the stacked matrix is '+str(r)+'.')
+                print('The number of unknown basis terms is '+str(n))
+                if n > r:
+                    print('WARNING: Please increase the number of samples; one way to do this would be to increase the sampling-ratio.')
+                self.coefficients = self.solver(A, b, C, self._gradient_evaluations)
             else:
                 self.coefficients = self.solver(A, b)
     def get_multi_index(self):
@@ -408,7 +448,7 @@ class Poly(object):
         :return:
             **points**: A numpy.ndarray of sampled quadrature points with shape (number_of_samples, dimension).
         """
-        return self.__quadrature_points
+        return self._quadrature_points
     def get_weights(self):
         """
         Computes quadrature weights.
@@ -419,7 +459,7 @@ class Poly(object):
             **weights**: A numpy.ndarray of the corresponding quadrature weights with shape (number_of_samples, 1).
 
         """
-        return self.__quadrature_weights
+        return self._quadrature_weights
     def get_points_and_weights(self):
         """
         Returns the samples and weights based on the sampling strategy.
@@ -431,7 +471,7 @@ class Poly(object):
 
             **w**: A numpy.ndarray of the corresponding quadrature weights with shape (number_of_samples, 1).
         """
-        return self.__quadrature_points, self.__quadrature_weights
+        return self._quadrature_points, self._quadrature_weights
     def get_polyfit(self, stack_of_points):
         """
         Evaluates the the polynomial approximation of a function (or model data) at prescribed points.
@@ -546,7 +586,7 @@ class Poly(object):
         if stack_of_points.ndim == 1:
             no_of_points = 1
         else:
-            no_of_points, __ = stack_of_points.shape
+            no_of_points, _ = stack_of_points.shape
         p = {}
 
         # Save time by returning if univariate!
@@ -722,7 +762,7 @@ def evaluate_model(points, function):
 
     :param numpy.ndarray points:
         An ndarray with shape (number_of_observations, dimensions) at which the gradient must be evaluated.
-    :param callable fungrad:
+    :param callable function:
         A callable argument for the function.
 
     :return:
@@ -758,3 +798,18 @@ def vector_to_2D_grid(coefficients, index_set):
     coefficients = np.reshape(coefficients, (1, l))
     z[indices[:,0], indices[:,1]] = coefficients
     return x, y, z, max_order
+def cell2matrix(G, W):
+    dimensions = len(G)
+    G0 = G[0] # Which by default has to exist!
+    C0 = G0.T
+    rows, cols = C0.shape
+    BigC = np.zeros((dimensions*rows, cols))
+    counter = 0
+    for i in range(0, dimensions):
+        K = np.dot(W, G[i].T)
+        for j in range(0, rows):
+            for k in range(0,cols):
+                BigC[counter,k] = K[j,k]
+            counter = counter + 1
+    BigC = np.mat(BigC)
+    return BigC

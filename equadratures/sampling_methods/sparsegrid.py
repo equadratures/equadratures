@@ -14,9 +14,9 @@ class Sparsegrid(Sampling):
         self.parameters = parameters
         self.basis = basis
         self.dimensions = len(self.parameters)
-        self.__set_sparsegrid_quadrature_rule()
+        self._set_sparsegrid_quadrature_rule()
         super(Sparsegrid, self).__init__(self.parameters, self.basis, self.points, self.weights)
-    def __set_sparsegrid_quadrature_rule(self, orders=None):
+    def _set_sparsegrid_quadrature_rule(self, orders=None):
         """
         Generates a sparse grid quadrature rule based on the parameters in Poly.
 

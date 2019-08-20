@@ -33,7 +33,9 @@ class TestF(TestCase):
           myPoly = Poly([u1, u1, u1], myBasis, method='numerical-integration')
           samples_p =  myPoly.get_points()
           samples_corr_p = myNataf.get_correlated_from_uncorrelated(samples_p)
+          samples_p = myNataf.get_uncorrelated_from_correlated(samples_corr_p)
           f_p = evaluate_model(samples_corr_p, fun)
+          samples_p = myNataf.get_uncorrelated_samples(N=1000)
 
           myPoly.set_model(f_p)
           mean, variance = myPoly.get_mean_and_variance()

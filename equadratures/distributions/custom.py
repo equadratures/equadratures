@@ -4,8 +4,7 @@ from equadratures.distributions.template import Distribution
 import numpy as np
 import scipy.stats as stats
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
-
-RECURRENCE_PDF_SAMPLES = 8000
+RECURRENCE_PDF_SAMPLES = 50000
 
 class Custom(Distribution):
     """ The class defines a Custom object.
@@ -34,7 +33,7 @@ class Custom(Distribution):
             :return:
                 A string describing the Custom distribution.
         """
-        text = "A Custom distribution has been defined over a suppor from "+str(self.lower)+" to "+str(self.upper)+". It has a mean value equal to "+str(self.mean)+" and a variance equal to "+str(self.variance)+"."
+        text = "is a Custom distribution defined over a support from "+str(self.lower)+" to "+str(self.upper)+". It has a mean value equal to "+str(self.mean)+" and a variance equal to "+str(self.variance)+"."
         return text
     def get_pdf(self, points=None):
         """ A custom probability density function.

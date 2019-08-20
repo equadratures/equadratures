@@ -1115,21 +1115,40 @@ class TestG(TestCase):
         remaining_pts = np.delete(np.arange(N), chosen_points)
         chosen_valid_pts = np.random.choice(remaining_pts, size = 30, replace = False)
         x_eval = X[chosen_valid_pts]
-
         # Active subspace
         mysubspace = Subspaces(method='active-subspace', sample_points=X_red, sample_outputs=Y_red)
         eigs = mysubspace.get_eigenvalues()
         W = mysubspace.get_subspace()
         e = mysubspace.get_eigenvalues()
-
         # Variable projection
         mysubspace2 = Subspaces(method='variable-projection', sample_points=X_red, sample_outputs=Y_red)
         W = mysubspace2.get_subspace()
         poly = mysubspace2.get_subspace_polynomial()
-        # Test subspace polynomial
 
-        #e2, W2, low, up = get_active_subspace(poly, bootstrap=True)
-        #U, R = variable_projection(X_red, Y_red)
+    def test_find_another_subspace(self):
+        X, Y = data()
+        N = X.shape[0]
+        num_obs = 500
+        params = []
+        basis_orders = []
+        for i in range(25):
+                params.append(Parameter(order=2, distribution = 'Custom', data = np.reshape(X[:,i], (N,))))
+                basis_orders.append(2)
+
+        basis = Basis("total-order", orders = basis_orders)
+        num_obs = 200
+        chosen_points = np.random.choice(range(N), size = num_obs, replace = False)
+        X_red = X[chosen_points,:]
+        Y_red = Y[chosen_points]
+        remaining_pts = np.delete(np.arange(N), chosen_points)
+        chosen_valid_pts = np.random.choice(remaining_pts, size = 30, replace = False)
+        x_eval = X[chosen_valid_pts]
+        poly = Poly(params, basis, method='compressive-sensing', sampling_args={'sample-points':X_red, 'sample-outputs':Y_red})
+        poly.set_model()
+        mysubspace = Subspaces(method='active-subspace', full_space_poly=poly)
+        eigs = mysubspace.get_eigenvalues()
+        W = mysubspace.get_subspace()
+        e = mysubspace.get_eigenvalues()
     def test_get_zonotope_vertices(self):
         X, Y = data()
         N = X.shape[0]
@@ -1137,9 +1156,9 @@ class TestG(TestCase):
         chosen_points = np.random.choice(range(N), size = num_obs, replace = False)
         X_red = X[chosen_points,:]
         Y_red = Y[chosen_points]
-        
-        mysubspace = Subspaces(method='active-subspace', sample_points=X_red, sample_outputs=Y_red) 
-        Y, X = mysubspace.get_zonotope_vertices()
+
+        mysubspace = Subspaces(method='active-subspace', sample_points=X_red, sample_outputs=Y_red)
+        Y = mysubspace.get_zonotope_vertices()
     def test_get_linear_inequalities(self):
         X, Y = data()
         N = X.shape[0]
@@ -1147,8 +1166,16 @@ class TestG(TestCase):
         chosen_points = np.random.choice(range(N), size = num_obs, replace = False)
         X_red = X[chosen_points,:]
         Y_red = Y[chosen_points]
-        
-        mysubspace = Subspaces(method='active-subspace', sample_points=X_red, sample_outputs=Y_red) 
+        mysubspace = Subspaces(method='active-subspace', sample_points=X_red, sample_outputs=Y_red)
+        subspace = mysubspace.get_subspace()
+        active_subspace = subspace[:, 0: mysubspace.subspace_dimension]
         A, b = mysubspace.get_linear_inequalities()
+        # Now if we generate a handfull of inactive samples, they should have the same active coordinates!
+        active_coordinate_value = np.asarray([-0.05, 0.1])
+        S = mysubspace.get_samples_constraining_active_coordinates(100, active_coordinate_value)
+        U = np.dot(S, active_subspace)
+        U_random_entry = U[np.random.randint(0, 99), :]
+        np.testing.assert_array_almost_equal(U_random_entry, active_coordinate_value, decimal=4)
+
 if __name__== '__main__':
     unittest.main()

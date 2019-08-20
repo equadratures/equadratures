@@ -36,7 +36,7 @@ class Uniform(Distribution):
         :return:
             A string describing the Gaussian.
         """
-        text = "A uniform distribution over the support "+str(self.lower)+" to "+str(self.upper)+"."
+        text = "is a uniform distribution over the support "+str(self.lower)+" to "+str(self.upper)+"."
         return text
     def get_cdf(self, points=None):
         """

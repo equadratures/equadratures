@@ -1,17 +1,14 @@
 """The Exponential distribution."""
-
 from equadratures.distributions.template import Distribution
 from equadratures.distributions.recurrence_utils import custom_recurrence_coefficients
-
 import numpy as np
 from scipy.stats import expon
-
 RECURRENCE_PDF_SAMPLES = 8000
 
 class Exponential(Distribution):
     """
     The class defines a Exponential object. It is the child of Distribution.
-    
+
     :param double rate:
 		Rate parameter of the Exponential distribution.
     """
@@ -24,26 +21,24 @@ class Exponential(Distribution):
             self.kurtosis = 6.0
             self.bounds = np.array([0.0, np.inf])
             self.x_range_for_pdf = np.linspace(0.0, 20*self.rate, RECURRENCE_PDF_SAMPLES)
-            self.parent = expon(scale=1.0*rate) 
+            self.parent = expon(scale=1.0/rate)
             self.mean = self.parent.mean()
             self.variance = self.parent.var()
-            
-    def getDescription(self):
+    def get_description(self):
         """
         A description of the Exponential distribution.
-        
+
         :param Exponential self:
             An instance of the Exponential class.
         :return:
             A string describing the Exponential distribution.
         """
-        text = "An exponential distribution with a rate parameter of"+str(self.rate)+"."
+        text = "is an exponential distribution with a rate parameter of"+str(self.rate)+"."
         return text
-
-    def getPDF(self, points=None):
+    def get_pdf(self, points=None):
         """
         An exponential probability density function.
-        
+
         :param Exponential self:
             An instance of the Exponential class.
         :param matrix points:
@@ -55,13 +50,12 @@ class Exponential(Distribution):
         """
         if points is not None:
             return self.parent.pdf(points)
-        else: 
+        else:
             raise(ValueError, 'Please digit an input for getPDF method')
-
-    def getiCDF(self, xx):
+    def get_icdf(self, xx):
         """
         An inverse exponential cumulative density function.
-        
+
         :param Exponential self:
             An instance of the Exponential class.
         :param array xx:
@@ -70,11 +64,10 @@ class Exponential(Distribution):
             Inverse CDF samples associated with the exponential distribution.
         """
         return self.parent.ppf(xx)
-
-    def getCDF(self, points=None):
+    def get_cdf(self, points=None):
         """
         An exponential cumulative density function.
-        
+
         :param Exponential self:
             An instance of the Exponential class.
         :param matrix points:
@@ -86,12 +79,12 @@ class Exponential(Distribution):
         """
         if points is not None:
             return self.parent.cdf(points)
-        else: 
+        else:
             raise(ValueError, 'Please digit an input for getCDF method')
-    def getSamples(self, m=None):
+    def get_samples(self, m=None):
         """
         Generates samples from the Exponential distribution.
-         
+
          :param Expon self:
              An instance of the Exponential class.
          :param integer m:

@@ -48,7 +48,7 @@ class TruncatedGaussian(Distribution):
         :return:
             A string describing the truncated Gaussian.
         """
-        text = "A truncated Gaussian distribution with a mean of "+str(self.mean)+" and a variance of "+str(self.variance)+", and a lower bound of "+str(self.lower)+" and an upper bound of "+str(self.upper)+"."
+        text = "a truncated Gaussian distribution with a mean of "+str(self.mean)+" and a variance of "+str(self.variance)+", and a lower bound of "+str(self.lower)+" and an upper bound of "+str(self.upper)+"."
         return text
     def get_pdf(self, points=None):
         """

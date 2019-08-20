@@ -1,6 +1,6 @@
 Modules
 ==================
-
+This page covers some of the key modules in Effective Quadratures; they are split into two parts. First we have the **core building blocks** to assist users in creating bespoke polynomial approximations for their data. 
 
 .. toctree::
    :maxdepth: 4
@@ -9,6 +9,12 @@ Modules
    parameter
    basis
    poly
+
+Then we have the **polynomial exploiting utilities** that leverage a polynomial approximation to facilitate specific user centric tasks. These include finding dimension reducing subspaces, optimisation with polynomial surrogates, polynomial based deep learning and generating correlated sample sets.
+
+.. toctree::
+   :maxdepth: 4
+
    subspaces
    optimisation
    polynet

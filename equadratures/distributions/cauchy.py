@@ -34,7 +34,7 @@ class Cauchy(Distribution):
         :return:
             A string describing the Cauchy distribution.
         """
-        text = "A Cauchy distribution has an undefined mean and variance; its location parameter is "+str(self.location)+", and its scale parameter is "+str(self.scale)+"."
+        text = "is a Cauchy distribution that by definition has an undefined mean and variance; its location parameter is "+str(self.location)+", and its scale parameter is "+str(self.scale)+"."
         return text
 
     def get_pdf(self, points=None):

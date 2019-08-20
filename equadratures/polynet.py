@@ -1,3 +1,4 @@
+"""Deep learning with polynomials using polynomial activation functions."""
 from equadratures.parameter import Parameter
 from equadratures.basis import Basis
 from equadratures.poly import Poly
@@ -5,10 +6,30 @@ import numpy as np
 
 #%% Multi-layer perceptron with poly activation
 class Polynet(object):
-    def __init__(self, training_input, training_output, num_ridges, max_iters=1, learning_rate = 0.001,
+    """
+    Definition of a polynomial neural network framework.
+
+    :param numpy.ndarray sample_points: Sample training data inputs.
+    :param numpy.ndarray sample_outputs: Sample training data outputs.
+    :param int num_ridges: The number of ridges used in the neural network/
+    :param int max_iters: The maximum number of iterations for the gradient descent optimisation algorithm.
+    :param double learning_rate: The learning rate used in the optimisation.
+    :param numpy.ndarray W: An initial ridge for the optimisation algorithm.
+    :param numpy.ndarray coeffs: Coefficients for the polynomial 1D-ridge functions.
+    :param string opt: The optimisation strategy used. Options include: ``sd`` for steepest descent, ``mom`` for a momentum-rate-based approach or ``adapt`` for an adaptive learning rate based approach.
+    :param double momentum_rate: The momentum rate used.
+    :param int poly_deg: The degree of the polynomials used throughout the neural network.
+    :param bool verbose: A verbose flag.
+
+    **Sample constructor initialisations**::
+
+        net = Polynet(X,Y,num_ridges,max_iters=20000, learning_rate=1e-4, momentum_rate=.001, opt='adapt')
+        net.fit()
+    """
+    def __init__(self, sample_points, sample_outputs, num_ridges, max_iters=1, learning_rate = 0.001,
                  W=None, coeffs=None, momentum_rate = .001, opt = 'sd', poly_deg = 2, verbose = False):
-        self.training_input = training_input
-        self.training_output = training_output
+        self.sample_points = sample_points
+        self.sample_outputs = sample_outputs
         self.verbose = verbose
         # network architecture params
         if isinstance(num_ridges, int):
@@ -17,7 +38,7 @@ class Polynet(object):
             self.num_ridges = num_ridges
         # num_ridges is the number of hidden units at each hidden layer. Does not count the input layer
         self.num_layers = len(self.num_ridges)
-        self.dims = training_input.shape[1]
+        self.dims = sample_points.shape[1]
         # initialize network data structures
         max_layer_size = max(self.num_ridges)
         self.poly_array = np.empty(( self.num_layers, max_layer_size), dtype=object)
@@ -38,7 +59,7 @@ class Polynet(object):
 
         self.update_coeffs()
         # Note: We will keep data for every input point in one array.
-        n_points = self.training_input.shape[0]
+        n_points = self.sample_points.shape[0]
         self.delta = []
         for k in range(self.num_layers):
             self.delta.append(np.zeros((self.num_ridges[k],n_points)))
@@ -54,7 +75,7 @@ class Polynet(object):
         self.phi = [] # basis fn evaluations
         for k in range(self.num_layers):
             self.phi.append(np.zeros((self.num_ridges[k],n_points)))
-        self.evaluate_fit(self.training_input,train=True)
+        self.evaluate_fit(self.sample_points,train=True)
         # optimization params
         self.max_iters = max_iters
         self.opt = opt
@@ -67,6 +88,16 @@ class Polynet(object):
                 reshaped_coeffs = np.reshape(current_coeffs, (len(current_coeffs),1))
                 (self.poly_array[k,j]).coefficients = reshaped_coeffs
     def evaluate_fit(self, x, train=False):
+        """
+        Evaluates the trained network on provided data.
+
+        :param Polynet self:
+            An instance of the Polynet object.
+
+        :param numpy.ndarray x:
+            A set of testing inputs of shape (M, d), where M represents the number of testing points and d the dimensionality of the input data.
+
+        """
         # evaluate nn
         # if train, update with training data and also updates Z
         Z = self.Z[:]
@@ -102,8 +133,8 @@ class Polynet(object):
             for i in range(num_ridges[k]):
                 act_mat[k][i] = np.squeeze(np.array(self.poly_array[k,i].get_polyfit_grad(Z[k][i])))
 
-        pred_points = self.evaluate_fit(self.training_input, train=True)
-        delta[-1] = (pred_points - self.training_output) * act_mat[-1]
+        pred_points = self.evaluate_fit(self.sample_points, train=True)
+        delta[-1] = (pred_points - self.sample_outputs) * act_mat[-1]
 
         for k in range(self.num_layers - 2, -1, -1):
             delta[k] = act_mat[k] * np.dot(W[k+1].T, delta[k+1])
@@ -124,7 +155,14 @@ class Polynet(object):
                 phi[k][i,:,:] = np.squeeze(current_poly.get_poly(Z[k][i]))
         self.phi = phi[:]
     def fit(self):
-        n_data = self.training_input.shape[0]
+        """
+        Trains the neural network on the data.
+
+        :param Polynet self:
+            An instance of the Polynet object.
+
+        """
+        n_data = self.sample_points.shape[0]
         W_change = self.W[:]
         for t in range(self.max_iters):
             W_new = self.W[:]
@@ -168,18 +206,18 @@ class Polynet(object):
                 print('per point loss is < 0.0001, breaking')
                 break
     def loss(self):
-        return np.sum((self.evaluate_fit(self.training_input) - self.training_output)**2)
+        return np.sum((self.evaluate_fit(self.sample_points) - self.sample_outputs)**2)
     def gradient_Wk(self, k):
         # Calculate grad of E wrt W^{(k)}, the weights of the k-th layer, summed over all training points
         if k > 0:
             return np.dot(self.delta[k],  self.Y[k-1].T)
         else:
-            return np.dot(self.delta[k],  self.training_input)
+            return np.dot(self.delta[k],  self.sample_points)
     def gradient_alphak(self, k):
         # Calculate grad of E wrt alpha^{(k)} the poly coeff matrix at k-th layer, summed over all training points
         Wd = self.phi[k].copy()
         if k == self.num_layers - 1:
-            Wd_one = self.evaluate_fit(self.training_input) - self.training_output
+            Wd_one = self.evaluate_fit(self.sample_points) - self.sample_outputs
         else:
             Wd_one = np.dot(self.W[k + 1].T, self.delta[k + 1])
         for c in range(Wd.shape[1]):

@@ -9,3 +9,8 @@ import equadratures.distributions.gamma
 import equadratures.distributions.rayleigh
 import equadratures.distributions.uniform
 import equadratures.distributions.weibull
+import equadratures.distributions.chi
+import equadratures.distributions.pareto
+import equadratures.distributions.gumbel
+import equadratures.distributions.studentst
+import equadratures.distributions.lognormal

@@ -35,8 +35,7 @@ class TestA(TestCase):
         np.testing.assert_almost_equal(mean, 1294.276442022, decimal=3,err_msg='Problem!')
         np.testing.assert_almost_equal(variance, 20320178.96583, decimal=3, err_msg='Problem!')
     def test_univariate_quadrature_rules(self):
-        # With end-points
-        param = Parameter(distribution='uniform', lower=-1., upper=1., order=20, endpoints=True)
+        param = Parameter(distribution='uniform', lower=-1., upper=1., order=20, endpoints='both')
         basis = Basis('univariate')
         poly = Poly([param], basis, method='numerical-integration')
         pts = poly.get_points()
@@ -44,12 +43,30 @@ class TestA(TestCase):
         np.testing.assert_array_almost_equal(float(pts[0]), -1.0, decimal=5, err_msg='Problem!')
         coefficients_lobatto = poly.get_coefficients()
         # Without end-points
-        param = Parameter(distribution='uniform', lower=-1., upper=1., order=20, endpoints=True)
+        param = Parameter(distribution='uniform', lower=-1., upper=1., order=20)
         basis = Basis('univariate')
         poly = Poly([param], basis, method='numerical-integration')
         pts = poly.get_points()
         poly.set_model(model1D)
         coefficients_standard = poly.get_coefficients()
         np.testing.assert_array_almost_equal(coefficients_lobatto, coefficients_standard, decimal=3, err_msg='Problem!')
+    def test_univariate_quadrature_rules(self):
+        param = Parameter(distribution='uniform', lower=-15.5, upper=32.2, order=20, endpoints='both')
+        basis = Basis('univariate')
+        poly = Poly([param], basis, method='numerical-integration')
+        pts = poly.get_points()
+        np.testing.assert_array_almost_equal(float(pts[0]), -15.5, decimal=5, err_msg='Problem!')
+        np.testing.assert_array_almost_equal(float(pts[20]), 32.2, decimal=5, err_msg='Problem!')
+        param = Parameter(distribution='uniform', lower=32.2, upper=68123.1, order=10, endpoints='lower')
+        basis = Basis('univariate')
+        poly = Poly([param], basis, method='numerical-integration')
+        pts = poly.get_points()
+        np.testing.assert_array_almost_equal(float(pts[0]), 32.2, decimal=5, err_msg='Problem!')
+        param = Parameter(distribution='uniform', lower=-135.32, upper=68123.122, order=10, endpoints='upper')
+        basis = Basis('univariate')
+        poly = Poly([param], basis, method='numerical-integration')
+        pts = poly.get_points()
+        np.testing.assert_array_almost_equal(float(pts[10]), 68123.122, decimal=5, err_msg='Problem!')
+
 if __name__== '__main__':
     unittest.main()

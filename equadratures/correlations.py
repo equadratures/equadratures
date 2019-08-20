@@ -8,25 +8,15 @@ from scipy import optimize
 
 class Correlations(object):
     """
-    The class defines a Nataf transformation.
-
-    The input correlated marginals are mapped from their physical space to a new
+    The class defines a Nataf transformation. The input correlated marginals are mapped from their physical space to a new
     standard normal space, in which points are uncorrelated.
-    Attributes of the class:
-    :param list D:
-            List of parameters (distributions), interpreted here as the marginals.
-    :param numpy-matrix R:
-            The correlation matrix associated with the joint distribution.
-    :param object std:
-            A standard normal distribution
-    :param numpy-matrix A:
-            The Cholesky decomposition of Fictive matrix R0,
-            associated with the set of normal intermediate
-            correlated distributions.
 
-    References for theory:
-        Melchers, R., E. (Robert E.), 1945- Structural reliability analysis
-        and predictions - 2nd edition - John Wiley & Sons Ltd.
+    :param list D: List of parameters (distributions), interpreted here as the marginals.
+    :param numpy.ndarray R: The correlation matrix associated with the joint distribution.
+
+    **References**
+        1. Melchers, R. E., (1945) Structural Reliability Analysis and Predictions. John Wiley and Sons, second edition.
+
     """
     def __init__(self, D=None, R=None):
         if D is None:
@@ -83,61 +73,43 @@ class Correlations(object):
         print('The fictive matrix is:')
         print(R0)
     def get_uncorrelated_from_correlated(self, X):
-        """  Method for mapping correlated variables to a new standard space.
-             The imput matrix must have [Nxm] dimension, where m is the number
-             of correlated marginals.
-             :param numpy-matrix X:
-                    A N-by-M Matrix where input marginals are organized along columns
-                    M represents the number of correlated marginals
-             :return:
-                    A N-by-M Matrix which contains standardized uncorrelated data.
-                    The transformation of each i-th input marginal is stored along
-                    the i-th column of the output matrix.
+        """
+        Method for mapping correlated variables to a new standard space.
+
+        :param Correlations self: An instance of the Correlations object.
+        :param numpy.ndarray X: A numpy ndarray of shape (N,M) where input marginals are organized along columns; M represents the number of correlated marginals
+
+        :return:
+            **xu**: A numpy.ndarray of shape (N, M), which contains standardized uncorrelated data. The transformation of each i-th input marginal is stored along the i-th column of the output matrix.
         """
         c = X[:,0]
         w1 = np.zeros((len(c),len(self.D)))
         for i in range(len(self.D)):
             for j in range(len(c)):
-                w1[j,i] = self.D[i].getCDF(points=X[j,i])
+                w1[j,i] = self.D[i].get_cdf(points=X[j,i])
                 if (w1[j,i] >= 1.0):
                     w1[j,i] = 1.0 - 10**(-10)
                 elif (w1[j,i] <= 0.0):
                     w1[j,i] = 0.0 + 10**(-10)
-
-        #-----------------------------------------------#
-        #plt.figure()
-        #plt.grid(linewidth=0.5, color='k')
-        #plt.plot(X[:,0], w1[:,0], 'ro', label='first')
-        #plt.plot(X[:,1], w1[:,1], 'bx', label='second')
-        #plt.title('from nataf class: w1 VS X input')
-        #plt.legend(loc='upper left')
-        #plt.show()
-        #-----------------------------------------------#
         sU = np.zeros((len(c),len(self.D)))
         for i in range(len(self.D)):
             for j in range(len(c)):
                 sU[j,i] = self.std.get_icdf(w1[j,i])
-
         sU = np.array(sU)
         sU = sU.T
-
         xu = np.linalg.solve(self.A,sU)
         xu = np.array(xu)
         xu = xu.T
-
         return xu
-
     def get_correlated_from_uncorrelated(self, X):
-        """ Method for mapping uncorrelated variables from standard normal space
-            to a new physical space in which variables are correlated.
-            Input matrix must have [mxN] dimension, where m is the number of input marginals.
-            :param numpy-matrix X:
-                    A Matrix of M-by-N dimensions, in which uncorrelated marginals
-                    are organized along rows.
-            :return:
-                    A N-by-M matrix in which the result of the inverse transformation
-                    applied to the i-th marginal is stored along the i-th column
-                    of the ouput matrix.
+        """
+        Method for mapping uncorrelated variables from standard normal space to a new physical space in which variables are correlated.
+
+        :param Correlations self: An instance of the Correlations object.
+        :param numpy.ndarray X: Samples of uncorrelated points from the marginals; of shape (N,M)
+
+        :return:
+            **C**: A numpy.ndarray of shape (N, M), which contains the correlated samples.
         """
         X = X.T
 
@@ -159,12 +131,14 @@ class Correlations(object):
                 Xc[j,i] = t
         return Xc
     def get_uncorrelated_samples(self, N=None):
-        """ Method for sampling uncorrelated data:
-            :param integer N:
-                    represents the number of the samples inside a range
-            :return:
-                    A N-by-M matrix, each i-th column contains the points
-                    which belong to the i-th distribution stored into list D.
+        """
+        Method for generating uncorrelated samples.
+
+        :param int N: Number of uncorrelated samples required.
+        :param numpy.ndarray X: Samples of uncorrelated points from the marginals; of shape (N,M)
+
+        :return:
+            **C**: A numpy.ndarray of shape (N, M), which contains the uncorrelated samples.
         """
         if N is not None:
             distro = list()
@@ -186,15 +160,14 @@ class Correlations(object):
              raise(ValueError, 'One input must be given to "get Correlated Samples" method')
         return distro
     def get_correlated_samples(self, N=None):
-        """ Method for sampling correlated data:
-            :param integer N:
-                represents the number of the samples inside a range
-                points represents the array we want to correlate.
-            :return:
-                A N-by-M matrix in which correlated samples are organized
-                along columns: the result of the run of the present method
-                for the i-th marginal into the input matrix is stored
-                along the i-th column of the output matrix.
+        """
+        Method for generating correlated samples.
+
+        :param int N: Number of correlated samples required.
+        :param numpy.ndarray X: Samples of correlated points from the marginals; of shape (N,M)
+
+        :return:
+            **C**: A numpy.ndarray of shape (N, M), which contains the correlated samples.
         """
         if N is not None:
 
@@ -221,51 +194,3 @@ class Correlations(object):
 
         else:
              raise(ValueError, 'One input must be given to "get Correlated Samples" method: please choose between sampling N points or giving an array of uncorrelated data ')
-    def get_correlation_matrix(self, X):
-        """ The following calculations check the correlation
-            matrix of input arrays and determine the covariance
-            matrix: The input matrix mush have [Nxm] dimensions where
-            m is the number of the marginals.
-            :param X:
-                Matrix of correlated data
-            :param D:
-                diagonal matrix which cointains the variances
-            :param S:
-                covariance matrix
-            :return:
-                A correlation matrix R
-        """
-        N = len(X)
-        D = np.zeros((len(self.D),len(self.D)))
-        for i in range(len(self.D)):
-            for j in range(len(self.D)):
-                if i==j:
-                    D[i,j] = np.sqrt(self.D[i].variance)
-                else:
-                    D[i,j] = 0
-        diff1 = np.zeros((N, len(self.D))) # (x_j - mu_j)
-        diff2 = np.zeros((N, len(self.D))) # (x_k - mu_k)
-        prod_n = np.zeros(N)
-        prod_square1 = np.zeros(N)
-        prod_square2 = np.zeros(N)
-
-        R = np.zeros((len(self.D),len(self.D)))
-        for j in range(len(self.D)):
-            for k in range(len(self.D)):
-                if j==k:
-                    R[j,k] = 1.0
-                else:
-                    for i in range(N):
-                        diff1[i,j] = (X[i,j] - self.D[j].mean)
-                        diff2[i,k] = (X[i,k] - self.D[k].mean)
-                        prod_n[i]  = 1.0*(diff1[i,j]*diff2[i,k])
-                        prod_square1[i] = (diff1[i,j])**2
-                        prod_square2[i] = (diff2[i,k])**2
-
-                    den1   = np.sum(prod_square1)
-                    den2   = np.sum(prod_square2)
-                    den11  = np.sqrt(den1)
-                    den22  = np.sqrt(den2)
-                    R[j,k] = np.sum(prod_n)/(den11*den22)
-
-        return R

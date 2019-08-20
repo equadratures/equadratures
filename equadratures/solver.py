@@ -5,10 +5,8 @@ from copy import deepcopy
 class Solver(object):
     """
     Returns solver functions for solving Ax=b
-
     :param string method: The method used for solving the linear system. Options include: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration`` and ``least-squares-with-gradients``.
     :param dict solver_args: Optional arguments centered around the specific solver.
-
             :param numpy.ndarray noise-level: The noise-level to be used in the basis pursuit de-noising solver.
             :param bool verbose: Default value of this input is set to ``False``; when ``True`` a string is printed to the screen detailing the solver convergence and condition number of the matrix.
     """
@@ -121,11 +119,9 @@ def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
 
                 assert y_trained.shape == y_ver.shape
                 errors[n] = np.mean(np.abs(y_trained - y_ver))/len(y_ver)
+            mean_errors[e] = np.mean(errors)
         except:
-            errors = np.inf*np.ones(5)
-        mean_errors[e] = np.mean(errors)
-    best_eta = eta[np.argmin(mean_errors)]
-    x = _bp_denoise(A, y, best_eta)
+            mean_errors[e] = np.inf
     sorted_ind = np.argsort(mean_errors)
     x = None
     ind = 0
@@ -136,14 +132,10 @@ def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
             x = _bp_denoise(A, y, eta[sorted_ind[ind]])
         except:
             ind += 1
-    residue = np.linalg.norm(np.dot(A, x).flatten() - y.flatten())
-    if verbose:
-        print('The noise level used is '+str(best_eta)+'.')
     return np.reshape(x, (len(x),1))
 def _CG_solve(A, b, max_iters, tol):
     """
     Solves Ax = b iteratively using conjugate gradient, assuming A is a symmetric positive definite matrix.
-
     :param numpy-matrix A:
         The matrix.
     :param numpy-array b:
@@ -152,7 +144,6 @@ def _CG_solve(A, b, max_iters, tol):
         Maximum number of iterations for the conjugate gradient algorithm.
     :param double tol:
         Tolerance for cut-off.
-
     """
     if not(np.all(np.linalg.eigvals(A) > 0)):
         raise ValueError('A is not symmetric positive definite.')
@@ -196,7 +187,6 @@ def _CG_solve(A, b, max_iters, tol):
 def _bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cgmaxiter = 200, verbose = False, use_CG = False):
     """
     Solving the basis pursuit de-noising problem.
-
     :param numpy-matrix A:
         The matrix.
     :param numpy-array b:
@@ -205,7 +195,6 @@ def _bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, c
         The noise.
     :param numpy-array x0:
         Initial solution  if not provided the least norm solution is used.
-
     """
     newtontol = lbtol
     newtonmaxiter = 50

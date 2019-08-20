@@ -47,7 +47,7 @@ class Test_optimisation(TestCase):
             g2[i] = x[i,0]**3 - x[i,1]
         return g2
 
-    def test_optimise_poly_unconstrained_poly(self):
+    def test_optimise_unconstrained_poly(self):
         n = 2
         N = 20
 
@@ -63,19 +63,19 @@ class Test_optimisation(TestCase):
             Opt = eq.Optimisation(method=method)
             Opt.add_objective(fpoly)
             x0 = np.random.uniform(-1.0, 1.0, n)
-            sol = Opt.optimise_poly(x0)
+            sol = Opt.optimise(x0)
             np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=3)
-    def test_optimise_poly_custom_function_bounds_maximise(self):
+    def test_optimise_custom_function_bounds_maximise(self):
         n = 2
 
         for method in ['L-BFGS-B', 'TNC', 'COBYLA', 'SLSQP']:
             Opt = eq.Optimisation(method=method)
             Opt.add_objective(custom={'function': lambda x: self.ConFun1(x.reshape(1,-1))}, maximise=True)
             Opt.add_bounds(-np.ones(n), np.ones(n))
-            x0 = np.random.uniform(-1.0, 1.0, n)
-            sol = Opt.optimise_poly(x0)
-            np.testing.assert_almost_equal(sol['x'].flatten(), np.array([-1.0, -1.0]), decimal=3)
-    def test_optimise_poly_custom_function_linear_ineq_con1(self):
+            x0 = np.zeros(n)
+            sol = Opt.optimise(x0)
+            np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=3)
+    def test_optimise_custom_function_linear_ineq_con1(self):
         n = 2
         N = 20
 
@@ -92,10 +92,10 @@ class Test_optimisation(TestCase):
             Opt.add_objective(poly=fpoly)
             Opt.add_linear_ineq_con(np.eye(n), -np.inf*np.ones(n), np.ones(n))
             x0 = np.random.uniform(-1.0, 1.0, n)
-            sol = Opt.optimise_poly(x0)
+            sol = Opt.optimise(x0)
             if sol['status'] == 0:
                 np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=3)
-    def test_optimise_poly_custom_function_linear_ineq_con2(self):
+    def test_optimise_custom_function_linear_ineq_con2(self):
         n = 2
         N = 20
 
@@ -112,10 +112,10 @@ class Test_optimisation(TestCase):
             Opt.add_objective(poly=fpoly)
             Opt.add_linear_ineq_con(np.eye(n), -np.ones(n), np.inf*np.ones(n))
             x0 = np.random.uniform(-1.0, 1.0, n)
-            sol = Opt.optimise_poly(x0)
+            sol = Opt.optimise(x0)
             if sol['status'] == 0:
                 np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=3)
-    def test_optimise_poly_constrained_poly1(self):
+    def test_optimise_constrained_poly1(self):
         n = 2
         N = 20
         bounds = [-np.inf,2.0]
@@ -140,10 +140,10 @@ class Test_optimisation(TestCase):
             Opt.add_bounds(-np.ones(n), np.ones(n))
             Opt.add_nonlinear_ineq_con({'poly': g1poly, 'bounds': bounds})
             x0 = np.zeros(n)
-            sol = Opt.optimise_poly(x0)
+            sol = Opt.optimise(x0)
             if sol['status'] == 0:
                 np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=2)
-    def test_optimise_poly_constrained_poly2(self):
+    def test_optimise_constrained_poly2(self):
         n = 2
         N = 20
         bounds = [0.0,np.inf]
@@ -168,10 +168,10 @@ class Test_optimisation(TestCase):
             Opt.add_bounds(-np.ones(n), np.ones(n))
             Opt.add_nonlinear_ineq_con({'poly': g1poly, 'bounds': bounds})
             x0 = np.zeros(n)
-            sol = Opt.optimise_poly(x0)
+            sol = Opt.optimise(x0)
             if sol['status'] == 0:
                 np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=2)
-    def test_optimise_poly_ineq_constrained_function1(self):
+    def test_optimise_ineq_constrained_function1(self):
         n = 2
         N = 20
         bounds = [-np.inf,2.0]
@@ -193,10 +193,10 @@ class Test_optimisation(TestCase):
             Opt.add_nonlinear_ineq_con(custom={'function': g1Func, 'jac_function': g1Grad, 'hess_function': g1Hess})
             Opt.add_linear_eq_con(np.eye(n), np.ones(n))
             x0 = np.zeros(n)
-            sol = Opt.optimise_poly(x0)
+            sol = Opt.optimise(x0)
             if sol['status'] == 0:
                 np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=2)
-    def test_optimise_poly_ineq_constrained_function2(self):
+    def test_optimise_ineq_constrained_function2(self):
         n = 2
         N = 20
         bounds = [-np.inf,2.0]
@@ -216,10 +216,10 @@ class Test_optimisation(TestCase):
             Opt.add_nonlinear_ineq_con(custom={'function': g1Func})
             Opt.add_linear_eq_con(np.eye(n), np.ones(n))
             x0 = np.zeros(n)
-            sol = Opt.optimise_poly(x0)
+            sol = Opt.optimise(x0)
             if sol['status'] == 0:
                 np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=2)
-    def test_optimise_poly_eq_constrained_function1(self):
+    def test_optimise_eq_constrained_function1(self):
         n = 2
         N = 20
         value = 2.0
@@ -240,10 +240,10 @@ class Test_optimisation(TestCase):
             Opt.add_objective(poly=fpoly)
             Opt.add_nonlinear_eq_con(custom={'function': g1Func, 'jac_function': g1Grad, 'hess_function': g1Hess})
             x0 = np.zeros(n)
-            sol = Opt.optimise_poly(x0)
+            sol = Opt.optimise(x0)
             if sol['status'] == 0:
                 np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=2)
-    def test_optimise_poly_eq_constrained_function2(self):
+    def test_optimise_eq_constrained_function2(self):
         n = 2
         N = 20
         value = 2.0
@@ -262,9 +262,59 @@ class Test_optimisation(TestCase):
             Opt.add_objective(poly=fpoly)
             Opt.add_nonlinear_eq_con(custom={'function': g1Func})
             x0 = np.zeros(n)
-            sol = Opt.optimise_poly(x0)
+            sol = Opt.optimise(x0)
             if sol['status'] == 0:
                 np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=2)
+
+    def test_optimise_trustregion(self):
+        n = 2
+
+        def StyblinskiTang(s):
+            n = s.size
+            f = 0
+            for i in range(n):
+                f += 0.5 * (s[i]**4 - 16.0*s[i]**2 + 5.0*s[i])
+            return f
+
+        Opt = eq.Optimisation(method='trust-region')
+        Opt.add_objective(custom={'function': StyblinskiTang})
+        x0 = np.zeros(n)
+        sol = Opt.optimise(x0)
+        self.assertTrue(abs(sol['fun'] + 78.33233) < 0.01)
+
+    def test_optimise_trustregion_bounds(self):
+        n = 2
+
+        def StyblinskiTang(s):
+            n = s.size
+            f = 0
+            for i in range(n):
+                f += 0.5 * (s[i]**4 - 16.0*s[i]**2 + 5.0*s[i])
+            return f
+
+        Opt = eq.Optimisation(method='trust-region')
+        Opt.add_objective(custom={'function': StyblinskiTang})
+        Opt.add_bounds(-np.ones(n), np.ones(n))
+        x0 = np.zeros(n)
+        sol = Opt.optimise(x0)
+        np.testing.assert_almost_equal(sol['x'].flatten(), np.array([-1.0, -1.0]), decimal=2)
+
+    def test_optimise_trustregion_maximise_bounds(self):
+        n = 2
+
+        def StyblinskiTang(s):
+            n = s.size
+            f = 0
+            for i in range(n):
+                f += 0.5 * (s[i]**4 - 16.0*s[i]**2 + 5.0*s[i])
+            return f
+
+        Opt = eq.Optimisation(method='trust-region')
+        Opt.add_objective(custom={'function': StyblinskiTang}, maximise=True)
+        Opt.add_bounds(-np.ones(n), np.ones(n))
+        x0 = np.zeros(n)
+        sol = Opt.optimise(x0)
+        np.testing.assert_almost_equal(sol['x'].flatten(), np.array([0.156, 0.156]), decimal=2)
 
 if __name__ == '__main__':
     unittest.main()

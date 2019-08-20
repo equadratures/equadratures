@@ -68,7 +68,7 @@ class Test_optimisation(TestCase):
     def test_optimise_poly_custom_function_bounds_maximise(self):
         n = 2
 
-        for method in ['L-BFGS-B', 'TNC', 'COBYLA', 'SLSQP', 'trust-constr']:
+        for method in ['L-BFGS-B', 'TNC', 'COBYLA', 'SLSQP']:
             Opt = eq.Optimisation(method=method)
             Opt.add_objective(custom={'function': lambda x: self.ConFun1(x.reshape(1,-1))}, maximise=True)
             Opt.add_bounds(-np.ones(n), np.ones(n))

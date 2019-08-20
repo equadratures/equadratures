@@ -108,5 +108,6 @@ class TestD(TestCase):
         pistonmodel.set_model(model=model_evals)
         all_indices = pistonmodel.get_total_sobol_indices()
         np.testing.assert_array_less(all_indices[0], all_indices[1])
+        pistonmodel.get_summary('piston_model.txt')
 if __name__== '__main__':
     unittest.main()

@@ -125,11 +125,11 @@ class Poly(object):
         introduction = str('Your problem has been defined by '+str(self.dimensions)+' '+parameter_string)
         added = str('Their distributions are given as follows:')
         for i in range(0, self.dimensions):
-            added = ('\nParameter '+str(i+1)+' '+str(self.parameters[i].get_description()))
+            added_new = ('\nParameter '+str(i+1)+' '+str(self.parameters[i].get_description()))
             if i == 0:
-                added = introduction + added
+                added = introduction + added_new
             else:
-                added =+ added
+                added = added + added_new
         if self.statistics_object is not None:
             mean_value, var_value = self.get_mean_and_variance()
             X = self.get_points()
@@ -141,7 +141,7 @@ class Poly(object):
                 ' while the variance is '+str(np.around(var_value, 3))+'.\nFor the data avaliable, the polynomial approximation had a r square value of '+str(r2)+'.')
             if self.dimensions > 1:
                 sobol_indices_array = np.argsort(self.get_total_sobol_indices())
-                final_value = sobol_indices_array[-1]
+                final_value = sobol_indices_array[-1] + 1
                 statistics_extra = str('\nAdditionally, the most important parameter--based on the total Sobol indices--was found to be parameter '+str(final_value)+'.')
                 statistics = statistics + statistics_extra
             added = added + statistics

@@ -31,7 +31,7 @@ class Test_Distributions(TestCase):
        s_values, cdf = xo.get_cdf()
        s_samples = xo.get_samples(6000)
        xo.get_description()
-       s_samples = param.get_icdf(np.linspace(0., 1., 30))
+       s_samples = xo.get_icdf(np.linspace(0., 1., 30))
        samples = xo.get_samples(1000)
        std_dev = np.std(samples)
        xi = np.random.gamma(k,theta, (N,1))

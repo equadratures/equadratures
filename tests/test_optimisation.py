@@ -265,56 +265,40 @@ class Test_optimisation(TestCase):
             sol = Opt.optimise(x0)
             if sol['status'] == 0:
                 np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=2)
-
-    def test_optimise_trustregion(self):
-        n = 2
-
-        def StyblinskiTang(s):
-            n = s.size
-            f = 0
-            for i in range(n):
-                f += 0.5 * (s[i]**4 - 16.0*s[i]**2 + 5.0*s[i])
-            return f
-
-        Opt = eq.Optimisation(method='trust-region')
-        Opt.add_objective(custom={'function': StyblinskiTang})
-        x0 = np.zeros(n)
-        sol = Opt.optimise(x0)
-        self.assertTrue(abs(sol['fun'] + 78.33233) < 0.01)
-
+                
     def test_optimise_trustregion_bounds(self):
         n = 2
-
+        
         def StyblinskiTang(s):
             n = s.size
             f = 0
             for i in range(n):
                 f += 0.5 * (s[i]**4 - 16.0*s[i]**2 + 5.0*s[i])
             return f
-
+        
         Opt = eq.Optimisation(method='trust-region')
         Opt.add_objective(custom={'function': StyblinskiTang})
         Opt.add_bounds(-np.ones(n), np.ones(n))
         x0 = np.zeros(n)
         sol = Opt.optimise(x0)
         np.testing.assert_almost_equal(sol['x'].flatten(), np.array([-1.0, -1.0]), decimal=2)
-
+        
     def test_optimise_trustregion_maximise_bounds(self):
         n = 2
-
+        
         def StyblinskiTang(s):
             n = s.size
             f = 0
             for i in range(n):
                 f += 0.5 * (s[i]**4 - 16.0*s[i]**2 + 5.0*s[i])
             return f
-
+        
         Opt = eq.Optimisation(method='trust-region')
         Opt.add_objective(custom={'function': StyblinskiTang}, maximise=True)
         Opt.add_bounds(-np.ones(n), np.ones(n))
         x0 = np.zeros(n)
         sol = Opt.optimise(x0)
-        np.testing.assert_almost_equal(sol['x'].flatten(), np.array([0.156, 0.156]), decimal=2)
+        np.testing.assert_almost_equal(sol['x'].flatten(), np.array([0.16, 0.16]), decimal=2)
 
 if __name__ == '__main__':
     unittest.main()

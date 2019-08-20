@@ -47,18 +47,18 @@ class TestSamplingGeneration(TestCase):
         cdf_value = induced_sampling.induced_jacobi_evaluation(0, 0, 0.999, parameter)
         np.testing.assert_allclose(cdf_value, 0.99652, atol=0.000005)
 
-    # def test_induced_sampling(self):
-    #     """
-    #     An integration test for the whole routine
-    #     """
-    #     dimension = 3
-    #     parameters = [Parameter(3, "Uniform", upper=1, lower=-1)]*dimension
-    #     basis = Basis("total-order", [3]*dimension)
+    def test_induced_sampling(self):
+        """
+        An integration test for the whole routine
+        """
+        dimension = 3
+        parameters = [Parameter(3, "Uniform", upper=1, lower=-1)]*dimension
+        basis = Basis("total-order", [3]*dimension)
 
-    #     induced_sampling = Induced(parameters, basis)
+        induced_sampling = Induced(parameters, basis)
 
-    #     quadrature_points = induced_sampling.get_points()
-    #     assert quadrature_points.shape == (63, 3)
+        quadrature_points = induced_sampling.get_points()
+        assert quadrature_points.shape == (63, 3)
 
 
 if __name__ == '__main__':

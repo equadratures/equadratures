@@ -533,7 +533,7 @@ def vandermonde(eta,p):
     for i in range(0,n):
         params.append(P)
     #Use the params list to establish the Poly object
-    Polybasis=Poly(params,Object)
+    Polybasis=Poly(params,Object, method='least-squares')
     V=Polybasis.get_poly(eta)
     V=V.T
     return V,Polybasis

@@ -5,7 +5,7 @@ from equadratures.parameter import Parameter
 from scipy import optimize
 import numpy as np
 from scipy.special import factorial
-from scipy.misc import comb
+from scipy.special import comb
 import warnings
 warnings.filterwarnings('ignore')
 class Optimisation:

@@ -24,7 +24,7 @@ class Solver(object):
             self.solver = lambda A, b: least_squares(A, b, self.verbose)
         elif self.method.lower() == 'minimum-norm':
             self.solver = lambda A, b: minimum_norm(A, b)
-        elif self.method.lower() == 'numerical-integration':
+        elif self.method.lower() == 'numerical-integration' or self.method.lower() == 'integration':
             self.solver = lambda A, b: orthogonal_linear_system(A, b)
         elif self.method.lower() == 'least-squares-with-gradients':
             self.solver = lambda A, b, C, d: constrained_least_squares(A, b, C, d, self.verbose)
@@ -103,25 +103,31 @@ def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
         except TypeError:
             eta = [noise_level]
         log_eta =  [np.log10(i) for i in eta]
-    errors = np.zeros(5)
+    errors = []
     mean_errors = np.zeros(len(eta))
     # 5 fold cross validation
     for e in range(len(eta)):
-        try:
-            for n in range(5):
+        for n in range(5):
+            try:
                 indices = [int(i) for i in n * np.ceil(N/5.0) + range(int(np.ceil(N/5.0))) if i < N]
                 A_ver = A[indices]
                 A_train = np.delete(A, indices, 0)
                 y_ver = y[indices].flatten()
+                if len(y_ver) == 0:
+                    continue
                 y_train = np.delete(y, indices).flatten()
+
                 x_train = _bp_denoise(A_train, y_train, eta[e])
                 y_trained = np.reshape(np.dot(A_ver, x_train), len(y_ver))
 
                 assert y_trained.shape == y_ver.shape
-                errors[n] = np.mean(np.abs(y_trained - y_ver))/len(y_ver)
-            mean_errors[e] = np.mean(errors)
-        except:
+                errors.append(np.mean(np.abs(y_trained - y_ver))/len(y_ver))
+            except np.linalg.LinAlgError:
+                continue
+        if len(errors) == 0:
             mean_errors[e] = np.inf
+        else:
+            mean_errors[e] = np.mean(errors)
     sorted_ind = np.argsort(mean_errors)
     x = None
     ind = 0
@@ -130,10 +136,10 @@ def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
             raise ValueError('Singular matrix!! Reconsider sample points!')
         try:
             x = _bp_denoise(A, y, eta[sorted_ind[ind]])
-        except:
+        except np.linalg.LinAlgError:
             ind += 1
     if verbose:
-        print('The noise level used is '+str(best_eta)+'.')
+        print('The noise level used is '+str(eta[sorted_ind[ind]])+'.')
     return np.reshape(x, (len(x),1))
 def _CG_solve(A, b, max_iters, tol):
     """

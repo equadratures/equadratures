@@ -16,7 +16,7 @@ setup(name='equadratures',
       ],
       keywords='polynomial chaos effective quadratures polynomial approximations gradients',
       url='https://github.com/Effective-Quadratures/Effective-Quadratures',
-      author='Pranay Seshadri, Nicholas Wong, Irene Virdis, James Gross',
+      author='Pranay Seshadri, Nicholas Wong, Irene Virdis, James Gross','He Zhou'
       license='LPGL-2.1',
       packages=['equadratures', 'equadratures.distributions', 'equadratures.sampling_methods'],
       install_requires=[

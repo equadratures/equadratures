@@ -181,11 +181,11 @@ class Induced(Sampling):
         order = int(parameter.order)
         zeroes, _ = parameter._get_local_quadrature(order-1)
         # obtain current recurrence coefficient
-        ab = parameter.get_recurrence_coefficients((order)*2 + 360 + 1)
+        ab = parameter.get_recurrence_coefficients((order)*2 + 400-1)
         for root in zeroes:
             ab = self._quadratic_modification(ab, root)
             ab[0, 1] = 1
-        induced_points, induced_weights = parameter._get_local_quadrature(358, ab)
+        induced_points, induced_weights = parameter._get_local_quadrature(400-1, ab)
         # insert lower bound of x in jacobi distribution
         interval_points = np.insert(induced_points, 0, -1)
         # Cumulative sums of induced quadrature weights are a strict bound for the cdf
@@ -193,11 +193,13 @@ class Induced(Sampling):
         strict_bounds = np.insert(strict_bounds, len(strict_bounds), 1)
         strict_bounds = np.insert(strict_bounds, 0, 0)
         interval_index = bisect.bisect_left(strict_bounds, uniform_cdf_value)
-        interval_index_hi = interval_index+3
-        if interval_index_hi >= 360:
-            interval_index_hi = 359
-        interval_lo = interval_points[interval_index-3]
-        interval_hi = interval_points[interval_index_hi]
+        interval_index_hi = interval_index
+        if interval_index_hi >= 399:
+            interval_lo = interval_points[interval_index-1]
+            interval_hi = 1
+        else:
+            interval_lo = interval_points[interval_index-1]
+            interval_hi = interval_points[interval_index_hi+1]
 
         # Solver function for inverse CDF where F(x)-u = 0
         def F(x):

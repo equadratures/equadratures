@@ -65,16 +65,32 @@ def constrained_least_squares(A, b, C, d, verbose):
         raise(ValueError, 'solver: error: mismatch in sizes of A and b')
     elif k != s:
         raise(ValueError, 'solver: error: mismatch in sizes of C and d')
-
-    x = least_squares(np.mat(np.vstack([A, C])), np.mat(np.vstack([b, d])), verbose)
-    #elif technique.lower() == 'direct-elimination':
-    #    x, cond = directElimination(C, d, A, b)
-    #elif technique.lower() == 'null-space':
-    #    x, cond = nullSpaceMethod(C, d, A, b)
-    #else:
-    #    raise(ValueError, 'solveCLSQ: Incorrect choice for technique. Choose between weighted, direct-elimination or null-space, please.')
-    return x#, cond
-
+    if m >= n:
+        return least_squares(np.vstack([A, C]), np.vstack([b, d]), verbose)
+    else:
+        return null_space_method(C, d, A, b, verbose)
+def null_space_method(Ao, bo, Co, do, verbose):
+    A = deepcopy(Ao)
+    C = deepcopy(Co)
+    b = deepcopy(bo)
+    d = deepcopy(do)
+    m, n = A.shape
+    p, n = C.shape
+    Q, R = np.linalg.qr(C.T, 'complete')
+    Q1 = Q[0:n, 0:p]
+    Q2 = Q[0:n, p:n]
+    # Lower triangular matrix!
+    L = R.T
+    L = L[0:p, 0:p]
+    y1 = least_squares(L, d, verbose)
+    c = b - np.dot( np.dot(A , Q1) , y1)
+    AQ2 = np.dot(A , Q2)
+    y2 = least_squares(AQ2 , c, verbose)
+    x = np.dot(Q1 , y1) + np.dot(Q2 , y2)
+    cond = np.linalg.cond(AQ2)
+    if verbose is True:
+        print('The condition number of the matrix is '+str(cond)+'.')
+    return x
 def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
     A = deepcopy(Ao)
     y = deepcopy(bo)

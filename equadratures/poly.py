@@ -407,10 +407,15 @@ class Poly(object):
             b = np.dot(W , self._model_evaluations)
             if self.gradient_flag == 1:
                 # Now, we can reduce the number of rows!
-
                 dP = self.get_poly_grad(self._quadrature_points)
                 C = cell2matrix(dP, W)
-
+                G = np.vstack([A, C])
+                r =  np.linalg.matrix_rank(G)
+                m, n = A. shape
+                print('Gradient computation: The rank of the stacked matrix is '+str(r)+'.')
+                print('The number of unknown basis terms is '+str(n))
+                if n > r:
+                    print('WARNING: Please increase the number of samples; one way to do this would be to increase the sampling-ratio.')
                 self.coefficients = self.solver(A, b, C, self._gradient_evaluations)
             else:
                 self.coefficients = self.solver(A, b)

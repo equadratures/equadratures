@@ -4,6 +4,7 @@ from equadratures.poly import Poly
 from equadratures.sampling_methods.induced import Induced
 from equadratures.parameter import Parameter
 from equadratures.basis import Basis
+
 import numpy as np
 
 
@@ -22,6 +23,7 @@ class TestSamplingGeneration(TestCase):
         parameters = [Parameter(1, "Uniform", upper=1, lower=-1)]*dimension
         basis = Basis("total-order")
         induced_sampling = Induced(parameters, basis)
+
         parameter = parameters[0]
         parameter.order = 3
         cdf_value = induced_sampling.induced_jacobi_evaluation(0, 0, 0, parameter)

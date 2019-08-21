@@ -9,6 +9,7 @@ from scipy.optimize import brentq as brentq_root_solve
 import time
 import sys
 
+
 class Induced(Sampling):
     """
     The class defines an Induced sampling object.
@@ -215,8 +216,8 @@ class Induced(Sampling):
                                                    parameter)
             value = value - uniform_cdf_value
             return value
-        sampled_value = bisect_root_solve(F, interval_lo, interval_hi, xtol=0.00005)
-
+        sampled_value = brentq_root_solve(F, interval_lo, interval_hi, xtol=0.00005)
+        
         return sampled_value
 
     def induced_jacobi_evaluation(self, alpha, beta, x, parameter):

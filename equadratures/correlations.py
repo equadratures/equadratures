@@ -1,32 +1,29 @@
 """ Utilities for dealing with correlated inputs."""
 from equadratures.parameter import Parameter
-from equadratures.poly import Poly
+from equadratures.poly import Poly, evaluate_model, evaluate_model_gradients
 from equadratures.basis import Basis
 import numpy as np
 from scipy import stats
 from scipy import optimize
+from copy import deepcopy
 
 class Correlations(object):
     """
     The class defines a Nataf transformation. The input correlated marginals are mapped from their physical space to a new
     standard normal space, in which points are uncorrelated.
 
-    :param list D: List of parameters (distributions), interpreted here as the marginals.
-    :param numpy.ndarray R: The correlation matrix associated with the joint distribution.
+    :param Poly poly: A polynomial object.
+    :param numpy.ndarray correlation_matrix: The correlation matrix associated with the joint distribution.
 
     **References**
         1. Melchers, R. E., (1945) Structural Reliability Analysis and Predictions. John Wiley and Sons, second edition.
 
     """
-    def __init__(self, D=None, R=None):
-        if D is None:
-            raise(ValueError, 'Distributions must be given')
-        else:
-            self.D = D
-        if R is None:
-            raise(ValueError, 'Correlation matrix must be specified')
-        else:
-            self.R = R
+    def __init__(self, poly, correlation_matrix, verbose=False):
+        self.poly = poly
+        D = self.poly.get_parameters()
+        self.D = D
+        self.R = correlation_matrix
         self.std = Parameter(order=5, distribution='normal',shape_parameter_A = 0.0, shape_parameter_B = 1.0)
         inf_lim = -8.0
         sup_lim = - inf_lim
@@ -35,10 +32,8 @@ class Correlations(object):
         Pols = Poly([p1, p1], myBasis, method='numerical-integration')
         p = Pols.get_points()
         w = Pols.get_weights() * (sup_lim - inf_lim)**2
-
         p1 = p[:,0]
         p2 = p[:,1]
-
         R0 = np.eye((len(self.D)))
         for i in range(len(self.D)):
             for j in range(i+1, len(self.D), 1):
@@ -68,10 +63,64 @@ class Correlations(object):
                   R0[j,i] = R0[i,j]
 
         self.A = np.linalg.cholesky(R0)
-        print('The Cholesky decomposition of fictive matrix R0 is:')
-        print(self.A)
-        print('The fictive matrix is:')
-        print(R0)
+        if verbose is True:
+            print('The Cholesky decomposition of fictive matrix R0 is:')
+            print(self.A)
+            print('The fictive matrix is:')
+            print(R0)
+        list_of_parameters = []
+        for i in range(0, len(self.D)):
+            standard_parameter = Parameter(order=self.D[i].order, distribution='gaussian', shape_parameter_A = 0., shape_parameter_B = 1.)
+            list_of_parameters.append(standard_parameter)
+        self.polystandard = deepcopy(self.poly)
+        self.polystandard._set_parameters(list_of_parameters)
+        self.standard_samples = self.polystandard.get_points()
+        self._points = self.get_correlated_from_uncorrelated(self.standard_samples)
+    def get_points(self):
+        """
+        Returns the correlated samples based on the quadrature rules used in poly.
+
+        :param Correlations self: An instance of the Correlations object.
+
+        :return:
+            **points**: A numpy.ndarray of sampled quadrature points with shape (number_of_samples, dimension).
+
+        """
+        return self._points
+    def set_model(self, model=None, model_grads=None):
+        """
+        Computes the coefficients of the polynomial.
+
+        :param Correlations self:
+            An instance of the Correlations class.
+        :param callable model:
+            The function that needs to be approximated. In the absence of a callable function, the input can be the function evaluated at the quadrature points.
+        :param callable model_grads:
+            The gradient of the function that needs to be approximated. In the absence of a callable gradient function, the input can be a matrix of gradient evaluations at the quadrature points.
+        """
+        model_values = None
+        model_grads_values = None
+        if callable(model):
+            model_values = evaluate_model(self._points, model)
+        else:
+            model_values = model
+        if model_grads is not None:
+            if callable(model_grads):
+                model_grads_values = evaluate_model_gradients(self._points, model_grads)
+            else:
+                model_grads_values = model_grads
+        self.polystandard.set_model(model_values, model_grads_values)
+    def get_transformed_poly(self):
+        """
+        Returns the transformed polynomial.
+
+        :param Correlations self:
+            An instance of the Correlations class.
+
+        :return:
+            **poly**: An instance of the Poly class.
+        """
+        return self.polystandard
     def get_uncorrelated_from_correlated(self, X):
         """
         Method for mapping correlated variables to a new standard space.

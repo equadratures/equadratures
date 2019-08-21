@@ -16,7 +16,7 @@ class Poly(object):
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     :param str method: The method used for computing the coefficients. Should be one of: ``compressive-sensing``,
-        ``numerical-integration``, ``least-squares`` or ``minimum-norm``.
+        ``numerical-integration``, ``least-squares``, ``least-squares-with-gradients``, ``minimum-norm``.
     :param dict sampling_args: Optional arguments centered around the specific sampling strategy.
 
             :string mesh: Avaliable options are: ``monte-carlo``, ``sparse-grid``, ``tensor-grid``, ``induced``, or ``user-defined``. Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1] is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
@@ -111,6 +111,23 @@ class Poly(object):
             self._set_points_and_weights()
         else:
             print('WARNING: Method not declared.')
+    def _set_parameters(self, parameters):
+        """
+        Private function that sets the parameters. Required by the Correlated class.
+
+        :param Poly self:
+            An instance of the Poly object.
+        """
+        self.parameters = parameters
+        self._set_points_and_weights()
+    def get_parameters(self):
+        """
+        Returns the list of parameters
+
+        :param Poly self:
+            An instance of the Poly object.
+        """
+        return self.parameters
     def get_summary(self, filename=None):
         """
         A simple utility that returns file summarising what the polynomial approximation has determined.
@@ -176,8 +193,7 @@ class Poly(object):
             An instance of the Poly object.
         """
         self.quadrature = Quadrature(parameters=self.parameters, basis=self.basis, \
-                        points=self.inputs, outputs=self.outputs, \
-                        mesh=self.mesh)
+                        points=self.inputs, mesh=self.mesh)
         quadrature_points, quadrature_weights = self.quadrature.get_points_and_weights()
         if self.subsampling_algorithm_name is not None:
             P = self.get_poly(quadrature_points)
@@ -237,7 +253,7 @@ class Poly(object):
         if self.statistics_object is None:
             if self.method != 'numerical-integration' and self.dimensions <= 6 and self.highest_order <= MAXIMUM_ORDER_FOR_STATS:
                 quad = Quadrature(parameters=self.parameters, basis=Basis('tensor-grid', orders= np.array(self.parameters_order) + 1), \
-                    mesh='tensor-grid', outputs=None, points=None)
+                    mesh='tensor-grid', points=None)
                 quad_pts, quad_wts = quad.get_points_and_weights()
                 poly_vandermonde_matrix = self.get_poly(quad_pts)
             else:

@@ -20,26 +20,15 @@ class TestF(TestCase):
           R[1, 0] = R[0, 1]
           R[2, 0] = R[0, 2]
           R[1, 2] = R[2, 1]
-
-          u1 = Parameter(distribution='normal', shape_parameter_A=0.0, shape_parameter_B=1.0, order=3)
-          myNataf = Correlations([zeta_1, zeta_2, zeta_3], R)
-
-          # For Monte-Carlo!
+          myBasis = Basis('tensor-grid')
+          myPoly = Poly([zeta_1, zeta_2, zeta_3], myBasis, method='numerical-integration')
+          myNataf = Correlations(myPoly, R)
           samples_mc = myNataf.get_correlated_samples(N=50000)
           f_mc = evaluate_model(samples_mc, fun)
-
-          # For Polynomials!
-          myBasis = Basis('tensor-grid')
-          myPoly = Poly([u1, u1, u1], myBasis, method='numerical-integration')
-          samples_p =  myPoly.get_points()
-          samples_corr_p = myNataf.get_correlated_from_uncorrelated(samples_p)
-          samples_p = myNataf.get_uncorrelated_from_correlated(samples_corr_p)
-          f_p = evaluate_model(samples_corr_p, fun)
-          samples_p = myNataf.get_uncorrelated_samples(N=1000)
-
-          myPoly.set_model(f_p)
-          mean, variance = myPoly.get_mean_and_variance()
-          skewness, kurtosis = myPoly.get_skewness_and_kurtosis()
+          samples_p = myNataf.set_model(fun)
+          myTransformedPoly = myNataf.get_transformed_poly()
+          mean, variance = myTransformedPoly.get_mean_and_variance()
+          skewness, kurtosis = myTransformedPoly.get_skewness_and_kurtosis()
           np.testing.assert_almost_equal(np.mean(f_mc)*0.01, mean*0.01, decimal=1, err_msg = "Difference greated than imposed tolerance")
           np.testing.assert_almost_equal(np.var(f_mc)*0.000001, variance*0.000001, decimal=2, err_msg = "Difference greated than imposed tolerance")
           np.testing.assert_almost_equal( skew(f_mc)*0.1, skewness*0.1, decimal=1, err_msg = "Difference greated than imposed tolerance")

@@ -128,13 +128,14 @@ class Poly(object):
             An instance of the Poly object.
         """
         return self.parameters
-    def get_summary(self, filename=None):
+    def get_summary(self, filename=None, tosay=False):
         """
         A simple utility that returns file summarising what the polynomial approximation has determined.
 
         :param Poly self:
             An instance of the Poly object.
         """
+        prec = '{:.3g}'
         if self.dimensions == 1:
             parameter_string = str('parameter.')
         else:
@@ -153,15 +154,18 @@ class Poly(object):
             y_eval = self.get_polyfit(X)
             y_valid = self._model_evaluations
             a,b,r,_,_ = st.linregress(y_eval.flatten(),y_valid.flatten())
-            r2 = np.round(r**2, 3)
-            statistics = str('\n \nA summary of computed output statistics is given below:\nThe mean is estimated to be '+str(np.around(mean_value, 3) )+\
-                ' while the variance is '+str(np.around(var_value, 3))+'.\nFor the data avaliable, the polynomial approximation had a r square value of '+str(r2)+'.')
+            r2 = r**2
+            statistics = '\n \nA summary of computed output statistics is given below:\nThe mean is estimated to be '+ prec.format(mean_value) +\
+                ' while the variance is ' + prec.format(var_value) +'.\nFor the data avaliable, the polynomial approximation had a r square value of '+prec.format(r2)+'.'
             if self.dimensions > 1:
                 sobol_indices_array = np.argsort(self.get_total_sobol_indices())
                 final_value = sobol_indices_array[-1] + 1
                 statistics_extra = str('\nAdditionally, the most important parameter--based on the total Sobol indices--was found to be parameter '+str(final_value)+'.')
                 statistics = statistics + statistics_extra
             added = added + statistics
+            if(tosay is True):
+                added = added.replace('e-','e minus')
+                added = added.replace('minus0','minus')
         if filename is None:
             filename = 'effective-quadratures-output.txt'
         output_file = open(filename, 'w')

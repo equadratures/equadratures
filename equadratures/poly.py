@@ -199,6 +199,7 @@ class Poly(object):
             P = self.get_poly(quadrature_points)
             W = np.mat( np.diag(np.sqrt(quadrature_weights)))
             A = W * P.T
+            self.A = A
             mm, nn = A.shape
             m_refined = int(np.round(self.sampling_ratio * nn))
             z = self.subsampling_algorithm_function(A, m_refined)

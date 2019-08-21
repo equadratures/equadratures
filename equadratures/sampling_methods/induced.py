@@ -3,7 +3,11 @@ import numpy as np
 from scipy.special import betaln
 import bisect
 from scipy.optimize import bisect as bisect_root_solve
+from scipy.optimize import brentq as brentq_root_solve
 
+# set up progress bar
+import time
+import sys
 
 class Induced(Sampling):
     """
@@ -27,8 +31,12 @@ class Induced(Sampling):
             self.basis.set_orders(orders)
         self.dimensions = len(self.parameters)
         self.basis_entries = basis.cardinality
-        sampling_ratio = 7 * self.dimensions
-        self.samples_number = int(sampling_ratio * np.max(self.basis.orders))
+        sampling_ratio = 5 * self.dimensions
+        self.samples_number = int(sampling_ratio * self.basis.cardinality)
+        print(f"sampling {self.samples_number} points,\n"
+              f"at dimension {self.dimensions}\n"
+              f"and order {self.basis.orders}")
+        self.sample_count = 0
         self.points = self._set_points(orders)
         self._set_weights()
 
@@ -65,6 +73,7 @@ class Induced(Sampling):
         # TODO add a total order index set with random samples
         # The above would be necessary in higher dimensions
         # sample the set of indices used in this sample
+        self.sample_count += 1
         indexset = self.basis.elements
         sampled_row_number = np.random.randint(0, indexset.shape[0])
         index_set_used = indexset[sampled_row_number, :]
@@ -73,6 +82,9 @@ class Induced(Sampling):
         sampled_cdf_values = np.random.rand(self.dimensions, 1)
 
         x = self._multi_variate_sampling(sampled_cdf_values, index_set_used)
+        sys.stdout.write('\r')
+        sys.stdout.write("progress: %d/%d" % (self.sample_count, self.samples_number))
+        sys.stdout.flush()
         return x
 
     def _multi_variate_sampling(self, sampled_cdf_values, index_set_used):
@@ -204,6 +216,7 @@ class Induced(Sampling):
             value = value - uniform_cdf_value
             return value
         sampled_value = bisect_root_solve(F, interval_lo, interval_hi, xtol=0.00005)
+
         return sampled_value
 
     def induced_jacobi_evaluation(self, alpha, beta, x, parameter):

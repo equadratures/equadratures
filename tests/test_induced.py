@@ -48,7 +48,7 @@ class TestSamplingGeneration(TestCase):
         induced_sampling = Induced(parameters, basis)
 
         quadrature_points = induced_sampling.get_points()
-        assert quadrature_points.shape == (63, 3)
+        assert quadrature_points.shape == (300, 3)
 
 
 if __name__ == '__main__':

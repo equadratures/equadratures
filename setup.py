@@ -22,7 +22,7 @@ setup(name='equadratures',
       license='LPGL-2.1',
       packages=['equadratures', 'equadratures.distributions', 'equadratures.sampling_methods'],
       install_requires=[
-          'numpy',
+          'numpy >= 1.16.4 ',
           'scipy >= 0.15.0',
           'matplotlib'
       ],

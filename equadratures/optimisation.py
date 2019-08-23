@@ -9,12 +9,9 @@ import warnings
 warnings.filterwarnings('ignore')
 class Optimisation:
     """
-    This class performs unconstrained or constrained optimisation of poly objects or custom functions 
+    This class performs unconstrained or constrained optimisation of poly objects or custom functions
     using scipy.optimize.minimize or an in-house trust-region method.
-    :param string method:
-        A string specifying the method that will be used for optimisation. All of the available choices come from scipy.optimize.minimize
-        (`click here <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html>`__ for a list of methods and further information).
-        In the case of general constrained optimisation, the options are ``COBYLA``, ``SLSQP``, and ``trust-constr``. The default is ``trust-constr``.
+    :param string method: A string specifying the method that will be used for optimisation. All of the available choices come from scipy.optimize.minimize (`click here <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html>`__ for a list of methods and further information). In the case of general constrained optimisation, the options are ``COBYLA``, ``SLSQP``, and ``trust-constr``. The default is ``trust-constr``.
     """
     def __init__(self, method='trust-constr'):
         self.method = method
@@ -29,6 +26,7 @@ class Optimisation:
     def add_objective(self, poly=None, custom=None, maximise=False):
         """
         Adds objective function to be optimised.
+
         :param poly poly:
             A Poly object.
         :param dict custom: Optional arguments centered around the custom option.
@@ -67,6 +65,7 @@ class Optimisation:
     def add_bounds(self, lb, ub):
         """
         Adds bounds :math:`lb <= x <=ub` to the optimisation problem. Only ``L-BFGS-B``, ``TNC``, ``SLSQP``, ``trust-constr``, ``trust-region``, and ``COBYLA`` methods can handle bounds.
+
         :param numpy.ndarray lb: 1-by-n matrix that contains lower bounds of x.
         :param numpy.ndarray ub: 1-by-n matrix that contains upper bounds of x.
         """
@@ -93,6 +92,7 @@ class Optimisation:
         """
         Adds linear inequality constraints :math:`b_l <= A x <= b_u` to the optimisation problem.
         Only ``trust-constr``, ``COBYLA``, and ``SLSQP`` methods can handle general constraints.
+
         :param numpy.ndarray A: An (M,n) matrix that contains coefficients of the linear inequality constraints.
         :param numpy.ndarray b_l: An (M,1) matrix that specifies lower bounds of the linear inequality constraints. If there is no lower bound, set ``b_l = -np.inf * np.ones(M)``.
         :param numpy.ndarray b_u: A (M,1) matrix that specifies upper bounds of the linear inequality constraints. If there is no upper bound, set ``b_u = np.inf * np.ones(M)``.
@@ -112,6 +112,7 @@ class Optimisation:
         Adds nonlinear inequality constraints :math:`lb <= g(x) <= ub` (for poly option) with :math:`lb`, :math:`ub = bounds` or :math:`g(x) >= 0` (for function option) to the optimisation problem. Only ``trust-constr``, ``COBYLA``, and ``SLSQP`` methods can handle general constraints.
         If Poly object is provided in the poly dictionary, gradients and Hessians will be computed automatically. If a lambda function is provided in the ``function`` dictionary, the user may also provide ``jac_function`` for gradients and ``hess_function`` for Hessians; otherwise, a 2-point differentiation rule
         will be used to approximate the derivative and a BFGS update will be used to approximate the Hessian.
+
         :param dict poly: Arguments for poly dictionary.
             :param Poly poly: An instance of the Poly class.
             :param numpy.ndarray bounds: An array with two entries specifying the lower and upper bounds of the inequality. If there is no lower bound, set bounds[0] = -np.inf.If there is no upper bound, set bounds[1] = np.inf.
@@ -171,6 +172,7 @@ class Optimisation:
     def add_linear_eq_con(self, A, b):
         """
         Adds linear equality constraints  :math:`Ax = b` to the optimisation routine. Only ``trust-constr`` and ``SLSQP`` methods can handle equality constraints.
+
         :param numpy.ndarray A: A (M, n) matrix that contains coefficients of the linear equality constraints.
         :param numpy.ndarray b: A (M, 1) matrix that specifies right hand side of the linear equality constraints.
         """
@@ -183,6 +185,7 @@ class Optimisation:
         """
         Adds nonlinear inequality constraints :math:`g(x) = value` (for poly option) or :math:`g(x) = 0` (for function option) to the optimisation routine.
         Only ``trust-constr`` and ``SLSQP`` methods can handle equality constraints. If poly object is providedin the poly dictionary, gradients and Hessians will be computed automatically.
+
         :param dict poly: Arguments for poly dictionary.
             :param Poly poly: An instance of the Poly class.
             :param float value: Value of the nonlinear constraint.
@@ -229,7 +232,9 @@ class Optimisation:
         """
         Performs optimisation on a specified function, provided the objective has been added using 'add_objective' method
         and constraints have been added using the relevant method.
+
         :param numpy.ndarray x0: Starting point for optimiser.
+
         :return:
             **sol**: An object containing the optimisation result. Important attributes are: the solution array ``x``, a Boolean flag ``success`` indicating
             if the optimiser exited successfully, and a doc-string ``message`` describing the cause of the termination.
@@ -250,7 +255,7 @@ class Optimisation:
         if self.maximise:
             sol['fun'] *= -1.0
         return sol
-    
+
     def _blackbox_evaluation(self,s):
         """
         Evaluates the point s for ``trust-region`` method
@@ -266,7 +271,7 @@ class Optimisation:
         else:
             raise ValueError('The arrays of solutions and their corresponding function values are not equivalent!')
         return f
-    
+
     def _regression_set(self, s_old, f_old, del_k):
         """
         Creates the regression set for ``trust-region`` method
@@ -281,7 +286,7 @@ class Optimisation:
         ind_within_TR = np.where(np.linalg.norm(S_hat-s_old,axis=1,ord=np.inf) <= del_k)[0]
         S_hat = S_hat[ind_within_TR,:]
         f_hat = f_hat[ind_within_TR]
-#       If Yhat does not contain at least q points, uniformly generate q points with a d-dimensional hypercube of radius rk around centre 
+#       If Yhat does not contain at least q points, uniformly generate q points with a d-dimensional hypercube of radius rk around centre
         while S_hat.shape[0] < int(0.7*np.ceil(self.q)):
             s = s_old + np.random.uniform(-del_k, del_k, self.n)
             S_hat = np.vstack((S_hat, s))
@@ -299,13 +304,13 @@ class Optimisation:
         S = np.vstack((S,S_hat))
         f = np.vstack((f,f_hat))
 #       Unscale rand uncentre points
-        S = DelS*S +s_old       
+        S = DelS*S +s_old
 #       Evaluate newly generated regression/interpolation points which do not have an evaluation value
         for j in range(f.shape[0]):
             if np.isinf(f[j]):
                 f[j,0] = self._blackbox_evaluation(S[j,:])
         return S, f
-    
+
     def _well_poised_LU(self,S,f,S_hat,f_hat):
         """
         Ensures the regression set is well-poised using the LU algorithm (proposed by Andrew Conn) for ``trust-region`` method
@@ -333,7 +338,7 @@ class Optimisation:
             for j in range(k):
                 v[j] = -U[j,k] / U[j,j]
             v[k] = 1.0
-#           If there are still points to choose from, find if points meet criterion. If so, use the index to choose 
+#           If there are still points to choose from, find if points meet criterion. If so, use the index to choose
 #           point with given index to be next point in regression/interpolation set
             if S_hat.size != 0:
                 M = self._natural_basis_matrix(S_hat,v,phi_function)
@@ -363,8 +368,8 @@ class Optimisation:
                 for j in range(k):
                     U[k,i] -= (phi[j]*U[j,i])/U[j,j]
         return S,f,S_hat,f_hat
-    
-    def _natural_basis_matrix(self,S,v,phi): 
+
+    def _natural_basis_matrix(self,S,v,phi):
         """
         Helper function for _well_poised_LU for ``trust-region`` method
         """
@@ -374,7 +379,7 @@ class Optimisation:
         M = np.array(M)
         Mv_abs = np.absolute(np.dot(M,v))
         return Mv_abs
-    
+
     def _compute_criticality_measure(self,my_poly,s_old,del_k):
         """
         Computes the criticality measure for ``trust-region`` method
@@ -396,7 +401,7 @@ class Optimisation:
         my_poly = Poly(myParameters, myBasis, method='compressive-sensing', sampling_args={'sample-points':S, 'sample-outputs':f})
         my_poly.set_model()
         return my_poly
-    
+
     def _compute_step(self,s_old,my_poly,del_k):
         """
         Solves the trust-region subproblem for ``trust-region`` method
@@ -416,7 +421,7 @@ class Optimisation:
         Computes optimum using the ``trust-region`` method
         """
         self.n = s_old.size
-        self.p = self.n + 1 
+        self.p = self.n + 1
         self.q = int(comb(self.n+2, 2))
         itermax = 500
 #       Make the first black-box function call and initialise the database of solutions and labels
@@ -449,7 +454,7 @@ class Optimisation:
                     del_k *= gam0
                 else:
                     del_k = min(gam1*del_k,delkmax)
-            elif rho_k > eta0: 
+            elif rho_k > eta0:
                 s_old = s_new
                 f_old = f_new
                 S, f = self._regression_set(s_old,f_old,del_k)

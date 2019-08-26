@@ -31,7 +31,10 @@ class Solver(object):
     def get_solver(self):
         return self.solver
 def least_squares(A, b, verbose):
-    alpha = np.linalg.lstsq(A, b, rcond=None)
+    if np.__version__ < '1.14':
+        alpha = np.linalg.lstsq(A, b)
+    else:
+        alpha = np.linalg.lstsq(A, b, rcond=None)
     if verbose is True:
         print('The condition number of the matrix is '+str(np.linalg.cond(A))+'.')
     return alpha[0]

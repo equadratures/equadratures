@@ -24,7 +24,7 @@ class Solver(object):
             self.solver = lambda A, b: least_squares(A, b, self.verbose)
         elif self.method.lower() == 'minimum-norm':
             self.solver = lambda A, b: minimum_norm(A, b)
-        elif self.method.lower() == 'numerical-integration' or self.method.lower() == 'integration':
+        elif self.method.lower() == 'numerical-integration':
             self.solver = lambda A, b: orthogonal_linear_system(A, b)
         elif self.method.lower() == 'least-squares-with-gradients':
             self.solver = lambda A, b, C, d: constrained_least_squares(A, b, C, d, self.verbose)

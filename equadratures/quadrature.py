@@ -13,7 +13,7 @@ class Quadrature(object):
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     """
-    def __init__(self, parameters, basis, points, outputs, mesh):
+    def __init__(self, parameters, basis, points, mesh):
         self.parameters = parameters
         self.basis = basis
         self.points = points

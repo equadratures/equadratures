@@ -10,7 +10,7 @@ Further, let us assume that this parameter is characterized by a positive weight
 
 .. math::
 
-	\int_{\mathcal{D}}\rho\left(s\right)d\zeta=1.
+	\int_{\mathcal{D}}\rho\left(s\right)ds=1.
 
 We now demonstrate some basic functionality of this parameter. First consider the case where :math:`\rho(s) = \mathcal{N} (0, 1)` is a standard Gaussian distribution with a mean of 0.0 and a variance of 1.0. We then plot its PDF and cumulative density function (CDF) and demonstrate how we can generate random samples from this distribution.
 
@@ -27,7 +27,7 @@ Now for some plots; first let us plot the PDF,
 
 	s_values, pdf = s.get_pdf()
 	s_values, cdf = s.get_cdf()
-	s_samples = s.get_samples()(6000)
+	s_samples = s.get_samples(6000)
 	
 	fig = plt.figure()
 	ax = fig.add_subplot(1,1,1)
@@ -64,7 +64,7 @@ followed by the CDF.
 
    Figure. CDF of a standard Gaussian variable.
 
-Now, we will use the :code:`getSamples()` functionality to create a histogram.
+Now, we will use the :code:`get_samples()` functionality to create a histogram.
 
 .. code::
 
@@ -87,9 +87,9 @@ One can repeat the above for a range of distributions. We provide a few addition
 
 .. code::
 
-	zeta_1 = Parameter(distribution='uniform', lower=-1., upper=1., order=3)
-	zeta_2 = Parameter(distribution='chebyshev', lower=-1., upper=1., order=3)
-	zeta_3 = Parameter(distribution='gamma', shape_parameter_A=3.5, shape_parameter=2.0, order=4)
-	zeta_4 = Parameter(distribution='beta', lower=0., upper=1., shape_parameter_A=1.7, shape_parameter_B=2.5, order=6)
+	s_1 = Parameter(distribution='uniform', lower=-1., upper=1., order=3)
+	s_2 = Parameter(distribution='chebyshev', lower=-1., upper=1., order=3)
+	s_3 = Parameter(distribution='gamma', shape_parameter_A=3.5, shape_parameter=2.0, order=4)
+	s_4 = Parameter(distribution='beta', lower=0., upper=1., shape_parameter_A=1.7, shape_parameter_B=2.5, order=6)
 	
 Feel free to generate PDFs, CDFs and histograms using the above definitions. 

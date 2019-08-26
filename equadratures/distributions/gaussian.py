@@ -3,7 +3,6 @@
 from equadratures.distributions.template import Distribution
 
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.stats import norm
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 

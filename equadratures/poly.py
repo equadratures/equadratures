@@ -134,6 +134,10 @@ class Poly(object):
 
         :param Poly self:
             An instance of the Poly object.
+        :param str filename:
+            The filename to write to.
+        :param bool tosay:
+            True will replace "-" signs with "minus" when writing to file for compatibility with os.say().
         """
         prec = '{:.3g}'
         if self.dimensions == 1:

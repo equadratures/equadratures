@@ -28,6 +28,8 @@ class Solver(object):
             self.solver = lambda A, b: orthogonal_linear_system(A, b)
         elif self.method.lower() == 'least-squares-with-gradients':
             self.solver = lambda A, b, C, d: constrained_least_squares(A, b, C, d, self.verbose)
+        else:
+            raise(ValueError, 'You have not selected a valid method for solving the coefficients of the polynomial. Choose from compressed-sensing, least-squares, least-squares-with-gradients, minimum-norm or numerical-integration.')
     def get_solver(self):
         return self.solver
 def least_squares(A, b, verbose):
@@ -60,7 +62,6 @@ def constrained_least_squares(A, b, C, d, verbose):
     p, q = b.shape
     k, l = C.shape
     s, t = d.shape
-
     # Check that the number of elements in b are equivalent to the number of rows in A
     if m != p:
         raise(ValueError, 'solver: error: mismatch in sizes of A and b')

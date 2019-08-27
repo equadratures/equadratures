@@ -19,7 +19,7 @@ We now demonstrate some basic functionality of this parameter. First consider th
 	from equadratures import *
 	import numpy as np 
 
-	zeta = Parameter(distribution='normal', shape_parameter_A = 0.0, shape_parameter_B = 1.0, order=3)
+	s = Parameter(distribution='normal', shape_parameter_A = 0.0, shape_parameter_B = 1.0, order=3)
 
 Now for some plots; first let us plot the PDF,
 

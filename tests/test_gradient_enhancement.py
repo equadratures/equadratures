@@ -37,5 +37,15 @@ class TestC(TestCase):
 
         np.testing.assert_array_almost_equal(coefficients, coefficients2, decimal=4)
         np.testing.assert_array_almost_equal(coefficients3, coefficients2, decimal=4)
+
+        totalorder = Basis('total-order')
+        sample_points = np.random.rand(1000,2) * 2.0  - 1.0
+        sample_outputs = evaluate_model(sample_points, fun)
+        sample_grads = evaluate_model_gradients(sample_points, gradfun, format='matrix')
+        totalorder = Basis('total-order')
+        OBJECT2 = Poly(parameters=[x1, x2], basis=totalorder, method='least-squares-with-gradients',
+            sampling_args={'mesh':'user-defined', 'sample-points': sample_points, 'sample-outputs': sample_outputs, 'sample-gradients': sample_grads})
+        OBJECT2.set_model(fun, gradfun)
+        coefficients = OBJECT.get_coefficients()
 if __name__== '__main__':
     unittest.main()

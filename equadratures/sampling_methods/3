@@ -43,8 +43,7 @@ class Induced(Sampling):
         :param list orders:
             A list of the highest polynomial orders along each dimension.
         :returns Array quadrature_points:
-            A vector of size (samples_number, dimension)
-            of induced sampled quadrature points
+            A list of induced sampled quadrature points
         """
 
         # TODO add a total order index set with random samples
@@ -94,21 +93,39 @@ class Induced(Sampling):
             A vector of size (samples_number, dimension)
             of induced sampled quadrature points
         """
-        quadrature_points = np.zeros(self.samples_number,
-                                     self.dimensions)
-        parameter = self.parameters[0]
-        for order in range(max_order):
-            variable_positions = np.where(index_set == order)
-            sampled_cdf_values = cdf_values(variable_positions)
-            inverse_cdf_values = self._univariate_sampling(
-                    parameter,
-                    sampled_cdf_values,
-                    order)
-            quadrature_points[variable_positions] = inverse_cdf_values
-
         return quadrature_points
 
-    def _univariate_sampling(self, parameter, cdf_values, order):
+    def _multi_variate_sampling(self, sampled_cdf_values, index_set_used):
+        """
+        Sample each dimension of the input vairable with their individual
+        1. probablity measure parameters
+        2. the uniformly sampled cdf value for inverse cdf sampling
+        3. the degree of the univariate orthogonal polynomial
+        Parameters
+        ---------
+        sampled_cdf_values: np.ndarray
+            A list of uniformly generated CDF values
+            for sampling in each dimension
+            array size (dimension*1)
+        index_set_used: np.ndarray
+            The order of each univariate orthogonal polynomial
+            used in each univariate induced dittributions
+            array size(dimension*1)
+        Returns
+        ---------
+        x: np.ndarray
+            A vector x, of size (dimension*1)
+            A single quadrature point sampled from
+            the additive mixture of the induced distributions
+        """
+        univariate_input = zip(self.parameters, sampled_cdf_values, index_set_used)
+        # start_time = time.time()
+        x = np.fromiter(map(self._univariate_sampling,
+                            univariate_input), float)
+        # print(f"time for a sample:{time.time() - start_time}")
+        return x
+
+    def _univariate_sampling(self, _input):
         """
         Generate the class of probability measures
         the input distribution belongs to.
@@ -129,10 +146,13 @@ class Induced(Sampling):
             a scalar value sampled
             according to the induced distribution
         """
-        # TODO elaborate the following distributions to cover all param_types
+        parameter = _input[0]
+        uniform_cdf_value = np.asscalar(_input[1])
+        order = np.asscalar(_input[2])
+        # TODO elaborate the following distribution types to cover all param_types
         if order == 0.0:
-            sampled_values = np.full(len(cdf_values), parameter.mean)
-            return sampled_values
+            sampled_value = parameter.mean
+            return sampled_value
         if parameter.name in ["Uniform", "uniform"]:
             # TODO Only uniform between -1 and 1 is done for now
             # define shape parameters for the Jacobi matrix
@@ -140,16 +160,16 @@ class Induced(Sampling):
             beta = 0
             parameter.order = order
             sampled_value = self.inverse_induced_jacobi(alpha,
-                                                        beta,
-                                                        cdf_values,
-                                                        parameter)
+                                                          beta,
+                                                          uniform_cdf_value,
+                                                          parameter)
             return sampled_value
         elif parameter.name in ["Gaussian"]:
             # TODO add Freud sampling algorithm
             pass
         pass
 
-    def inverse_induced_jacobi(self, alpha, beta, cdf_values, parameter):
+    def inverse_induced_jacobi(self, alpha, beta, uniform_cdf_value, parameter):
         """
         Sampling of a univariate inverse induced Jacobi distributions
         Parameters
@@ -163,8 +183,8 @@ class Induced(Sampling):
             The order of the induced polynomial
         Returns:
         ---------
-        sampled_value: ndarray
-            a vector value sampled of shape (len(cdf_values))
+        sampled_value: float
+            a scalar value sampled
             according to the induced distribution
         """
         # TODO use Chebyshev interpolants for the induced distributions
@@ -179,12 +199,10 @@ class Induced(Sampling):
         for root in zeroes:
             ab = self._quadratic_modification(ab, root)
             ab[0, 1] = 1
-        induced_points, induced_weights =\
-            parameter._get_local_quadrature(400-1, ab)
+        induced_points, induced_weights = parameter._get_local_quadrature(400-1, ab)
         # insert lower bound of x in jacobi distribution
         interval_points = np.insert(induced_points, 0, -1)
-        # Cumulative sums of induced quadrature weights
-        # are a strict bound for the cdf
+        # Cumulative sums of induced quadrature weights are a strict bound for the cdf
         strict_bounds = np.cumsum(induced_weights)
         strict_bounds = np.insert(strict_bounds, len(strict_bounds), 1)
         strict_bounds = np.insert(strict_bounds, 0, 0)
@@ -196,25 +214,17 @@ class Induced(Sampling):
         else:
             interval_lo = interval_points[interval_index-1]
             interval_hi = interval_points[interval_index_hi+1]
-        sampled_values = np.zeros(len(cdf_values))
+
         # Solver function for inverse CDF where F(x)-u = 0
-        def F(x, CDFVAL):
+        def F(x):
             value = self.induced_jacobi_evaluation(alpha,
                                                    beta,
                                                    x,
                                                    parameter)
-            value = value - CDFVAL
+            value = value - uniform_cdf_value
             return value
-        sample = 0
-        for cdf_value in cdf_values:
-            CDF_VAL = cdf_value
-            sampled_value = brentq_root_solve(F, interval_lo,
-                                              interval_hi,
-                                              (CDFVAL),
-                                              xtol=0.00005)
-            smapled_values[sample] = sampled_value
-            sample += 1
-
+        sampled_value = brentq_root_solve(F, interval_lo, interval_hi, xtol=0.00005)
+        
         return sampled_value
 
     def induced_jacobi_evaluation(self, alpha, beta, x, parameter):

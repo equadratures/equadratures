@@ -10,8 +10,8 @@ import numpy as np
 
 class TestSamplingGeneration(TestCase):
     def test_sampling(self):
-        d = 3
-        order = 3
+        d = 4
+        order = 5
         param = Parameter(distribution='uniform', order=order, lower=-1.0, upper=1.0)
         myparameters = [param for _ in range(d)]
         mybasis2 = Basis('total-order')

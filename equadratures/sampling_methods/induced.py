@@ -51,10 +51,10 @@ class Induced(Sampling):
         # The above would be necessary in higher dimensions
         # Randomly sample index-set for each quadrature point
         indexset = self.basis.elements
-        cardinality = self.basis.caridinality
+        cardinality = self.basis.cardinality
         sampled_row_numbers = np.ceil(
                 (cardinality-1)
-                * np.random.rand(self.samples_number, 1)
+                * np.random.rand(self.samples_number)
                 ).astype(int)
         index_set_used = indexset[sampled_row_numbers]
 
@@ -94,12 +94,12 @@ class Induced(Sampling):
             A vector of size (samples_number, dimension)
             of induced sampled quadrature points
         """
-        quadrature_points = np.zeros(self.samples_number,
-                                     self.dimensions)
+        quadrature_points = np.zeros((self.samples_number,
+                                     self.dimensions))
         parameter = self.parameters[0]
         for order in range(max_order):
             variable_positions = np.where(index_set == order)
-            sampled_cdf_values = cdf_values(variable_positions)
+            sampled_cdf_values = cdf_values[variable_positions]
             inverse_cdf_values = self._univariate_sampling(
                     parameter,
                     sampled_cdf_values,
@@ -188,14 +188,6 @@ class Induced(Sampling):
         strict_bounds = np.cumsum(induced_weights)
         strict_bounds = np.insert(strict_bounds, len(strict_bounds), 1)
         strict_bounds = np.insert(strict_bounds, 0, 0)
-        interval_index = bisect.bisect_left(strict_bounds, uniform_cdf_value)
-        interval_index_hi = interval_index
-        if interval_index_hi >= 399:
-            interval_lo = interval_points[interval_index-1]
-            interval_hi = 1
-        else:
-            interval_lo = interval_points[interval_index-1]
-            interval_hi = interval_points[interval_index_hi+1]
         sampled_values = np.zeros(len(cdf_values))
         # Solver function for inverse CDF where F(x)-u = 0
         def F(x, CDFVAL):
@@ -207,12 +199,20 @@ class Induced(Sampling):
             return value
         sample = 0
         for cdf_value in cdf_values:
-            CDF_VAL = cdf_value
+            interval_index = bisect.bisect_left(strict_bounds, cdf_value)
+            interval_index_hi = interval_index
+            if interval_index_hi >= 399:
+                interval_lo = interval_points[interval_index-1]
+                interval_hi = 1
+            else:
+                interval_lo = interval_points[interval_index-1]
+                interval_hi = interval_points[interval_index_hi+1]
+            CDFVAL = cdf_value
             sampled_value = brentq_root_solve(F, interval_lo,
                                               interval_hi,
                                               (CDFVAL),
                                               xtol=0.00005)
-            smapled_values[sample] = sampled_value
+            sampled_values[sample] = sampled_value
             sample += 1
 
         return sampled_value

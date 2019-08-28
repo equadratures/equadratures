@@ -67,7 +67,7 @@ class Poly(object):
         except TypeError:
             parameters = [parameters]
         self.parameters = parameters
-        self.basis = basis
+        self.basis = deepcopy(basis)
         self.method = method
         self.sampling_args = sampling_args
         self.solver_args = solver_args

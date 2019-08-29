@@ -31,7 +31,12 @@ class Induced(Sampling):
         self.samples_number = int(sampling_ratio * self.basis.cardinality)
         self.sample_count = 0
         self.points = self._set_points(orders)
-        self._set_weights()
+        self.__set_weights()
+
+    def __set_weights(self):
+        P = self._get_multivariate_orthogonal_polynomial()
+        wts =  np.sum( P**2 , 0)
+        self.weights = self.basis_entries/self.samples_number/wts
 
     def _set_points(self, orders=None):
         """
@@ -52,11 +57,11 @@ class Induced(Sampling):
         # Randomly sample index-set for each quadrature point
         indexset = self.basis.elements
         cardinality = self.basis.cardinality
-        sampled_row_numbers = np.ceil(
-                (cardinality-1)
+        sampled_row_numbers = (np.ceil(
+                (cardinality)
                 * np.random.rand(self.samples_number)
-                ).astype(int)
-        index_set_used = indexset[sampled_row_numbers]
+                )-1).astype(int)
+        index_set_used = indexset[sampled_row_numbers].astype(int)
 
         # Sample uniformly for inverse CDF
         sampled_cdf_values = np.random.rand(self.samples_number,
@@ -97,7 +102,7 @@ class Induced(Sampling):
         quadrature_points = np.zeros((self.samples_number,
                                      self.dimensions))
         parameter = self.parameters[0]
-        for order in range(max_order):
+        for order in range(max_order+1):
             variable_positions = np.where(index_set == order)
             sampled_cdf_values = cdf_values[variable_positions]
             inverse_cdf_values = self._univariate_sampling(
@@ -129,9 +134,6 @@ class Induced(Sampling):
             according to the induced distribution
         """
         # TODO elaborate the following distributions to cover all param_types
-        if order == 0.0:
-            sampled_values = np.full(len(cdf_values), parameter.mean)
-            return sampled_values
         if parameter.name in ["Uniform", "uniform"]:
             # TODO Only uniform between -1 and 1 is done for now
             # define shape parameters for the Jacobi matrix
@@ -172,6 +174,9 @@ class Induced(Sampling):
 
         # Use Markov-Stiltjies inequality for initial x value interval guess
         order = int(parameter.order)
+        if order == 0:
+            sampled_values = np.random.uniform(low=-1, high=1, size=len(cdf_values))
+            return sampled_values
         zeroes, _ = parameter._get_local_quadrature(order-1)
         # obtain current recurrence coefficient
         ab = parameter.get_recurrence_coefficients((order)*2 + 400-1)
@@ -233,7 +238,6 @@ class Induced(Sampling):
                                               xtol=0.00005)
             sampled_values[sample] = sampled_value
             sample += 1
-
         return sampled_values
 
     def induced_jacobi_evaluation(self, alpha, beta, x, parameter,

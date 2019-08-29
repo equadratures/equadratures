@@ -15,15 +15,15 @@ class TestSamplingGeneration(TestCase):
         param = Parameter(distribution='uniform', order=order, lower=-1.0, upper=1.0)
         myparameters = [param for _ in range(d)]
         mybasis2 = Basis('total-order')
-        mypoly2 = Poly(myparameters, mybasis2, method='least-squares', sampling_args={'mesh':'induced', 'subsampling-algorithm':'qr', 'sampling-ratio':2})
-        #assert mypoly2._quadrature_points.shape == (mypoly2.basis.cardinality, d)
+        mypoly2 = Poly(myparameters, mybasis2, method='least-squares', sampling_args={'mesh':'induced', 'subsampling-algorithm':'qr', 'sampling-ratio':1})
+        assert mypoly2._quadrature_points.shape == (mypoly2.basis.cardinality, d)
         p2, w2 = mypoly2.get_points_and_weights()
         P2 = mypoly2.get_poly(p2)
         W2 = np.diag(np.sqrt(w2))
         A2 = np.dot(W2.T, P2.T)
         G2 = np.dot(A2.T, A2)
-        print(np.linalg.cond(G2))
-        assert False
+        condition_number = np.linalg.cond(G2)
+        assert condition_number < 150
 
     # def test_induced_jacobi_evaluation(self):
     #     dimension = 3

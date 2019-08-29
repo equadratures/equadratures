@@ -105,7 +105,6 @@ class Induced(Sampling):
                     sampled_cdf_values,
                     order)
             quadrature_points[variable_positions] = inverse_cdf_values
-
         return quadrature_points
 
     def _univariate_sampling(self, parameter, cdf_values, order):
@@ -189,12 +188,32 @@ class Induced(Sampling):
         strict_bounds = np.insert(strict_bounds, len(strict_bounds), 1)
         strict_bounds = np.insert(strict_bounds, 0, 0)
         sampled_values = np.zeros(len(cdf_values))
+
         # Solver function for inverse CDF where F(x)-u = 0
+        # Obtain the zeroes of this particlar polynomial
+        zeroes, _ = parameter._get_local_quadrature(order-1)
+        ab = parameter.get_recurrence_coefficients(order)
+
+        # This is the (inverse) n'th root of the leading coefficient square of p_n
+        # We'll use it for scaling later
+        scaling_kn_factor = np.exp(-1.0/order
+                                   * np.sum(np.log(ab[:, 1])))
+
+        # Recurrence coefficients for the quadrature rule
+        A = np.floor(abs(alpha))
+        # M-order quadrature for CDF estimation
+        M = 12
+        recurrence_ab = parameter.get_recurrence_coefficients(2*order+A+M)
         def F(x, CDFVAL):
             value = self.induced_jacobi_evaluation(alpha,
                                                    beta,
                                                    x,
-                                                   parameter)
+                                                   parameter,
+                                                   zeroes,
+                                                   recurrence_ab,
+                                                   A,
+                                                   scaling_kn_factor,
+                                                   M)
             value = value - CDFVAL
             return value
         sample = 0
@@ -215,9 +234,10 @@ class Induced(Sampling):
             sampled_values[sample] = sampled_value
             sample += 1
 
-        return sampled_value
+        return sampled_values
 
-    def induced_jacobi_evaluation(self, alpha, beta, x, parameter):
+    def induced_jacobi_evaluation(self, alpha, beta, x, parameter,
+                                  zeroes, recurrence_ab, A, scaling_kn_factor, M):
         """
         Evaluate induced Jacobi distribution CDF value
         Parameters
@@ -237,9 +257,7 @@ class Induced(Sampling):
         F: double
             The CDF value evaluated at x
         """
-        # M-order quadrature for CDF estimation
         _complementary = False
-        M = 12
         order = parameter.order
         # Avoid division by zero and simplify computation at bounds
         if int(x) == 1:
@@ -261,18 +279,6 @@ class Induced(Sampling):
             parameter.shape_parameter_A, parameter.shape_parameter_B = \
                 parameter.shape_parameter_B, parameter.shape_parameter_A
 
-        # Obtain the zeroes of this particlar polynomial
-        zeroes, _ = parameter._get_local_quadrature(order-1)
-        ab = parameter.get_recurrence_coefficients(order)
-
-        # This is the (inverse) n'th root of the leading coefficient square of p_n
-        # We'll use it for scaling later
-        scaling_kn_factor = np.exp(-1.0/order
-                                   * np.sum(np.log(ab[:, 1])))
-
-        # Recurrence coefficients for the quadrature rule
-        A = np.floor(abs(alpha))
-        recurrence_ab = parameter.get_recurrence_coefficients(2*order+A+M)
         logfactor = 0.0  # factor to keep the modified distribution as a pdf
 
         # n quadratic modifications

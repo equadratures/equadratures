@@ -27,8 +27,12 @@ class Induced(Sampling):
             self.basis.set_orders(orders)
         self.dimensions = len(self.parameters)
         self.basis_entries = basis.cardinality
-        sampling_ratio = 5 * self.dimensions
-        self.samples_number = int(sampling_ratio * self.basis.cardinality)
+        self.sampling_ratio = 21 * self.dimensions
+        self.samples_number = int(self.sampling_ratio * self.basis_entries)
+        print("cardinality")
+        print(self.basis_entries)
+        print("samples number")
+        print(self.samples_number)
         self.sample_count = 0
         self.points = self._set_points(orders)
         self.__set_weights()
@@ -55,18 +59,20 @@ class Induced(Sampling):
         # TODO add a total order index set with random samples
         # The above would be necessary in higher dimensions
         # Randomly sample index-set for each quadrature point
-        indexset = self.basis.elements
-        cardinality = self.basis.cardinality
-        sampled_row_numbers = (np.ceil(
-                (cardinality)
-                * np.random.rand(self.samples_number)
-                )-1).astype(int)
-        index_set_used = indexset[sampled_row_numbers].astype(int)
+        index_set = self.basis.elements
+        # cardinality = self.basis.cardinality
+        # sampled_row_numbers = (np.ceil(
+        #         (cardinality)
+        #         * np.random.rand(self.samples_number)
+        #         )-1).astype(int)
+        # index_set_used = indexset[sampled_row_numbers].astype(int)
+        index_set_used = np.repeat(index_set, self.sampling_ratio, axis=0)
 
         # Sample uniformly for inverse CDF
         sampled_cdf_values = np.random.rand(self.samples_number,
                                             self.dimensions)
         max_order = np.max(self.basis.orders)
+        self.max_order = max_order
         quadrature_points = self._additive_mixture_sampling(
                 index_set_used,
                 sampled_cdf_values,
@@ -208,7 +214,7 @@ class Induced(Sampling):
         A = np.floor(abs(alpha))
         # M-order quadrature for CDF estimation
         M = 12
-        recurrence_ab = parameter.get_recurrence_coefficients(2*order+A+M)
+        recurrence_ab = parameter.get_recurrence_coefficients(2*self.max_order+A+M)
         def F(x, CDFVAL):
             value = self.induced_jacobi_evaluation(alpha,
                                                    beta,
@@ -225,9 +231,12 @@ class Induced(Sampling):
         for cdf_value in cdf_values:
             interval_index = bisect.bisect_left(strict_bounds, cdf_value)
             interval_index_hi = interval_index
-            if interval_index_hi >= 399:
+            if interval_index_hi >= 398:
                 interval_lo = interval_points[interval_index-1]
                 interval_hi = 1
+            elif interval_index == 0:
+                interval_lo = -1
+                interval_hi = interval_points[interval_index_hi+1]
             else:
                 interval_lo = interval_points[interval_index-1]
                 interval_hi = interval_points[interval_index_hi+1]
@@ -267,7 +276,7 @@ class Induced(Sampling):
         if int(x) == 1:
             F = 1
             return F
-        if x == -1:
+        if int(x) == -1:
             F = 0
             return F
         # find median by the Mhaskar-Rakhmanov-Saff numbers

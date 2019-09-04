@@ -3,6 +3,7 @@ import numpy as np
 from scipy.special import betaln
 import bisect
 from scipy.optimize import brentq as brentq_root_solve
+import ray
 
 
 class Induced(Sampling):
@@ -27,19 +28,15 @@ class Induced(Sampling):
             self.basis.set_orders(orders)
         self.dimensions = len(self.parameters)
         self.basis_entries = basis.cardinality
-        self.sampling_ratio = 21 * self.dimensions
+        self.sampling_ratio = 7 * self.dimensions
         self.samples_number = int(self.sampling_ratio * self.basis_entries)
-        print("cardinality")
-        print(self.basis_entries)
-        print("samples number")
-        print(self.samples_number)
         self.sample_count = 0
         self.points = self._set_points(orders)
         self.__set_weights()
 
     def __set_weights(self):
         P = self._get_multivariate_orthogonal_polynomial()
-        wts =  np.sum( P**2 , 0)
+        wts = np.sum(P**2, 0)
         self.weights = self.basis_entries/self.samples_number/wts
 
     def _set_points(self, orders=None):
@@ -59,6 +56,7 @@ class Induced(Sampling):
         # TODO add a total order index set with random samples
         # The above would be necessary in higher dimensions
         # Randomly sample index-set for each quadrature point
+        ray.init()
         index_set = self.basis.elements
         # cardinality = self.basis.cardinality
         # sampled_row_numbers = (np.ceil(
@@ -78,6 +76,7 @@ class Induced(Sampling):
                 sampled_cdf_values,
                 max_order
                 )
+        ray.shutdown()
         return quadrature_points
 
     def _additive_mixture_sampling(self, index_set, cdf_values, max_order):
@@ -115,6 +114,7 @@ class Induced(Sampling):
                     parameter,
                     sampled_cdf_values,
                     order)
+            inverse_cdf_values = ray.get(inverse_cdf_values)
             quadrature_points[variable_positions] = inverse_cdf_values
         return quadrature_points
 
@@ -181,40 +181,45 @@ class Induced(Sampling):
         # Use Markov-Stiltjies inequality for initial x value interval guess
         order = int(parameter.order)
         if order == 0:
-            sampled_values = np.random.uniform(low=-1, high=1, size=len(cdf_values))
-            return sampled_values
-        zeroes, _ = parameter._get_local_quadrature(order-1)
-        # obtain current recurrence coefficient
-        ab = parameter.get_recurrence_coefficients((order)*2 + 400-1)
-        for root in zeroes:
-            ab = self._quadratic_modification(ab, root)
-            ab[0, 1] = 1
-        induced_points, induced_weights =\
-            parameter._get_local_quadrature(400-1, ab)
+            induced_points, induced_weights =\
+                parameter._get_local_quadrature(400-1)
+            zeroes = np.array([])
+            scaling_kn_factor = 0
+        else:
+            zeroes, _ = parameter._get_local_quadrature(order-1)
+            # obtain current recurrence coefficient
+            ab = parameter.get_recurrence_coefficients((order)*2 + 400-1)
+            for root in zeroes:
+                ab = self._quadratic_modification(ab, root)
+                ab[0, 1] = 1
+            induced_points, induced_weights =\
+                parameter._get_local_quadrature(400-1, ab)
+            # Solver function for inverse CDF where F(x)-u = 0
+            # Obtain the zeroes of this particlar polynomial
+            zeroes, _ = parameter._get_local_quadrature(order-1)
+            ab = parameter.get_recurrence_coefficients(order)
+
+            # This is the (inverse) n'th root
+            # of the leading coefficient square of p_n
+            # We'll use it for scaling later
+            scaling_kn_factor = np.exp(-1.0/order
+                                       * np.sum(np.log(ab[:, 1])))
         # insert lower bound of x in jacobi distribution
         interval_points = np.insert(induced_points, 0, -1)
         # Cumulative sums of induced quadrature weights
         # are a strict bound for the cdf
         strict_bounds = np.cumsum(induced_weights)
-        strict_bounds = np.insert(strict_bounds, len(strict_bounds), 1)
         strict_bounds = np.insert(strict_bounds, 0, 0)
         sampled_values = np.zeros(len(cdf_values))
-
-        # Solver function for inverse CDF where F(x)-u = 0
-        # Obtain the zeroes of this particlar polynomial
-        zeroes, _ = parameter._get_local_quadrature(order-1)
-        ab = parameter.get_recurrence_coefficients(order)
-
-        # This is the (inverse) n'th root of the leading coefficient square of p_n
-        # We'll use it for scaling later
-        scaling_kn_factor = np.exp(-1.0/order
-                                   * np.sum(np.log(ab[:, 1])))
 
         # Recurrence coefficients for the quadrature rule
         A = np.floor(abs(alpha))
         # M-order quadrature for CDF estimation
         M = 12
-        recurrence_ab = parameter.get_recurrence_coefficients(2*self.max_order+A+M)
+        recurrence_ab = parameter.get_recurrence_coefficients(
+                            2*self.max_order+A+M
+                        )
+
         def F(x, CDFVAL):
             value = self.induced_jacobi_evaluation(alpha,
                                                    beta,
@@ -227,11 +232,12 @@ class Induced(Sampling):
                                                    M)
             value = value - CDFVAL
             return value
-        sample = 0
-        for cdf_value in cdf_values:
+        # Use Ray for distributed computing
+        @ray.remote
+        def root_solve(cdf_value):
             interval_index = bisect.bisect_left(strict_bounds, cdf_value)
             interval_index_hi = interval_index
-            if interval_index_hi >= 398:
+            if interval_index_hi >= 399:
                 interval_lo = interval_points[interval_index-1]
                 interval_hi = 1
             elif interval_index == 0:
@@ -240,17 +246,18 @@ class Induced(Sampling):
             else:
                 interval_lo = interval_points[interval_index-1]
                 interval_hi = interval_points[interval_index_hi+1]
-            CDFVAL = cdf_value
             sampled_value = brentq_root_solve(F, interval_lo,
                                               interval_hi,
-                                              (CDFVAL),
+                                              (cdf_value),
                                               xtol=0.00005)
-            sampled_values[sample] = sampled_value
-            sample += 1
+            return sampled_value
+        sampled_values = [root_solve.remote(cdf_value)
+                          for cdf_value in cdf_values]
         return sampled_values
 
     def induced_jacobi_evaluation(self, alpha, beta, x, parameter,
-                                  zeroes, recurrence_ab, A, scaling_kn_factor, M):
+                                  zeroes, recurrence_ab,
+                                  A, scaling_kn_factor, M):
         """
         Evaluate induced Jacobi distribution CDF value
         Parameters
@@ -300,7 +307,7 @@ class Induced(Sampling):
         for i in range(0, int(order)):
             quadratic_root = (2.0/(x+1.0)) * (zeroes[i] + 1.0) - 1.0
             recurrence_ab = self._quadratic_modification(recurrence_ab,
-                                                          quadratic_root)
+                                                         quadratic_root)
             logfactor += np.log(recurrence_ab[0, 1] *
                                 ((x+1.0)/2.0)**2 *
                                 scaling_kn_factor)
@@ -313,8 +320,8 @@ class Induced(Sampling):
         # recurrence coefficients
         for j in range(0, int(A)):
             recurrence_ab = self._linear_modification(recurrence_ab,
-                                                       linear_root)
-            logfactor += logfactor + np.log(ab[0, 1] *
+                                                      linear_root)
+            logfactor += logfactor + np.log(recurrence_ab[0, 1] *
                                             1.0/2.0 *
                                             (x+1.0))
             recurrence_ab[0, 1] = 1
@@ -357,7 +364,8 @@ class Induced(Sampling):
         sign_value = np.sign(alpha[0] - x0)
 
         r = np.reshape(np.abs(self._polynomial_ratios(alpha,
-                                                     beta, x0, N-1)),
+                                                      beta, x0,
+                                                      N-1)),
                        (N-1, 1))
 
         acorrect = np.zeros((N-1, 1))
@@ -401,16 +409,16 @@ class Induced(Sampling):
         beta = alphabeta[:, 1]
 
         C = np.reshape(self._christoffel_normalised_polynomials(alpha,
-                                                                 beta,
-                                                                 x0,
-                                                                 (N-1)),
+                                                                beta,
+                                                                x0,
+                                                                (N-1)),
                        [N, 1])
         acorrect = np.zeros((N-2, 1))
         bcorrect = np.zeros((N-2, 1))
         ab = np.zeros((N-2, 2))
         temp1 = np.zeros((N-1, 1))
         for i in range(0, N-1):
-            temp1[i] = np.sqrt(beta[i+1]) * C[i+1] * C[i] * 1.0/np.sqrt(1.0 + C[i]**2)
+            temp1[i] = np.sqrt(beta[i+1])*C[i+1]*C[i]*1.0/np.sqrt(1.0+C[i]**2)
         temp1[0] = np.sqrt(beta[1])*C[1]
         acorrect = np.diff(temp1, axis=0)
         temp1 = 1 + C[0:N-1]**2
@@ -447,11 +455,14 @@ class Induced(Sampling):
         of length N
         """
         if N > 0:
-            raise ValueError("number of polynomial ratios must be greater than 0")
+            raise ValueError(
+                "number of polynomial ratios must be greater than 0")
         if N < len(a):
-            raise ValueError("number of polynomial ratios must be less than length of a")
+            raise ValueError(
+                "number of polynomial ratios must be less than length of a")
         if N < len(b):
-            raise ValueError("number of polynomial ratios must be less than length of b")
+            raise ValueError(
+                "number of polynomial ratios must be less than length of b")
 
         r = np.zeros(N)
 
@@ -493,11 +504,14 @@ class Induced(Sampling):
         of length N
         """
         if N <= 0:
-            raise ValueError("No. of Christoffels evaluations must be greater than 0")
+            raise ValueError(
+                "No. of Christoffels evaluations must be greater than 0")
         if N > len(a):
-            raise ValueError("No. of Christoffels evaluations must be less than len(a)")
+            raise ValueError(
+                "No. of Christoffels evaluations must be less than len(a)")
         if N > len(b):
-            raise ValueError("No. of Christoffels evaluations must be less than len(b)")
+            raise ValueError(
+                "No. of Christoffels evaluations must be less than len(b)")
 
         C = np.zeros(N+1)
         # Initialize the polynomials
@@ -505,7 +519,7 @@ class Induced(Sampling):
         if N > 0:
             C[1] = 1.0 / (1.0 * np.sqrt(b[1])) * (x - a[0])
         if N > 1:
-            C[2] = 1.0 / np.sqrt(1.0 + C[1]**2) * ((x - a[1]) * C[1] - np.sqrt(b[1]))
+            C[2] = 1.0/np.sqrt(1.0+C[1]**2) * ((x-a[1])*C[1]-np.sqrt(b[1]))
             C[2] = C[2] / (1.0 * np.sqrt(b[2]))
         if N > 2:
             for nnn in range(2, N):

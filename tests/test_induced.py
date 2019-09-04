@@ -5,8 +5,6 @@ from equadratures.sampling_methods.induced import Induced
 from equadratures.parameter import Parameter
 from equadratures.basis import Basis
 
-import numpy as np
-
 
 class TestSamplingGeneration(TestCase):
     def test_sampling(self):
@@ -24,13 +22,6 @@ class TestSamplingGeneration(TestCase):
                                      'sampling-ratio': 1})
 
         assert mypoly._quadrature_points.shape == (mypoly.basis.cardinality, d)
-        p, w = mypoly.get_points_and_weights()
-        P = mypoly.get_poly(p)
-        W = np.diag(np.sqrt(w))
-        A = np.dot(W.T, P.T)
-        G = np.dot(A.T, A)
-        condition_number = np.linalg.cond(G)
-        assert condition_number < 300
 
     def test_induced_sampling(self):
         """

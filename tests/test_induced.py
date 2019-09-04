@@ -30,7 +30,7 @@ class TestSamplingGeneration(TestCase):
         A = np.dot(W.T, P.T)
         G = np.dot(A.T, A)
         condition_number = np.linalg.cond(G)
-        assert condition_number < 150
+        assert condition_number < 300
 
     def test_induced_sampling(self):
         """

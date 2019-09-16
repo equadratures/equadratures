@@ -3,7 +3,12 @@ import numpy as np
 from scipy.special import betaln
 import bisect
 from scipy.optimize import brentq as brentq_root_solve
-import ray
+try:
+    import ray
+    ray_imported = True
+except ImportError:
+    ray_imported = False
+    pass
 
 
 class Induced(Sampling):
@@ -30,6 +35,7 @@ class Induced(Sampling):
         self.basis_entries = basis.cardinality
         self.sampling_ratio = 7 * self.dimensions
         self.samples_number = int(self.sampling_ratio * self.basis_entries)
+        print(self.samples_number)
         self.sample_count = 0
         self.points = self._set_points(orders)
         self.__set_weights()
@@ -56,7 +62,10 @@ class Induced(Sampling):
         # TODO add a total order index set with random samples
         # The above would be necessary in higher dimensions
         # Randomly sample index-set for each quadrature point
-        ray.init()
+        if ray_imported:
+            ray.init()
+        else:
+            pass
         index_set = self.basis.elements
         # cardinality = self.basis.cardinality
         # sampled_row_numbers = (np.ceil(
@@ -76,7 +85,10 @@ class Induced(Sampling):
                 sampled_cdf_values,
                 max_order
                 )
-        ray.shutdown()
+        if ray_imported:
+            ray.shutdown()
+        else:
+            pass
         return quadrature_points
 
     def _additive_mixture_sampling(self, index_set, cdf_values, max_order):
@@ -114,8 +126,10 @@ class Induced(Sampling):
                     parameter,
                     sampled_cdf_values,
                     order)
-            inverse_cdf_values = ray.get(inverse_cdf_values)
-            quadrature_points[variable_positions] = inverse_cdf_values
+            if ray_imported:
+                inverse_cdf_values = ray.get(inverse_cdf_values)
+            else:
+                quadrature_points[variable_positions] = inverse_cdf_values
         return quadrature_points
 
     def _univariate_sampling(self, parameter, cdf_values, order):
@@ -151,10 +165,12 @@ class Induced(Sampling):
                                                         cdf_values,
                                                         parameter)
             return sampled_value
-        elif parameter.name in ["Gaussian"]:
-            # TODO add Freud sampling algorithm
-            pass
-        pass
+        else:
+            print("Parameter Distribution ", parameter.name, " Unsupported")
+        # elif parameter.name in ["Gaussian"]:
+        #     # TODO add Freud sampling algorithm
+        #     pass
+        # pass
 
     def inverse_induced_jacobi(self, alpha, beta, cdf_values, parameter):
         """
@@ -233,26 +249,46 @@ class Induced(Sampling):
             value = value - CDFVAL
             return value
         # Use Ray for distributed computing
-        @ray.remote
-        def root_solve(cdf_value):
-            interval_index = bisect.bisect_left(strict_bounds, cdf_value)
-            interval_index_hi = interval_index
-            if interval_index_hi >= 399:
-                interval_lo = interval_points[interval_index-1]
-                interval_hi = 1
-            elif interval_index == 0:
-                interval_lo = -1
-                interval_hi = interval_points[interval_index_hi+1]
-            else:
-                interval_lo = interval_points[interval_index-1]
-                interval_hi = interval_points[interval_index_hi+1]
-            sampled_value = brentq_root_solve(F, interval_lo,
-                                              interval_hi,
-                                              (cdf_value),
-                                              xtol=0.00005)
-            return sampled_value
-        sampled_values = [root_solve.remote(cdf_value)
-                          for cdf_value in cdf_values]
+        if ray_imported:
+            @ray.remote
+            def root_solve(cdf_value):
+                interval_index = bisect.bisect_left(strict_bounds, cdf_value)
+                interval_index_hi = interval_index
+                if interval_index_hi >= 399:
+                    interval_lo = interval_points[interval_index-1]
+                    interval_hi = 1
+                elif interval_index == 0:
+                    interval_lo = -1
+                    interval_hi = interval_points[interval_index_hi+1]
+                else:
+                    interval_lo = interval_points[interval_index-1]
+                    interval_hi = interval_points[interval_index_hi+1]
+                sampled_value = brentq_root_solve(F, interval_lo,
+                                                  interval_hi,
+                                                  (cdf_value),
+                                                  xtol=0.00005)
+                return sampled_value
+            sampled_values = [root_solve.remote(cdf_value)
+                              for cdf_value in cdf_values]
+        else:
+            def root_solve(cdf_value):
+                interval_index = bisect.bisect_left(strict_bounds, cdf_value)
+                interval_index_hi = interval_index
+                if interval_index_hi >= 399:
+                    interval_lo = interval_points[interval_index-1]
+                    interval_hi = 1
+                elif interval_index == 0:
+                    interval_lo = -1
+                    interval_hi = interval_points[interval_index_hi+1]
+                else:
+                    interval_lo = interval_points[interval_index-1]
+                    interval_hi = interval_points[interval_index_hi+1]
+                sampled_value = brentq_root_solve(F, interval_lo,
+                                                  interval_hi,
+                                                  (cdf_value),
+                                                  xtol=0.00005)
+                return sampled_value
+            sampled_values = list(map(root_solve, cdf_values))
         return sampled_values
 
     def induced_jacobi_evaluation(self, alpha, beta, x, parameter,

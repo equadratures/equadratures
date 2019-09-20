@@ -1117,7 +1117,6 @@ class TestG(TestCase):
         x_eval = X[chosen_valid_pts]
         # Active subspace
         mysubspace = Subspaces(method='active-subspace', sample_points=X_red, sample_outputs=Y_red)
-        eigs = mysubspace.get_eigenvalues()
         W = mysubspace.get_subspace()
         e = mysubspace.get_eigenvalues()
         # Variable projection
@@ -1146,7 +1145,6 @@ class TestG(TestCase):
         poly = Poly(params, basis, method='compressive-sensing', sampling_args={'sample-points':X_red, 'sample-outputs':Y_red})
         poly.set_model()
         mysubspace = Subspaces(method='active-subspace', full_space_poly=poly)
-        eigs = mysubspace.get_eigenvalues()
         W = mysubspace.get_subspace()
         e = mysubspace.get_eigenvalues()
     def test_get_zonotope_vertices(self):
@@ -1160,8 +1158,13 @@ class TestG(TestCase):
         mysubspace = Subspaces(method='active-subspace', sample_points=X_red, sample_outputs=Y_red)
         Y = mysubspace.get_zonotope_vertices()
     def test_get_linear_inequalities(self):
-        X, Y = data()
-        N = X.shape[0]
+        Xorig, Y = data()
+        N,d = Xorig.shape
+        for j in range(d): #randomly scale each column of X
+            scale = np.random.uniform()*10.0
+            Xorig[:,j] *= scale
+        X = subspaces.standardise(Xorig)
+        np.testing.assert_array_almost_equal(Xorig,subspaces.unstandardise(X,Xorig),decimal=8)
         num_obs = 500
         chosen_points = np.random.choice(range(N), size = num_obs, replace = False)
         X_red = X[chosen_points,:]
@@ -1171,11 +1174,14 @@ class TestG(TestCase):
         active_subspace = subspace[:, 0: mysubspace.subspace_dimension]
         A, b = mysubspace.get_linear_inequalities()
         # Now if we generate a handfull of inactive samples, they should have the same active coordinates!
-        active_coordinate_value = np.asarray([-0.05, 0.1])
-        S = mysubspace.get_samples_constraining_active_coordinates(100, active_coordinate_value)
+        sample_coord_index = np.random.randint(N)
+        active_sample_coord = X[sample_coord_index,:] @ active_subspace
+        S = mysubspace.get_samples_constraining_active_coordinates(100, active_sample_coord)
         U = np.dot(S, active_subspace)
         U_random_entry = U[np.random.randint(0, 99), :]
-        np.testing.assert_array_almost_equal(U_random_entry, active_coordinate_value, decimal=4)
+        np.testing.assert_array_almost_equal(U_random_entry, active_sample_coord, decimal=4)
+        # Rescale samples (S) to original coordinates
+        Sorig = subspaces.unstandardise(S,Xorig)
 
 if __name__== '__main__':
     unittest.main()

@@ -1175,7 +1175,7 @@ class TestG(TestCase):
         A, b = mysubspace.get_linear_inequalities()
         # Now if we generate a handfull of inactive samples, they should have the same active coordinates!
         sample_coord_index = np.random.randint(N)
-        active_sample_coord = X[sample_coord_index,:] @ active_subspace
+        active_sample_coord = np.dot(X[sample_coord_index,:], active_subspace)
         S = mysubspace.get_samples_constraining_active_coordinates(100, active_sample_coord)
         U = np.dot(S, active_subspace)
         U_random_entry = U[np.random.randint(0, 99), :]

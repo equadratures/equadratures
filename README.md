@@ -18,15 +18,15 @@ The latest version of the code is version 8.0 and was released in August 2019.
 
 To download and install the code please use the python package index command:
 
-.. code::
-	
-	pip install equadratures
+```python
+pip install equadratures
+```
 
 or if you are using python3, then
 
-.. code::
-	
-	pip3 install equadratures
+```python
+pip3 install equadratures
+```
 
 Alternatively you can click either on the **Fork Code** button or **Clone**. For issues with the code, please do *raise an issue* on our Github page; do make sure to add the relevant bits of code and specifics on package version numbers. We welcome contributions and suggestions from both users and folks interested in developing the code further.
 

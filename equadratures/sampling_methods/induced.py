@@ -3,6 +3,7 @@ import numpy as np
 from scipy.special import betaln
 import bisect
 from scipy.optimize import brentq as brentq_root_solve
+import copy
 try:
     import ray
     ray_imported = True
@@ -118,7 +119,11 @@ class Induced(Sampling):
         """
         quadrature_points = np.zeros((self.samples_number,
                                      self.dimensions))
-        parameter = self.parameters[0]
+        # Currently assumes all parameters are of the same distribution
+        # TODO allow the distribution to be different for each parameters
+        # e.g. 1 gaussian 1 uniform in 2D
+        parameter = copy.deepcopy(self.parameters[0])
+        parameter.lower, parameter.upper = -1, 1
         for order in range(max_order+1):
             variable_positions = np.where(index_set == order)
             sampled_cdf_values = cdf_values[variable_positions]
@@ -128,8 +133,34 @@ class Induced(Sampling):
                     order)
             if ray_imported:
                 inverse_cdf_values = ray.get(inverse_cdf_values)
-            else:
                 quadrature_points[variable_positions] = inverse_cdf_values
+        quadrature_points = self._scale_support(quadrature_points)
+        return quadrature_points
+
+    def _scale_support(self, quadrature_points):
+        """
+        scale the quadrature points due to support difference
+        in uniform distribution
+
+        Parameters:
+        ---------
+        quadrature_points: the returned quadrature_points from a
+        standard [-1, 1] uniform distribution
+
+        Returns:
+        ---------
+        quadrature_points: the quadratures points scaled based
+        on supports
+        """
+        means = np.zeros(self.dimensions)
+        scaling_factors = np.zeros(self.dimensions)
+        for i in range(self.dimensions):
+            parameter = self.parameters[i]
+            scaling_factor = (parameter.upper - parameter.lower)/2
+            scaling_factors[i] = scaling_factor
+            means[i] = parameter.mean
+        quadrature_points = np.multiply(scaling_factors, quadrature_points)
+        quadrature_points = np.add(quadrature_points, means)
         return quadrature_points
 
     def _univariate_sampling(self, parameter, cdf_values, order):

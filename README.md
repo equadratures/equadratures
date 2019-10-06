@@ -70,4 +70,4 @@ Feel free to follow us via [Twitter](https://twitter.com/EQuadratures) or email 
 
 ## Community guidelines
 
-If you have contributions, questions, or feedback use either the Github repository, or contact: contact <at> effective-quadratures.org. We follow the [NumFOCUS code of conduct](https://numfocus.org/code-of-conduct). 
+If you have contributions, questions, or feedback use either the Github repository, or get in touch. We welcome contributions to our code. In this respect, we follow the [NumFOCUS code of conduct](https://numfocus.org/code-of-conduct). 

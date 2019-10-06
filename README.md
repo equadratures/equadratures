@@ -1,7 +1,6 @@
 # Effective Quadratures
 
-
-Effective Quadratures is an open-source library for *uncertainty quantification*, *machine learning*, *optimisation*, *numerical integration* and *dimension reduction* -- all using orthogonal polynomials. It is particularly useful for models / problems where output quantities of interest are smooth and continuous; to this extent it has found widespread applications in computational engineering models (finite elements, computational fluid dynamics, etc). It is built on the latest research within these areas and has both deterministic and randomized algorithms. Effective Quadratures is actively being developed by researchers at the `University of Cambridge <https://www.cam.ac.uk>`__ , `Stanford University <https://www.stanford.edu>`__, `The University of Utah <https://www.utah.edu>`__, `The Alan Turing Institute <https://www.turing.ac.uk>`__ and the `University of Cagliari <https://www.unica.it/unica/>`__.  
+Effective Quadratures is an open-source library for *uncertainty quantification*, *machine learning*, *optimisation*, *numerical integration* and *dimension reduction* -- all using orthogonal polynomials. It is particularly useful for models / problems where output quantities of interest are smooth and continuous; to this extent it has found widespread applications in computational engineering models (finite elements, computational fluid dynamics, etc). It is built on the latest research within these areas and has both deterministic and randomized algorithms. Effective Quadratures is actively being developed by researchers at the [University of Cambridge](https://www.cam.ac.uk), [Stanford University](https://www.stanford.edu), `The University of Utah <https://www.utah.edu>`__, `The Alan Turing Institute <https://www.turing.ac.uk>`__ and the `University of Cagliari <https://www.unica.it/unica/>`__.  
 
 **Key words associated with this code**: polynomial surrogates, polynomial chaos, polynomial variable projection, Gaussian quadrature, Clenshaw Curtis, polynomial least squares, compressed sensing, gradient-enhanced surrogates, supervised learning.
 
@@ -9,27 +8,13 @@ Effective Quadratures is an open-source library for *uncertainty quantification*
 
 The latest version of the code is version 8.0 and was released in August 2019. 
 
-.. image:: https://travis-ci.org/Effective-Quadratures/Effective-Quadratures.svg?branch=master
-	:target: https://travis-ci.org/Effective-Quadratures/
-
-.. image:: https://coveralls.io/repos/github/Effective-Quadratures/Effective-Quadratures/badge.svg?branch=master
-	:target: https://coveralls.io/github/Effective-Quadratures/Effective-Quadratures?branch=master
-
-.. image:: https://badge.fury.io/py/equadratures.svg
-	:target: https://pypi.org/project/equadratures/
-
-.. image:: https://joss.theoj.org/papers/10.21105/joss.00166/status.svg
-	:target: https://doi.org/10.21105/joss.00166
-
-.. image:: https://img.shields.io/pypi/pyversions/ansicolortags.svg
-
-\
-
-.. image:: https://img.shields.io/github/stars/Effective-Quadratures/Effective-Quadratures.svg?style=flat-square&logo=github&label=Stars&logoColor=white
-	:target: https://github.com/Effective-Quadratures/Effective-Quadratures
-
-.. image:: https://img.shields.io/pypi/dm/equadratures.svg?style=flat-square
-	:target: https://pypistats.org/packages/equadratures
+[logo]: https://travis-ci.org/Effective-Quadratures/Effective-Quadratures.svg?branch=master
+[logo]: https://coveralls.io/repos/github/Effective-Quadratures/Effective-Quadratures/badge.svg?branch=master
+[logo]: https://badge.fury.io/py/equadratures.svg
+[logo]: https://joss.theoj.org/papers/10.21105/joss.00166/status.svg
+[logo]: https://img.shields.io/pypi/pyversions/ansicolortags.svg
+[logo]: https://img.shields.io/github/stars/Effective-Quadratures/Effective-Quadratures.svg?style=flat-square&logo=github&label=Stars&logoColor=white
+[logo]:https://img.shields.io/pypi/dm/equadratures.svg?style=flat-square
 
 To download and install the code please use the python package index command:
 
@@ -72,7 +57,7 @@ Specific goals of this code include:
 
 - Seshadri, P., Iaccarino, G., Ghisu, T., (2019) Quadrature Strategies for Constructing Polynomial Approximations. *Uncertainty Modeling for Engineering Applications*. Springer, Cham, 2019. 1-25. `Paper <https://link.springer.com/chapter/10.1007/978-3-030-04870-9_1>`__. `Preprint <https://arxiv.org/pdf/1805.07296.pdf>`__.
 
-- Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations." *SIAM/ASA Journal on Uncertainty Quantification* 5.1 : 1003-1023. `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__.
+- Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations." *SIAM/ASA Journal on Uncertainty Quantification* 5.1 : 1003-1023. [Paper](https://epubs.siam.org/doi/abs/10.1137/16M1057668).
 
 - Seshadri, P., Parks, G. T., (2017) Effective-Quadratures (EQ): Polynomials for Computational Engineering Studies, *Journal of Open Source Software*, 2(11), 166, `Paper <http://joss.theoj.org/papers/ba651f2b3608a5d2b085af06b1108747>`__.
 

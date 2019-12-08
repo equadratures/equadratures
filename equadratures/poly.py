@@ -391,7 +391,7 @@ class Poly(object):
             self.mesh = 'user-defined'
             self._set_solver()
             self._set_points_and_weights()
-            self.set_model(self.outputs)
+            self.set_model()
         if self.mesh == 'sparse-grid':
             counter = 0
             multi_index = []

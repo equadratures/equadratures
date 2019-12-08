@@ -18,7 +18,7 @@ class Solver(object):
         if self.solver_args is not None:
             if 'noise-level' in self.solver_args: self.noise_level = solver_args.get('noise-level')
             if 'verbose' in self.solver_args: self.verbose = solver_args.get('verbose')
-        if self.method.lower() == 'compressed sensing' or self.method.lower() == 'compressive-sensing':
+        if self.method.lower() == 'compressed-sensing' or self.method.lower() == 'compressive-sensing':
             self.solver = lambda A, b: basis_pursuit_denoising(A, b, self.noise_level, self.verbose)
         elif self.method.lower() == 'least-squares':
             self.solver = lambda A, b: least_squares(A, b, self.verbose)
@@ -103,6 +103,7 @@ def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
     else:
         try:
             len(noise_level)
+            eta = noise_level
         except TypeError:
             eta = [noise_level]
         log_eta =  [np.log10(i) for i in eta]

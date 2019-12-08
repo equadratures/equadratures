@@ -18,19 +18,19 @@ class Quadrature(object):
         self.basis = basis
         self.points = points
         self.mesh = mesh
-        if self.mesh == 'tensor-grid' or self.mesh == 'univariate':
+        if self.mesh.lower() == 'tensor-grid' or self.mesh.lower() == 'univariate':
             self.samples = Tensorgrid(self.parameters, self.basis)
             self.list = None
-        elif self.mesh == 'sparse-grid':
+        elif self.mesh.lower() == 'sparse-grid':
             self.samples = Sparsegrid(self.parameters, self.basis)
             self.list = self.samples.tensor_product_list
             self.sparse_weights = self.samples.sparse_weights
-        elif self.mesh == 'monte-carlo':
+        elif self.mesh.lower() == 'monte-carlo':
             self.samples = Montecarlo(self.parameters, self.basis)
             self.list = None
-        elif self.mesh == 'induced':
+        elif self.mesh.lower() == 'induced':
             self.samples = Induced(self.parameters, self.basis)
-        elif self.mesh == 'user-defined':
+        elif self.mesh.lower() == 'user-defined':
             self.samples = Userdefined(self.parameters, self.basis, self.points)
         else:
             error_message()

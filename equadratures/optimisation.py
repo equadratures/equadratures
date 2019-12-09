@@ -407,15 +407,14 @@ class Optimisation:
         bounds = []
         for i in range(self.n):
             bounds.append((bounds_l[i], bounds_u[i]))
-        s_0 = s_old + del_k*np.random.uniform(-1, 1, self.n)
-        res1 = optimize.minimize(obj1, s_0, method='TNC', bounds=bounds, options={'disp': False})
-        res2 = optimize.minimize(obj2, s_0, method='TNC', bounds=bounds, options={'disp': False})
+        res1 = optimize.minimize(obj1, s_old, method='TNC', bounds=bounds, options={'disp': False, 'maxiter': 1000})
+        res2 = optimize.minimize(obj2, s_old, method='TNC', bounds=bounds, options={'disp': False, 'maxiter': 1000})
         if abs(res1['fun']) > abs(res2['fun']):
             return res1['x']
         else:
             return res2['x']
 
-    def _build_model(self,S,f,del_k):
+    def _build_model(self,S,f):
         """
         Constructs quadratic model for ``trust-region`` method
         """
@@ -450,7 +449,7 @@ class Optimisation:
         f_0 = np.asscalar(f[ind_min])
         return x_0, f_0
 
-    def _trust_region(self, s_old, del_k = 0.5, eta0 = 0.1, eta1 = 0.7, gam0 = 0.5, gam1 = 1.5, omega = 0.9, delmin = 1.0e-8, delmax = 1.0, max_evals=1000):
+    def _trust_region(self, s_old, del_k = 0.25, eta0 = 0.1, eta1 = 0.7, gam0 = 0.25, gam1 = 1.5, omega = 0.6, delmin = 1.0e-5, delmax = 1.0, max_evals=1000):
         """
         Computes optimum using the ``trust-region`` method
         """
@@ -470,7 +469,7 @@ class Optimisation:
             # If trust-region radius is less than minimum, break loop
             if len(self.f) >= max_evals or del_k < delmin:
                 break
-            my_poly = self._build_model(S, f, del_k)
+            my_poly = self._build_model(S, f)
             m_old = np.asscalar(my_poly.get_polyfit(s_old))
             s_new, m_new = self._compute_step(s_old,my_poly,del_k)
             # Safety step implemented in BOBYQA

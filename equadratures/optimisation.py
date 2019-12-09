@@ -23,6 +23,7 @@ class Optimisation:
             self.num_evals = 0
             self.S = np.array([])
             self.f = np.array([])
+            self.g = np.array([])
     def add_objective(self, poly=None, custom=None, maximise=False):
         """
         Adds objective function to be optimised.
@@ -247,8 +248,8 @@ class Optimisation:
             sol = optimize.minimize(self.objective['function'], x0, method=self.method, bounds = self.bounds, jac=self.objective['gradient'], \
                                     constraints=self.constraints, options={'disp': False, 'maxiter': 10000})
         elif self.method == 'trust-region':
-            x_opt, f_opt, success = self._trust_region(x0)
-            sol = {'x': x_opt, 'fun': f_opt, 'nfev': self.num_evals, 'success': success}
+            x_opt, f_opt, status = self._trust_region(x0)
+            sol = {'x': x_opt, 'fun': f_opt, 'nfev': self.num_evals, 'status': status}
         else:
             sol = optimize.minimize(self.objective['function'], x0, method=self.method, bounds = self.bounds, \
                                     constraints=self.constraints, options={'disp': False, 'maxiter': 10000})
@@ -262,143 +263,165 @@ class Optimisation:
         """
         f = self.objective['function'](s.flatten())
         self.num_evals += 1
-        if self.S.size == 0 and self.f.size == 0:
+        if self.f.size == 0:
             self.S = s.reshape(1,-1)
             self.f = np.array([[f]])
-        elif self.S.size != 0 and self.f.size != 0:
-            self.S = np.vstack((self.S,s.reshape(1,-1)))
-            self.f = np.vstack((self.f,np.array([f])))
         else:
-            raise ValueError('The arrays of solutions and their corresponding function values are not equivalent!')
+            self.S = np.vstack((self.S,s.reshape(1,-1)))
+            self.f = np.vstack((self.f,np.array([f]))) 
         return f
-
-    def _regression_set(self, s_old, f_old, del_k):
-        """
-        Creates the regression set for ``trust-region`` method
-        """
-#       Copy database of solutions and remove the current iterate
-        S_hat = np.copy(self.S)
-        f_hat = np.copy(self.f)
-        ind_not_current = np.where(np.linalg.norm(S_hat-s_old,axis=1,ord=np.inf) >= 1.0e-14)[0]
-        S_hat = S_hat[ind_not_current,:]
-        f_hat = f_hat[ind_not_current]
-#       Remove points outside the trust-region
-        ind_within_TR = np.where(np.linalg.norm(S_hat-s_old,axis=1,ord=np.inf) <= del_k)[0]
-        S_hat = S_hat[ind_within_TR,:]
-        f_hat = f_hat[ind_within_TR]
-#       If Yhat does not contain at least q points, uniformly generate q points with a d-dimensional hypercube of radius rk around centre
-        while S_hat.shape[0] < int(0.7*np.ceil(self.q)):
-            s = s_old + np.random.uniform(-del_k, del_k, self.n)
-            S_hat = np.vstack((S_hat, s))
-            f_hat = np.vstack((f_hat, self._blackbox_evaluation(s)))
-#       Centre and scale points
-        S_hat -= s_old
-        DelS = max(np.linalg.norm(S_hat, axis=1, ord=np.inf))
-        S_hat = (1.0/DelS)*S_hat
-#       Initialise regression/interpolation points and their corresponding function evaluations
-        S = np.zeros(self.n).reshape(1,-1)
-        f = np.array([[f_old]])
-#       Find well-poised points
-        S,f,S_hat,f_hat = self._well_poised_LU(S,f,S_hat,f_hat)
-#       Include all of the left-over points
-        S = np.vstack((S,S_hat))
-        f = np.vstack((f,f_hat))
-#       Unscale rand uncentre points
-        S = DelS*S +s_old
-#       Evaluate newly generated regression/interpolation points which do not have an evaluation value
-        for j in range(f.shape[0]):
-            if np.isinf(f[j]):
-                f[j,0] = self._blackbox_evaluation(S[j,:])
+        
+    @staticmethod
+    def _remove_point_from_set(S, f, s_old, tol):
+        ind_current = np.where(np.linalg.norm(S-s_old, axis=1, ord=np.inf) <= tol)[0]
+        S = np.delete(S, ind_current, 0)
+        f = np.delete(f, ind_current, 0)
         return S, f
-
-    def _well_poised_LU(self,S,f,S_hat,f_hat):
-        """
-        Ensures the regression set is well-poised using the LU algorithm (proposed by Andrew Conn) for ``trust-region`` method
-        """
+    @staticmethod
+    def _remove_points_within_TR_from_set(S, f, s_old, del_k):
+        ind_within_TR = np.where(np.linalg.norm(S-s_old, axis=1, ord=np.inf) <= del_k)[0]
+        S = S[ind_within_TR,:]
+        f = f[ind_within_TR]
+        return S, f
+    
+    def _sample_set(self, s_old, f_old, del_k, method='new', S=None, f=None, num=1):
 #       Poised constant of algorithm
-        psi = 1.0
-#       Generate natural monomial basis
-        Base = Basis('total-order', orders=np.tile([1], self.n))
+        if method == 'new':
+            S_hat = np.copy(self.S)
+            f_hat = np.copy(self.f)
+            S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, s_old, del_k*1.0e-8)
+            S_hat, f_hat = self._remove_points_within_TR_from_set(S_hat, f_hat, s_old, del_k)
+                
+            S = s_old.reshape(1,-1)
+            f = np.array([f_old])
+            S, f = self._improve_poisedness_LU(S, f, S_hat, f_hat, s_old, del_k, 'new')
+        elif method == 'replace':
+            if max(np.linalg.norm(S-s_old, axis=1, ord=np.inf)) > self.epsilon*del_k:
+                ind_distant = np.argmax(np.linalg.norm(S-s_old, axis=1, ord=np.inf))
+                S = np.delete(S, ind_distant, 0)
+                f = np.delete(f, ind_distant, 0)
+            else:
+                S_hat = np.copy(S)
+                f_hat = np.copy(f)
+                S_hat, fhat = self._remove_point_from_set(S_hat, f_hat, s_old, del_k*1.0e-8)
+                
+                S = s_old.reshape(1,-1)
+                f = np.array([f_old])
+                S, f = self._improve_poisedness_LU(S, f, S_hat, f_hat, s_old, del_k, 'improve')
+        elif method == 'improve':
+            S_hat = np.copy(S)
+            f_hat = np.copy(f)
+            S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, s_old, del_k*1.0e-8)
+            
+            if max(np.linalg.norm(S_hat-s_old, axis=1, ord=np.inf)) > self.epsilon*del_k:
+                ind_distant = np.argmax(np.linalg.norm(S_hat-s_old, axis=1, ord=np.inf))
+                S_hat = np.delete(S_hat, ind_distant, 0)
+                f_hat = np.delete(f_hat, ind_distant, 0)
+                
+            S = s_old.reshape(1,-1)
+            f = np.array([f_old])
+            S, f = self._improve_poisedness_LU(S, f, S_hat, f_hat, s_old, del_k, 'improve', num)
+        return S, f
+    
+    def _improve_poisedness_LU(self, S, f, S_hat, f_hat, s_old, del_k, method=None, num=1):
+        if S_hat.shape[0] > 1:
+            Del_S = max(np.linalg.norm(S_hat-s_old, axis=1, ord=np.inf))
+        else:
+            Del_S = del_k
+        Base = Basis('total-order', orders=np.tile([2], self.n))
         basis = Base.get_basis()[:,range(self.n-1, -1, -1)]
-        def natural_basis_function(x, basis):
-            phi = np.zeros(basis.shape[0])
-            for j in range(basis.shape[0]):
-                phi[j] = 1.0
-                for k in range(basis.shape[1]):
-                    phi[j] *= (x[k]**basis[j,k]) / factorial(basis[j,k])
-            return phi
-        phi_function = lambda x: natural_basis_function(x, basis)
+        def natural_basis_function(s, basis):
+            s = (s - s_old) / Del_S
+            try:
+                m,n = s.shape
+            except:
+                m = 1
+                s = s.reshape(1,-1)
+            phi = np.zeros((m, basis.shape[0]))
+            for i in range(m):
+                for k in range(basis.shape[0]):
+                    phi[i,k] = np.prod(np.divide(np.power(s[i,:], basis[k,:]), factorial(basis[k,:])))
+            if m == 1:
+                return phi.flatten()
+            else:
+                return phi
+        phi_function = lambda s: natural_basis_function(s, basis)
 #       Initialise U matrix of LU factorisation of M matrix (see Conn et al.)
-        U = np.zeros((self.p,self.p))
-#       Initialise the first row of U to the e1 basis vector which corresponds to solution with all zeros
+        U = np.zeros((self.q,self.q))
         U[0,0] = 1.0
 #       Perform the LU factorisation algorithm for the rest of the points
-        for k in range(1,self.p):
-            v = np.zeros(self.p)
+        for k in range(1, self.q):
+            index = None
+#            index2 = None
+            v = np.zeros(self.q)
             for j in range(k):
                 v[j] = -U[j,k] / U[j,j]
             v[k] = 1.0
-#           If there are still points to choose from, find if points meet criterion. If so, use the index to choose
+            
+#           If there are still points to choose from, find if points meet criterion. If so, use the index to choose 
 #           point with given index to be next point in regression/interpolation set
-            if S_hat.size != 0:
-                M = self._natural_basis_matrix(S_hat,v,phi_function)
-                index2 = np.argmax(M)
-                if M[index2] < psi:
-                    index2 = None
-            else:
-                index2 = None
+            if f_hat.size > 0:
+                M = np.absolute(np.array([np.dot(phi_function(S_hat),v)]).flatten())
+                index = np.argmax(M)
+#                print(phi_function(Xhat))
+                if abs(M[index]) < 1.0e-3:
+                    index = None
+                elif method =='new':
+                    if M[index] < self.psi:
+                        index = None
+                elif method == 'improve':
+                    if f.size == self.q - num:
+                        if M[index] < self.psi:
+                            index = None
 #           If index exists, choose the point with that index and delete it from possible choices
-            if index2 is not None:
-                s = S_hat[index2,:].flatten()
-                S = np.vstack((S,s))
-                f = np.vstack((f,f_hat[index2].flatten()))
-                S_hat = np.delete(S_hat, index2, 0)
-                f_hat = np.delete(f_hat, index2, 0)
-                phi = phi_function(s.flatten())
+            if index is not None:
+                s = S_hat[index,:]
+                S = np.vstack((S, s))
+                f = np.vstack((f, f_hat[index]))
+                S_hat = np.delete(S_hat, index, 0)
+                f_hat = np.delete(f_hat, index, 0)
 #           If index doesn't exist, solve an optimisation point to find the point in the range which best satisfies criterion
             else:
-                s = optimize.minimize(lambda x: -abs(np.dot(v,phi_function(x.flatten()))), np.zeros(self.n), method='COBYLA',constraints=[{'type':'ineq', 'fun': lambda x: 1.0 - x},{'type':'ineq', 'fun': lambda x: 1.0 + x}],options={'disp': False})['x'].flatten()
-                S = np.vstack((S,s))
-                f = np.vstack((f,np.array([np.inf])))
-                phi = phi_function(s.flatten())
+                s = self._find_new_point(v, phi_function, del_k, s_old)
+#                s = optimize.minimize(lambda x: -abs(np.dot(v,phi_function(x.flatten()))), s_old, method='COBYLA',constraints=[{'type':'ineq', 'fun': lambda x: 1.0 - x},{'type':'ineq', 'fun': lambda x: 1.0 + x}],options={'disp': False})['x'].flatten()
+                S = np.vstack((S, s))
+                f = np.vstack((f, self._blackbox_evaluation(s)))
 #           Update U factorisation in LU algorithm
-            U[k,k] = np.dot(v,phi)
-            for i in range(k+1,self.p):
+            phi = phi_function(s)
+            U[k,k] = np.dot(v, phi)
+            for i in range(k+1,self.q):
                 U[k,i] += phi[i]
                 for j in range(k):
-                    U[k,i] -= (phi[j]*U[j,i])/U[j,j]
-        return S,f,S_hat,f_hat
-
-    def _natural_basis_matrix(self,S,v,phi):
-        """
-        Helper function for _well_poised_LU for ``trust-region`` method
-        """
-        M = []
-        for i in range(S.shape[0]):
-            M.append(phi(S[i,:].flatten()))
-        M = np.array(M)
-        Mv_abs = np.absolute(np.dot(M,v))
-        return Mv_abs
-
-    def _compute_criticality_measure(self,my_poly,s_old,del_k):
-        """
-        Computes the criticality measure for ``trust-region`` method
-        """
-        g_k = my_poly.get_polyfit_grad(s_old).flatten()
+                    U[k,i] -= (phi[j]*U[j,i]) / U[j,j]
+        return S, f
+    
+    def _find_new_point(self, v, phi_function, del_k, s_old):
+        obj1 = lambda s: np.dot(v, phi_function(s))
+        obj2 = lambda s: -np.dot(v, phi_function(s))
         if self.bounds is not None:
-            crit = optimize.minimize(lambda x: np.dot(g_k,x-s_old), np.zeros_like(s_old), method='COBYLA',constraints=[{'type':'ineq', 'fun': lambda x: self.bounds[1] - x},{'type':'ineq', 'fun': lambda x: x - self.bounds[0]},{'type':'ineq', 'fun': lambda s: del_k*np.ones_like(s_old) - s + s_old},{'type':'ineq', 'fun': lambda s: del_k*np.ones_like(s_old) + s - s_old}],options={'disp': False})['fun']
-            alpha_k = abs(crit) / del_k
+            bounds_l = np.maximum(self.bounds[0], s_old-del_k)
+            bounds_u = np.minimum(self.bounds[1], s_old+del_k)
         else:
-            alpha_k = np.linalg.norm(g_k)
-        return alpha_k
+            bounds_l = s_old-del_k
+            bounds_u = s_old+del_k
+        bounds = []
+        for i in range(self.n):
+            bounds.append((bounds_l[i], bounds_u[i]))
+        s_0 = s_old + del_k*np.random.uniform(-1, 1, self.n)
+        res1 = optimize.minimize(obj1, s_0, method='TNC', bounds=bounds, options={'disp': False})
+        res2 = optimize.minimize(obj2, s_0, method='TNC', bounds=bounds, options={'disp': False})
+        if abs(res1['fun']) > abs(res2['fun']):
+            return res1['x']
+        else:
+            return res2['x']
 
     def _build_model(self,S,f,del_k):
         """
         Constructs quadratic model for ``trust-region`` method
         """
-        myParameters = [Parameter(distribution='uniform', lower=S[0,i] - del_k, upper=S[0,i] + del_k, order=2) for i in range(S.shape[1])]
+        myParameters = [Parameter(distribution='uniform', lower=np.min(S[:,i]), upper=np.max(S[:,i]), order=2) for i in range(self.n)]
         myBasis = Basis('total-order')
-        my_poly = Poly(myParameters, myBasis, method='compressive-sensing', sampling_args={'sample-points':S, 'sample-outputs':f})
+        my_poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'mesh': 'user-defined', 'sample-points':S, 'sample-outputs':f})
         my_poly.set_model()
         return my_poly
 
@@ -406,67 +429,76 @@ class Optimisation:
         """
         Solves the trust-region subproblem for ``trust-region`` method
         """
-        Opt = Optimisation(method='SLSQP')
+        Opt = Optimisation(method='TNC')
         Opt.add_objective(poly=my_poly)
         if self.bounds is not None:
-            Opt.add_bounds(self.bounds[0],self.bounds[1])
-        Opt.add_linear_ineq_con(np.eye(s_old.size), s_old-del_k*np.ones(s_old.size), s_old+del_k*np.ones(s_old.size))
+            bounds_l = np.maximum(self.bounds[0], s_old-del_k)
+            bounds_u = np.minimum(self.bounds[1], s_old+del_k)
+        else:
+            bounds_l = s_old-del_k
+            bounds_u = s_old+del_k
+        Opt.add_bounds(bounds_l,bounds_u)
         sol = Opt.optimise(s_old)
         s_new = sol['x']
         m_new = sol['fun']
         return s_new, m_new
+    
+    @staticmethod
+    def _choose_best(X, f):
+        ind_min = np.argmin(f)
+        x_0 = X[ind_min,:]
+        f_0 = np.asscalar(f[ind_min])
+        return x_0, f_0
 
-    def _trust_region(self, s_old, del_k = 1.0, eta0 = 0.0, eta1 = 0.5, gam0 = 0.01, gam1 = 1.5, epsilon_c = 1.0e-2, delkmin = 1.0e-10, delkmax = 2.0):
+    def _trust_region(self, s_old, del_k = 0.5, eta0 = 0.1, eta1 = 0.7, gam0 = 0.5, gam1 = 1.5, omega = 0.9, delmin = 1.0e-8, delmax = 1.0, max_evals=1000):
         """
         Computes optimum using the ``trust-region`` method
         """
         self.n = s_old.size
+        self.psi = 0.25
+        self.epsilon = 1.2
         self.p = self.n + 1
         self.q = int(comb(self.n+2, 2))
-        itermax = 500
-#       Make the first black-box function call and initialise the database of solutions and labels
+        itermax = 10000
+        # Make the first black-box function call and initialise the database of solutions and labels
         f_old = self._blackbox_evaluation(s_old)
-#       Construct the regression set
-        S, f = self._regression_set(s_old,f_old,del_k)
-#       Construct the model and evaluate at current point
-        my_poly = self._build_model(S,f,del_k)
-#       Begin algorithm
+        # Construct the regression set
+        S, f = self._sample_set(s_old, f_old, del_k)
+        # Construct the model and evaluate at current point
+        s_old, f_old = self._choose_best(self.S, self.f)
         for i in range(itermax):
-#           If trust-region radius is less than minimum, break loop
-            if del_k < delkmin:
+            # If trust-region radius is less than minimum, break loop
+            if len(self.f) >= max_evals or del_k < delmin:
                 break
-            m_old = np.asscalar(my_poly.get_polyfit(s_old)[0])
-#           If gradient of model is very small, need to check the validity of the model
+            my_poly = self._build_model(S, f, del_k)
+            m_old = np.asscalar(my_poly.get_polyfit(s_old))
             s_new, m_new = self._compute_step(s_old,my_poly,del_k)
-            f_new = self._blackbox_evaluation(s_new)
-            if m_new >= m_old:
-                del_k *= gam0
+            # Safety step implemented in BOBYQA
+            if np.linalg.norm(s_new - s_old, ord=np.inf) < 0.01*del_k:
+                del_k *= omega
+                S, f = self._sample_set(s_old, f_old, del_k, 'improve', S, f)
+                s_old, f_old = self._choose_best(S, f)
                 continue
-#           Calculate trust-region factor
+            f_new = self._blackbox_evaluation(s_new)
+            # Calculate trust-region factor
             rho_k = (f_old - f_new) / (m_old - m_new)
+            S = np.vstack((S, s_new))
+            f = np.vstack((f, f_new))
+            s_old, f_old = self._choose_best(S, f)
             if rho_k >= eta1:
-                s_old = s_new
-                f_old = f_new
-                S, f = self._regression_set(s_old,f_old,del_k)
-                my_poly = self._build_model(S,f,del_k)
-                alpha_k = self._compute_criticality_measure(my_poly, s_old, del_k)
-                if alpha_k <= epsilon_c:
-                    del_k *= gam0
-                else:
-                    del_k = min(gam1*del_k,delkmax)
+                del_k = min(gam1*del_k,delmax)
+                S, f = self._sample_set(s_old, f_old, del_k, 'replace', S, f)
             elif rho_k > eta0:
-                s_old = s_new
-                f_old = f_new
-                S, f = self._regression_set(s_old,f_old,del_k)
-                my_poly = self._build_model(S,f,del_k)
-                alpha_k = self._compute_criticality_measure(my_poly, s_old, del_k)
-                if alpha_k <= epsilon_c:
-                    del_k *= gam0
+                S, f = self._sample_set(s_old, f_old, del_k, 'replace', S, f)
             else:
-                del_k *= gam0
-        alpha_k = self._compute_criticality_measure(my_poly, s_old, del_k)
-        if alpha_k < 100.0*epsilon_c:
-            success = True
+                if max(np.linalg.norm(S-s_old, axis=1, ord=np.inf)) <= self.epsilon*del_k:
+                    del_k *= gam0
+                    S, f = self._sample_set(s_old, f_old, del_k, 'replace', S, f)
+                else:
+                    S, f = self._sample_set(s_old, f_old, del_k, 'improve', S, f)
+        s_old, f_old = self._choose_best(S, f)
+        if i == itermax - 1:
+            status = 1
         else:
-            success = False
-        return s_old, f_old, success
+            status = 0
+        return s_old, f_old, status

@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='equadratures',
-      version='8.0.2',
+      version='8.0.3',
       description='Machine learning with polynomials',
       long_description=readme(),
       classifiers=[
@@ -22,7 +22,7 @@ setup(name='equadratures',
       license='LPGL-2.1',
       packages=['equadratures', 'equadratures.distributions', 'equadratures.sampling_methods'],
       install_requires=[
-          'numpy >= 1.16.4 ',
+          'numpy',
           'scipy >= 0.15.0',
           'matplotlib'
       ],

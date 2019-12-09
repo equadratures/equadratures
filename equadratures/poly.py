@@ -24,6 +24,7 @@ class Poly(object):
             :float sampling-ratio: Denotes the extent of undersampling or oversampling required. For values equal to unity (default), the number of rows and columns of the associated Vandermonde-type matrix are equal.
             :numpy.ndarray sample-points: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
             :numpy.ndarray sample-outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points. Note that if ``sample-points`` is provided as an input, then the code expects ``sample-outputs`` too.
+            :numpy.ndarray sample-gradients: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample gradient values over the parameter space.
     :param dict solver_args: Optional arguments centered around the specific solver used for computing the coefficients.
 
             :numpy.ndarray noise-level: The noise level to be used. Can take in both scalar- and vector-valued inputs.
@@ -66,7 +67,7 @@ class Poly(object):
         except TypeError:
             parameters = [parameters]
         self.parameters = parameters
-        self.basis = basis
+        self.basis = deepcopy(basis)
         self.method = method
         self.sampling_args = sampling_args
         self.solver_args = solver_args
@@ -98,14 +99,29 @@ class Poly(object):
             elif self.method == 'minimum-norm':
                 self.mesh = 'monte-carlo'
             # Now depending on user inputs, override these default values!
+            sampling_args_flag = 0
             if self.sampling_args is not None:
-                if 'mesh' in sampling_args: self.mesh = sampling_args.get('mesh')
-                if 'sampling-ratio' in sampling_args: self.sampling_ratio = float(sampling_args.get('sampling-ratio'))
-                if 'subsampling-algorithm' in sampling_args: self.subsampling_algorithm_name = sampling_args.get('subsampling-algorithm')
+                if 'mesh' in sampling_args:
+                    self.mesh = sampling_args.get('mesh')
+                    sampling_args_flag = 1
+                if 'sampling-ratio' in sampling_args:
+                    self.sampling_ratio = float(sampling_args.get('sampling-ratio'))
+                    sampling_args_flag = 1
+                if 'subsampling-algorithm' in sampling_args:
+                    self.subsampling_algorithm_name = sampling_args.get('subsampling-algorithm')
+                    sampling_args_flag = 1
                 if 'sample-points' in sampling_args:
                     self.inputs = sampling_args.get('sample-points')
+                    sampling_args_flag = 1
                     self.mesh = 'user-defined'
-                if 'sample-outputs' in sampling_args: self.outputs = sampling_args.get('sample-outputs')
+                if 'sample-outputs' in sampling_args:
+                    self.outputs = sampling_args.get('sample-outputs')
+                    sampling_args_flag = 1
+                if 'sample-gradients' in sampling_args:
+                    self.gradients = sampling_args.get('sample-gradients')
+                    sampling_args_flag = 1
+                elif sampling_args_flag == 0:
+                    raise(ValueError, 'An input value that you have specified is likely incorrect. Sampling arguments include: mesh, sampling-ratio, subsampling-algorithm, sample-points, sample-outputs and sample-gradients.')
             self._set_solver()
             self._set_subsampling_algorithm()
             self._set_points_and_weights()
@@ -134,6 +150,10 @@ class Poly(object):
 
         :param Poly self:
             An instance of the Poly object.
+        :param str filename:
+            The filename to write to.
+        :param bool tosay:
+            True will replace "-" signs with "minus" when writing to file for compatibility with os.say().
         """
         prec = '{:.3g}'
         if self.dimensions == 1:
@@ -203,6 +223,7 @@ class Poly(object):
             P = self.get_poly(quadrature_points)
             W = np.mat( np.diag(np.sqrt(quadrature_weights)))
             A = W * P.T
+            self.A = A
             mm, nn = A.shape
             m_refined = int(np.round(self.sampling_ratio * nn))
             z = self.subsampling_algorithm_function(A, m_refined)
@@ -211,6 +232,10 @@ class Poly(object):
         else:
             self._quadrature_points = quadrature_points
             self._quadrature_weights = quadrature_weights
+            P = self.get_poly(quadrature_points)
+            W = np.mat( np.diag(np.sqrt(quadrature_weights)))
+            A = W * P.T
+            self.A = A
     def get_model_evaluations(self):
         """
         Returns the points at which the model was evaluated at.
@@ -347,10 +372,13 @@ class Poly(object):
                 raise(ValueError, 'model values should be a column vector.')
             self._model_evaluations = y
             if self.gradient_flag == 1:
-                if callable(model_grads):
-                    grad_values = evaluate_model_gradients(self._quadrature_points, model_grads, 'matrix')
+                if (model_grads is None) and (self.gradients is not None):
+                    grad_values = self.gradients
                 else:
-                    grad_values = model_grads
+                    if callable(model_grads):
+                        grad_values = evaluate_model_gradients(self._quadrature_points, model_grads, 'matrix')
+                    else:
+                        grad_values = model_grads
                 p, q = grad_values.shape
                 self._gradient_evaluations = np.zeros((p*q,1))
                 W = np.diag(np.sqrt(self._quadrature_weights))

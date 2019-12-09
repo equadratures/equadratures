@@ -121,35 +121,6 @@ class Correlations(object):
             **poly**: An instance of the Poly class.
         """
         return self.polystandard
-    def get_uncorrelated_from_correlated(self, X):
-        """
-        Method for mapping correlated variables to a new standard space.
-
-        :param Correlations self: An instance of the Correlations object.
-        :param numpy.ndarray X: A numpy ndarray of shape (N,M) where input marginals are organized along columns; M represents the number of correlated marginals
-
-        :return:
-            **xu**: A numpy.ndarray of shape (N, M), which contains standardized uncorrelated data. The transformation of each i-th input marginal is stored along the i-th column of the output matrix.
-        """
-        c = X[:,0]
-        w1 = np.zeros((len(c),len(self.D)))
-        for i in range(len(self.D)):
-            for j in range(len(c)):
-                w1[j,i] = self.D[i].get_cdf(points=X[j,i])
-                if (w1[j,i] >= 1.0):
-                    w1[j,i] = 1.0 - 10**(-10)
-                elif (w1[j,i] <= 0.0):
-                    w1[j,i] = 0.0 + 10**(-10)
-        sU = np.zeros((len(c),len(self.D)))
-        for i in range(len(self.D)):
-            for j in range(len(c)):
-                sU[j,i] = self.std.get_icdf(w1[j,i])
-        sU = np.array(sU)
-        sU = sU.T
-        xu = np.linalg.solve(self.A,sU)
-        xu = np.array(xu)
-        xu = xu.T
-        return xu
     def get_correlated_from_uncorrelated(self, X):
         """
         Method for mapping uncorrelated variables from standard normal space to a new physical space in which variables are correlated.
@@ -179,35 +150,6 @@ class Correlations(object):
                 t = temp[0]
                 Xc[j,i] = t
         return Xc
-    def get_uncorrelated_samples(self, N=None):
-        """
-        Method for generating uncorrelated samples.
-
-        :param int N: Number of uncorrelated samples required.
-        :param numpy.ndarray X: Samples of uncorrelated points from the marginals; of shape (N,M)
-
-        :return:
-            **C**: A numpy.ndarray of shape (N, M), which contains the uncorrelated samples.
-        """
-        if N is not None:
-            distro = list()
-            for i in range(len(self.D)):
-                    distro1 = self.D[i].get_samples(N)
-
-                    # check dimensions ------------------#
-                    distro1 = np.matrix(distro1)
-                    dimension = np.shape(distro1)
-                    if dimension[0] == N:
-                        distro1 = distro1.T
-                    #------------------------------------#
-                    distro.append(distro1)
-
-            distro = np.reshape(distro, (len(self.D),N))
-            distro = distro.T
-
-        else:
-             raise(ValueError, 'One input must be given to "get Correlated Samples" method')
-        return distro
     def get_correlated_samples(self, N=None):
         """
         Method for generating correlated samples.

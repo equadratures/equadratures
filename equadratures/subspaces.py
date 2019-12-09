@@ -586,6 +586,14 @@ def standardise(X):
         for i in range(0,M):
             X_stnd[i,j]=2.0 * ( (X[i,j]-min_value)/(max_value - min_value) ) -1
     return X_stnd
+def unstandardise(X,X_orig):
+    d=X.shape[1]
+    X_unstnd=np.zeros_like(X)
+    for j in range(0,d):
+        max_value = np.max(X_orig[:,j])
+        min_value = np.min(X_orig[:,j])
+        X_unstnd[:,j] = 0.5*(X[:,j] +1)*(max_value - min_value) + min_value
+    return X_unstnd
 def linear_program_ineq(c, A, b):
     c = c.reshape((c.size,))
     b = b.reshape((b.size,))

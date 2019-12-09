@@ -73,6 +73,13 @@ class Parameter(object):
         self._set_distribution()
         self._set_bounds()
         self._set_moments()
+        if self.endpoints is not None:
+            if (self.distribution.bounds[0] == -np.inf) and (self.distribution.bounds[1] == np.inf) and (self.endpoints.lower() == 'both'):
+                raise(ValueError, 'Parameter: The lower bound for your distribution is -infinity and the upper bound is infinity. Furthermore, you have selected the to have both endpoints. These options are incompatible!')
+            if (self.distribution.bounds[0] == -np.inf) and (self.endpoints.lower() == 'lower'):
+                raise(ValueError, 'Parameter: The lower bound for your distribution is -infinity and you have selected the lower bound option in the endpoints. These options are incompatible!')
+            if (self.distribution.bounds[1] == np.inf) and (self.endpoints.lower() == 'upper'):
+                raise(ValueError, 'Parameter: The upper bound for your distribution is infinity and you have selected the upper bound option in the endpoints. These options are incompatible!')
     def _set_distribution(self):
         """
         Private function that sets the distribution.

@@ -1,7 +1,7 @@
 """Monte Carlo based sampling."""
 import numpy as np
 from equadratures.sampling_methods.sampling_template import Sampling
-CONST = 5
+CONST = 7
 class Montecarlo(Sampling):
     """
     The class defines a Sampling object. It serves as a template for all sampling methodologies.

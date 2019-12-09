@@ -433,7 +433,7 @@ class Subspaces(object):
                 if count >= maxcount:
                     Z[i:, :] = np.tile(z0, (1, N - i)).transpose()
                     yz = np.vstack([np.repeat(y[:, np.newaxis], N, axis=1), Z.T])
-                    return Z, np.dot(self._subspace, yz).T
+                    return np.dot(self._subspace, yz).T
 
             # find constraints that impose lower and upper bounds on eps
             f, g = b - np.dot(A, z0), np.dot(A, d)

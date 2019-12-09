@@ -1,6 +1,6 @@
 Constructing orthogonal polynomials
 ========================================
-In this tutorial we describe how one can construct orthogonal polynomials in Effective Quadratures. For starters, we consider Legendre polynomials---orthogonal with respect to the uniform weight function. We define a Parameter :math:`\zeta` with :math:`\rho(\zeta) = \mathcal{U}[-1,1]`. 
+In this tutorial we describe how one can construct orthogonal polynomials in Effective Quadratures. For starters, we consider Legendre polynomials---orthogonal with respect to the uniform weight function. We define a Parameter :math:`s` with :math:`\rho(s) \sim \mathcal{U}[-1,1]`. 
 
 
 .. code::
@@ -10,21 +10,23 @@ In this tutorial we describe how one can construct orthogonal polynomials in Eff
 	import matplotlib.pyplot as plt
 
 
-	zeta = Parameter(distribution='uniform', lower=-1., upper=1., order=5)
+	order = 5
+	s1 = Parameter(lower=-1, upper=1, order=order, distribution='Uniform')
 
 We restrict our attention to the first five orthogonal polynomials, where the parameterized matrix :math:`\mathbf{P}` has the form
 
 .. math::
 
-	\mathbf{P}\left(i,j\right)=\psi_{i}\left(\bar{\zeta}_{j}\right) \; \; \text{where} \; \; i=1, \ldots, p; \; j = 1, \ldots, N,
+	\mathbf{P}\left(i,j\right)=\psi_{i}\left(\lambda_{j}\right) \; \; \text{where} \; \; i=1, \ldots, p; \; j = 1, \ldots, N,
 
-where :math:`N` is the number of points :math:`\bar{\zeta}_{j}` discretizing the domain of :math:`\zeta`, and :math:`p` is the maximum polynomial order, set to 5. Plots of the polynomials are shown below. 
+where :math:`N` is the number of points :math:`\lambda_{j}` discretizing the domain of :math:`s`, and :math:`p` is the maximum polynomial order, set to 5. Plots of the polynomials are shown below. 
 
 .. code::
 
-	N = 100
-	xo = np.linspace(-1, 1, N)
-	P , __ = zeta._getOrthoPoly(xo)
+	myBasis = Basis('univariate')
+	myPoly = Poly(s1, myBasis, method='numerical-integration')
+	xo = np.linspace(-1., 1, 100)
+	P = myPoly.get_poly(xo)
 
 	fig = plt.figure()
 	ax = fig.add_subplot(1,1,1)
@@ -34,15 +36,14 @@ where :math:`N` is the number of points :math:`\bar{\zeta}_{j}` discretizing the
 	plt.plot(xo, P[3,:], lw=2, label='Order 3')
 	plt.plot(xo, P[4,:], lw=2, label='Order 4')
 	plt.plot(xo, P[5,:], lw=2, label='Order 5')
-	adjust_spines(ax, ['left', 'bottom'])
-	plt.legend(loc='best', ncol=3, mode="expand", shadow=True, fancybox=True)
-	ax.set_axisbelow(True)
-	plt.xlabel('$\zeta$', fontsize=18)
+	plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.30), ncol=3, fancybox=True, shadow=True)
+	plt.xlabel('$s$', fontsize=18)
 	plt.ylabel('Polynomials', fontsize=18)
-	plt.savefig('Fig_05.png', dpi=200, bbox_inches='tight')
+	plt.savefig('../Figures/tutorial_3_fig_a.png', dpi=200, bbox_inches='tight')
 
 
-.. figure:: Figures/Fig_05.png
+
+.. figure:: Figures/tutorial_3_fig_a.png
    :scale: 30 %
 
    Figure. The first six Legendre polynomials
@@ -51,14 +52,14 @@ A few remarks are in order regarding this plot. Standard Legendre polynomials ar
 
 .. math::
 
-	\int_{-1}^{1}\psi_{i}\left(\zeta\right)\psi_{j}\left(\zeta\right)d\zeta=\frac{2\delta_{ij}}{2i+1},
+	\int_{-1}^{1}\psi_{i}\left(s \right)\psi_{j}\left(s \right)ds=\frac{2\delta_{ij}}{2i+1},
 
 where :math:`\delta_{ij}` is the Kronecker delta. In Effective Quadratures, we modify all orthogonal polynomials such that the right hand side of this expression is unity when :math:`i=j`
 
 .. math::
 
-	\frac{1}{2i+1} \int_{-1}^{1}\psi_{i}\left(\zeta\right)\psi_{j}\left(\zeta\right) d\zeta \\
-	=\int_{-1}^{1}\frac{1}{\sqrt{2i+1}}\psi_{j}\left(\zeta\right)\frac{1}{\sqrt{2j+1}}\psi_{j}\left(\zeta\right)d\zeta \\
+	\frac{1}{2i+1} \int_{-1}^{1}\psi_{i}\left(s\right)\psi_{j}\left(s\right) ds \\
+	=\int_{-1}^{1}\frac{1}{\sqrt{2i+1}}\psi_{j}\left(s\right)\frac{1}{\sqrt{2j+1}}\psi_{j}\left(s\right)ds \\
 	=\delta ij
 
 Introducing these scaling factors, we now can plot the standard Legendre polynomials; these are reported in the Wikipedia `entry <https://en.wikipedia.org/wiki/Legendre_polynomials>`__. 
@@ -81,14 +82,12 @@ Introducing these scaling factors, we now can plot the standard Legendre polynom
 	plt.plot(xo, factor_3 * P[3,:], lw=2, label='Order 3')
 	plt.plot(xo, factor_4 * P[4,:], lw=2, label='Order 4')
 	plt.plot(xo, factor_5 * P[5,:], lw=2, label='Order 5')
-	adjust_spines(ax, ['left', 'bottom'])
-	plt.legend(loc='best', ncol=3, mode="expand", shadow=True, fancybox=True)
-	ax.set_axisbelow(True)
-	plt.xlabel('$\zeta$', fontsize=18)
-	plt.ylabel('Polynomials', fontsize=18)
-	plt.savefig('Fig_06.png', dpi=200, bbox_inches='tight')
+	plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.30), ncol=3, fancybox=True, shadow=True)
+	plt.xlabel('$s$', fontsize=18)
+	plt.ylabel('Scaled polynomials', fontsize=18)
+	plt.savefig('../Figures/tutorial_3_fig_b.png', dpi=200, bbox_inches='tight')
 
-.. figure:: Figures/Fig_06.png
+.. figure:: Figures/tutorial_3_fig_b.png
    :scale: 30 %
 
    Figure. The first six (normalized) Legendre polynomials

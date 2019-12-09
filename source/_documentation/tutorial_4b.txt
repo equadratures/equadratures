@@ -38,7 +38,7 @@ We begin by defining a tensor grid index set in three dimensions:
 	
 .. code::
 	
-	tensor = IndexSet('Tensor grid', [4,4,4]) 
+	tensor = Basis('Tensor grid', [4,4,4]) 
 	elements = tensor.elements
 
 	# Plot!
@@ -101,7 +101,7 @@ Here :math:`a` are the select tensor product grids used, and :math:`b` are the l
 
 .. code::
 	
-	tensor = IndexSet('Euclidean degree', [4,4,4]) 
+	tensor = Basis('Euclidean degree', [4,4,4]) 
 
 .. figure:: Figures/Basis_euclid.png
    :scale: 40 %
@@ -111,7 +111,7 @@ Here :math:`a` are the select tensor product grids used, and :math:`b` are the l
 
 .. code::
 	
-	tensor = IndexSet('Total order', [4,4,4]) 
+	tensor = Basis('Total order', [4,4,4]) 
 
 .. figure:: Figures/Basis_total.png
    :scale: 40 %
@@ -123,7 +123,7 @@ And finally the hyperbolic one:
 
 .. code::
 	
-	tensor = IndexSet('Hyperbolic basis', [4,4,4], q=0.5) 
+	tensor = Basis('Hyperbolic basis', [4,4,4], q=0.5) 
 
 .. figure:: Figures/Basis_hyper.png
    :scale: 40 %

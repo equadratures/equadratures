@@ -1,5 +1,0 @@
-Dimension reduction utilities
-===========================================
-
-.. automodule:: equadratures.dr
-    :members:

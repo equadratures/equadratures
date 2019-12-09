@@ -1,0 +1,5 @@
+Solver
+==================================
+
+.. automodule:: equadratures.solver
+    :members:

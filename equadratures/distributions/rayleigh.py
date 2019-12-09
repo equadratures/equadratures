@@ -1,13 +1,12 @@
 """The Rayleigh distribution."""
-import numpy as np
 from equadratures.distributions.template import Distribution
+import numpy as np
 from scipy.stats import rayleigh
 RECURRENCE_PDF_SAMPLES = 8000
-
 class Rayleigh(Distribution):
     """
     The class defines a Rayleigh object. It is the child of Distribution.
-    
+
     :param double scale:
 		Scale parameter of the Rayleigh distribution.
     """
@@ -17,15 +16,15 @@ class Rayleigh(Distribution):
         if self.scale is not None:
             if self.scale > 0:
                 self.mean = self.scale * np.sqrt(np.pi / 2.0)
-                self.variance = self.scale**2 * (4.0 - np.pi)/ 2.0 
+                self.variance = self.scale**2 * (4.0 - np.pi)/ 2.0
                 self.skewness = 2.0 * np.sqrt(np.pi) * (np.pi - 3.0) / ((4.0 - np.pi)**(1.5))
-                self.kurtosis = -(6 * np.pi**2 - 24 * np.pi + 16.0 )/( (4 - np.pi)**(1.5)) + 3.0 
+                self.kurtosis = -(6 * np.pi**2 - 24 * np.pi + 16.0 )/( (4 - np.pi)**(1.5)) + 3.0
                 self.x_range_for_pdf = np.linspace(0.0, 8.0 * self.scale, RECURRENCE_PDF_SAMPLES)
-    
-    def getiCDF(self, xx):
+
+    def get_icdf(self, xx):
         """
         A Rayleigh inverse cumulative density function.
-        
+
         :param Rayleigh self:
             An instance of the Rayleigh class.
         :param array xx:
@@ -35,22 +34,22 @@ class Rayleigh(Distribution):
         """
         return rayleigh.ppf(xx, loc=0, scale=self.scale)
 
-    def getDescription(self):
+    def get_description(self):
         """
         A description of the Rayleigh distribution.
-            
+
         :param Rayleigh self:
             An instance of the Rayleigh class.
         :return:
             A string describing the Rayleigh distribution.
         """
-        text = "A Rayleigh distribution is characterised by its scale parameter, which is"+str(self.scale)+"."
+        text = "is a Rayleigh distribution; characterised by its scale parameter, which has been set to "+str(self.scale)+"."
         return text
 
-    def getPDF(self, points=None):
+    def get_pdf(self, points=None):
         """
         A Rayleigh probability density function.
-        
+
         :param Rayleigh self:
             An instance of the Rayleigh class.
         :param array points:
@@ -61,10 +60,10 @@ class Rayleigh(Distribution):
         return rayleigh.pdf(points, loc=0, scale=self.scale )
 
 
-    def getCDF(self, points=None):
+    def get_cdf(self, points=None):
         """
         A Rayleigh cumulative density function.
-        
+
         :param Rayleigh self:
             An instance of the Rayleigh class.
         :param array points:
@@ -74,10 +73,10 @@ class Rayleigh(Distribution):
         """
         return rayleigh.cdf(points, loc=0, scale=self.scale )
 
-    def getSamples(self, m=None):
+    def get_samples(self, m=None):
         """
          Generates samples from the Rayleigh distribution.
-         
+
          :param rayleigh self:
              An instance of the Rayleigh class.
          :param integer m:
@@ -87,7 +86,6 @@ class Rayleigh(Distribution):
         """
         if m is not None:
            number = m
-        else: 
+        else:
             number = 500000
         return rayleigh.rvs(loc=0.0, scale=self.scale, size=number, random_state=None)
-

@@ -5,11 +5,9 @@ Sitemap
    :maxdepth: 5 
 
    introduction
+   team
    modules
    tutorials
-   contact
-
-
 
 Indices and tables
 ==================

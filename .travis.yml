@@ -6,12 +6,27 @@ python:
   - "2.7"
   - "3.5"
   - "3.6"
+  - "3.7"
+
 addons:
   apt:
     packages:
     - libatlas-dev
     - libatlas-base-dev
     - liblapack-dev
+
+# blocklist
+# Block all /*feature*/ branches
+# Anything within /_>/ is treated as a Regex
+branches:
+  except:
+  - /*feature*/
+
+# safelist
+# Only Build and Test changes of the master branch
+branches:
+  only:
+  - master
 
 before_install:
  - travis_retry wget http://repo.continuum.io/miniconda/Miniconda-3.8.3-Linux-x86_64.sh -O miniconda.sh
@@ -27,6 +42,7 @@ install:
  - pip install setuptools
  - python setup.py install
  - pip install coveralls
+ - pip install ray
 
 script: coverage run test.py tests/*
 

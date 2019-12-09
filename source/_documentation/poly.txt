@@ -1,9 +1,7 @@
-Polynomials
+Polynomial
 ==================
 
+.. automodule:: equadratures.poly
+    :members:
 
-.. toctree::
-   :maxdepth: 2
 
-   polyparent
-   polychildren

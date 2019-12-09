@@ -1,5 +1,0 @@
-Cauchy
-====================
-
-.. automodule:: equadratures.distributions.cauchy
-    :members:

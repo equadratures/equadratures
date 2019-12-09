@@ -6,53 +6,54 @@ class Basis(object):
     """
     Basis class constructor.
 
-    :param string basis_type: The type of index set to be used. Options include:
-        `Univariate', `Total order`, `Tensor grid`, `Sparse grid`, `Hyperbolic basis` and `Euclidean degree`. All basis are isotropic. If you require anisotropic basis do email us.
+    :param string basis_type: The type of index set to be used. Options include: ``univariate``, ``total-order``, ``tensor-grid``,
+        ``sparse-grid``, ``hyperbolic-basis`` [1] and ``euclidean-degree`` [2]; all basis are isotropic.
     :param ndarray orders: List of integers corresponding to the highest polynomial order in each direction.
-    :param string growth_rule: The type of growth rule associated with sparse grids. Options include: `linear' and `exponential'. This input is only required when using a sparse grid.
-    :param double q: The `q' parameter is used to control the number of basis terms used in a hyperbolic basis. It varies between 0.0 to 1.0. A value of 1.0 yields a total order basis.
+    :param string growth_rule: The type of growth rule associated with sparse grids.
+        Options include: ``linear`` and ``exponential``. This input is only required when using a sparse grid.
+    :param double q: The ``q`` parameter is used to control the number of basis terms used in a hyperbolic basis (see [1]).
+        It varies between 0.0 to 1.0. A value of 1.0 yields a total order basis.
 
-    Attributes:
-        * **self.dimension**: (integer) Number of dimensions of the index set.
-        * **self.elements**: (numpy array) The multi-indices of the index set.
-        * **self.cardinality**:(integer) The cardinality of the index set.
 
-    **Notes:**
+    **Sample constructor initialisations**::
 
-    For details on the Euclidean degree see: `Trefethen 2016 <https://arxiv.org/pdf/1608.02216v1.pdf>`_.
-    Note that all index sets are sorted in the constructor automatically, by their total orders. We will be adding non-isotropic index sets in a future release. Stay tuned!
+        import numpy as np
+        from equadratures import *
+
+        # Total order basis
+        mybasis = Basis(method='total-order', orders=[3,3,3])
+        mybasis2 = Basis(method='euclidean-degree', orders=[2,2])
+        mybasis3 = Basis(method='sparse-grid', growth_rule='linear', level=3)
+
+    **References**
+        1. Blatman, G., Sudret, B., (2011) Adaptive Sparse Polynomial Chaos Expansion Based on Least Angle Regression. Journal of Computational Physics, 230(6), 2345-2367.
+        2. Trefethen, L., (2017) Multivariate Polynomial Approximation in the Hypercube. Proceedings of the American Mathematical Society, 145(11), 4837-4844. `Pre-print <https://arxiv.org/pdf/1608.02216v1.pdf>`_.
 
     """
     def __init__(self, basis_type, orders=None, level=None, growth_rule=None, q=None):
-
         # Required
         self.basis_type = basis_type # string
-
         # Check for the levels (only for sparse grids)
         if level is None:
             self.level = []
         else:
             self.level = level
-
         # Check for the growth rule (only for sparse grids)
         if growth_rule is None:
             self.growth_rule = []
         else:
             self.growth_rule = growth_rule
-
         # For hyperbolic basis index set, there is a "q" parameter:
         if q is None:
             self.q = []
         else:
             self.q = q
-
         # Orders
         if orders is None:
             self.orders = []
         else:
-            self.setOrders(orders)
-
-    def setOrders(self, orders):
+            self.set_orders(orders)
+    def set_orders(self, orders):
         """
         Sets the highest order in each direction of the basis.
 
@@ -63,39 +64,26 @@ class Basis(object):
         self.orders = []
         for i in range(0, len(orders)):
             self.orders.append(orders[i])
-        self.dimension = len(self.orders)
+        self.dimensions = len(self.orders)
         name = self.basis_type
-        if name.lower() == "total order":
+        if name.lower() == "total-order":
             basis = total_order_basis(self.orders)
         elif name.lower() ==  "univariate":
             basis = np.reshape( np.linspace(0, self.orders[0], self.orders[0]+1) , (self.orders[0]+1, 1) )
-        elif name.lower() == "sparse grid":
-            sparse_index, a, SG_set = sparse_grid_basis(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
+        elif name.lower() == "sparse-grid":
+            sparse_index, a, SG_set = sparse_grid_basis(self.level, self.growth_rule, self.dimensions) # Note sparse grid rule depends on points!
             basis = SG_set
-        elif (name.lower() == "tensor grid") or (name.lower() == "tensor") :
+        elif (name.lower() == "tensor-grid") or (name.lower() == "tensor") :
             basis = tensor_grid_basis(self.orders)
-        elif name.lower() == "hyperbolic basis":
+        elif name.lower() == "hyperbolic-basis":
             basis = hyperbolic_basis(self.orders, self.q)
-        elif name.lower() == "euclidean degree":
+        elif name.lower() == "euclidean-degree":
             basis = euclidean_degree_basis(self.orders)
         else:
             raise(ValueError, 'Basis __init__: invalid value for basis_type!')
             basis = [0]
-
         self.elements = basis
         self.cardinality = len(basis)
-
-        ## Don't sort a sparse grid index set, because the order is tied to the coefficients!
-        """
-        if avoid_sorting is False:
-            if name =="Hyperbolic basis":
-                self.sort()
-            elif name == "Euclidean degree":
-                self.sort()
-            elif name == "Total order":
-                self.sort()
-        """
-
     def prune(self, number_of_elements_to_delete):
         """
         Prunes down the number of elements in an index set.
@@ -104,6 +92,7 @@ class Basis(object):
         :param integer number_of_elements_to_delete: The number of multi-indices the user would like to delete.
 
         """
+        self.sort()
         index_entries = self.elements
         total_elements = self.cardinality
         new_elements = total_elements - number_of_elements_to_delete
@@ -111,7 +100,6 @@ class Basis(object):
             raise(ValueError, 'In Basis() --> prune(): Number of elements to be deleted must be greater than the total number of elements')
         else:
             self.elements =  index_entries[0:new_elements, :]
-
     def sort(self):
         """
         Routine that sorts a multi-index in ascending order based on the total orders. The constructor by default calls this function.
@@ -120,48 +108,57 @@ class Basis(object):
         """
         number_of_elements = len(self.elements)
         combined_indices_for_sorting = np.ones((number_of_elements, 1))
-        sorted_elements = np.ones((number_of_elements, self.dimension))
+        sorted_elements = np.ones((number_of_elements, self.dimensions))
         elements = self.elements
         for i in range(0, number_of_elements):
             a = np.sort(elements[i,:])
             u = 0
-            for j in range(0, self.dimension):
+            for j in range(0, self.dimensions):
                 u = 10**(j) * a[j] + u
             combined_indices_for_sorting[i] = u
         sorted_indices = np.argsort(combined_indices_for_sorting, axis=0)
 
        # Create a new index set with the sorted entries
         for i in range(0, number_of_elements):
-            for j in range(0, self.dimension):
+            for j in range(0, self.dimensions):
                 row_index = sorted_indices[i]
                 sorted_elements[i,j] = elements[row_index, j]
         self.elements = sorted_elements
-
-    def getBasis(self):
+    def get_basis(self):
         """
         Gets the index set elements for the Basis object.
 
         :param Basis object: An instance of the Basis class.
+
+        :return:
+            **basis**: Elements associated with the multi-index set. For ``total-order``, ``tensor-grid``, ``hyperbolic-basis``, ``hyperbolic-basis`` and ``euclidean-degree`` these correspond to the multi-index set elements within the set. For a ``sparse-grid`` the output will comprise of three arguments: (i) list of tensor grid orders (anisotropic), (ii) the positive and negative weights, and (iii) the individual sparse grid multi-index elements.
         """
         name = self.basis_type
-        if name == "Total order":
+        if name == "total-order":
             basis = total_order_basis(self.orders)
-        elif name == "Sparse grid":
-            sparse_index, a, SG_set = sparse_grid_basis(self.level, self.growth_rule, self.dimension) # Note sparse grid rule depends on points!
-            return sparse_index, a, SG_set
-        elif name == "Tensor grid":
+        elif name == "tensor-grid":
             basis = tensor_grid_basis(self.orders)
-        elif name == "Hyperbolic basis":
+        elif name == "hyperbolic-basis":
             basis = hyperbolic_basis(self.orders, self.q)
-        elif name == "Euclidean degree":
+        elif name == "euclidean-degree":
             basis = euclidean_degree_basis(self.orders)
+        elif name == "sparse-grid":
+            sparse_index, sparse_weight_factors, sparse_grid_set = sparse_grid_basis(self.level, self.growth_rule, self.dimensions) # Note sparse grid rule depends on points!
+            return sparse_index, sparse_weight_factors, sparse_grid_set
         else:
-            raise(ValueError, 'Basis __init__: invalid value for basis_type!')
+            raise(ValueError, 'invalid value for basis_type!')
             basis = [0]
         return basis
+    def get_elements(self):
+        """
+        Returns the elements of an index set.
 
+        :param Basis object: An instance of the Basis class.
 
-
+        :return:
+            **elements**: The multi-index elements of the basis.
+        """
+        return self.elements
 #---------------------------------------------------------------------------------------------------
 # PRIVATE FUNCTIONS
 #---------------------------------------------------------------------------------------------------
@@ -257,7 +254,6 @@ def total_order_basis(orders):
         R = getTotalOrderBasisRecursion(i, dimensions)
         total_order = np.vstack((total_order, R))
     return total_order
-
 def sparse_grid_basis(level, growth_rule, dimensions):
 
     # Initialize a few parameters for the setup

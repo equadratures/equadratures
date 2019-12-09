@@ -1,11 +1,36 @@
 """Recurrence coefficients class."""
-import numpy as np 
+import numpy as np
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
+def laguerre_recurrence_coefficients(a, order):
+    """
+    Returns the Laguerre recurrence coefficients.
 
+    :param double a:
+        First shape parameter, where a>= -1.
+    :param int order:
+        Order of the recurrence coefficients requested.
+    """
+    nn = int(order) + 1
+    ab = np.zeros((nn, 2))
+    if a <= -1:
+        raise(ValueError, 'First input must be >= -1!')
+    nu_value = a + 1
+    mu_value = gamma(a + 1)
+    ab[0,0] = nu_value
+    ab[0,1] = mu_value
+    if nn == 1:
+        return ab
+    for i in range(0, order):
+        n = float(i + 1)
+        na = 2 * n + a + 1
+        nb = n * (n + a)
+        ab[i+1, 0] = na
+        ab[i+1, 1] = nb
+    return ab
 def jacobi_recurrence_coefficients(a, b, lower, upper, order):
     """
     Returns the Jacobi recurrence coefficients.
-        
+
     :param double a:
         First shape parameter.
     :param double b:
@@ -36,11 +61,10 @@ def jacobi_recurrence_coefficients(a, b, lower, upper, order):
         else:
             ab[i, 1] = ( (upper - lower)**2 * (k - 1.) * (k - 1. + a) * (k - 1. + b) * (k - 1. + a + b))/( (2. * (k - 1.) + a + b)**2 * (2. * (k-1.) + a + b + 1.)* (2. * (k-1.) + a + b - 1.) )
     return ab
-
 def hermite_recurrence_coefficients(param_A, param_B, order):
     """
     Returns the Hermite recurrence coefficients.
-        
+
     :param double param_A:
         First shape parameter.
     :param double param_B:
@@ -52,19 +76,19 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
     """
     ab = np.zeros((order,2))
     sigma2 = param_B
-    
+
     if order == 1:
         ab[0,0] = 0
         ab[0,1] = gamma(param_A + 0.5)
         return ab
-    
+
     # Adapted from Walter Gatuschi
     N = order - 1
     n = range(1,N+1)
     nh = [ k / 2.0 for k in n]
     for i in range(0,N,2):
         nh[i] = nh[i] + sigma2
-    
+
     # Now fill in the entries of "ab"
     for i in range(0,order):
         if i == 0:
@@ -74,11 +98,10 @@ def hermite_recurrence_coefficients(param_A, param_B, order):
     ab[0,1] = gamma(param_A + 0.5)#2.0
 
     return ab
-
 def custom_recurrence_coefficients(x, w, order):
     """
     Returns the custom recurrence coefficients.
-        
+
     :param array x:
         Equidistant values of the support of the distribution.
     :param array w:
@@ -88,12 +111,12 @@ def custom_recurrence_coefficients(x, w, order):
     :return:
         (order+1)-by-2 numpy array of the Hermite recurrence coefficients.
     """
-    
+
     # Allocate memory for recurrence coefficients
     order = int(order)+1
     w = w / np.sum(w)
     ab = np.zeros((order+1,2))
-    
+
     # Negate "zero" components
     nonzero_indices = []
     for i in range(0, len(x)):
@@ -107,7 +130,7 @@ def custom_recurrence_coefficients(x, w, order):
     temp = w/s
     ab[0,0] = np.dot(x, temp.T)
     ab[0,1] = s
-        
+
     if order == 1:
         return ab
 

@@ -1,12 +1,15 @@
 """The Distribution template."""
-import numpy as np
+
 from equadratures.distributions.recurrence_utils import custom_recurrence_coefficients
+
+import numpy as np
+
 PDF_SAMPLES = 500000
 
 class Distribution(object):
     """
     The class defines a Distribution object. It serves as a template for all distributions.
-        
+
     :param double lower:
         Lower bound of the support of the distribution.
     :param double upper:
@@ -20,38 +23,34 @@ class Distribution(object):
         self.rate = rate
         self.scale = scale
         self.x_range_for_pdf = []
-    
-    def getDescription(self):
+    def get_description(self):
         """
         Returns the description of the distribution.
-    
+
         :param Distribution self:
                 An instance of the distribution class.
         """
         pass
-        
-    def getPDF(self, points=None):
+    def get_pdf(self, points=None):
         """
         Returns the PDF of the distribution.
-    
+
         :param Distribution self:
                 An instance of the distribution class.
         """
         pass
-
-    def getCDF(self, N=None, points=None):
+    def get_cdf(self, N=None, points=None):
         """
         Returns the CDF of the distribution.
-    
+
         :param Distribution self:
                 An instance of the distribution class.
         """
         pass
-
-    def getiCDF(self, xx):
+    def get_icdf(self, xx):
         """
         An inverse cumulative density function.
-    
+
         :param Distribution self:
                 An instance of the distribution class.
         :param xx:
@@ -60,11 +59,10 @@ class Distribution(object):
                 Inverse CDF samples associated with the gamma distribution.
         """
         pass
-
-    def getRecurrenceCoefficients(self, order):
+    def get_recurrence_coefficients(self, order):
         """
         Recurrence coefficients for the distribution
-        
+
         :param Distribution self:
             An instance of the distribution class.
         :param array order:
@@ -72,14 +70,13 @@ class Distribution(object):
         :return:
             Recurrence coefficients associated with the distribution.
         """
-        w_pdf = self.getPDF(self.x_range_for_pdf)
+        w_pdf = self.get_pdf(self.x_range_for_pdf)
         ab = custom_recurrence_coefficients(self.x_range_for_pdf, w_pdf, order)
         return ab
-
-    def getSamples(self, m=None):
+    def get_samples(self, m=None):
         """
         Generates samples from the distribution.
-            
+
         :param Distribution self:
             An instance of the distribution class.
         :param integer m:
@@ -92,7 +89,5 @@ class Distribution(object):
         else:
             number_of_random_samples = m
         uniform_samples = np.random.random((number_of_random_samples, 1))
-        yy = self.getiCDF(uniform_samples)
+        yy = self.get_icdf(uniform_samples)
         return yy
-
-		

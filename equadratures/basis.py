@@ -21,9 +21,9 @@ class Basis(object):
         from equadratures import *
 
         # Total order basis
-        mybasis = Basis(method='total-order', orders=[3,3,3])
-        mybasis2 = Basis(method='euclidean-degree', orders=[2,2])
-        mybasis3 = Basis(method='sparse-grid', growth_rule='linear', level=3)
+        mybasis = Basis('total-order', orders=[3,3,3])
+        mybasis2 = Basis('euclidean-degree', orders=[2,2])
+        mybasis3 = Basis('sparse-grid', growth_rule='linear', level=3)
 
     **References**
         1. Blatman, G., Sudret, B., (2011) Adaptive Sparse Polynomial Chaos Expansion Based on Least Angle Regression. Journal of Computational Physics, 230(6), 2345-2367.

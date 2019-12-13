@@ -102,30 +102,30 @@ We will opt for a total order basis set with effective quadrature subsampling!
 
 .. code::
 
-	mybasis = Basis('Total order')
-	Pleastsquares = Polylsq(parameters, mybasis, mesh='tensor', optimization='greedy-qr', oversampling=1.0)
+  mybasis = Basis('total-order')
+  mypoly  = Poly(parameters, mybasis, method='least-squares',sampling_args={'mesh':'tensor-grid', 'subsampling-algorithm':'qr', 'sampling-ratio':1.0})
 
 Now (and this is the important part), we wish to ascertain how many model evaluations will be required for computing these sensitivities. The objective is for these to be orders of magnitude lower than other methods for computing Sobol' indices.
 
 .. code::
-	
-	print mybasis.cardinality
+
+	print(mypoly.basis.cardinality)
 	>> 120
 
 Excellent! So the number of model evaluations we will require is 120! Now lets compute the coefficients and ascertain which of the variables above are the most important. P
 
 .. code::
 
-	Pleastsquares.computeCoefficients(piston)
-	Sleastsquares = Pleastsquares.getStatistics()
+  mypoly.set_model(piston)
+  mean, var = mypoly.get_mean_and_variance()
+  sobol = mypoly.get_sobol_indices(1)
 
 Printing the output to the screen, we obtain
 
 .. code::
 
-	data = Sleastsquares.getSobol(1).values()
-	for i in range(0, len(parameters)):
-    		print float(data[i]) * 10**2 * Sleastsquares.variance
+  for i in range(0, len(parameters)):
+      print(float(sobol[(i,)]) * 10**2 * var)
 
 	>> 0.0790729230512
 	>> 1.04006909416
@@ -139,24 +139,23 @@ which are similar to the values obtained by Owen. To generate a plot, one simply
 
 .. code::
 
-	fig = plt.figure()
-        ax = fig.add_subplot(1,1,1)
-        data_1 = np.arange(7) - 0.10 + 1
-        for i in range(0, len(data)):
-            plt.bar(i+1, data[i], color='steelblue',linewidth=1.5)
-        ax.set_axisbelow(True)
-        adjust_spines(ax, ['left', 'bottom'])
-        plt.xlabel(r'Parameters', fontsize=16)
-        plt.ylabel(r'First order Sobol indices', fontsize=16)
-        xTickMarks = [r'$M$', r'$S$', r'$V_0$', r'$k$', r'$P_0$', r'$T_a$', r'$T_0$']
-        ax.set_xticks(data_1+0.10)
-        xtickNames = ax.set_xticklabels(xTickMarks)
-        plt.setp(xtickNames, rotation=45, fontsize=16)
-        plt.tight_layout()
-        plt.savefig('Sobol.png', dpi=300, bbox_inches='tight')
+  fig = plt.figure()
+  ax = fig.add_subplot(1,1,1)
+  data_1 = np.arange(7) - 0.10 + 1
+  for i in range(0, len(sobol)):
+      plt.bar(i+1, sobol[(i,)], color='steelblue',linewidth=1.5)
+  ax.set_axisbelow(True)
+  #adjust_spines(ax, ['left', 'bottom'])
+  plt.xlabel(r'Parameters', fontsize=16)
+  plt.ylabel(r'First order Sobol indices', fontsize=16)
+  xTickMarks = [r'$M$', r'$S$', r'$V_0$', r'$k$', r'$P_0$', r'$T_a$', r'$T_0$']
+  ax.set_xticks(data_1+0.10)
+  xtickNames = ax.set_xticklabels(xTickMarks)
+  plt.setp(xtickNames, rotation=45, fontsize=16)
+  plt.tight_layout()
+  plt.savefig('../Figures/tutorial_9_fig_a.png', dpi=300, bbox_inches='tight',pad_inches=0.1)
 
-
-.. figure:: Figures/Sobol.png
+.. figure:: Figures/tutorial_9_fig_a.png
    :scale: 40 %
 
    Figure. First order Sobol' indices for the piston problem.
@@ -167,11 +166,14 @@ More generally, if one wanted to obtain higher order Sobol' indices, one can use
 
 .. code::
 
-	sobol_info = Sleastsquares.getSobol(2)
-        for key, value in sobol_info.iteritems():
-            print str('Parameter numbers: ')+str(key)+', Sobol index value: '+str(value)
+  sobol_2nd = mypoly.get_sobol_indices(2)
+  for key, value in sobol_2nd.items():
+      print(str('Parameter numbers: ')+str(key)+', Sobol index value: '+str(value))
 
 This concludes this notebook on the computation of Sobol' indices.
+
+The full source code for this tutorial can be found `here. <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/source/_documentation/codes/tutorial_9.py>`__
+
 
 **References**
 

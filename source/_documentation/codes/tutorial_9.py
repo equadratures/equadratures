@@ -36,13 +36,3 @@ plt.grid()
 frame1 = plt.gca()
 frame1.axes.yaxis.set_ticklabels([])
 plt.savefig('../Figures/tutorial_2_fig_a.png', dpi=200, bbox_inches='tight')
-
-# Other quadrature rules!
-points2, weights2 = myPoly2.get_points_and_weights()
-points3, weights3 = myPoly3.get_points_and_weights()
-points4, weights4 = myPoly4.get_points_and_weights()
-
-integral2 = float( 2  * np.dot(weights2 , evaluate_model(points2, function) ) )
-integral3 = float( 2  * np.dot(weights3 , evaluate_model(points3, function) ) )
-integral4 = float( 2  * np.dot(weights4 , evaluate_model(points4, function) ) )
-print(integral2, integral3, integral4)

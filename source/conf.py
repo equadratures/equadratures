@@ -21,12 +21,12 @@ import sphinx_bootstrap_theme
 
 project = u' '
 copyright = u'2016-2019 by Effective Quadratures'
-author = u'Pranay Seshadri, Nicholas Wong, James Gross, Irene Vidris'
+author = u'Pranay Seshadri, Nicholas Wong, James Gross, Irene Vidris, Joe Zhou, Ashley Scillitoe'
 
 # The short X.Y version
-version = u'8.0'
+version = u'8.1'
 # The full version, including alpha/beta/rc tags
-release = u'v8.0'
+release = u'v8.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -185,10 +185,10 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 html_theme_options = {
     # Navigation bar title. (Default: ``project`` value)
     'navbar_title': "",
-    
+
     # Tab name for entire site. (Default: "Site")
     'navbar_site_name': "Explore",
-    
+
     # A list of tuples containing pages or urls to link to.
     # Valid tuples should be in the following forms:
     #    (name, page)                 # a link to a page
@@ -199,20 +199,20 @@ html_theme_options = {
     'navbar_links': [
                      #("Examples", "examples"),
                      ],
-        
+
                      # Render the next and previous page links in navbar. (Default: true)
                      'navbar_sidebarrel': False,
-                     
+
                      # Render the current pages TOC in the navbar. (Default: true)
                      'navbar_pagenav': False,
-                     
+
                      # Tab name for the current pages TOC. (Default: "Page")
                      #'navbar_pagenav_name': "Page",
-                     
+
                      # Global TOC depth for "site" navbar tab. (Default: 1)
                      # Switching to -1 shows all levels.
                      'globaltoc_depth': -1,
-                     
+
                      # Include hidden TOCs in Site navbar?
                      #
                      # Note: If this is "false", you cannot have mixed ``:hidden:`` and
@@ -221,19 +221,19 @@ html_theme_options = {
                      #
                      # Values: "true" (default) or "false"
                      'globaltoc_includehidden': "true",
-                     
+
                      # HTML navbar class (Default: "navbar") to attach to <div> element.
                      # For black navbar, do "navbar navbar-inverse"
                      'navbar_class': "navbar",
-                     
+
                      # Fix navigation bar to top of page?
                      # Values: "true" (default) or "false"
                      'navbar_fixed_top': "true",
-                     
+
                      # Location of link to source.
                      # Options are "nav" (default), "footer" or anything else to exclude.
                      'source_link_position': "none",
-                     
+
                      # Bootswatch (http://bootswatch.com/) theme.
                      #
                      # Options are nothing (default) or the name of a valid theme
@@ -247,7 +247,7 @@ html_theme_options = {
                      # - Bootstrap 3: https://bootswatch.com/3
                      'bootswatch_theme': "cerulean",
                      'page_toc_position': 'sidebar-left',
-                     
+
                      # Choose Bootstrap version.
                      # Values: "3" (default) or "2" (in quotes)
     'bootstrap_version': "3",

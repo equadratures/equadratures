@@ -40,7 +40,7 @@ for i in range(0, len(sobol)):
 ax.set_axisbelow(True)
 #adjust_spines(ax, ['left', 'bottom'])
 plt.xlabel(r'Parameters', fontsize=16)
-plt.ylabel(r'First order Sobol indices', fontsize=16)
+plt.ylabel(r"First order Sobol' indices", fontsize=16)
 xTickMarks = [r'$M$', r'$S$', r'$V_0$', r'$k$', r'$P_0$', r'$T_a$', r'$T_0$']
 ax.set_xticks(data_1+0.10)
 xtickNames = ax.set_xticklabels(xTickMarks)
@@ -50,4 +50,4 @@ plt.savefig('../Figures/tutorial_9_fig_a.png', dpi=300, bbox_inches='tight',pad_
 
 sobol_2nd = mypoly.get_sobol_indices(2)
 for key, value in sobol_2nd.items():
-    print(str('Parameter numbers: ')+str(key)+', Sobol index value: '+str(value))
+    print(str('Parameter numbers: ')+str(key)+", Sobol' index value: "+str(value))

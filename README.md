@@ -6,7 +6,7 @@ Effective Quadratures is an open-source library for *uncertainty quantification*
 
 ## Code
 
-The latest version of the code is version 8.0 and was released in August 2019. 
+The latest version of the code is version 8.1 and was released in December 2019. 
 
 ![](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures.svg?branch=master)
 ![](https://coveralls.io/repos/github/Effective-Quadratures/Effective-Quadratures/badge.svg?branch=master)

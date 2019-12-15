@@ -56,6 +56,7 @@ Now we use the univariate basis in the polyreg class.
 
   myBasis = Basis('Univariate')
   poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':x_train, 'sample-outputs':y_train} )
+  poly.set_model()
   N = 100
   x_test = np.reshape(np.linspace(0, 1, N), (N, 1) )
 

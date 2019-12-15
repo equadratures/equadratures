@@ -56,7 +56,7 @@ We will first aim to approximate this function using a full tensor grid. This sh
 	cbar.ax.tick_params(labelsize=13)
 
 .. figure:: Figures/tutorial_8_fig_a.png
-   :scale: 30 %
+   :scale: 40 %
 
 .. figure:: Figures/tutorial_8_fig_b.png
    :scale: 40%
@@ -65,21 +65,20 @@ The figures above show us the coefficient magnitude (log base-10 scale) and the 
 
 .. code::
 
-	sparse = Basis('Sparse grid', level=7, growth_rule='exponential')
+	sparse = Basis('sparse-grid', level=7, growth_rule='exponential')
 
 Then we proceed to compute the coefficients using the SPAM. The calls to the Polyint subroutine are unchanged, apart from the basis.
 
 .. code::
 
-	sparse = Basis('Sparse grid', level=7, growth_rule='exponential')
-	mySparsePoly = Polyint([x1, x2], sparse)
-	mySparsePoly.computeCoefficients(function)
+	myPoly = Polyint([x1, x2], sparse)
+	myPoly.set_model(function)
 
 And again, for the plots we have:
 
 .. code::
 
-	x, y, z, max_order = twoDgrid(mySparsePoly.coefficients, mySparsePoly.multi_index)
+	x, y, z, max_order = twoDgrid(myPoly.get_coefficients(), myPoly.basis.get_elements())
 	G = np.log10(np.abs(z))
 	fig = plt.figure()
 	ax = fig.add_subplot(1,1,1)
@@ -93,7 +92,7 @@ And again, for the plots we have:
 	cbar = plt.colorbar(extend='neither', spacing='proportional',
                 orientation='vertical', shrink=0.8, format="%.0f")
 	cbar.ax.tick_params(labelsize=13)
-	plt.savefig('Pseudo_2.png',   dpi=300, bbox_inches='tight')
+	
 
 
 	fig = plt.figure()
@@ -104,18 +103,17 @@ And again, for the plots we have:
 	plt.ylabel('$\zeta_2$', fontsize=13)
 	plt.xticks(fontsize=13)
 	plt.yticks(fontsize=13)
-	plt.savefig('FigureDD.png' , dpi=200, bbox_inches='tight', pad_inches=0.1)
-	print len(np.unique(mySparsePoly.quadraturePoints, axis=0))
-	>> 1421
 
-.. figure:: Figures/Pseudo_2.png
-   :scale: 30 %
 
-.. figure:: Figures/FigureDD.png
+.. figure:: Figures/tutorial_8_fig_c.png
+   :scale: 40 %
+
+.. figure:: Figures/tutorial_8_fig_d.png
    :scale: 40%
 
-The total number of points in the sparse grid is 1421 compared to 10,201 in the full tensor grid; the savings is evident. SPAM leverages the anistropic nature of the coefficients to deliver nearly the same level of approximation.
+The total number of points in the sparse grid is 1421 compared to 10,201 in the full tensor grid; the savings is evident. SPAM leverages the anistropic nature of the coefficients to deliver nearly the same level of approximation. The full source code for this tutorial can be found `here. <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/source/_documentation/codes/tutorial_8.py>`__
+
 
 **References**
 
-.. [1]  Constantine, P. G., Eldred, M. S. and Phipps, E. T., (2012) Sparse pseudospectral approximation method. Computer Methods in Applied Mechanics and Engineering 229: 1-12.
+- Constantine, P. G., Eldred, M. S. and Phipps, E. T., (2012) Sparse pseudospectral approximation method. Computer Methods in Applied Mechanics and Engineering 229: 1-12.

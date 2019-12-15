@@ -1,4 +1,4 @@
-Surrogate-Based Optimisation with Polynomials 
+Surrogate-based optimisation with polynomials 
 ==============================================
 In this tutorial, we demonstrate how one may use orthogonal polynomials constructed in Effective Quadratures for surrogate-based optimisation. One particularly significant benefit of using orthogonal polynomials for optimisation is that the polynomial basis terms :math:`\psi_{i}` and their derivatives :math:`\psi_{i}^{(d)}` may be easily found using the standard four-term recurrence
 

@@ -167,7 +167,7 @@ Now the active subspace is found, we can plot the high dimensional data onto the
 .. figure:: Figures/tutorial_12_fig_a.png
    :scale: 50 %
 
-
+The full source code for this tutorial can be found `here. <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/source/_documentation/codes/tutorial_12.py>`__
 
 **References**
 

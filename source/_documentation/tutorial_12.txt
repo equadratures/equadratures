@@ -123,15 +123,16 @@ In turbomachinery design, the fan blade designs are usually parametrised by a fe
 
 .. code::
 
-        import numpy as np
-        import scipy
-        from scipy.linalg import orth
         from equadratures import *
+	import numpy as np
+	import matplotlib.pyplot as plt
+	from mpl_toolkits.mplot3d import axes3d
 
 .. code::
 
-        X = np.loadtxt('X.dat')
-        fX = np.loadtxt('Y.dat')
+        X = np.loadtxt('design_parameters.dat')
+	y = np.loadtxt('non_dimensionalized_efficiency.dat')
+	title = 'Normalised efficiency'
 
 This dataset (taken from [3]) contains 554 pairs of inputs (designs of blades) and outputs (CFD-evaluataed efficiency). The dimension of inputs is 25 (25D design space). Using variable projection, we wish to find a surrogate model for this relationship in 2D. All input vectors are put in X.dat, while the outputs are in Y.dat. They are stored as variables X and fX respectively.
 
@@ -144,98 +145,34 @@ This dataset (taken from [3]) contains 554 pairs of inputs (designs of blades) a
 
 ..  code::
 
-        U,R=variable_projection(X,fX,n,p,gamma=0.1,beta=0.1)
+        mysubspace = Subspaces(method='variable-projection', sample_points=X, sample_outputs=y)
+	W = mysubspace.get_subspace()
 
-Here gamma is the line search step reduction factor, where beta is the Armijo tolerance for backtracking line search. We set both values at 0.1 here. In the outputs, U is the active subspace found, R is the optimised residual.
-
-.. code::
-
-        print U
-
-.. code::
-
-        [[-0.01382107 -0.00637475]
-         [ 0.01067215 -0.02186359]
-         [-0.06475873 -0.04025172]
-         [-0.04618423 -0.0144828 ]
-         [ 0.05212156  0.05920027]
-         [ 0.02217815  0.03444545]
-         [-0.23755612  0.06829657]
-         [-0.46031284  0.17809686]
-         [-0.49535082  0.4846477 ]
-         [-0.16282678  0.52534648]
-         [ 0.0949624   0.03154215]
-         [ 0.0086608   0.05961242]
-         [ 0.08081011  0.14893545]
-         [ 0.34311475  0.38051787]
-         [ 0.53168775  0.51996495]
-         [-0.02957525 -0.02173312]
-         [-0.01349072 -0.01918691]
-         [-0.0537243  -0.01603187]
-         [ 0.0195819   0.00475512]
-         [ 0.01454217 -0.0044287 ]
-         [-0.01978521 -0.01777296]
-         [ 0.03929334 -0.00383454]
-         [ 0.03420664 -0.02237725]
-         [ 0.12303776 -0.0336818 ]
-         [ 0.10549695 -0.02667934]]
 
 Now the active subspace is found, we can plot the high dimensional data onto the 2D active subspace. Here it is noted that since the approach finds the active subspace :math:`\mathbf{U}` without a kernel matrix, :math:`\mathbf{U}=[\mathbf{U}_1,\mathbf{U}_2]`.
 
 .. code::
 
-        active1 = np.dot( X , U[:,0] ) 
-        active2 = np.dot( X , U[:,1] )
+        u = X @ W[:, 0:n]
 
 .. code::
 
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.grid(True)
-        cax = ax.scatter(active1, fX, c=fX, marker='o', s=100, vmin=-1, vmax=0.5)
-        cbar = plt.colorbar(cax, extend='neither', spacing='proportional', orientation='vertical', shrink=0.8)
-        ax.set_xlabel('Active variable 1, $\mathbf{XU_{1}}$')
-        ax.set_ylabel('Non-dimensional efficiency, $\eta$')
-        plt.xlim([-2.0, 2.0])
-        adjust_spines(ax, ['left', 'bottom'])
-        ax.set_title('Efficiency along $\mathbf{U_{1}}$')
-        plt.show()
+        fig = plt.figure(figsize=(10,10))
+	ax = fig.add_subplot(111, projection='3d')
+	ax.scatter(u[:,0],u[:,1], y, s=50, c=y, marker='o', edgecolor='k', lw=1, alpha=0.8)                                                                               
+	ax.set_xlabel('u1')
+	ax.set_ylabel('u2')
+	ax.set_zlabel(title)
 
-.. figure:: Figures/VP_1.png
-   :scale: 100 %
+.. figure:: Figures/tutorial_12_fig_a.png
+   :scale: 50 %
 
-.. code::
 
-        from matplotlib.mlab import griddata
-        def grid(x, y, z, resX=40, resY=40):
-            "Convert 3 column data to matplotlib grid"
-            xi = np.linspace(min(x), max(x), resX)
-            yi = np.linspace(min(y), max(y), resY)
-            Z = griddata(x, y, z, xi, yi, interp='linear')
-            X, Y = np.meshgrid(xi, yi)
-            return X, Y, Z
-        
-        X, Y, Z = grid(active1, active2, fX)
-        fig = plt.figure()
-        ax = fig.add_subplot(1,1,1)
-        cax = plt.contourf(X, Y, Z, 20, vmin=-1, vmax=0.5)
-        cax = ax.scatter(active1, active2,c=fX, marker='o', s=30)
-        cbar = plt.colorbar(cax, extend='neither', spacing='proportional', orientation='vertical', shrink=0.8)
-        ax.set_xlabel('Active variable 1, $\mathbf{XU_{1}}$')
-        ax.set_ylabel('Active variable 2, $\mathbf{XU_{2}}$')
-        plt.xlim([-2.0, 2.0])
-        plt.ylim([-2.0, 2.0])
-        adjust_spines(ax, ['left', 'bottom'])
-        ax.set_title('Efficiency along $\mathbf{U_{1}}$ and $\mathbf{U_{2}}$')
-        plt.show()
-
-.. figure:: Figures/VP_2.png
-   :scale: 100 %
 
 **References**
 
-.. [1] Golub, G., Pereyra, V., (2003). Separable nonlinear least squares: the variable projection method and its applications. Inverse Problems, 19(2). `Paper <http://iopscience.iop.org/article/10.1088/0266-5611/19/2/201/meta>`__
+- Golub, G., Pereyra, V., (2003). Separable nonlinear least squares: the variable projection method and its applications. Inverse Problems, 19(2). `Paper <http://iopscience.iop.org/article/10.1088/0266-5611/19/2/201/meta>`__
 
-.. [2] Honkason, J. and Constantine, P. (2018). Data-driven polynomial ridge approximation using variable projection. SIAM Journal on Scientific Computing 40.3 (2018): A1566-A1589. `Paper <https://epubs.siam.org/doi/abs/10.1137/17M1117690>`__
+- Honkason, J. and Constantine, P. (2018). Data-driven polynomial ridge approximation using variable projection. SIAM Journal on Scientific Computing 40.3 (2018): A1566-A1589. `Paper <https://epubs.siam.org/doi/abs/10.1137/17M1117690>`__
 
-.. [3] Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery active subspace performance maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__
+- Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery active subspace performance maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__

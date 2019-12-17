@@ -18,6 +18,7 @@ We now demonstrate some basic functionality of this parameter. First consider th
 
 	from equadratures import *
 	import numpy as np
+        Import matplotlib.pyplot as plt
 
 	s = Parameter(distribution='normal', shape_parameter_A = 0.0, shape_parameter_B = 1.0, order=3)
 

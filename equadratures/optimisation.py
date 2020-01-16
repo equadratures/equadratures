@@ -1,10 +1,13 @@
 """Perform unconstrained or constrained optimisation."""
 from equadratures.basis import Basis
 from equadratures.poly import Poly
+from equadratures.subspaces import Subspaces
 from equadratures.parameter import Parameter
 from scipy import optimize
+from scipy.linalg import null_space
 import numpy as np
 from scipy.special import comb, factorial
+from scipy.stats import linregress
 import warnings
 warnings.filterwarnings('ignore')
 class Optimisation:
@@ -19,7 +22,8 @@ class Optimisation:
         self.maximise = False
         self.bounds = None
         self.constraints = []
-        if self.method == 'trust-region':
+        self.num_evals = 0
+        if self.method in ['trust-region', 'omorf']:
             self.num_evals = 0
             self.S = np.array([])
             self.f = np.array([])
@@ -71,8 +75,8 @@ class Optimisation:
         :param numpy.ndarray ub: 1-by-n matrix that contains upper bounds of x.
         """
         assert lb.size == ub.size
-        assert self.method in ['L-BFGS-B', 'TNC', 'SLSQP', 'trust-constr', 'COBYLA', 'trust-region']
-        if self.method == 'trust-region':
+        assert self.method in ['L-BFGS-B', 'TNC', 'SLSQP', 'trust-constr', 'COBYLA', 'trust-region', 'omorf']
+        if self.method in ['trust-region', 'omorf']:
             self.bounds = [lb, ub]
         elif self.method != 'COBYLA':
             self.bounds = []
@@ -137,13 +141,16 @@ class Optimisation:
             constraint_deriv = lambda x: jac(x)[:,0]
             constraint_hess = lambda x, v: hess(x)[:,:,0]
             if self.method == 'trust-constr':
-                self.constraints.append(optimize.NonlinearConstraint(constraint, bounds[0], bounds[1], jac = constraint_deriv, hess = constraint_hess))
+                self.constraints.append(optimize.NonlinearConstraint(constraint, bounds[0], bounds[1], \
+                             jac = constraint_deriv, hess = constraint_hess))
             # other methods add inequality constraints using dictionary files
             elif self.method == 'SLSQP':
                 if not np.isinf(bounds[0]):
-                    self.constraints.append({'type':'ineq', 'fun': lambda x: constraint(x) - bounds[0], 'jac': constraint_deriv})
+                    self.constraints.append({'type':'ineq', 'fun': lambda x: constraint(x) - bounds[0], \
+                             'jac': constraint_deriv})
                 if not np.isinf(bounds[1]):
-                    self.constraints.append({'type':'ineq', 'fun': lambda x: -constraint(x) + bounds[1], 'jac': lambda x: -constraint_deriv(x)})
+                    self.constraints.append({'type':'ineq', 'fun': lambda x: -constraint(x) + bounds[1], \
+                             'jac': lambda x: -constraint_deriv(x)})
             else:
                 if not np.isinf(bounds[0]):
                     self.constraints.append({'type':'ineq', 'fun': lambda x: constraint(x) - bounds[0]})
@@ -161,7 +168,8 @@ class Optimisation:
             else:
                 constraint_hess = optimize.BFGS()
             if self.method == 'trust-constr':
-                self.constraints.append(optimize.NonlinearConstraint(constraint, 0.0, np.inf, jac = constraint_deriv, hess = constraint_hess))
+                self.constraints.append(optimize.NonlinearConstraint(constraint, 0.0, np.inf, jac = constraint_deriv, \
+                         hess = constraint_hess))
             elif self.method == 'SLSQP':
                 if 'jac_function' in custom:
                     self.constraints.append({'type': 'ineq', 'fun': constraint, 'jac': constraint_deriv})
@@ -207,9 +215,11 @@ class Optimisation:
             constraint_deriv = lambda x: jac(x)[:,0]
             constraint_hess = lambda x, v: hess(x)[:,:,0]
             if self.method == 'trust-constr':
-                self.constraints.append(optimize.NonlinearConstraint(constraint, value, value, jac=constraint_deriv, hess=constraint_hess))
+                self.constraints.append(optimize.NonlinearConstraint(constraint, value, value, jac=constraint_deriv, \
+                             hess=constraint_hess))
             else:
-                self.constraints.append({'type':'eq', 'fun': lambda x: constraint(x) - value, 'jac': constraint_deriv})
+                self.constraints.append({'type':'eq', 'fun': lambda x: constraint(x) - value, \
+                             'jac': constraint_deriv})
         elif custom is not None:
             assert 'function' in custom
             constraint = custom['function']
@@ -222,54 +232,113 @@ class Optimisation:
             else:
                 constraint_hess = optimize.BFGS()
             if self.method == 'trust-constr':
-                self.constraints.append(optimize.NonlinearConstraint(constraint, 0.0, 0.0, jac=constraint_deriv, hess=constraint_hess))
+                self.constraints.append(optimize.NonlinearConstraint(constraint, 0.0, 0.0, jac=constraint_deriv, \
+                         hess=constraint_hess))
             else:
                 if 'jac_function' in custom:
                     self.constraints.append({'type':'eq', 'fun': constraint, 'jac': constraint_deriv})
                 else:
                     self.constraints.append({'type':'eq', 'fun': constraint})
 
-    def optimise(self, x0):
+    def optimise(self, x0, *args, **kwargs):
         """
         Performs optimisation on a specified function, provided the objective has been added using 'add_objective' method
         and constraints have been added using the relevant method.
 
         :param numpy.ndarray x0: Starting point for optimiser.
+        :param float del_k: initial trust-region radius for ``trust-region`` or ``omorf`` methods
+        :param float delmin: minimum allowable trust-region radius for ``trust-region`` or ``omorf`` methods
+        :param float delmax: maximum allowable trust-region radius for ``trust-region`` or ``omorf`` methods
+        :param int d: reduced dimension for ``omorf`` method
+        :param string subspace_method: subspace method for ``omorf`` method with options ``variable-projection`` or ``active-subspaces``
 
         :return:
-            **sol**: An object containing the optimisation result. Important attributes are: the solution array ``x``, a Boolean flag ``success`` indicating
-            if the optimiser exited successfully, and a doc-string ``message`` describing the cause of the termination.
+            **sol**: An object containing the optimisation result. Important attributes are: the solution array ``x``, and a Boolean flag ``success`` indicating
+            if the optimiser exited successfully.
         """
         assert self.objective['function'] is not None
         if self.method in ['Newton-CG', 'dogleg', 'trust-ncg', 'trust-krylov', 'trust-exact', 'trust-constr']:
-            sol = optimize.minimize(self.objective['function'], x0, method=self.method, bounds = self.bounds, jac=self.objective['gradient'], \
-                                    hess=self.objective['hessian'], constraints=self.constraints, options={'disp': False, 'maxiter': 10000})
+            sol = optimize.minimize(self.objective['function'], x0, method=self.method, bounds = self.bounds, \
+                        jac=self.objective['gradient'], hess=self.objective['hessian'], \
+                        constraints=self.constraints, options={'disp': False, 'maxiter': 10000})
+            sol = {'x': sol['x'], 'fun': sol['fun'], 'nfev': self.num_evals, 'status': sol['status']}
         elif self.method in ['CG', 'BFGS', 'L-BFGS-B', 'TNC', 'SLSQP']:
-            sol = optimize.minimize(self.objective['function'], x0, method=self.method, bounds = self.bounds, jac=self.objective['gradient'], \
-                                    constraints=self.constraints, options={'disp': False, 'maxiter': 10000})
-        elif self.method == 'trust-region':
-            x_opt, f_opt, status = self._trust_region(x0)
+            sol = optimize.minimize(self.objective['function'], x0, method=self.method, bounds = self.bounds, \
+                        jac=self.objective['gradient'], constraints=self.constraints, \
+                        options={'disp': False, 'maxiter': 10000})
+            sol = {'x': sol['x'], 'fun': sol['fun'], 'nfev': self.num_evals, 'status': sol['status']}
+        elif self.method in ['trust-region', 'omorf']:
+            x_opt, f_opt, status = self._trust_region(x0, del_k=kwargs.get('del_k', 1.0), eta1=kwargs.get('eta1', 0.1), \
+                        eta2=kwargs.get('eta2', 0.7), gam1=kwargs.get('gam1', 0.25), gam2=kwargs.get('gam2', 1.5), \
+                        omega=kwargs.get('omega', 0.6), delmin=kwargs.get('delmin', 1.0e-5), \
+                        delmax=kwargs.get('delmax', 2.0), max_evals=kwargs.get('max_evals', 2000), \
+                        d=kwargs.get('d', 2), subspace_method=kwargs.get('subspace_method', 'variable-projection'))
             sol = {'x': x_opt, 'fun': f_opt, 'nfev': self.num_evals, 'status': status}
         else:
             sol = optimize.minimize(self.objective['function'], x0, method=self.method, bounds = self.bounds, \
                                     constraints=self.constraints, options={'disp': False, 'maxiter': 10000})
+            sol = {'x': sol['x'], 'fun': sol['fun'], 'nfev': self.num_evals, 'status': sol['status']}
         if self.maximise:
             sol['fun'] *= -1.0
         return sol
+    
+    def _calculate_subspace(self, S, f):
+        parameters = [Parameter(distribution='uniform', lower=np.min(S[:,i]), upper=np.max(S[:,i]), order=1) for i in range(0, self.n)]
+        self.poly = Poly(parameters, basis=Basis('total-order'), method='least-squares', \
+                     sampling_args={'mesh':'user-defined', 'sample-points': S, 'sample-outputs': f})
+        self.poly.set_model()
+        self.Subs = Subspaces(full_space_poly=self.poly, method='active-subspace', subspace_dimension=self.d)
+        if self.subspace_method == 'variable-projection':
+            U0 = self.Subs.get_subspace()[:,:self.d]
+            self.Subs = Subspaces(method='variable-projection', sample_points=S, sample_outputs=f, \
+                      subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2)
+            self.W1 = self.Subs.get_subspace()[:, :self.d]
+        elif self.subspace_method == 'active-subspaces':
+            U0 = self.Subs.get_subspace()[:,1].reshape(-1,1)
+            U1 = null_space(U0.T)
+            self.W1 = U0
+            for i in range(self.d-1):
+                R = []
+                for j in range(U1.shape[1]):
+                    U = np.hstack((self.W1, U1[:, j].reshape(-1,1)))
+                    Y = np.dot(S, U)
+                    myParameters = [Parameter(distribution='uniform', lower=np.min(Y[:,k]), upper=np.max(Y[:,k]), \
+                                  order=2) for k in range(Y.shape[1])]
+                    myBasis = Basis('total-order')
+                    poly = Poly(myParameters, myBasis, method='least-squares', \
+                                sampling_args={'mesh': 'user-defined', 'sample-points':Y, 'sample-outputs':f})
+                    poly.set_model()
+                    f_eval = poly.get_polyfit(Y)
+                    _,_,r,_,_ = linregress(f_eval.flatten(),f.flatten()) 
+                    R.append(r**2)
+                index = np.argmax(R)
+                self.W1 = np.hstack((self.W1, U1[:, index].reshape(-1,1)))
+                U1 = np.delete(U1, index, 1)
 
-    def _blackbox_evaluation(self,s):
+    def _blackbox_evaluation(self, s):
         """
-        Evaluates the point s for ``trust-region`` method
+        Evaluates the point s for ``trust-region`` or ``omorf`` methods
         """
-        f = self.objective['function'](s.flatten())
-        self.num_evals += 1
-        if self.f.size == 0:
-            self.S = s.reshape(1,-1)
-            self.f = np.array([[f]])
+        if s.ndim == 1:
+            s = s.reshape(1,-1)
+            f = np.array([[self.objective['function'](s.flatten())]])
+            self.num_evals += 1
         else:
-            self.S = np.vstack((self.S,s.reshape(1,-1)))
-            self.f = np.vstack((self.f,np.array([f]))) 
-        return f
+            f = np.zeros(s.shape[0])
+            for i in range(s.shape[0]):
+                f[i] = self.objective['function'](s[i,:].flatten())
+                self.num_evals += 1
+            f = f.reshape(-1,1)
+        if self.f.size == 0:
+            self.S = s
+            self.f = f
+        else:
+            self.S = np.vstack((self.S, s))
+            self.f = np.vstack((self.f, f))
+        if s.shape[0] == 1:
+            return np.asscalar(f)
+        else:
+            return f
         
     @staticmethod
     def _remove_point_from_set(S, f, s_old, tol):
@@ -277,6 +346,7 @@ class Optimisation:
         S = np.delete(S, ind_current, 0)
         f = np.delete(f, ind_current, 0)
         return S, f
+    
     @staticmethod
     def _remove_points_within_TR_from_set(S, f, s_old, del_k):
         ind_within_TR = np.where(np.linalg.norm(S-s_old, axis=1, ord=np.inf) <= del_k)[0]
@@ -294,7 +364,7 @@ class Optimisation:
                 
             S = s_old.reshape(1,-1)
             f = np.array([f_old])
-            S, f = self._improve_poisedness_LU(S, f, S_hat, f_hat, s_old, del_k, 'new')
+            S, f = self._improve_poisedness(S, f, S_hat, f_hat, s_old, del_k, 'new')
         elif method == 'replace':
             if max(np.linalg.norm(S-s_old, axis=1, ord=np.inf)) > self.epsilon*del_k:
                 ind_distant = np.argmax(np.linalg.norm(S-s_old, axis=1, ord=np.inf))
@@ -307,7 +377,7 @@ class Optimisation:
                 
                 S = s_old.reshape(1,-1)
                 f = np.array([f_old])
-                S, f = self._improve_poisedness_LU(S, f, S_hat, f_hat, s_old, del_k, 'improve')
+                S, f = self._improve_poisedness(S, f, S_hat, f_hat, s_old, del_k, 'improve')
         elif method == 'improve':
             S_hat = np.copy(S)
             f_hat = np.copy(f)
@@ -320,35 +390,56 @@ class Optimisation:
                 
             S = s_old.reshape(1,-1)
             f = np.array([f_old])
-            S, f = self._improve_poisedness_LU(S, f, S_hat, f_hat, s_old, del_k, 'improve', num)
+            S, f = self._improve_poisedness(S, f, S_hat, f_hat, s_old, del_k, 'improve', num)
         return S, f
     
-    def _improve_poisedness_LU(self, S, f, S_hat, f_hat, s_old, del_k, method=None, num=1):
-        if S_hat.shape[0] > 1:
-            Del_S = max(np.linalg.norm(S_hat-s_old, axis=1, ord=np.inf))
+    def _improve_poisedness(self, S, f, S_hat, f_hat, s_old, del_k, method=None, num=1):
+        if self.bounds is not None:
+            bounds_l = np.maximum(self.bounds[0], s_old-del_k)
+            bounds_u = np.minimum(self.bounds[1], s_old+del_k)
         else:
-            Del_S = del_k
-        Base = Basis('total-order', orders=np.tile([2], self.n))
-        basis = Base.get_basis()[:,range(self.n-1, -1, -1)]
-        def natural_basis_function(s, basis):
-            s = (s - s_old) / Del_S
-            try:
-                m,n = s.shape
-            except:
-                m = 1
-                s = s.reshape(1,-1)
-            phi = np.zeros((m, basis.shape[0]))
-            for i in range(m):
-                for k in range(basis.shape[0]):
-                    phi[i,k] = np.prod(np.divide(np.power(s[i,:], basis[k,:]), factorial(basis[k,:])))
-            if m == 1:
-                return phi.flatten()
-            else:
-                return phi
-        phi_function = lambda s: natural_basis_function(s, basis)
+            bounds_l = s_old-del_k
+            bounds_u = s_old+del_k
+        xc = 0.5*(bounds_l + bounds_u)
+        Del_S = del_k
+        if S_hat.shape[0] > 1:
+            Del_S = max(np.linalg.norm(S_hat-xc, axis=1, ord=np.inf))
+        if self.method == 'trust-region':
+            Base = Basis('total-order', orders=np.tile([2], self.n))
+            basis = Base.get_basis()[:,range(self.n-1, -1, -1)]
+            def phi_function(s):
+                s = (s - s_old) / Del_S
+                try:
+                    m,n = s.shape
+                except:
+                    m = 1
+                    s = s.reshape(1,-1)
+                phi = np.zeros((m, basis.shape[0]))
+                for i in range(m):
+                    for k in range(basis.shape[0]):
+                        phi[i,k] = np.prod(np.divide(np.power(s[i,:], basis[k,:]), factorial(basis[k,:])))
+                if m == 1:
+                    return phi.flatten()
+                else:
+                    return phi
+        elif self.method == 'omorf':
+            def phi_function(s):
+                s = (s - s_old) / Del_S
+                try:
+                    m,n = s.shape
+                except:
+                    m = 1
+                    s = s.reshape(1,-1)
+                phi = np.zeros((m, self.n+1))
+                phi[:, 0] = 1.0
+                phi[:, 1:] = s
+                if m == 1:
+                    return phi.flatten()
+                else:
+                    return phi
 #       Initialise U matrix of LU factorisation of M matrix (see Conn et al.)
         U = np.zeros((self.q,self.q))
-        U[0,0] = 1.0
+        U[0,:] = phi_function(s_old)
 #       Perform the LU factorisation algorithm for the rest of the points
         for k in range(1, self.q):
             index = None
@@ -357,7 +448,6 @@ class Optimisation:
             for j in range(k):
                 v[j] = -U[j,k] / U[j,j]
             v[k] = 1.0
-            
 #           If there are still points to choose from, find if points meet criterion. If so, use the index to choose 
 #           point with given index to be next point in regression/interpolation set
             if f_hat.size > 0:
@@ -383,7 +473,6 @@ class Optimisation:
 #           If index doesn't exist, solve an optimisation point to find the point in the range which best satisfies criterion
             else:
                 s = self._find_new_point(v, phi_function, del_k, s_old)
-#                s = optimize.minimize(lambda x: -abs(np.dot(v,phi_function(x.flatten()))), s_old, method='COBYLA',constraints=[{'type':'ineq', 'fun': lambda x: 1.0 - x},{'type':'ineq', 'fun': lambda x: 1.0 + x}],options={'disp': False})['x'].flatten()
                 S = np.vstack((S, s))
                 f = np.vstack((f, self._blackbox_evaluation(s)))
 #           Update U factorisation in LU algorithm
@@ -396,8 +485,61 @@ class Optimisation:
         return S, f
     
     def _find_new_point(self, v, phi_function, del_k, s_old):
-        obj1 = lambda s: np.dot(v, phi_function(s))
-        obj2 = lambda s: -np.dot(v, phi_function(s))
+        if self.bounds is not None:
+            bounds_l = np.maximum(self.bounds[0], s_old-del_k)
+            bounds_u = np.minimum(self.bounds[1], s_old+del_k)
+        else:
+            bounds_l = s_old-del_k
+            bounds_u = s_old+del_k
+        bounds = []
+        for i in range(self.n):
+            bounds.append((bounds_l[i], bounds_u[i]))    
+        if self.method == 'trust-region': 
+            obj1 = lambda s: np.dot(v, phi_function(s))
+            obj2 = lambda s: -np.dot(v, phi_function(s))
+            res1 = optimize.minimize(obj1, s_old, method='trust-constr', \
+                                     bounds=bounds, options={'disp': False, 'maxiter': 1000})
+            res2 = optimize.minimize(obj2, s_old, method='trust-constr', \
+                                     bounds=bounds, options={'disp': False, 'maxiter': 1000})
+            if abs(res1['fun']) > abs(res2['fun']):
+                s = res1['x']
+            else:
+                s = res2['x']
+        elif self.method == 'omorf':
+            c = v[1:]
+            res1 = optimize.linprog(c, method='revised simplex', bounds=bounds)
+            res2 = optimize.linprog(-c, method='revised simplex', bounds=bounds)
+            if abs(np.dot(v, phi_function(res1['x']))) > abs(np.dot(v, phi_function(res2['x']))):
+                s = res1['x']
+            else:
+                s = res2['x']
+        return s
+
+    def _build_model(self,S,f):
+        """
+        Constructs quadratic model for ``trust-region`` or ``omorf`` methods
+        """
+        if self.method == 'trust-region':
+            myParameters = [Parameter(distribution='uniform', lower=np.min(S[:,i]), \
+                                      upper=np.max(S[:,i]), order=2) for i in range(self.n)]
+            myBasis = Basis('total-order')
+            my_poly = Poly(myParameters, myBasis, method='least-squares', \
+                           sampling_args={'mesh': 'user-defined', 'sample-points':S, 'sample-outputs':f})
+        elif self.method == 'omorf':
+            self._calculate_subspace(S, f)
+            Y = np.dot(S, self.W1)
+            myParameters = [Parameter(distribution='uniform', lower=np.min(Y[:,i]), \
+                                      upper=np.max(Y[:,i]), order=2) for i in range(self.d)]
+            myBasis = Basis('total-order')
+            my_poly = Poly(myParameters, myBasis, method='least-squares', \
+                           sampling_args={'mesh': 'user-defined', 'sample-points':Y, 'sample-outputs':f})
+        my_poly.set_model()
+        return my_poly
+
+    def _compute_step(self,s_old,my_poly,del_k):
+        """
+        Solves the trust-region subproblem for ``trust-region`` or ``omorf`` methods
+        """
         if self.bounds is not None:
             bounds_l = np.maximum(self.bounds[0], s_old-del_k)
             bounds_u = np.minimum(self.bounds[1], s_old+del_k)
@@ -407,39 +549,15 @@ class Optimisation:
         bounds = []
         for i in range(self.n):
             bounds.append((bounds_l[i], bounds_u[i]))
-        res1 = optimize.minimize(obj1, s_old, method='TNC', bounds=bounds, options={'disp': False, 'maxiter': 1000})
-        res2 = optimize.minimize(obj2, s_old, method='TNC', bounds=bounds, options={'disp': False, 'maxiter': 1000})
-        if abs(res1['fun']) > abs(res2['fun']):
-            return res1['x']
-        else:
-            return res2['x']
-
-    def _build_model(self,S,f):
-        """
-        Constructs quadratic model for ``trust-region`` method
-        """
-        myParameters = [Parameter(distribution='uniform', lower=np.min(S[:,i]), upper=np.max(S[:,i]), order=2) for i in range(self.n)]
-        myBasis = Basis('total-order')
-        my_poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'mesh': 'user-defined', 'sample-points':S, 'sample-outputs':f})
-        my_poly.set_model()
-        return my_poly
-
-    def _compute_step(self,s_old,my_poly,del_k):
-        """
-        Solves the trust-region subproblem for ``trust-region`` method
-        """
-        Opt = Optimisation(method='TNC')
-        Opt.add_objective(poly=my_poly)
-        if self.bounds is not None:
-            bounds_l = np.maximum(self.bounds[0], s_old-del_k)
-            bounds_u = np.minimum(self.bounds[1], s_old+del_k)
-        else:
-            bounds_l = s_old-del_k
-            bounds_u = s_old+del_k
-        Opt.add_bounds(bounds_l,bounds_u)
-        sol = Opt.optimise(s_old)
-        s_new = sol['x']
-        m_new = sol['fun']
+        if self.method == 'trust-region':
+            res = optimize.minimize(lambda x: np.asscalar(my_poly.get_polyfit(x)), s_old, method='TNC', \
+                    jac=lambda x: my_poly.get_polyfit_grad(x).flatten(), bounds=bounds, options={'disp': False})
+        elif self.method == 'omorf':
+            res = optimize.minimize(lambda x: np.asscalar(my_poly.get_polyfit(np.dot(x,self.W1))), s_old, \
+                    method='TNC', jac=lambda x: np.dot(self.W1, my_poly.get_polyfit_grad(np.dot(x,self.W1))).flatten(), \
+                    bounds=bounds, options={'disp': False})
+        s_new = res.x
+        m_new = res.fun
         return s_new, m_new
     
     @staticmethod
@@ -449,16 +567,24 @@ class Optimisation:
         f_0 = np.asscalar(f[ind_min])
         return x_0, f_0
 
-    def _trust_region(self, s_old, del_k = 0.25, eta0 = 0.1, eta1 = 0.7, gam0 = 0.25, gam1 = 1.5, omega = 0.6, delmin = 1.0e-5, delmax = 1.0, max_evals=1000):
+    def _trust_region(self, s_old, del_k, eta1, eta2, gam1, gam2, omega, delmin, delmax, max_evals, \
+                      d, subspace_method):
         """
-        Computes optimum using the ``trust-region`` method
+        Computes optimum using either the ``trust-region`` method or the ``omorf`` method
         """
         self.n = s_old.size
-        self.psi = 0.25
-        self.epsilon = 1.2
-        self.p = self.n + 1
-        self.q = int(comb(self.n+2, 2))
         itermax = 10000
+        self.epsilon = 1.2
+        if self.method == 'trust-region':
+            self.psi = 0.25
+            self.q = int(comb(self.n+2, 2))
+        elif self.method == 'omorf':
+            self.d = d
+            self.subspace_method = subspace_method
+            self.psi = 1.0
+            self.epsilon = 1.2
+            self.q = self.n + 1
+        
         # Make the first black-box function call and initialise the database of solutions and labels
         f_old = self._blackbox_evaluation(s_old)
         # Construct the regression set
@@ -484,14 +610,14 @@ class Optimisation:
             S = np.vstack((S, s_new))
             f = np.vstack((f, f_new))
             s_old, f_old = self._choose_best(S, f)
-            if rho_k >= eta1:
-                del_k = min(gam1*del_k,delmax)
+            if rho_k >= eta2:
+                del_k = min(gam2*del_k,delmax)
                 S, f = self._sample_set(s_old, f_old, del_k, 'replace', S, f)
-            elif rho_k > eta0:
+            elif rho_k > eta1:
                 S, f = self._sample_set(s_old, f_old, del_k, 'replace', S, f)
             else:
                 if max(np.linalg.norm(S-s_old, axis=1, ord=np.inf)) <= self.epsilon*del_k:
-                    del_k *= gam0
+                    del_k *= gam1
                     S, f = self._sample_set(s_old, f_old, del_k, 'replace', S, f)
                 else:
                     S, f = self._sample_set(s_old, f_old, del_k, 'improve', S, f)

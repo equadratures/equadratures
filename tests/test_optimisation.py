@@ -13,10 +13,6 @@ class Test_optimisation(TestCase):
         cls.degg1 = 1
         cls.degg2 = 3
         cls.valg2 = -1.0
-        
-#    @staticmethod
-#    def ObjFun1(x):
-#        return sp.optimize.rosen(x)
 
     @staticmethod
     def ObjFun1(x):
@@ -285,10 +281,10 @@ class Test_optimisation(TestCase):
         n = 2
         Opt = eq.Optimisation(method='trust-region')
         Opt.add_objective(custom={'function': self.ObjFun1})
-        x0 = np.ones(n)
+        x0 = np.zeros(n)
         sol = Opt.optimise(x0)
         if sol['status'] == 0:
-            np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=4)
+            np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=3)
          
     def test_optimise_trustregion_bounds(self):
         n = 2
@@ -298,7 +294,35 @@ class Test_optimisation(TestCase):
         x0 = np.zeros(n)
         sol = Opt.optimise(x0)
         if sol['status'] == 0:
-            np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=4)
+            np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=3)
+            
+    def test_optimise_omorf_vp(self):
+        n = 20
+        Opt = eq.Optimisation(method='omorf')
+        Opt.add_objective(custom={'function': self.ObjFun2})
+        x0 = -2*np.ones(n)
+        sol = Opt.optimise(x0, max_evals=2000)
+        if sol['status'] == 0:
+            np.testing.assert_almost_equal(sol['x'].flatten(), -2.90353*np.ones(n), decimal=3)
+            
+    def test_optimise_omorf_as(self):
+        n = 20
+        Opt = eq.Optimisation(method='omorf')
+        Opt.add_objective(custom={'function': self.ObjFun2})
+        x0 = -2*np.ones(n)
+        sol = Opt.optimise(x0, max_evals=2000, subspace_method='active-subspaces')
+        if sol['status'] == 0:
+            np.testing.assert_almost_equal(sol['x'].flatten(), -2.90353*np.ones(n), decimal=3)
+            
+    def test_optimise_omorf_bounds(self):
+        n = 20
+        Opt = eq.Optimisation(method='omorf')
+        Opt.add_objective(custom={'function': self.ObjFun2})
+        Opt.add_bounds(-5.12*np.ones(n), 5.12*np.ones(n))
+        x0 = -2*np.ones(n)
+        sol = Opt.optimise(x0, max_evals=2000)
+        if sol['status'] == 0:
+            np.testing.assert_almost_equal(sol['x'].flatten(), -2.90353*np.ones(n), decimal=3)
 
 if __name__ == '__main__':
     unittest.main()

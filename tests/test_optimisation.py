@@ -297,7 +297,7 @@ class Test_optimisation(TestCase):
             np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=3)
             
     def test_optimise_omorf_vp(self):
-        n = 20
+        n = 10
         Opt = eq.Optimisation(method='omorf')
         Opt.add_objective(custom={'function': self.ObjFun2})
         x0 = -2*np.ones(n)
@@ -306,7 +306,7 @@ class Test_optimisation(TestCase):
             np.testing.assert_almost_equal(sol['x'].flatten(), -2.90353*np.ones(n), decimal=3)
             
     def test_optimise_omorf_as(self):
-        n = 20
+        n = 10
         Opt = eq.Optimisation(method='omorf')
         Opt.add_objective(custom={'function': self.ObjFun2})
         x0 = -2*np.ones(n)
@@ -315,7 +315,7 @@ class Test_optimisation(TestCase):
             np.testing.assert_almost_equal(sol['x'].flatten(), -2.90353*np.ones(n), decimal=3)
             
     def test_optimise_omorf_bounds(self):
-        n = 20
+        n = 10
         Opt = eq.Optimisation(method='omorf')
         Opt.add_objective(custom={'function': self.ObjFun2})
         Opt.add_bounds(-5.12*np.ones(n), 5.12*np.ones(n))

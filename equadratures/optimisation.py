@@ -507,8 +507,8 @@ class Optimisation:
                 s = res2['x']
         elif self.method == 'omorf':
             c = v[1:]
-            res1 = optimize.linprog(c, method='revised simplex', bounds=bounds)
-            res2 = optimize.linprog(-c, method='revised simplex', bounds=bounds)
+            res1 = optimize.linprog(c, bounds=bounds)
+            res2 = optimize.linprog(-c, bounds=bounds)
             if abs(np.dot(v, phi_function(res1['x']))) > abs(np.dot(v, phi_function(res2['x']))):
                 s = res1['x']
             else:
@@ -596,7 +596,10 @@ class Optimisation:
             if len(self.f) >= max_evals or del_k < delmin:
                 break
             my_poly = self._build_model(S, f)
-            m_old = np.asscalar(my_poly.get_polyfit(s_old))
+            if self.method == 'trust-region':
+                m_old = np.asscalar(my_poly.get_polyfit(s_old))
+            elif self.method == 'omorf':
+                m_old = np.asscalar(my_poly.get_polyfit(np.dot(s_old,self.W1)))
             s_new, m_new = self._compute_step(s_old,my_poly,del_k)
             # Safety step implemented in BOBYQA
             if np.linalg.norm(s_new - s_old, ord=np.inf) < 0.01*del_k:
@@ -622,7 +625,7 @@ class Optimisation:
                 else:
                     S, f = self._sample_set(s_old, f_old, del_k, 'improve', S, f)
         s_old, f_old = self._choose_best(S, f)
-        if i == itermax - 1:
+        if self.num_evals >= max_evals:
             status = 1
         else:
             status = 0

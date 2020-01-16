@@ -270,7 +270,7 @@ class Optimisation:
         elif self.method in ['trust-region', 'omorf']:
             x_opt, f_opt, status = self._trust_region(x0, del_k=kwargs.get('del_k', 1.0), eta1=kwargs.get('eta1', 0.1), \
                         eta2=kwargs.get('eta2', 0.7), gam1=kwargs.get('gam1', 0.25), gam2=kwargs.get('gam2', 1.5), \
-                        omega=kwargs.get('omega', 0.6), delmin=kwargs.get('delmin', 1.0e-5), \
+                        omega=kwargs.get('omega', 0.6), delmin=kwargs.get('delmin', 1.0e-8), \
                         delmax=kwargs.get('delmax', 2.0), max_evals=kwargs.get('max_evals', 2000), \
                         d=kwargs.get('d', 2), subspace_method=kwargs.get('subspace_method', 'variable-projection'))
             sol = {'x': x_opt, 'fun': f_opt, 'nfev': self.num_evals, 'status': status}
@@ -497,9 +497,9 @@ class Optimisation:
         if self.method == 'trust-region': 
             obj1 = lambda s: np.dot(v, phi_function(s))
             obj2 = lambda s: -np.dot(v, phi_function(s))
-            res1 = optimize.minimize(obj1, s_old, method='trust-constr', \
+            res1 = optimize.minimize(obj1, s_old, method='TNC', \
                                      bounds=bounds, options={'disp': False, 'maxiter': 1000})
-            res2 = optimize.minimize(obj2, s_old, method='trust-constr', \
+            res2 = optimize.minimize(obj2, s_old, method='TNC', \
                                      bounds=bounds, options={'disp': False, 'maxiter': 1000})
             if abs(res1['fun']) > abs(res2['fun']):
                 s = res1['x']

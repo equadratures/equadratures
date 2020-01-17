@@ -16,7 +16,7 @@ class Optimisation:
     using scipy.optimize.minimize or an in-house trust-region method.
     :param string method: A string specifying the method that will be used for optimisation. All of the available choices come from scipy.optimize.minimize (`click here <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html>`__ for a list of methods and further information). In the case of general constrained optimisation, the options are ``COBYLA``, ``SLSQP``, and ``trust-constr``. The default is ``trust-constr``.
     """
-    def __init__(self, method='trust-constr'):
+    def __init__(self, method):
         self.method = method
         self.objective = {'function': None, 'gradient': None, 'hessian': None}
         self.maximise = False
@@ -268,10 +268,10 @@ class Optimisation:
                         options={'disp': False, 'maxiter': 10000})
             sol = {'x': sol['x'], 'fun': sol['fun'], 'nfev': self.num_evals, 'status': sol['status']}
         elif self.method in ['trust-region', 'omorf']:
-            x_opt, f_opt, status = self._trust_region(x0, del_k=kwargs.get('del_k', 1.0), eta1=kwargs.get('eta1', 0.1), \
+            x_opt, f_opt, status = self._trust_region(x0, del_k=kwargs.get('del_k', 1.0), delmin=kwargs.get('delmin', 1.0e-8), \
+                        delmax=kwargs.get('delmax', 2.0), eta1=kwargs.get('eta1', 0.1), \
                         eta2=kwargs.get('eta2', 0.7), gam1=kwargs.get('gam1', 0.25), gam2=kwargs.get('gam2', 1.5), \
-                        omega=kwargs.get('omega', 0.6), delmin=kwargs.get('delmin', 1.0e-8), \
-                        delmax=kwargs.get('delmax', 2.0), max_evals=kwargs.get('max_evals', 2000), \
+                        omega_s=kwargs.get('omega_s', 0.414), max_evals=kwargs.get('max_evals', 2000), \
                         d=kwargs.get('d', 2), subspace_method=kwargs.get('subspace_method', 'variable-projection'))
             sol = {'x': x_opt, 'fun': f_opt, 'nfev': self.num_evals, 'status': status}
         else:
@@ -567,7 +567,7 @@ class Optimisation:
         f_0 = np.asscalar(f[ind_min])
         return x_0, f_0
 
-    def _trust_region(self, s_old, del_k, eta1, eta2, gam1, gam2, omega, delmin, delmax, max_evals, \
+    def _trust_region(self, s_old, del_k, delmin, delmax, eta1, eta2, gam1, gam2, omega_s, max_evals, \
                       d, subspace_method):
         """
         Computes optimum using either the ``trust-region`` method or the ``omorf`` method
@@ -602,8 +602,8 @@ class Optimisation:
                 m_old = np.asscalar(my_poly.get_polyfit(np.dot(s_old,self.W1)))
             s_new, m_new = self._compute_step(s_old,my_poly,del_k)
             # Safety step implemented in BOBYQA
-            if np.linalg.norm(s_new - s_old, ord=np.inf) < 0.01*del_k:
-                del_k *= omega
+            if np.linalg.norm(s_new - s_old, ord=np.inf) < omega_s*del_k:
+                del_k *= gam1
                 S, f = self._sample_set(s_old, f_old, del_k, 'improve', S, f)
                 s_old, f_old = self._choose_best(S, f)
                 continue

@@ -284,7 +284,7 @@ class Test_optimisation(TestCase):
         x0 = np.zeros(n)
         sol = Opt.optimise(x0)
         if sol['status'] == 0:
-            np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=3)
+            np.testing.assert_almost_equal(sol['x'].flatten(), np.ones(n), decimal=3)
          
     def test_optimise_trustregion_bounds(self):
         n = 2
@@ -294,7 +294,7 @@ class Test_optimisation(TestCase):
         x0 = np.zeros(n)
         sol = Opt.optimise(x0)
         if sol['status'] == 0:
-            np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=3)
+            np.testing.assert_almost_equal(sol['x'].flatten(), np.ones(n), decimal=3)
             
     def test_optimise_omorf_vp(self):
         n = 10

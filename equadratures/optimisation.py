@@ -23,6 +23,7 @@ class Optimisation:
         self.bounds = None
         self.constraints = []
         self.num_evals = 0
+        # np.random.seed(42)
         if self.method in ['trust-region', 'omorf']:
             self.num_evals = 0
             self.S = np.array([])
@@ -267,13 +268,19 @@ class Optimisation:
                         jac=self.objective['gradient'], constraints=self.constraints, \
                         options={'disp': False, 'maxiter': 10000})
             sol = {'x': sol['x'], 'fun': sol['fun'], 'nfev': self.num_evals, 'status': sol['status']}
-        elif self.method in ['trust-region', 'omorf']:
-            x_opt, f_opt, status = self._trust_region(x0, del_k=kwargs.get('del_k', 1.0), delmin=kwargs.get('delmin', 1.0e-8), \
-                        delmax=kwargs.get('delmax', 2.0), eta1=kwargs.get('eta1', 0.1), \
-                        eta2=kwargs.get('eta2', 0.7), gam1=kwargs.get('gam1', 0.25), gam2=kwargs.get('gam2', 1.5), \
-                        omega_s=kwargs.get('omega_s', 0.414), max_evals=kwargs.get('max_evals', 2000), \
-                        d=kwargs.get('d', 2), subspace_method=kwargs.get('subspace_method', 'variable-projection'))
-            sol = {'x': x_opt, 'fun': f_opt, 'nfev': self.num_evals, 'status': status}
+        elif self.method in ['trust-region']:
+            x_opt, f_opt = self._trust_region(x0, del_k=kwargs.get('del_k', 1.0), del_min=kwargs.get('delmin', 1.0e-6), \
+                        eta1=kwargs.get('eta1', 0.0), eta2=kwargs.get('eta2', 0.7), gam1=kwargs.get('gam1', 0.5), \
+                        gam2=kwargs.get('gam2', 2.0), omega_s=kwargs.get('omega_s', 0.5), max_evals=kwargs.get('max_evals', 10000), \
+                        random_initial=kwargs.get('random_initial', False))
+            sol = {'x': x_opt, 'fun': f_opt, 'nfev': self.num_evals}
+        elif self.method in ['omorf']:
+            x_opt, f_opt = self._trust_region(x0, del_k=kwargs.get('del_k', 1.0), del_min=kwargs.get('delmin', 1.0e-6), \
+                        eta1=kwargs.get('eta1', 0.1), eta2=kwargs.get('eta2', 0.7), gam1=kwargs.get('gam1', 0.5), \
+                        gam2=kwargs.get('gam2', 2.0), omega_s=kwargs.get('omega_s', 0.5), max_evals=kwargs.get('max_evals', 10000), \
+                        random_initial=kwargs.get('random_initial', False), d=kwargs.get('d', 2), \
+                        subspace_method=kwargs.get('subspace_method', 'variable-projection'))
+            sol = {'x': x_opt, 'fun': f_opt, 'nfev': self.num_evals}
         else:
             sol = optimize.minimize(self.objective['function'], x0, method=self.method, bounds = self.bounds, \
                                     constraints=self.constraints, options={'disp': False, 'maxiter': 10000})
@@ -282,7 +289,11 @@ class Optimisation:
             sol['fun'] *= -1.0
         return sol
     
-    def _calculate_subspace(self, S, f):
+    def _calculate_subspace(self, s_old):
+        ind_closest = np.argsort(np.linalg.norm(self.S-s_old, axis=1, ord=np.inf))[:self.n+1]
+        S = self.S[ind_closest,:]
+        f = self.f[ind_closest]
+
         parameters = [Parameter(distribution='uniform', lower=np.min(S[:,i]), upper=np.max(S[:,i]), order=1) for i in range(0, self.n)]
         self.poly = Poly(parameters, basis=Basis('total-order'), method='least-squares', \
                      sampling_args={'mesh':'user-defined', 'sample-points': S, 'sample-outputs': f})
@@ -291,160 +302,274 @@ class Optimisation:
         if self.subspace_method == 'variable-projection':
             U0 = self.Subs.get_subspace()[:,:self.d]
             self.Subs = Subspaces(method='variable-projection', sample_points=S, sample_outputs=f, \
-                      subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2)
-            self.W1 = self.Subs.get_subspace()[:, :self.d]
+                      subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2, max_iter=300)
+            self.U = self.Subs.get_subspace()[:, :self.d]
         elif self.subspace_method == 'active-subspaces':
             U0 = self.Subs.get_subspace()[:,1].reshape(-1,1)
             U1 = null_space(U0.T)
-            self.W1 = U0
+            self.U = U0
             for i in range(self.d-1):
                 R = []
                 for j in range(U1.shape[1]):
-                    U = np.hstack((self.W1, U1[:, j].reshape(-1,1)))
+                    U = np.hstack((self.U, U1[:, j].reshape(-1,1)))
                     Y = np.dot(S, U)
                     myParameters = [Parameter(distribution='uniform', lower=np.min(Y[:,k]), upper=np.max(Y[:,k]), \
                                   order=2) for k in range(Y.shape[1])]
                     myBasis = Basis('total-order')
                     poly = Poly(myParameters, myBasis, method='least-squares', \
-                                sampling_args={'mesh': 'user-defined', 'sample-points':Y, 'sample-outputs':f})
+                                sampling_args={'sample-points':Y, 'sample-outputs':f})
                     poly.set_model()
                     f_eval = poly.get_polyfit(Y)
                     _,_,r,_,_ = linregress(f_eval.flatten(),f.flatten()) 
                     R.append(r**2)
                 index = np.argmax(R)
-                self.W1 = np.hstack((self.W1, U1[:, index].reshape(-1,1)))
+                self.U = np.hstack((self.U, U1[:, index].reshape(-1,1)))
                 U1 = np.delete(U1, index, 1)
 
     def _blackbox_evaluation(self, s):
         """
         Evaluates the point s for ``trust-region`` or ``omorf`` methods
         """
-        if s.ndim == 1:
-            s = s.reshape(1,-1)
-            f = np.array([[self.objective['function'](s.flatten())]])
-            self.num_evals += 1
-        else:
-            f = np.zeros(s.shape[0])
-            for i in range(s.shape[0]):
-                f[i] = self.objective['function'](s[i,:].flatten())
-                self.num_evals += 1
-            f = f.reshape(-1,1)
+        s = s.reshape(1,-1)
+        f = np.array([[self.objective['function'](s.flatten())]])
+        self.num_evals += 1
         if self.f.size == 0:
             self.S = s
             self.f = f
         else:
             self.S = np.vstack((self.S, s))
             self.f = np.vstack((self.f, f))
-        if s.shape[0] == 1:
-            return np.asscalar(f)
-        else:
-            return f
-        
-    @staticmethod
-    def _remove_point_from_set(S, f, s_old, tol):
-        ind_current = np.where(np.linalg.norm(S-s_old, axis=1, ord=np.inf) <= tol)[0]
-        S = np.delete(S, ind_current, 0)
-        f = np.delete(f, ind_current, 0)
-        return S, f
-    
-    @staticmethod
-    def _remove_points_within_TR_from_set(S, f, s_old, del_k):
-        ind_within_TR = np.where(np.linalg.norm(S-s_old, axis=1, ord=np.inf) <= del_k)[0]
-        S = S[ind_within_TR,:]
-        f = f[ind_within_TR]
-        return S, f
-    
-    def _sample_set(self, s_old, f_old, del_k, method='new', S=None, f=None, num=1):
-#       Poised constant of algorithm
-        if method == 'new':
-            S_hat = np.copy(self.S)
-            f_hat = np.copy(self.f)
-            S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, s_old, del_k*1.0e-8)
-            S_hat, f_hat = self._remove_points_within_TR_from_set(S_hat, f_hat, s_old, del_k)
-                
-            S = s_old.reshape(1,-1)
-            f = np.array([f_old])
-            S, f = self._improve_poisedness(S, f, S_hat, f_hat, s_old, del_k, 'new')
-        elif method == 'replace':
-            if max(np.linalg.norm(S-s_old, axis=1, ord=np.inf)) > self.epsilon*del_k:
-                ind_distant = np.argmax(np.linalg.norm(S-s_old, axis=1, ord=np.inf))
-                S = np.delete(S, ind_distant, 0)
-                f = np.delete(f, ind_distant, 0)
-            else:
-                S_hat = np.copy(S)
-                f_hat = np.copy(f)
-                S_hat, fhat = self._remove_point_from_set(S_hat, f_hat, s_old, del_k*1.0e-8)
-                
-                S = s_old.reshape(1,-1)
-                f = np.array([f_old])
-                S, f = self._improve_poisedness(S, f, S_hat, f_hat, s_old, del_k, 'improve')
-        elif method == 'improve':
-            S_hat = np.copy(S)
-            f_hat = np.copy(f)
-            S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, s_old, del_k*1.0e-8)
-            
-            if max(np.linalg.norm(S_hat-s_old, axis=1, ord=np.inf)) > self.epsilon*del_k:
-                ind_distant = np.argmax(np.linalg.norm(S_hat-s_old, axis=1, ord=np.inf))
-                S_hat = np.delete(S_hat, ind_distant, 0)
-                f_hat = np.delete(f_hat, ind_distant, 0)
-                
-            S = s_old.reshape(1,-1)
-            f = np.array([f_old])
-            S, f = self._improve_poisedness(S, f, S_hat, f_hat, s_old, del_k, 'improve', num)
-        return S, f
-    
-    def _improve_poisedness(self, S, f, S_hat, f_hat, s_old, del_k, method=None, num=1):
+        return np.asscalar(f)
+
+    def _generate_initial_set(self, s_old, f_old, del_k):
         if self.bounds is not None:
             bounds_l = np.maximum(self.bounds[0], s_old-del_k)
             bounds_u = np.minimum(self.bounds[1], s_old+del_k)
         else:
             bounds_l = s_old-del_k
             bounds_u = s_old+del_k
-        xc = 0.5*(bounds_l + bounds_u)
-        Del_S = del_k
-        if S_hat.shape[0] > 1:
-            Del_S = max(np.linalg.norm(S_hat-xc, axis=1, ord=np.inf))
         if self.method == 'trust-region':
-            Base = Basis('total-order', orders=np.tile([2], self.n))
-            basis = Base.get_basis()[:,range(self.n-1, -1, -1)]
-            def phi_function(s):
-                s = (s - s_old) / Del_S
-                try:
-                    m,n = s.shape
-                except:
-                    m = 1
-                    s = s.reshape(1,-1)
-                phi = np.zeros((m, basis.shape[0]))
-                for i in range(m):
-                    for k in range(basis.shape[0]):
-                        phi[i,k] = np.prod(np.divide(np.power(s[i,:], basis[k,:]), factorial(basis[k,:])))
-                if m == 1:
-                    return phi.flatten()
-                else:
-                    return phi
+            q = int(comb(self.n+2, 2))
         elif self.method == 'omorf':
+            q = self.n + 1
+        if self.random_initial:
+            direcs = self._initial_random_directions(q-1, bounds_l-s_old, bounds_u-s_old, del_k)
+        else:
+            direcs = self._initial_coordinate_directions(q-1, bounds_l-s_old, bounds_u-s_old, del_k)
+        S = np.zeros((q, self.n))
+        f = np.zeros((q, 1))
+        S[0, :] = s_old
+        f[0, :] = f_old
+        for i in range(q-1):
+            del_s = np.minimum(np.maximum(bounds_l-s_old, direcs[i, :]), bounds_u-s_old)
+            S[i+1, :] = s_old + del_s
+            f[i+1, :] = self._blackbox_evaluation(s_old+del_s)
+        # print(del_k)
+        # print(np.linalg.norm(S-s_old, ord=np.inf, axis=1))
+        return S, f
+
+    def _initial_coordinate_directions(self, num_pnts, lower, upper, del_k):
+        at_lower_boundary = (lower > -0.01 * del_k)
+        at_upper_boundary = (upper < 0.01 * del_k)
+        direcs = np.zeros((num_pnts, self.n))
+        for i in range(num_pnts):
+            if 0 <= i < self.n:
+                dirn = i - 1
+                step = del_k if not at_upper_boundary[dirn] else -del_k
+                direcs[i, dirn] = step
+            elif self.n <= i < 2*self.n:
+                dirn = i - self.n - 1
+                step = -del_k
+                if at_lower_boundary[dirn]:
+                    step = min(2.0*del_k, upper[dirn])
+                if at_upper_boundary[dirn]:
+                    step = max(-2.0*del_k, lower[dirn])
+                direcs[i, dirn] = step
+            else:
+                itemp = (i - self.n - 1) // self.n
+                q = i - itemp*self.n - self.n
+                p = q + itemp
+                if p > self.n:
+                    p, q = q, p - self.n
+                direcs[i, p-1] = direcs[p, p-1]
+                direcs[i, q-1] = direcs[q, q-1]
+        return direcs
+
+    def _initial_random_directions(self, num_pnts, lower, upper, del_k):
+        direcs = np.zeros((self.n, max(2*self.n, num_pnts)))
+        idx_l = (lower == 0)
+        idx_u = (upper == 0)
+        active = np.logical_or(idx_l, idx_u)
+        inactive = np.logical_not(active)
+        nactive = np.sum(active)
+        ninactive = self.n - nactive
+        if ninactive > 0:
+            A = np.random.normal(size=(ninactive, ninactive))
+            Qred = np.linalg.qr(A)[0]
+            Q = np.zeros((self.n, ninactive))
+            Q[inactive, :] = Qred
+            for i in range(ninactive):
+                scale = self._get_scale(Q[:,i], del_k, lower, upper)
+                direcs[:, i] = scale * Q[:,i]
+                scale = self._get_scale(-Q[:,i], del_k, lower, upper)
+                direcs[:, self.n+i] = -scale * Q[:,i]
+        idx_active = np.where(active)[0]
+        for i in range(nactive):
+            idx = idx_active[i]
+            direcs[idx, ninactive+i] = 1.0 if idx_l[idx] else -1.0
+            direcs[:, ninactive+i] = get_scale(direcs[:, ninactive+i], del_k, lower, upper) * direcs[:, ninactive+i]
+            sign = 1.0 if idx_l[idx] else -1.0
+            if upper[idx] - lower[idx] > del_k:
+                direcs[idx, self.n+ninactive+i] = 2.0*sign*del_k
+            else:
+                direcs[idx, self.n+ninactive+i] = 0.5*sign*(upper[idx] - lower[idx])
+            direcs[:, self.n+ninactive+i] = self._get_scale(direcs[:, self.n+ninactive+i], 1.0, lower, upper)*direcs[:, self.n+ninactive+i]
+        for i in range(num_pnts - 2*self.n):
+            dirn = np.random.normal(size=(self.n,))
+            for j in range(nactive):
+                idx = idx_active[j]
+                sign = 1.0 if idx_l[idx] else -1.0
+                if dirn[idx]*sign < 0.0:
+                    dirn[idx] *= -1.0
+            dirn = dirn / np.linalg.norm(dirn)
+            scale = self._get_scale(dirn, del_k, lower, upper)
+            direcs[:, 2*self.n+i] = dirn * scale
+        # for i in range(num_pnts):
+        #     direcs[:, i] = np.maximum(np.minimum(direcs[:,i], upper), lower)
+        return direcs[:, :num_pnts].T
+
+    @staticmethod
+    def _get_scale(dirn, delta, lower, upper):
+        scale = delta
+        for j in range(len(dirn)):
+            if dirn[j] < 0.0:
+                scale = min(scale, lower[j] / dirn[j])
+            elif dirn[j] > 0.0:
+                scale = min(scale, upper[j] / dirn[j])
+        return scale
+        
+    @staticmethod
+    def _remove_point_from_set(S, f, s_old):
+        ind_current = np.where(np.linalg.norm(S-s_old, axis=1, ord=np.inf) == 0.0)[0]
+        S = np.delete(S, ind_current, 0)
+        f = np.delete(f, ind_current, 0)
+        return S, f
+
+    @staticmethod
+    def _remove_points_outside_radius(S, f, s_old, radius):
+        ind_inside = np.where(np.linalg.norm(S-s_old, axis=1, ord=np.inf) < radius)[0]
+        S = S[ind_inside,:]
+        f = f[ind_inside]
+        return S, f
+    
+    def _sample_set(self, s_old, f_old, del_k, S, f, method):
+        if self.method == 'trust-region':
+            q = int(comb(self.n+2, 2))
+        elif self.method == 'omorf':
+            q = int(comb(self.d+2, 2))
+        if method == 'replace':
+            ind_distant = np.argmax(np.linalg.norm(S-s_old, axis=1, ord=np.inf))
+            S = np.delete(S, ind_distant, 0)
+            f = np.delete(f, ind_distant, 0)
+        elif method == 'improve':
+            S_hat = np.copy(S) 
+            f_hat = np.copy(f)
+            if max(np.linalg.norm(S_hat-s_old, axis=1, ord=np.inf)) > self.epsilon*del_k:
+                ind_distant = np.argmax(np.linalg.norm(S_hat-s_old, axis=1, ord=np.inf))
+                S_hat = np.delete(S_hat, ind_distant, 0)
+                f_hat = np.delete(f_hat, ind_distant, 0)
+            S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, s_old)
+            S = np.zeros((q, self.n))
+            f = np.zeros((q, 1))
+            S[0, :] = s_old
+            f[0, :] = f_old
+            S, f = self._improve_wellpoisedness(S, f, S_hat, f_hat, s_old, del_k, 'improve')
+        elif method == 'new':
+            ind_closest = np.argsort(np.linalg.norm(self.S-s_old, axis=1, ord=np.inf))[:self.n+1]
+            S_hat = self.S[ind_closest,:]
+            f_hat = self.f[ind_closest]
+            S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, s_old)
+            S = np.zeros((q, self.n))
+            f = np.zeros((q, 1))
+            S[0, :] = s_old
+            f[0, :] = f_old
+            S, f = self._improve_wellpoisedness(S, f, S_hat, f_hat, s_old, del_k)
+        return S, f
+    
+    def _improve_wellpoisedness(self, S, f, S_hat, f_hat, s_old, del_k, method=None):
+        if self.bounds is not None:
+            bounds_l = np.maximum(self.bounds[0], s_old-del_k)
+            bounds_u = np.minimum(self.bounds[1], s_old+del_k)
+        else:
+            bounds_l = s_old-del_k
+            bounds_u = s_old+del_k
+        s_c = 0.5*(bounds_l + bounds_u)
+        if self.method == 'trust-region':
+            Del_S = np.linalg.norm(S_hat-s_c, axis=0)
+            q = int(comb(self.n+2, 2))
             def phi_function(s):
-                s = (s - s_old) / Del_S
+                s_tilde = np.divide((s - s_c), Del_S)
                 try:
-                    m,n = s.shape
+                    m,n = s_tilde.shape
                 except:
                     m = 1
-                    s = s.reshape(1,-1)
-                phi = np.zeros((m, self.n+1))
-                phi[:, 0] = 1.0
-                phi[:, 1:] = s
+                    s_tilde = s_tilde.reshape(1,-1)
+                phi = np.zeros((m, q))
+                for k in range(q):
+                    phi[:,k] = np.prod(np.divide(np.power(s_tilde, self.basis[k,:]), factorial(self.basis[k,:])), axis=1)
                 if m == 1:
                     return phi.flatten()
                 else:
                     return phi
+            def phi_function_deriv(s):
+                s_tilde = np.divide((s - s_c), Del_S)
+                phi_deriv = np.zeros((self.n, q))
+                for i in range(self.n):
+                    for k in range(1, q):
+                        if self.basis[k, i] == 0.0:
+                            phi_deriv[i,k] = 0.0
+                        else:
+                            tmp = np.zeros(self.n)
+                            tmp[i] = 1
+                            phi_deriv[i,k] = self.basis[k, i] * np.prod(np.divide(np.power(s_tilde, self.basis[k,:]-tmp), factorial(self.basis[k,:])))
+                return np.divide(phi_deriv.T, Del_S).T
+        elif self.method == 'omorf':
+            Del_S = np.linalg.norm(np.dot(S_hat-s_c,self.U), axis=0)
+            q = int(comb(self.d+2, 2))
+            def phi_function(s):
+                u = np.divide(np.dot((s - s_c), self.U), Del_S)
+                try:
+                    m,n = u.shape
+                except:
+                    m = 1
+                    u = u.reshape(1,-1)
+                phi = np.zeros((m, q))
+                for k in range(q):
+                    phi[:,k] = np.prod(np.divide(np.power(u, self.basis[k,:]), factorial(self.basis[k,:])), axis=1)
+                if m == 1:
+                    return phi.flatten()
+                else:
+                    return phi
+            def phi_function_deriv(s):
+                u = np.divide(np.dot((s - s_c), self.U), Del_S)
+                phi_deriv = np.zeros((self.d, q))
+                for i in range(self.d):
+                    for k in range(1, q):
+                        if self.basis[k, i] == 0.0:
+                            phi_deriv[i,k] - 0.0
+                        else:
+                            tmp = np.zeros(self.d)
+                            tmp[i] = 1
+                            phi_deriv[i,k] = self.basis[k, i] * np.prod(np.divide(np.power(u, self.basis[k,:]-tmp), factorial(self.basis[k,:])))
+                phi_deriv = np.divide(phi_deriv.T, Del_S).T
+                return np.dot(self.U, phi_deriv)
 #       Initialise U matrix of LU factorisation of M matrix (see Conn et al.)
-        U = np.zeros((self.q,self.q))
+        U = np.zeros((q,q))
         U[0,:] = phi_function(s_old)
 #       Perform the LU factorisation algorithm for the rest of the points
-        for k in range(1, self.q):
-            index = None
-#            index2 = None
-            v = np.zeros(self.q)
+        for k in range(1, q):
+            flag = True
+            v = np.zeros(q)
             for j in range(k):
                 v[j] = -U[j,k] / U[j,j]
             v[k] = 1.0
@@ -453,38 +578,48 @@ class Optimisation:
             if f_hat.size > 0:
                 M = np.absolute(np.array([np.dot(phi_function(S_hat),v)]).flatten())
                 index = np.argmax(M)
-#                print(phi_function(Xhat))
-                if abs(M[index]) < 1.0e-3:
-                    index = None
-                elif method =='new':
-                    if M[index] < self.psi:
-                        index = None
+                if M[index] < 1.0e-5:
+                    flag = False
                 elif method == 'improve':
-                    if f.size == self.q - num:
-                        if M[index] < self.psi:
-                            index = None
+                    if k == q - 1:
+                        if M[index] < 0.25:
+                            flag = False
+            else:
+                flag = False
 #           If index exists, choose the point with that index and delete it from possible choices
-            if index is not None:
+            if flag:
                 s = S_hat[index,:]
-                S = np.vstack((S, s))
-                f = np.vstack((f, f_hat[index]))
+                S[k, :] = s
+                f[k, :] = f_hat[index]
                 S_hat = np.delete(S_hat, index, 0)
                 f_hat = np.delete(f_hat, index, 0)
 #           If index doesn't exist, solve an optimisation point to find the point in the range which best satisfies criterion
             else:
-                s = self._find_new_point(v, phi_function, del_k, s_old)
-                S = np.vstack((S, s))
-                f = np.vstack((f, self._blackbox_evaluation(s)))
+                s = self._find_new_point(v, phi_function, phi_function_deriv, del_k, s_old)
+                if f_hat.size > 0 and M[index] > abs(np.dot(v, phi_function(s))):
+                    s = S_hat[index,:]
+                    S[k, :] = s
+                    f[k, :] = f_hat[index]
+                    S_hat = np.delete(S_hat, index, 0)
+                    f_hat = np.delete(f_hat, index, 0)
+                elif self.S.shape == np.unique(np.vstack((self.S, s)), axis=0).shape:
+                    rand = np.random.normal(size=self.n)
+                    s = np.minimum(np.maximum(bounds_l, s_old + del_k*rand/np.linalg.norm(rand)), bounds_u)
+                    S[k, :] = s
+                    f[k, :] = self._blackbox_evaluation(s)
+                else:
+                    S[k, :] = s
+                    f[k, :] = self._blackbox_evaluation(s)
 #           Update U factorisation in LU algorithm
             phi = phi_function(s)
             U[k,k] = np.dot(v, phi)
-            for i in range(k+1,self.q):
+            for i in range(k+1,q):
                 U[k,i] += phi[i]
                 for j in range(k):
                     U[k,i] -= (phi[j]*U[j,i]) / U[j,j]
         return S, f
     
-    def _find_new_point(self, v, phi_function, del_k, s_old):
+    def _find_new_point(self, v, phi_function, phi_function_deriv, del_k, s_old):
         if self.bounds is not None:
             bounds_l = np.maximum(self.bounds[0], s_old-del_k)
             bounds_u = np.minimum(self.bounds[1], s_old+del_k)
@@ -493,26 +628,20 @@ class Optimisation:
             bounds_u = s_old+del_k
         bounds = []
         for i in range(self.n):
-            bounds.append((bounds_l[i], bounds_u[i]))    
-        if self.method == 'trust-region': 
-            obj1 = lambda s: np.dot(v, phi_function(s))
-            obj2 = lambda s: -np.dot(v, phi_function(s))
-            res1 = optimize.minimize(obj1, s_old, method='TNC', \
-                                     bounds=bounds, options={'disp': False, 'maxiter': 1000})
-            res2 = optimize.minimize(obj2, s_old, method='TNC', \
-                                     bounds=bounds, options={'disp': False, 'maxiter': 1000})
-            if abs(res1['fun']) > abs(res2['fun']):
-                s = res1['x']
-            else:
-                s = res2['x']
-        elif self.method == 'omorf':
-            c = v[1:]
-            res1 = optimize.linprog(c, bounds=bounds)
-            res2 = optimize.linprog(-c, bounds=bounds)
-            if abs(np.dot(v, phi_function(res1['x']))) > abs(np.dot(v, phi_function(res2['x']))):
-                s = res1['x']
-            else:
-                s = res2['x']
+            bounds.append((bounds_l[i], bounds_u[i])) 
+        # s_c = 0.5*(bounds_l+bounds_u)
+        obj1 = lambda s: np.dot(v, phi_function(s))
+        jac1 = lambda s: np.dot(phi_function_deriv(s), v)
+        obj2 = lambda s: -np.dot(v, phi_function(s))
+        jac2 = lambda s: -np.dot(phi_function_deriv(s), v)
+        res1 = optimize.minimize(obj1, s_old, method='TNC', jac=jac1, \
+                                 bounds=bounds, options={'disp': False})
+        res2 = optimize.minimize(obj2, s_old, method='TNC', jac=jac2, \
+                                 bounds=bounds, options={'disp': False})
+        if abs(res1['fun']) > abs(res2['fun']):
+            s = res1['x']
+        else:
+            s = res2['x']
         return s
 
     def _build_model(self,S,f):
@@ -521,18 +650,17 @@ class Optimisation:
         """
         if self.method == 'trust-region':
             myParameters = [Parameter(distribution='uniform', lower=np.min(S[:,i]), \
-                                      upper=np.max(S[:,i]), order=2) for i in range(self.n)]
+                            upper=np.max(S[:,i]), order=2) for i in range(self.n)]
             myBasis = Basis('total-order')
             my_poly = Poly(myParameters, myBasis, method='least-squares', \
-                           sampling_args={'mesh': 'user-defined', 'sample-points':S, 'sample-outputs':f})
+                            sampling_args={'sample-points':S, 'sample-outputs':f})
         elif self.method == 'omorf':
-            self._calculate_subspace(S, f)
-            Y = np.dot(S, self.W1)
+            Y = np.dot(S, self.U)
             myParameters = [Parameter(distribution='uniform', lower=np.min(Y[:,i]), \
-                                      upper=np.max(Y[:,i]), order=2) for i in range(self.d)]
+                            upper=np.max(Y[:,i]), order=2) for i in range(self.d)]
             myBasis = Basis('total-order')
             my_poly = Poly(myParameters, myBasis, method='least-squares', \
-                           sampling_args={'mesh': 'user-defined', 'sample-points':Y, 'sample-outputs':f})
+                            sampling_args={'sample-points':Y, 'sample-outputs':f})
         my_poly.set_model()
         return my_poly
 
@@ -551,82 +679,90 @@ class Optimisation:
             bounds.append((bounds_l[i], bounds_u[i]))
         if self.method == 'trust-region':
             res = optimize.minimize(lambda x: np.asscalar(my_poly.get_polyfit(x)), s_old, method='TNC', \
-                    jac=lambda x: my_poly.get_polyfit_grad(x).flatten(), bounds=bounds, options={'disp': False})
+                    jac=lambda x: my_poly.get_polyfit_grad(x).flatten(), bounds=bounds, options={'disp': False, 'maxiter': 1000})
         elif self.method == 'omorf':
-            res = optimize.minimize(lambda x: np.asscalar(my_poly.get_polyfit(np.dot(x,self.W1))), s_old, \
-                    method='TNC', jac=lambda x: np.dot(self.W1, my_poly.get_polyfit_grad(np.dot(x,self.W1))).flatten(), \
-                    bounds=bounds, options={'disp': False})
+            res = optimize.minimize(lambda x: np.asscalar(my_poly.get_polyfit(np.dot(x,self.U))), s_old, \
+                    method='TNC', jac=lambda x: np.dot(self.U, my_poly.get_polyfit_grad(np.dot(x,self.U))).flatten(), \
+                    bounds=bounds, options={'disp': False, 'maxiter':1000})
         s_new = res.x
         m_new = res.fun
         return s_new, m_new
     
     @staticmethod
-    def _choose_best(X, f):
+    def _choose_best(S, f):
         ind_min = np.argmin(f)
-        x_0 = X[ind_min,:]
-        f_0 = np.asscalar(f[ind_min])
-        return x_0, f_0
+        s = S[ind_min,:]
+        f = np.asscalar(f[ind_min])
+        return s, f
 
-    def _trust_region(self, s_old, del_k, delmin, delmax, eta1, eta2, gam1, gam2, omega_s, max_evals, \
-                      d, subspace_method):
+    def _trust_region(self, s_old, del_k, del_min, eta1, eta2, gam1, gam2, omega_s, max_evals, random_initial, d=None, subspace_method=None):
         """
         Computes optimum using either the ``trust-region`` method or the ``omorf`` method
         """
         self.n = s_old.size
-        itermax = 10000
-        self.epsilon = 1.2
+        self.random_initial = random_initial
         if self.method == 'trust-region':
-            self.psi = 0.25
-            self.q = int(comb(self.n+2, 2))
+            Base = Basis('total-order', orders=np.tile([2], self.n))
+            self.basis = Base.get_basis()[:,range(self.n-1, -1, -1)]
         elif self.method == 'omorf':
             self.d = d
             self.subspace_method = subspace_method
-            self.psi = 1.0
-            self.epsilon = 1.2
-            self.q = self.n + 1
-        
-        # Make the first black-box function call and initialise the database of solutions and labels
+            Base = Basis('total-order', orders=np.tile([2], self.d))
+            self.basis = Base.get_basis()[:,range(self.d-1, -1, -1)]
+        self.epsilon = 1.2
+        itermax = 10000
+        # Evaluate initial point
         f_old = self._blackbox_evaluation(s_old)
-        # Construct the regression set
-        S, f = self._sample_set(s_old, f_old, del_k)
-        # Construct the model and evaluate at current point
+        # Construct the sample set
+        S, f = self._generate_initial_set(s_old, f_old, del_k)
+        if self.method == 'omorf':
+            self._calculate_subspace(s_old)
+            S, f = self._sample_set(s_old, f_old, del_k, S, f, 'new')
         s_old, f_old = self._choose_best(self.S, self.f)
         for i in range(itermax):
-            # If trust-region radius is less than minimum, break loop
-            if len(self.f) >= max_evals or del_k < delmin:
+            if len(self.f) >= max_evals or del_k < del_min:
                 break
+            # print(f_old)
+            # print(self.num_evals)
+            # print('-------------------------------')
             my_poly = self._build_model(S, f)
             if self.method == 'trust-region':
                 m_old = np.asscalar(my_poly.get_polyfit(s_old))
             elif self.method == 'omorf':
-                m_old = np.asscalar(my_poly.get_polyfit(np.dot(s_old,self.W1)))
+                m_old = np.asscalar(my_poly.get_polyfit(np.dot(s_old,self.U)))
             s_new, m_new = self._compute_step(s_old,my_poly,del_k)
             # Safety step implemented in BOBYQA
             if np.linalg.norm(s_new - s_old, ord=np.inf) < omega_s*del_k:
+                if self.method == 'trust-region':
+                    S, f = self._sample_set(s_old, f_old, del_k, S, f, 'improve')
+                elif self.method == 'omorf':
+                    self._calculate_subspace(s_old)
+                    S, f = self._sample_set(s_old, f_old, del_k, S, f, 'new')
                 del_k *= gam1
-                S, f = self._sample_set(s_old, f_old, del_k, 'improve', S, f)
-                s_old, f_old = self._choose_best(S, f)
                 continue
-            f_new = self._blackbox_evaluation(s_new)
-            # Calculate trust-region factor
-            rho_k = (f_old - f_new) / (m_old - m_new)
+            elif self.S.shape == np.unique(np.vstack((self.S, s_new)), axis=0).shape:
+                ind_repeat = np.argmin(np.linalg.norm(self.S - s_new, ord=np.inf, axis=1))
+                f_new = self.f[ind_repeat]
+            else:
+                f_new = self._blackbox_evaluation(s_new)
             S = np.vstack((S, s_new))
             f = np.vstack((f, f_new))
-            s_old, f_old = self._choose_best(S, f)
+            # Calculate trust-region factor
+            rho_k = (f_old - f_new) / (m_old - m_new)
+            s_old, f_old = self._choose_best(self.S, self.f)
+            if len(self.f) >= max_evals or del_k < del_min:
+                break
             if rho_k >= eta2:
-                del_k = min(gam2*del_k,delmax)
-                S, f = self._sample_set(s_old, f_old, del_k, 'replace', S, f)
-            elif rho_k > eta1:
-                S, f = self._sample_set(s_old, f_old, del_k, 'replace', S, f)
+                S, f = self._sample_set(s_old, f_old, del_k, S, f, 'replace')
+                del_k = gam2*del_k
+            elif rho_k >= eta1:
+                S, f = self._sample_set(s_old, f_old, del_k, S, f, 'replace')
             else:
                 if max(np.linalg.norm(S-s_old, axis=1, ord=np.inf)) <= self.epsilon*del_k:
+                    if self.method == 'omorf':
+                        self._calculate_subspace(s_old)
+                    S, f = self._sample_set(s_old, f_old, del_k, S, f, 'new')
                     del_k *= gam1
-                    S, f = self._sample_set(s_old, f_old, del_k, 'replace', S, f)
                 else:
-                    S, f = self._sample_set(s_old, f_old, del_k, 'improve', S, f)
-        s_old, f_old = self._choose_best(S, f)
-        if self.num_evals >= max_evals:
-            status = 1
-        else:
-            status = 0
-        return s_old, f_old, status
+                    S, f = self._sample_set(s_old, f_old, del_k, S, f, 'improve')
+        return s_old, f_old

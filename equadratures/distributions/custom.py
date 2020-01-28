@@ -51,7 +51,7 @@ class Custom(Distribution):
         kernel = stats.gaussian_kde(self.data)
         if points is not None:
             # check dimensions:
-            points = np.matrix(points)
+            points = np.array(points)
             dimension = np.shape(points)
             summ = dimension[0]+dimension[1]
             if (summ != 2) :
@@ -112,7 +112,7 @@ class Custom(Distribution):
         #return c
         #--------------------------------------------------------------------
         # version 2
-        points = np.matrix(points)
+        points = np.array(points)
 
         y = self.get_pdf(self.data)
         summ = np.sum(y)
@@ -201,7 +201,7 @@ class Custom(Distribution):
         #            yy.append(value)
         #            break
         #return yy
-        xx = np.matrix(xx)
+        xx = np.array(xx)
         y = self.get_pdf(self.data)
         summ = np.sum(y)
         p = np.array(y/summ)

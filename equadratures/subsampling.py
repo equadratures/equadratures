@@ -63,7 +63,7 @@ def get_newton_determinant_maximization(Ao, number_of_subsamples):
     alpha = 0.01
     beta = 0.5
 
-    # Assuming the input matrix is an np.matrix()
+    # Assuming the input matrix is an np.array()
     m, n = A.shape
     if m < n:
         raise(ValueError, 'maxdet(): requires the number of columns to be greater than the number of rows!')
@@ -82,7 +82,7 @@ def get_newton_determinant_maximization(Ao, number_of_subsamples):
         Z = _diag(z)
         W = np.linalg.inv(A.T * Z * A)
         V = A * W * A.T
-        vo = np.matrix(np.diag(V))
+        vo = np.array(np.diag(V))
         vo = vo.T
 
         # define some z operations
@@ -94,7 +94,7 @@ def get_newton_determinant_maximization(Ao, number_of_subsamples):
         H = np.multiply(V, V) + kappa * _diag( one_by_z2 + one_by_one_minus_z2)
 
         # Textbook Newton's method -- compute inverse of Hessian
-        R = np.matrix(cholesky(H) )
+        R = np.array(cholesky(H) )
         u = lstsq(R.T, g)
         Hinvg = lstsq(R, u[0])
         Hinvg = Hinvg[0]
@@ -166,6 +166,6 @@ def _find(vec, thres):
             vec_new.append(1.0)
         else:
             vec_new.append(0.0)
-    vec_new = np.matrix(vec_new)
+    vec_new = np.array(vec_new)
     vec_new = vec_new.T
     return vec_new, t

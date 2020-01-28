@@ -144,7 +144,7 @@ class Correlations(object):
         Xc = np.zeros((len(Z[:,0]),len(self.D)))
         for i in range(len(self.D)):
             for j in range(len(Z[:,0])):
-                temporary = np.matrix(xc[j,i])
+                temporary = np.array(xc[j,i])
                 temp = self.D[i].get_icdf(temporary)
 
                 t = temp[0]
@@ -167,7 +167,7 @@ class Correlations(object):
                     distro1 = self.std.get_samples(N)
 
                     # check dimensions ------------------#
-                    distro1 = np.matrix(distro1)
+                    distro1 = np.array(distro1)
                     dimension = np.shape(distro1)
                     if dimension[0] == N:
                         distro1 = distro1.T

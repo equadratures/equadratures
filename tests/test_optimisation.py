@@ -13,7 +13,7 @@ class Test_optimisation(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # np.random.seed(0)
+        np.random.seed(0)
         cls.degf = 4
         cls.degg1 = 1
         cls.degg2 = 3
@@ -310,7 +310,7 @@ class Test_optimisation(TestCase):
         Opt.add_objective(custom={'function': self.ObjFun2})
         x0 = -2*np.ones(n)
         sol = Opt.optimise(x0, del_k=0.5)
-        np.testing.assert_almost_equal(sol['fun'], -39.166165*n, decimal=3)
+        np.testing.assert_almost_equal(sol['fun'], -39.166165*n, decimal=4)
             
     def test_optimise_omorf_as(self):
         n = 10
@@ -318,7 +318,7 @@ class Test_optimisation(TestCase):
         Opt.add_objective(custom={'function': self.ObjFun2})
         x0 = -2*np.ones(n)
         sol = Opt.optimise(x0, del_k=0.5, subspace_method='active-subspaces')
-        np.testing.assert_almost_equal(sol['fun'], -39.166165*n, decimal=3)
+        np.testing.assert_almost_equal(sol['fun'], -39.166165*n, decimal=4)
             
     def test_optimise_omorf_bounds(self):
         n = 10
@@ -327,7 +327,7 @@ class Test_optimisation(TestCase):
         Opt.add_bounds(-5.12*np.ones(n), 5.12*np.ones(n))
         x0 = -2*np.ones(n)
         sol = Opt.optimise(x0, del_k=0.5)
-        np.testing.assert_almost_equal(sol['fun'], -39.166165*n, decimal=3)
+        np.testing.assert_almost_equal(sol['fun'], -39.166165*n, decimal=4)
 
 if __name__ == '__main__':
     unittest.main()

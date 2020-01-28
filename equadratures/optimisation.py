@@ -345,29 +345,30 @@ class Optimisation:
             bounds_l = self.s_old-self.del_k
             bounds_u = self.s_old+self.del_k
         if self.random_initial:
-            direcs = self._initial_random_directions(self.p-1, bounds_l-self.s_old, bounds_u-self.s_old)
+            direcs = self._initial_random_directions(self.p, bounds_l-self.s_old, bounds_u-self.s_old)
         else:
-            direcs = self._initial_coordinate_directions(self.p-1, bounds_l-self.s_old, bounds_u-self.s_old)
+            direcs = self._initial_coordinate_directions(self.p, bounds_l-self.s_old, bounds_u-self.s_old)
+        # print(direcs)
         S = np.zeros((self.p, self.n))
         f = np.zeros((self.p, 1))
         S[0, :] = self.s_old
         f[0, :] = self.f_old
-        for i in range(self.p-1):
+        for i in range(1, self.p):
             del_s = np.minimum(np.maximum(bounds_l-self.s_old, direcs[i, :]), bounds_u-self.s_old)
-            S[i+1, :] = self.s_old + del_s
-            f[i+1, :] = self._blackbox_evaluation(self.s_old+del_s)
+            S[i, :] = self.s_old + del_s
+            f[i, :] = self._blackbox_evaluation(self.s_old+del_s)
         return S, f
 
     def _initial_coordinate_directions(self, num_pnts, lower, upper):
         at_lower_boundary = (lower > -0.01 * self.del_k)
         at_upper_boundary = (upper < 0.01 * self.del_k)
         direcs = np.zeros((num_pnts, self.n))
-        for i in range(num_pnts):
-            if 0 <= i < self.n:
+        for i in range(1, num_pnts):
+            if 1 <= i < self.n + 1:
                 dirn = i - 1
                 step = self.del_k if not at_upper_boundary[dirn] else -self.del_k
                 direcs[i, dirn] = step
-            elif self.n <= i < 2*self.n:
+            elif self.n + 1 <= i < 2*self.n + 1:
                 dirn = i - self.n - 1
                 step = -self.del_k
                 if at_lower_boundary[dirn]:
@@ -386,7 +387,7 @@ class Optimisation:
         return direcs
 
     def _initial_random_directions(self, num_pnts, lower, upper):
-        direcs = np.zeros((self.n, max(2*self.n, num_pnts)))
+        direcs = np.zeros((self.n, max(2*self.n+1, num_pnts)))
         idx_l = (lower == 0)
         idx_u = (upper == 0)
         active = np.logical_or(idx_l, idx_u)
@@ -426,7 +427,7 @@ class Optimisation:
             direcs[:, 2*self.n+i] = dirn * scale
         # for i in range(num_pnts):
         #     direcs[:, i] = np.maximum(np.minimum(direcs[:,i], upper), lower)
-        return direcs[:, :num_pnts].T
+        return np.vstack((np.zeros(self.n), direcs[:, :num_pnts].T))
 
     @staticmethod
     def _get_scale(dirn, delta, lower, upper):
@@ -469,11 +470,11 @@ class Optimisation:
         elif method == 'improve':
             S_hat = np.copy(S) 
             f_hat = np.copy(f)
-            if max(np.linalg.norm(S_hat-self.s_old, axis=1, ord=np.inf)) > self.epsilon*self.del_k:
-                ind_distant = np.argmax(np.linalg.norm(S_hat-self.s_old, axis=1, ord=np.inf))
-                S_hat = np.delete(S_hat, ind_distant, 0)
-                f_hat = np.delete(f_hat, ind_distant, 0)
             S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, self.s_old)
+            # if max(np.linalg.norm(S_hat-self.s_old, axis=1, ord=np.inf)) > self.epsilon*self.del_k:
+            ind_distant = np.argmax(np.linalg.norm(S_hat-self.s_old, axis=1, ord=np.inf))
+            S_hat = np.delete(S_hat, ind_distant, 0)
+            f_hat = np.delete(f_hat, ind_distant, 0)
             S = np.zeros((q, self.n))
             f = np.zeros((q, 1))
             S[0, :] = self.s_old
@@ -506,7 +507,7 @@ class Optimisation:
 #       Initialise U matrix of LU factorisation of M matrix (see Conn et al.)
         U = np.zeros((q,q))
         U[0,:] = phi_function(self.s_old)
-        # print(S_hat.shape)
+        # print(phi_function(self.s_old))
 #       Perform the LU factorisation algorithm for the rest of the points
         for k in range(1, q):
             flag = True
@@ -514,12 +515,15 @@ class Optimisation:
             for j in range(k):
                 v[j] = -U[j,k] / U[j,j]
             v[k] = 1.0
+            # print(U[j,j])
+            # print(v)
 #           If there are still points to choose from, find if points meet criterion. If so, use the index to choose 
 #           point with given index to be next point in regression/interpolation set
             if f_hat.size > 0:
                 M = np.absolute(np.array([np.dot(phi_function(S_hat),v)]).flatten())
+                # print(M)
                 index = np.argmax(M)
-                if M[index] < 1.0e-3:
+                if M[index] < 1.0e-4:
                     flag = False
                 elif method == 'improve':
                     if k == q - 1:
@@ -547,8 +551,15 @@ class Optimisation:
                     elif self.S.shape == np.unique(np.vstack((self.S, s)), axis=0).shape:
                         rand = np.random.normal(size=self.n)
                         s = np.minimum(np.maximum(bounds_l, self.s_old + self.del_k*rand/np.linalg.norm(rand)), bounds_u)
-                        S[k, :] = s
-                        f[k, :] = self._blackbox_evaluation(s)
+                        if M[index] >= abs(np.dot(v, phi_function(s))):
+                            s = S_hat[index,:]
+                            S[k, :] = s
+                            f[k, :] = f_hat[index]
+                            S_hat = np.delete(S_hat, index, 0)
+                            f_hat = np.delete(f_hat, index, 0)
+                        else:
+                            S[k, :] = s
+                            f[k, :] = self._blackbox_evaluation(s)
                     else:
                         S[k, :] = s
                         f[k, :] = self._blackbox_evaluation(s)
@@ -593,7 +604,7 @@ class Optimisation:
             bounds_u = self.s_old+self.del_k
         s_c = 0.5*(bounds_l + bounds_u)
         if self.method == 'trust-region':
-            Del_S = np.linalg.norm(S_hat-s_c, axis=0)
+            Del_S = np.maximum(self.del_k, np.linalg.norm(S_hat-s_c, axis=0))
             def phi_function(s):
                 s_tilde = np.divide((s - s_c), Del_S)
                 try:
@@ -621,7 +632,7 @@ class Optimisation:
                             phi_deriv[i,k] = self.basis[k, i] * np.prod(np.divide(np.power(s_tilde, self.basis[k,:]-tmp), factorial(self.basis[k,:])))
                 return np.divide(phi_deriv.T, Del_S).T
         elif self.method == 'omorf' and full_space:
-            Del_S = np.linalg.norm(S_hat-s_c, axis=0)
+            Del_S = np.maximum(self.del_k, np.linalg.norm(S_hat-s_c, axis=0))
             def phi_function(s):
                 s_tilde = np.divide((s - s_c), Del_S)
                 try:
@@ -758,18 +769,21 @@ class Optimisation:
         Computes optimum using either the ``trust-region`` method or the ``omorf`` method
         """
         self.n = s_old.size
-        self.random_initial = random_initial
+        self.s_old = s_old
+        self.f_old = self._blackbox_evaluation(s_old)
+        self.del_k = del_k
+
         self.q = int(comb(self.n+2, 2))
         self.p = int(comb(self.n+2, 2))
+        self.random_initial = random_initial
+        self.epsilon = 1.2
+
         Base = Basis('total-order', orders=np.tile([2], self.n))
         self.basis = Base.get_basis()[:,range(self.n-1, -1, -1)]
-        self.epsilon = 1.2
-        self.del_k = del_k
-        self.s_old = s_old
-
+        
+        
         itermax = 10000
-        # Evaluate initial point
-        self.f_old = self._blackbox_evaluation(s_old)
+        
         # Construct the sample set
         S, f = self._generate_initial_set()
         self._choose_best(self.S, self.f)
@@ -822,8 +836,8 @@ class Optimisation:
         self.n = s_old.size
         self.s_old = s_old
         self.f_old = self._blackbox_evaluation(self.s_old)
-
         self.del_k = del_k
+        
         self.d = d
         self.q = int(comb(self.d+2, 2))
         self.p = self.n + 1
@@ -837,6 +851,7 @@ class Optimisation:
         itermax = 10000
         # Construct the sample set
         S_full, f_full = self._generate_initial_set()
+        # print(S_full)
         # self._choose_best(self.S, self.f)
         self._calculate_subspace(S_full, f_full)
         S_red, f_red = self._sample_set('new')

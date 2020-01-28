@@ -519,7 +519,7 @@ class Optimisation:
             if f_hat.size > 0:
                 M = np.absolute(np.array([np.dot(phi_function(S_hat),v)]).flatten())
                 index = np.argmax(M)
-                if M[index] < 1.0e-5:
+                if M[index] < 1.0e-3:
                     flag = False
                 elif method == 'improve':
                     if k == q - 1:
@@ -537,20 +537,44 @@ class Optimisation:
 #           If index doesn't exist, solve an optimisation point to find the point in the range which best satisfies criterion
             else:
                 s = self._find_new_point(v, phi_function, phi_function_deriv, full_space)
-                if f_hat.size > 0 and M[index] > abs(np.dot(v, phi_function(s))):
-                    s = S_hat[index,:]
-                    S[k, :] = s
-                    f[k, :] = f_hat[index]
-                    S_hat = np.delete(S_hat, index, 0)
-                    f_hat = np.delete(f_hat, index, 0)
-                elif self.S.shape == np.unique(np.vstack((self.S, s)), axis=0).shape:
-                    rand = np.random.normal(size=self.n)
-                    s = np.minimum(np.maximum(bounds_l, self.s_old + self.del_k*rand/np.linalg.norm(rand)), bounds_u)
-                    S[k, :] = s
-                    f[k, :] = self._blackbox_evaluation(s)
+                if f_hat.size > 0:
+                    if M[index] >= abs(np.dot(v, phi_function(s))):
+                        s = S_hat[index,:]
+                        S[k, :] = s
+                        f[k, :] = f_hat[index]
+                        S_hat = np.delete(S_hat, index, 0)
+                        f_hat = np.delete(f_hat, index, 0)
+                    elif self.S.shape == np.unique(np.vstack((self.S, s)), axis=0).shape:
+                        rand = np.random.normal(size=self.n)
+                        s = np.minimum(np.maximum(bounds_l, self.s_old + self.del_k*rand/np.linalg.norm(rand)), bounds_u)
+                        S[k, :] = s
+                        f[k, :] = self._blackbox_evaluation(s)
+                    else:
+                        S[k, :] = s
+                        f[k, :] = self._blackbox_evaluation(s)
                 else:
-                    S[k, :] = s
-                    f[k, :] = self._blackbox_evaluation(s)
+                    if self.S.shape == np.unique(np.vstack((self.S, s)), axis=0).shape:
+                        rand = np.random.normal(size=self.n)
+                        s = np.minimum(np.maximum(bounds_l, self.s_old + self.del_k*rand/np.linalg.norm(rand)), bounds_u)
+                        S[k, :] = s
+                        f[k, :] = self._blackbox_evaluation(s)
+                    else:
+                        S[k, :] = s
+                        f[k, :] = self._blackbox_evaluation(s)
+                # if f_hat.size > 0 and M[index] >= abs(np.dot(v, phi_function(s))):
+                #     s = S_hat[index,:]
+                #     S[k, :] = s
+                #     f[k, :] = f_hat[index]
+                #     S_hat = np.delete(S_hat, index, 0)
+                #     f_hat = np.delete(f_hat, index, 0)
+                # elif self.S.shape == np.unique(np.vstack((self.S, s)), axis=0).shape:
+                #     rand = np.random.normal(size=self.n)
+                #     s = np.minimum(np.maximum(bounds_l, self.s_old + self.del_k*rand/np.linalg.norm(rand)), bounds_u)
+                #     S[k, :] = s
+                #     f[k, :] = self._blackbox_evaluation(s)
+                # else:
+                #     S[k, :] = s
+                #     f[k, :] = self._blackbox_evaluation(s)
 #           Update U factorisation in LU algorithm
             phi = phi_function(s)
             U[k,k] = np.dot(v, phi)
@@ -657,6 +681,7 @@ class Optimisation:
             bounds.append((bounds_l[i], bounds_u[i])) 
         if full_space:
             c = v[1:]
+            # print(c)
             res1 = optimize.linprog(c, bounds=bounds)
             res2 = optimize.linprog(-c, bounds=bounds)
             if abs(np.dot(v, phi_function(res1['x']))) > abs(np.dot(v, phi_function(res2['x']))):
@@ -837,6 +862,7 @@ class Optimisation:
                     S_red, f_red = self._sample_set('new')
                 else:
                     S_red, f_red = self._sample_set('improve', S_red, f_red)
+                    S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
                 continue
             if self.S.shape == np.unique(np.vstack((self.S, s_new)), axis=0).shape:
                 ind_repeat = np.argmin(np.linalg.norm(self.S - s_new, ord=np.inf, axis=1))
@@ -865,11 +891,11 @@ class Optimisation:
                     S_red, f_red = self._sample_set('new')
                     self.del_k *= gam1
                 elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= self.epsilon*self.del_k:
-                    # S_full, f_full = self._choose_closest_points(self.p)
                     S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
                     self._calculate_subspace(S_full, f_full)
                     S_red, f_red = self._sample_set('new')
                 else:
                     S_red, f_red = self._sample_set('improve', S_red, f_red)
+                    S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
         self._choose_best(self.S, self.f)
         return self.s_old, self.f_old

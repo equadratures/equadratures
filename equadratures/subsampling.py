@@ -148,7 +148,7 @@ def _binary2indices(zhat):
             pvec.append(i)
     return pvec
 def _indices(a, func):
-    return [i for (i, val) in list(enumerate(a[0])) if func(val)]
+    return [i for (i, val) in enumerate(a[0]) if func(val)]
 def _diag(vec):
     m = len(vec)
     D = np.zeros((m, m))

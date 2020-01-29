@@ -102,8 +102,6 @@ def get_newton_determinant_maximization(Ao, number_of_subsamples):
         Hinv1 = lstsq(R, v[0])
         Hinv1 = Hinv1[0]
         dz = -Hinvg + (np.dot( ones_m_transpose , Hinvg ) / np.dot(ones_m_transpose , Hinv1)) * Hinv1
-
-
         deczi = _indices(dz, lambda x: x < 0)
         inczi = _indices(dz, lambda x: x > 0)
         a1 = 0.99* -z[deczi, 0] / dz[deczi, 0]
@@ -150,7 +148,7 @@ def _binary2indices(zhat):
             pvec.append(i)
     return pvec
 def _indices(a, func):
-    return [i for (i, val) in enumerate(a) if func(val)]
+    return [i for (i, val) in list(enumerate(a[0])) if func(val)]
 def _diag(vec):
     m = len(vec)
     D = np.zeros((m, m))

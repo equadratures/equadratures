@@ -51,7 +51,7 @@ class Custom(Distribution):
         kernel = stats.gaussian_kde(self.data)
         if points is not None:
             # check dimensions:
-            points = np.array(points)
+            points = np.array([points])
             dimension = np.shape(points)
             summ = dimension[0]+dimension[1]
             if (summ != 2) :

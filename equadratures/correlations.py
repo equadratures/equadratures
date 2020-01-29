@@ -146,8 +146,7 @@ class Correlations(object):
             for j in range(len(Z[:,0])):
                 temporary = np.array(xc[j,i])
                 temp = self.D[i].get_icdf(temporary)
-
-                t = temp[0]
+                t = temp
                 Xc[j,i] = t
         return Xc
     def get_correlated_samples(self, N=None):

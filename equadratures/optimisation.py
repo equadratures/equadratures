@@ -292,7 +292,7 @@ class Optimisation:
     def _calculate_subspace(self, S, f):
         parameters = [Parameter(distribution='uniform', lower=np.min(S[:,i]), upper=np.max(S[:,i]), order=1) for i in range(0, self.n)]
         self.poly = Poly(parameters, basis=Basis('total-order'), method='least-squares', \
-                     sampling_args={'mesh':'user-defined', 'sample-points': S, 'sample-outputs': f})
+                     sampling_args={'sample-points': S, 'sample-outputs': f})
         self.poly.set_model()
         self.Subs = Subspaces(full_space_poly=self.poly, method='active-subspace', subspace_dimension=self.d)
         if self.subspace_method == 'variable-projection':
@@ -837,7 +837,7 @@ class Optimisation:
         self.s_old = s_old
         self.f_old = self._blackbox_evaluation(self.s_old)
         self.del_k = del_k
-        
+
         self.d = d
         self.q = int(comb(self.d+2, 2))
         self.p = self.n + 1
@@ -856,6 +856,9 @@ class Optimisation:
         self._calculate_subspace(S_full, f_full)
         S_red, f_red = self._sample_set('new')
         for i in range(itermax):
+            # print(self.S.shape)
+            # print(np.unique(self.S, axis=0).shape)
+            # print(self.f)
             if len(self.f) >= max_evals or self.del_k < del_min:
                 break
             # print(self.f_old)

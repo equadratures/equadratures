@@ -61,8 +61,8 @@ class Parameter(object):
         1. Xiu, D., Karniadakis, G. E., (2002) The Wiener-Askey Polynomial Chaos for Stochastic Differential Equations. SIAM Journal on Scientific Computing,  24(2), `Paper <https://epubs.siam.org/doi/abs/10.1137/S1064827501387826?journalCode=sjoce3>`__
         2. Gautschi, W., (1985) Orthogonal Polynomials-Constructive Theory and Applications. Journal of Computational and Applied Mathematics 12 (1985), pp. 61-76. `Paper <https://www.sciencedirect.com/science/article/pii/037704278590007X>`__
     """
-    def __init__(self, order=1, distribution=NULL, endpoints=None, shape_parameter_A=None, shape_parameter_B=None, name='parameter', lower=None, upper=None, data=None):
-        if(distribution == NULL):
+    def __init__(self, order=1, distribution=None, endpoints=None, shape_parameter_A=None, shape_parameter_B=None, name='parameter', lower=None, upper=None, data=None):
+        if(distribution == None):
             self.distribution = Uniform(lower,upper)
         self.name = name
         self.order = order

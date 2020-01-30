@@ -4,8 +4,6 @@ from unittest import TestCase
 import unittest
 import equadratures as eq
 
-import nlopt
-
 import warnings
 warnings.filterwarnings('ignore')
 

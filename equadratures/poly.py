@@ -121,7 +121,7 @@ class Poly(object):
                     self.gradients = sampling_args.get('sample-gradients')
                     sampling_args_flag = 1
                 elif sampling_args_flag == 0:
-                    raise(ValueError, 'An input value that you have specified is likely incorrect. Sampling arguments include: mesh, sampling-ratio, subsampling-algorithm, sample-points, sample-outputs and sample-gradients.')
+                    raise ValueError( 'An input value that you have specified is likely incorrect. Sampling arguments include: mesh, sampling-ratio, subsampling-algorithm, sample-points, sample-outputs and sample-gradients.')
             self._set_solver()
             self._set_subsampling_algorithm()
             self._set_points_and_weights()
@@ -370,7 +370,7 @@ class Poly(object):
                 y = model
                 assert(y.shape[0] == self._quadrature_points.shape[0])
             if y.shape[1] != 1:
-                raise(ValueError, 'model values should be a column vector.')
+                raise ValueError( 'model values should be a column vector.')
             self._model_evaluations = y
             if self.gradient_flag == 1:
                 if (model_grads is None) and (self.gradients is not None):
@@ -803,7 +803,7 @@ def evaluate_model_gradients(points, fungrad, format):
                 counter = counter + 1
         return np.mat(grad_values)
     else:
-        raise(ValueError, 'evalgradients(): Format must be either matrix or vector!')
+        raise ValueError( 'evalgradients(): Format must be either matrix or vector!')
 def evaluate_model(points, function):
     """
     Evaluates the model function at given values.

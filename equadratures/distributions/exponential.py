@@ -51,7 +51,7 @@ class Exponential(Distribution):
         if points is not None:
             return self.parent.pdf(points)
         else:
-            raise(ValueError, 'Please digit an input for getPDF method')
+            raise ValueError( 'Please digit an input for getPDF method')
     def get_icdf(self, xx):
         """
         An inverse exponential cumulative density function.
@@ -80,7 +80,7 @@ class Exponential(Distribution):
         if points is not None:
             return self.parent.cdf(points)
         else:
-            raise(ValueError, 'Please digit an input for getCDF method')
+            raise ValueError( 'Please digit an input for getCDF method')
     def get_samples(self, m=None):
         """
         Generates samples from the Exponential distribution.

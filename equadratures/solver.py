@@ -29,7 +29,7 @@ class Solver(object):
         elif self.method.lower() == 'least-squares-with-gradients':
             self.solver = lambda A, b, C, d: constrained_least_squares(A, b, C, d, self.verbose)
         else:
-            raise(ValueError, 'You have not selected a valid method for solving the coefficients of the polynomial. Choose from compressed-sensing, least-squares, least-squares-with-gradients, minimum-norm or numerical-integration.')
+            raise ValueError('You have not selected a valid method for solving the coefficients of the polynomial. Choose from compressed-sensing, least-squares, least-squares-with-gradients, minimum-norm or numerical-integration.')
     def get_solver(self):
         return self.solver
 def least_squares(A, b, verbose):
@@ -64,9 +64,9 @@ def constrained_least_squares(A, b, C, d, verbose):
     s, t = d.shape
     # Check that the number of elements in b are equivalent to the number of rows in A
     if m != p:
-        raise(ValueError, 'solver: error: mismatch in sizes of A and b')
+        raise ValueError( 'solver: error: mismatch in sizes of A and b')
     elif k != s:
-        raise(ValueError, 'solver: error: mismatch in sizes of C and d')
+        raise ValueError( 'solver: error: mismatch in sizes of C and d')
     if m >= n:
         return least_squares(np.vstack([A, C]), np.vstack([b, d]), verbose)
     else:

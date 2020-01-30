@@ -1,6 +1,11 @@
 *.m~
 .DS_Store
 
+#.txt files
+.txt
+
+
+
 # compiled python codes
 *.pyc
 

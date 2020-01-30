@@ -289,7 +289,8 @@ class Poly(object):
                 poly_vandermonde_matrix = self.get_poly(self._quadrature_points)
                 quad_pts, quad_wts = self.get_points_and_weights()
 
-            if self.highest_order <= MAXIMUM_ORDER_FOR_STATS:
+            if self.highest_order <= MAXIMUM_ORDER_FOR_STATS and (self.basis.basis_type.lower() == 'total-order'
+                or self.basis.basis_type.lower() == 'hyperbolic-basis'):
                 self.statistics_object = Statistics(self.parameters, self.basis,  self.coefficients,  quad_pts, \
                         quad_wts, poly_vandermonde_matrix, max_sobol_order=self.highest_order)
             else:
@@ -802,8 +803,7 @@ def evaluate_model_gradients(points, fungrad, format):
                 counter = counter + 1
         return np.mat(grad_values)
     else:
-        error_function('evalgradients(): Format must be either matrix or vector!')
-        return 0
+        raise(ValueError, 'evalgradients(): Format must be either matrix or vector!')
 def evaluate_model(points, function):
     """
     Evaluates the model function at given values.

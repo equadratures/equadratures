@@ -80,7 +80,7 @@ class Basis(object):
         elif name.lower() == "euclidean-degree":
             basis = euclidean_degree_basis(self.orders)
         else:
-            raise(ValueError, 'Basis __init__: invalid value for basis_type!')
+            raise ValueError( 'Basis __init__: invalid value for basis_type!')
             basis = [0]
         self.elements = basis
         self.cardinality = len(basis)
@@ -97,7 +97,7 @@ class Basis(object):
         total_elements = self.cardinality
         new_elements = total_elements - number_of_elements_to_delete
         if new_elements < 0 :
-            raise(ValueError, 'In Basis() --> prune(): Number of elements to be deleted must be greater than the total number of elements')
+            raise ValueError( 'In Basis() --> prune(): Number of elements to be deleted must be greater than the total number of elements')
         else:
             self.elements =  index_entries[0:new_elements, :]
     def sort(self):
@@ -146,7 +146,7 @@ class Basis(object):
             sparse_index, sparse_weight_factors, sparse_grid_set = sparse_grid_basis(self.level, self.growth_rule, self.dimensions) # Note sparse grid rule depends on points!
             return sparse_index, sparse_weight_factors, sparse_grid_set
         else:
-            raise(ValueError, 'invalid value for basis_type!')
+            raise ValueError( 'invalid value for basis_type!')
             basis = [0]
         return basis
     def get_elements(self):

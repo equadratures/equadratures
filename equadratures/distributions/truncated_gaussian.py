@@ -65,7 +65,7 @@ class TruncatedGaussian(Distribution):
         if points is not None:
             return self.parents.pdf(points)
         else:
-            raise(ValueError, 'Please digit an input for getPDF method')
+            raise ValueError( 'Please digit an input for getPDF method')
     def get_icdf(self, xx):
         """ A truncated gaussian inverse cumulative density function,
         :param truncnorm:

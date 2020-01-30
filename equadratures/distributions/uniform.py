@@ -55,7 +55,7 @@ class Uniform(Distribution):
         if points is not None:
             return self.parent.cdf(points)
         else:
-            raise(ValueError, 'Please digit an input for getCDF method')
+            raise ValueError( 'Please digit an input for getCDF method')
     def get_pdf(self, points=None):
         """
         A uniform probability distribution.
@@ -73,7 +73,7 @@ class Uniform(Distribution):
         if points is not None:
             return self.parent.pdf(points)
         else:
-            raise(ValueError, 'Please digit an input for get_pdf method')
+            raise ValueError( 'Please digit an input for get_pdf method')
     def get_recurrence_coefficients(self, order):
         """
         Recurrence coefficients for the uniform distribution.

@@ -51,7 +51,7 @@ class Logistic(Distribution):
         if points is not None:
             return self.parent.pdf(points)
         else:
-            raise(ValueError, 'Please digit an input for get_pdf method')
+            raise ValueError( 'Please digit an input for get_pdf method')
     def get_cdf(self, points=None):
         """
         A Logistic cumulative density function.
@@ -68,7 +68,7 @@ class Logistic(Distribution):
         if points is not None:
             return self.parent.cdf(points)
         else:
-            raise(ValueError, 'Please digit an input for get_cdf method')
+            raise ValueError( 'Please digit an input for get_cdf method')
     def get_icdf(self, xx):
         """
         A Logistic inverse cumulative density function.

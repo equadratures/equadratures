@@ -13,7 +13,7 @@ def laguerre_recurrence_coefficients(a, order):
     nn = int(order) + 1
     ab = np.zeros((nn, 2))
     if a <= -1:
-        raise(ValueError, 'First input must be >= -1!')
+        raise ValueError( 'First input must be >= -1!')
     nu_value = a + 1
     mu_value = gamma(a + 1)
     ab[0,0] = nu_value

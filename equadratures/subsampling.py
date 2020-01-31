@@ -66,7 +66,7 @@ def get_newton_determinant_maximization(Ao, number_of_subsamples):
     # Assuming the input matrix is an np.matrix()
     m, n = A.shape
     if m < n:
-        raise(ValueError, 'maxdet(): requires the number of columns to be greater than the number of rows!')
+        raise ValueError( 'maxdet(): requires the number of columns to be greater than the number of rows!')
     z = np.ones((m, 1)) * float(number_of_subsamples)/float(m)
     g = np.zeros((m, 1))
     ones_m = np.ones((m, 1))

@@ -53,7 +53,7 @@ class Weibull(Distribution):
             #return w
             return self.parent.pdf(points)
         else:
-            raise(ValueError, 'Please digit an input for getCDF method')
+            raise ValueError( 'Please digit an input for getCDF method')
     def get_icdf(self, xx):
         """
         An inverse Weibull cumulative density function.
@@ -85,4 +85,4 @@ class Weibull(Distribution):
         #    return w
             return self.parent.cdf(points)
         else:
-            raise(ValueError, 'Please digit an input for getCDF method')
+            raise ValueError( 'Please digit an input for getCDF method')

@@ -51,7 +51,7 @@ class Chebyshev(Distribution):
         if points is not None:
             return arcsine.pdf(points)
         else:
-            raise(ValueError, 'Please digit an input for getPDF method')
+            raise ValueError( 'Please digit an input for getPDF method')
     def get_cdf(self, points=None):
         """
         A Chebyshev cumulative density function.
@@ -68,7 +68,7 @@ class Chebyshev(Distribution):
         if points is not None:
              return arcsine.cdf(points)
         else:
-            raise(ValueError, 'Please digit an input for getCDF method')
+            raise ValueError( 'Please digit an input for getCDF method')
     def get_recurrence_coefficients(self, order):
         """
         Recurrence coefficients for the Chebyshev distribution.

@@ -184,4 +184,4 @@ class Correlations(object):
             return correlated
 
         else:
-             raise(ValueError, 'One input must be given to "get Correlated Samples" method: please choose between sampling N points or giving an array of uncorrelated data ')
+             raise ValueError( 'One input must be given to "get Correlated Samples" method: please choose between sampling N points or giving an array of uncorrelated data ')

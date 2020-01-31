@@ -50,7 +50,7 @@ class Pareto(Distribution):
         if points is not None:
             return self.parent.pdf(points)
         else:
-            raise(ValueError, 'Please digit an input for get_pdf method')
+            raise ValueError( 'Please digit an input for get_pdf method')
     def get_cdf(self, points=None):
         """
         A Pareto cumulative density function.
@@ -67,7 +67,7 @@ class Pareto(Distribution):
         if points is not None:
             return self.parent.cdf(points)
         else:
-            raise(ValueError, 'Please digit an input for get_cdf method')
+            raise ValueError( 'Please digit an input for get_cdf method')
     def get_icdf(self, xx):
         """
         A Pareto inverse cumulative density function.

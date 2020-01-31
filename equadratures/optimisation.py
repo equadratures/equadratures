@@ -300,7 +300,7 @@ class Optimisation:
         if self.subspace_method == 'variable-projection':
             U0 = self.Subs.get_subspace()[:,:self.d]
             self.Subs = Subspaces(method='variable-projection', sample_points=S, sample_outputs=f, \
-                    subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2, max_iter=300)
+                    subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2, max_iter=300, tol=1.0e-8)
             self.U = self.Subs.get_subspace()[:, :self.d]
         elif self.subspace_method == 'active-subspaces':
             U0 = self.Subs.get_subspace()[:,1].reshape(-1,1)
@@ -753,6 +753,7 @@ class Optimisation:
         """
         Computes optimum using the ``trust-region`` method
         """
+        itermax = 10000
         self.n = s_old.size
         self.q = int(comb(self.n+2, 2))
         self.p = int(comb(self.n+2, 2))
@@ -771,9 +772,8 @@ class Optimisation:
                 self.del_k = 0.1
         else:
             self.del_k = del_k
-
         self._update_bounds()
-        itermax = 10000
+
         # Construct the sample set
         S, f = self._generate_initial_set()
         for i in range(itermax):
@@ -824,6 +824,7 @@ class Optimisation:
         """
         Computes optimum using the ``omorf`` method
         """
+        itermax = 10000
         self.n = s_old.size
         self.d = d
         self.q = int(comb(self.d+2, 2))
@@ -844,15 +845,17 @@ class Optimisation:
                 self.del_k = 0.1
         else:
             self.del_k = del_k
-        
         self._update_bounds()
-        itermax = 10000
+
         # Construct the sample set
         S_full, f_full = self._generate_initial_set()
         self._calculate_subspace(S_full, f_full)
         S_red, f_red = self._sample_set('new')
         for i in range(itermax):
-            # self._update_bounds()
+            # print(self.f_old)
+            # print(self.num_evals)
+            # print('--------------')
+            self._update_bounds()
             if len(self.f) >= max_evals or self.del_k < del_min:
                 break
             my_poly = self._build_model(S_red, f_red)

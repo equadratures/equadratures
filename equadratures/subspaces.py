@@ -41,7 +41,7 @@ class Subspaces(object):
         2. Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery Active Subspace Performance Maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__.
         3. Hokanson, J., Constantine, P., (2018) Data-driven Polynomial Ridge Approximation Using Variable Projection. SIAM Journal of Scientific Computing, 40(3), A1566-A1589. `Paper <https://epubs.siam.org/doi/abs/10.1137/17M1117690>`__.
     """
-    def __init__(self, method, full_space_poly=None, sample_points=None, sample_outputs=None, polynomial_degree=2, subspace_dimension=2, bootstrap=False, subspace_init=None, max_iter=1000):
+    def __init__(self, method, full_space_poly=None, sample_points=None, sample_outputs=None, polynomial_degree=2, subspace_dimension=2, bootstrap=False, subspace_init=None, max_iter=1000, tol=None):
         self.full_space_poly = full_space_poly
         self.sample_points = sample_points
         self.Y = None # for the zonotope vertices
@@ -67,7 +67,7 @@ class Subspaces(object):
             self.sample_outputs = self.full_space_poly.get_model_evaluations()
             self._get_active_subspace()
         elif self.method == 'variable-projection':
-            self._get_variable_projection(None,None,None,max_iter,subspace_init,False)
+            self._get_variable_projection(None,None,tol,max_iter,subspace_init,False)
     def get_subspace_polynomial(self):
         """
         Returns a polynomial defined over the dimension reducing subspace.

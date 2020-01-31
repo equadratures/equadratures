@@ -61,7 +61,7 @@ class Poly(object):
         5. Bos, L., De Marchi, S., Sommariva, A., Vianello, M., (2010) Computing Multivariate Fekete and Leja points by Numerical Linear Algebra. SIAM Journal on Numerical Analysis, 48(5). `Paper <https://epubs.siam.org/doi/abs/10.1137/090779024>`__
         6. Joshi, S., Boyd, S., (2009) Sensor Selection via Convex Optimization. IEEE Transactions on Signal Processing, 57(2). `Paper <https://ieeexplore.ieee.org/document/4663892>`__
     """
-    def __init__(self, parameters, basis, method=None, sampling_args=None, solver_args=None):
+    def __init__(self, parameters, basis, method='least-squares', sampling_args=None, solver_args=None):
         try:
             len(parameters)
         except TypeError:
@@ -101,32 +101,37 @@ class Poly(object):
             # Now depending on user inputs, override these default values!
             sampling_args_flag = 0
             if self.sampling_args is not None:
-                if 'mesh' in sampling_args:
-                    self.mesh = sampling_args.get('mesh')
-                    sampling_args_flag = 1
-                if 'sampling-ratio' in sampling_args:
-                    self.sampling_ratio = float(sampling_args.get('sampling-ratio'))
-                    sampling_args_flag = 1
-                if 'subsampling-algorithm' in sampling_args:
-                    self.subsampling_algorithm_name = sampling_args.get('subsampling-algorithm')
-                    sampling_args_flag = 1
-                if 'sample-points' in sampling_args:
-                    self.inputs = sampling_args.get('sample-points')
-                    sampling_args_flag = 1
-                    self.mesh = 'user-defined'
-                if 'sample-outputs' in sampling_args:
-                    self.outputs = sampling_args.get('sample-outputs')
-                    sampling_args_flag = 1
-                if 'sample-gradients' in sampling_args:
-                    self.gradients = sampling_args.get('sample-gradients')
-                    sampling_args_flag = 1
-                elif sampling_args_flag == 0:
-                    raise ValueError( 'An input value that you have specified is likely incorrect. Sampling arguments include: mesh, sampling-ratio, subsampling-algorithm, sample-points, sample-outputs and sample-gradients.')
+                print(np.shape([sampling_args.get('sample-points')]), np.shape([sampling_args.get('sample-outputs')]))
+                if np.shape([sampling_args.get('sample-points')])[0] == np.shape([sampling_args.get('sample-outputs')])[0] and np.shape([sampling_args.get('sample-outputs')])[1] == 1:
+                    if 'mesh' in sampling_args:
+                        self.mesh = sampling_args.get('mesh')
+                        sampling_args_flag = 1
+                    if 'sampling-ratio' in sampling_args:
+                        self.sampling_ratio = float(sampling_args.get('sampling-ratio'))
+                        sampling_args_flag = 1
+                    if 'subsampling-algorithm' in sampling_args:
+                        self.subsampling_algorithm_name = sampling_args.get('subsampling-algorithm')
+                        sampling_args_flag = 1
+                    if 'sample-points' in sampling_args:
+                        self.inputs = sampling_args.get('sample-points')
+                        sampling_args_flag = 1
+                        self.mesh = 'user-defined'
+                    if 'sample-outputs' in sampling_args:
+                        self.outputs = sampling_args.get('sample-outputs')
+                        sampling_args_flag = 1
+                    if 'sample-gradients' in sampling_args:
+                        self.gradients = sampling_args.get('sample-gradients')
+                        sampling_args_flag = 1
+                    elif sampling_args_flag == 0:
+                        raise ValueError( 'An input value that you have specified is likely incorrect. Sampling arguments include: mesh, sampling-ratio, subsampling-algorithm, sample-points, sample-outputs and sample-gradients.')
+                else:
+                    print("Wrong input dimensions")
             self._set_solver()
             self._set_subsampling_algorithm()
             self._set_points_and_weights()
         else:
             print('WARNING: Method not declared.')
+
     def _set_parameters(self, parameters):
         """
         Private function that sets the parameters. Required by the Correlated class.

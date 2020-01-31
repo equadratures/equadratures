@@ -304,6 +304,16 @@ class Test_optimisation(TestCase):
         sol = Opt.optimise(x0)
         # print(sol)
         np.testing.assert_almost_equal(sol['fun'], 0.0, decimal=6)
+
+    def test_optimise_trustregion_bounds_not_scaled(self):
+        n = 2
+        Opt = eq.Optimisation(method='trust-region')
+        Opt.add_objective(custom={'function': self.ObjFun1})
+        Opt.add_bounds(-np.ones(n), np.ones(n))
+        x0 = np.zeros(n)
+        sol = Opt.optimise(x0, scale_bounds=False)
+        # print(sol)
+        np.testing.assert_almost_equal(sol['fun'], 0.0, decimal=6)
             
     def test_optimise_omorf_vp(self):
         n = 10

@@ -272,14 +272,16 @@ class Optimisation:
             x_opt, f_opt = self._trust_region(x0, del_k=kwargs.get('del_k', None), del_min=kwargs.get('delmin', 1.0e-8), \
                     eta1=kwargs.get('eta1', 0.0), eta2=kwargs.get('eta2', 0.7), gam1=kwargs.get('gam1', 0.5), \
                     gam2=kwargs.get('gam2', 2.0), omega_s=kwargs.get('omega_s', 0.5), max_evals=kwargs.get('max_evals', 10000), \
-                    random_initial=kwargs.get('random_initial', False), epsilon=kwargs.get('epsilon', 1.05))
+                    random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', True), \
+                    epsilon=kwargs.get('epsilon', 1.05))
             sol = {'x': x_opt, 'fun': f_opt, 'nfev': self.num_evals}
         elif self.method in ['omorf']:
             x_opt, f_opt = self._omorf(x0, del_k=kwargs.get('del_k', None), del_min=kwargs.get('delmin', 1.0e-8), \
                     eta1=kwargs.get('eta1', 0.1), eta2=kwargs.get('eta2', 0.7), gam1=kwargs.get('gam1', 0.5), \
                     gam2=kwargs.get('gam2', 2.0), omega_s=kwargs.get('omega_s', 0.5), max_evals=kwargs.get('max_evals', 10000), \
-                    random_initial=kwargs.get('random_initial', False), epsilon=kwargs.get('epsilon', 1.05), \
-                    d=kwargs.get('d', 2), subspace_method=kwargs.get('subspace_method', 'variable-projection'))
+                    random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', True), \
+                    epsilon=kwargs.get('epsilon', 1.05), d=kwargs.get('d', 2), \
+                    subspace_method=kwargs.get('subspace_method', 'variable-projection'))
             sol = {'x': x_opt, 'fun': f_opt, 'nfev': self.num_evals}
         else:
             sol = optimize.minimize(self.objective['function'], x0, method=self.method, bounds = self.bounds, \
@@ -298,7 +300,7 @@ class Optimisation:
         if self.subspace_method == 'variable-projection':
             U0 = self.Subs.get_subspace()[:,:self.d]
             self.Subs = Subspaces(method='variable-projection', sample_points=S, sample_outputs=f, \
-                    subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2, max_iter=300)
+                    subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2, max_iter=300, tol=1.0e-8)
             self.U = self.Subs.get_subspace()[:, :self.d]
         elif self.subspace_method == 'active-subspaces':
             U0 = self.Subs.get_subspace()[:,1].reshape(-1,1)
@@ -466,8 +468,12 @@ class Optimisation:
 
     def _update_bounds(self):
         if self.bounds is not None:
-            self.bounds_l = np.maximum(np.zeros(self.n), self.s_old-self.del_k)
-            self.bounds_u = np.minimum(np.ones(self.n), self.s_old+self.del_k)
+            if self.scale_bounds:
+                self.bounds_l = np.maximum(np.zeros(self.n), self.s_old-self.del_k)
+                self.bounds_u = np.minimum(np.ones(self.n), self.s_old+self.del_k)
+            else:
+                self.bounds_l = np.maximum(self.bounds[0], self.s_old-self.del_k)
+                self.bounds_u = np.minimum(self.bounds[1], self.s_old+self.del_k)
         else:
             self.bounds_l = self.s_old-self.del_k
             self.bounds_u = self.s_old+self.del_k
@@ -475,7 +481,7 @@ class Optimisation:
         return None
 
     def _apply_scaling(self, S):
-        if self.bounds is not None:
+        if self.bounds is not None and self.scale_bounds:
             shift = self.bounds[0].copy()
             scale = self.bounds[1] - self.bounds[0]
             return np.divide((S - shift), scale)
@@ -483,7 +489,7 @@ class Optimisation:
             return S
 
     def _remove_scaling(self, S):
-        if self.bounds is not None:
+        if self.bounds is not None and self.scale_bounds:
             shift = self.bounds[0].copy()
             scale = self.bounds[1] - self.bounds[0]
             return shift + np.multiply(S, scale)
@@ -743,12 +749,22 @@ class Optimisation:
         self.f_old = np.asscalar(f[ind_min])
         return None
 
-    def _trust_region(self, s_old, del_k, del_min, eta1, eta2, gam1, gam2, omega_s, max_evals, random_initial, epsilon):
+    def _trust_region(self, s_old, del_k, del_min, eta1, eta2, gam1, gam2, omega_s, max_evals, random_initial, scale_bounds, epsilon):
         """
         Computes optimum using the ``trust-region`` method
         """
+        itermax = 10000
         self.n = s_old.size
+        self.q = int(comb(self.n+2, 2))
+        self.p = int(comb(self.n+2, 2))
+        self.random_initial = random_initial
+        self.scale_bounds = scale_bounds
+        self.epsilon = epsilon
+        Base = Basis('total-order', orders=np.tile([2], self.n))
+        self.basis = Base.get_basis()[:,range(self.n-1, -1, -1)]
+
         self.s_old = self._apply_scaling(s_old)
+        self.f_old = self._blackbox_evaluation(self.s_old)
         if del_k is None:
             if self.bounds is None:
                 self.del_k = 0.1*max(np.linalg.norm(self.s_old, ord=np.inf), 1.0)
@@ -757,17 +773,7 @@ class Optimisation:
         else:
             self.del_k = del_k
         self._update_bounds()
-        self.f_old = self._blackbox_evaluation(self.s_old)
 
-        self.q = int(comb(self.n+2, 2))
-        self.p = int(comb(self.n+2, 2))
-        self.random_initial = random_initial
-        self.epsilon = epsilon
-
-        Base = Basis('total-order', orders=np.tile([2], self.n))
-        self.basis = Base.get_basis()[:,range(self.n-1, -1, -1)]
-        
-        itermax = 10000
         # Construct the sample set
         S, f = self._generate_initial_set()
         for i in range(itermax):
@@ -814,12 +820,24 @@ class Optimisation:
         return self.s_old, self.f_old
 
 
-    def _omorf(self, s_old, del_k, del_min, eta1, eta2, gam1, gam2, omega_s, max_evals, random_initial, epsilon, d, subspace_method):
+    def _omorf(self, s_old, del_k, del_min, eta1, eta2, gam1, gam2, omega_s, max_evals, random_initial, scale_bounds, epsilon, d, subspace_method):
         """
         Computes optimum using the ``omorf`` method
         """
+        itermax = 10000
         self.n = s_old.size
+        self.d = d
+        self.q = int(comb(self.d+2, 2))
+        self.p = self.n + 1
+        self.random_initial = random_initial
+        self.scale_bounds = scale_bounds
+        self.subspace_method = subspace_method
+        self.epsilon = epsilon
+        Base = Basis('total-order', orders=np.tile([2], self.d))
+        self.basis = Base.get_basis()[:,range(self.d-1, -1, -1)]
+
         self.s_old = self._apply_scaling(s_old)
+        self.f_old = self._blackbox_evaluation(self.s_old)
         if del_k is None:
             if self.bounds is None:
                 self.del_k = 0.1*max(np.linalg.norm(self.s_old, ord=np.inf), 1.0)
@@ -828,25 +846,16 @@ class Optimisation:
         else:
             self.del_k = del_k
         self._update_bounds()
-        self.f_old = self._blackbox_evaluation(self.s_old)
 
-        self.d = d
-        self.q = int(comb(self.d+2, 2))
-        self.p = self.n + 1
-        self.random_initial = random_initial
-        self.subspace_method = subspace_method
-        self.epsilon = epsilon
-
-        Base = Basis('total-order', orders=np.tile([2], self.d))
-        self.basis = Base.get_basis()[:,range(self.d-1, -1, -1)]
-        
-        itermax = 10000
         # Construct the sample set
         S_full, f_full = self._generate_initial_set()
         self._calculate_subspace(S_full, f_full)
         S_red, f_red = self._sample_set('new')
         for i in range(itermax):
-            # self._update_bounds()
+            # print(self.f_old)
+            # print(self.num_evals)
+            # print('--------------')
+            self._update_bounds()
             if len(self.f) >= max_evals or self.del_k < del_min:
                 break
             my_poly = self._build_model(S_red, f_red)

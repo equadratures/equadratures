@@ -101,32 +101,35 @@ class Poly(object):
             # Now depending on user inputs, override these default values!
             sampling_args_flag = 0
             if self.sampling_args is not None:
-                print([sampling_args.get('sample-points')], [sampling_args.get('sample-outputs')])
-                print(np.shape([sampling_args.get('sample-points')]), np.shape([sampling_args.get('sample-outputs')]))
-                if np.shape([sampling_args.get('sample-points')])[0] == np.shape([sampling_args.get('sample-outputs')])[0] and np.shape([sampling_args.get('sample-outputs')])[1] == 1:
-                    if 'mesh' in sampling_args:
-                        self.mesh = sampling_args.get('mesh')
-                        sampling_args_flag = 1
-                    if 'sampling-ratio' in sampling_args:
-                        self.sampling_ratio = float(sampling_args.get('sampling-ratio'))
-                        sampling_args_flag = 1
-                    if 'subsampling-algorithm' in sampling_args:
-                        self.subsampling_algorithm_name = sampling_args.get('subsampling-algorithm')
-                        sampling_args_flag = 1
-                    if 'sample-points' in sampling_args:
-                        self.inputs = sampling_args.get('sample-points')
-                        sampling_args_flag = 1
-                        self.mesh = 'user-defined'
-                    if 'sample-outputs' in sampling_args:
-                        self.outputs = sampling_args.get('sample-outputs')
-                        sampling_args_flag = 1
-                    if 'sample-gradients' in sampling_args:
-                        self.gradients = sampling_args.get('sample-gradients')
-                        sampling_args_flag = 1
-                    elif sampling_args_flag == 0:
-                        raise ValueError( 'An input value that you have specified is likely incorrect. Sampling arguments include: mesh, sampling-ratio, subsampling-algorithm, sample-points, sample-outputs and sample-gradients.')
+                if sampling_args.get('sample-points') != None and sampling_args.get('sample-outputs') != None
+                    print([sampling_args.get('sample-points')], [sampling_args.get('sample-outputs')])
+                    print(np.shape([sampling_args.get('sample-points')]), np.shape([sampling_args.get('sample-outputs')]))
+                    if np.shape([sampling_args.get('sample-points')])[0] == np.shape([sampling_args.get('sample-outputs')])[0] and np.shape([sampling_args.get('sample-outputs')])[1] == 1:
+                        if 'mesh' in sampling_args:
+                            self.mesh = sampling_args.get('mesh')
+                            sampling_args_flag = 1
+                        if 'sampling-ratio' in sampling_args:
+                            self.sampling_ratio = float(sampling_args.get('sampling-ratio'))
+                            sampling_args_flag = 1
+                        if 'subsampling-algorithm' in sampling_args:
+                            self.subsampling_algorithm_name = sampling_args.get('subsampling-algorithm')
+                            sampling_args_flag = 1
+                        if 'sample-points' in sampling_args:
+                            self.inputs = sampling_args.get('sample-points')
+                            sampling_args_flag = 1
+                            self.mesh = 'user-defined'
+                        if 'sample-outputs' in sampling_args:
+                            self.outputs = sampling_args.get('sample-outputs')
+                            sampling_args_flag = 1
+                        if 'sample-gradients' in sampling_args:
+                            self.gradients = sampling_args.get('sample-gradients')
+                            sampling_args_flag = 1
+                        elif sampling_args_flag == 0:
+                            raise ValueError( 'An input value that you have specified is likely incorrect. Sampling arguments include: mesh, sampling-ratio, subsampling-algorithm, sample-points, sample-outputs and sample-gradients.')
+                    else:
+                        print("Wrong input dimensions")
                 else:
-                    print("Wrong input dimensions")
+                    print("Empty input or output")
             self._set_solver()
             self._set_subsampling_algorithm()
             self._set_points_and_weights()

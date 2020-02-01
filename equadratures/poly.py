@@ -101,6 +101,7 @@ class Poly(object):
             # Now depending on user inputs, override these default values!
             sampling_args_flag = 0
             if self.sampling_args is not None:
+                print([sampling_args.get('sample-points')], [sampling_args.get('sample-outputs')])
                 print(np.shape([sampling_args.get('sample-points')]), np.shape([sampling_args.get('sample-outputs')]))
                 if np.shape([sampling_args.get('sample-points')])[0] == np.shape([sampling_args.get('sample-outputs')])[0] and np.shape([sampling_args.get('sample-outputs')])[1] == 1:
                     if 'mesh' in sampling_args:

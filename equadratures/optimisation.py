@@ -300,7 +300,7 @@ class Optimisation:
         if self.subspace_method == 'variable-projection':
             U0 = self.Subs.get_subspace()[:,:self.d]
             self.Subs = Subspaces(method='variable-projection', sample_points=S, sample_outputs=f, \
-                    subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2, max_iter=300, tol=1.0e-8)
+                    subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2, max_iter=300, tol=1.0e-5)
             self.U = self.Subs.get_subspace()[:, :self.d]
         elif self.subspace_method == 'active-subspaces':
             U0 = self.Subs.get_subspace()[:,1].reshape(-1,1)
@@ -852,9 +852,6 @@ class Optimisation:
         self._calculate_subspace(S_full, f_full)
         S_red, f_red = self._sample_set('new')
         for i in range(itermax):
-            # print(self.f_old)
-            # print(self.num_evals)
-            # print('--------------')
             self._update_bounds()
             if len(self.f) >= max_evals or self.del_k < del_min:
                 break

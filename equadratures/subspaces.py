@@ -182,6 +182,7 @@ class Subspaces(object):
             * **U (ndarray)**: The active subspace found
             * **R (double)**: Cost of deviation in fitting
         """
+        # NOTE: How do we know these are the best values of gamma and beta?
         if gamma is None:
             gamma=0.1
         if beta is None:
@@ -195,11 +196,13 @@ class Subspaces(object):
         if tol is None:
             tol = 1e-7
         y=np.dot(self.sample_points,U)
+        # NOTE: This can be vectorised using np.minimum and np.maximum
         minmax=np.zeros((2, self.subspace_dimension))
         for i in range(0, self.subspace_dimension):
             minmax[0,i]=min(y[:,i])
             minmax[1,i]=max(y[:,i])
         #Construct the affine transformation
+        # NOTE: This can be vectorised using np.minimum and np.maximum and np.divide
         eta=np.zeros((M,self.subspace_dimension))
         for i in range(0,M):
             for j in range(0,self.subspace_dimension):
@@ -218,6 +221,7 @@ class Subspaces(object):
             J=jacobian_vp(V,V_plus,U,y, self.sample_outputs,Polybasis,eta,minmax, self.sample_points)
             #Calculate the gradient of Jacobian #step 10
             G=np.zeros((m, self.subspace_dimension))
+            # NOTE: Can be vectorised
             for i in range(0,M):
                 G=G+res[i]*J[i,:,:]
 
@@ -249,9 +253,11 @@ class Subspaces(object):
             t = 1
             for iter2 in range(0,50):
                 U_new=np.dot(UZ, np.diag(np.cos(S*t))) + np.dot(Y, np.diag(np.sin(S*t)))#step 19
+                # print(U_new)
                 U_new=orth(U_new)
                 #Update the values with the new U matrix
                 y=np.dot(self.sample_points, U_new)
+                # NOTE: To be vectorised
                 minmax=np.zeros((2,self.subspace_dimension))
                 for i in range(0,self.subspace_dimension):
                     minmax[0,i]=min(y[:,i])

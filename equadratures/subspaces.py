@@ -196,17 +196,11 @@ class Subspaces(object):
         if tol is None:
             tol = 1e-7
         y=np.dot(self.sample_points,U)
-        # NOTE: This can be vectorised using np.minimum and np.maximum
         minmax=np.zeros((2, self.subspace_dimension))
-        for i in range(0, self.subspace_dimension):
-            minmax[0,i]=min(y[:,i])
-            minmax[1,i]=max(y[:,i])
+        minmax[0,:] = np.amin(y, axis=0)
+        minmax[1,:] = np.amax(y, axis=0)
         #Construct the affine transformation
-        # NOTE: This can be vectorised using np.minimum and np.maximum and np.divide
-        eta=np.zeros((M,self.subspace_dimension))
-        for i in range(0,M):
-            for j in range(0,self.subspace_dimension):
-                eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
+        eta = 2 * np.divide((y - minmax[0,:]), (minmax[1,:]-minmax[0,:])) - 1
 
         #Construct the _vandermonde matrix step 6
         V,Polybasis=vandermonde(eta, self.polynomial_degree)
@@ -223,7 +217,7 @@ class Subspaces(object):
             G=np.zeros((m, self.subspace_dimension))
             # NOTE: Can be vectorised
             for i in range(0,M):
-                G=G+res[i]*J[i,:,:]
+                G += res[i]*J[i,:,:]
 
             #conduct the SVD for J_vec
             vec_J = np.reshape(J,(M,m*self.subspace_dimension))
@@ -257,15 +251,9 @@ class Subspaces(object):
                 U_new=orth(U_new)
                 #Update the values with the new U matrix
                 y=np.dot(self.sample_points, U_new)
-                # NOTE: To be vectorised
-                minmax=np.zeros((2,self.subspace_dimension))
-                for i in range(0,self.subspace_dimension):
-                    minmax[0,i]=min(y[:,i])
-                    minmax[1,i]=max(y[:,i])
-                eta=np.zeros((M,self.subspace_dimension))
-                for i in range(0,M):
-                    for j in range(0,self.subspace_dimension):
-                        eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
+                minmax[0,:] = np.amin(y, axis=0)
+                minmax[1,:] = np.amax(y, axis=0)
+                eta = 2 * np.divide((y - minmax[0,:]), (minmax[1,:]-minmax[0,:])) - 1
 
                 V_new,Polybasis=vandermonde(eta, self.polynomial_degree)
                 V_plus_new=np.linalg.pinv(V_new)

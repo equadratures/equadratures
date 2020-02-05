@@ -297,32 +297,51 @@ class Optimisation:
                      sampling_args={'sample-points': S, 'sample-outputs': f})
         self.poly.set_model()
         self.Subs = Subspaces(full_space_poly=self.poly, method='active-subspace', subspace_dimension=self.d)
+        U0 = self.Subs.get_subspace()[:,0].reshape(-1,1)
+        U1 = self.Subs.get_subspace()[:,1:]
+        for i in range(self.d-1):
+            R = []
+            for j in range(U1.shape[1]):
+                U = np.hstack((U0, U1[:, j].reshape(-1,1)))
+                Y = np.dot(S, U)
+                myParameters = [Parameter(distribution='uniform', lower=np.min(Y[:,k]), upper=np.max(Y[:,k]), \
+                        order=2) for k in range(Y.shape[1])]
+                myBasis = Basis('total-order')
+                poly = Poly(myParameters, myBasis, method='least-squares', \
+                        sampling_args={'sample-points':Y, 'sample-outputs':f})
+                poly.set_model()
+                f_eval = poly.get_polyfit(Y)
+                _,_,r,_,_ = linregress(f_eval.flatten(),f.flatten()) 
+                R.append(r**2)
+            index = np.argmax(R)
+            U0 = np.hstack((U0, U1[:, index].reshape(-1,1)))
+            U1 = np.delete(U1, index, 1)
         if self.subspace_method == 'variable-projection':
-            U0 = self.Subs.get_subspace()[:,:self.d]
             self.Subs = Subspaces(method='variable-projection', sample_points=S, sample_outputs=f, \
                     subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2, max_iter=300, tol=1.0e-5)
             self.U = self.Subs.get_subspace()[:, :self.d]
         elif self.subspace_method == 'active-subspaces':
-            U0 = self.Subs.get_subspace()[:,1].reshape(-1,1)
-            U1 = null_space(U0.T)
             self.U = U0
-            for i in range(self.d-1):
-                R = []
-                for j in range(U1.shape[1]):
-                    U = np.hstack((self.U, U1[:, j].reshape(-1,1)))
-                    Y = np.dot(S, U)
-                    myParameters = [Parameter(distribution='uniform', lower=np.min(Y[:,k]), upper=np.max(Y[:,k]), \
-                            order=2) for k in range(Y.shape[1])]
-                    myBasis = Basis('total-order')
-                    poly = Poly(myParameters, myBasis, method='least-squares', \
-                            sampling_args={'sample-points':Y, 'sample-outputs':f})
-                    poly.set_model()
-                    f_eval = poly.get_polyfit(Y)
-                    _,_,r,_,_ = linregress(f_eval.flatten(),f.flatten()) 
-                    R.append(r**2)
-                index = np.argmax(R)
-                self.U = np.hstack((self.U, U1[:, index].reshape(-1,1)))
-                U1 = np.delete(U1, index, 1)
+            # U0 = self.Subs.get_subspace()[:,1].reshape(-1,1)
+            # U1 = null_space(U0.T)
+            # self.U = U0
+            # for i in range(self.d-1):
+            #     R = []
+            #     for j in range(U1.shape[1]):
+            #         U = np.hstack((self.U, U1[:, j].reshape(-1,1)))
+            #         Y = np.dot(S, U)
+            #         myParameters = [Parameter(distribution='uniform', lower=np.min(Y[:,k]), upper=np.max(Y[:,k]), \
+            #                 order=2) for k in range(Y.shape[1])]
+            #         myBasis = Basis('total-order')
+            #         poly = Poly(myParameters, myBasis, method='least-squares', \
+            #                 sampling_args={'sample-points':Y, 'sample-outputs':f})
+            #         poly.set_model()
+            #         f_eval = poly.get_polyfit(Y)
+            #         _,_,r,_,_ = linregress(f_eval.flatten(),f.flatten()) 
+            #         R.append(r**2)
+            #     index = np.argmax(R)
+            #     self.U = np.hstack((self.U, U1[:, index].reshape(-1,1)))
+            #     U1 = np.delete(U1, index, 1)
 
     def _blackbox_evaluation(self, s):
         """
@@ -606,7 +625,7 @@ class Optimisation:
 
     def _get_phi_function_and_derivative(self, S_hat, full_space):
         if self.method == 'trust-region':
-            Del_S = np.maximum(self.del_k, np.linalg.norm(S_hat-self.s_c, axis=0))
+            Del_S = np.maximum(self.del_k, np.linalg.norm(S_hat-self.s_c, axis=0, ord=np.inf))
             def phi_function(s):
                 s_tilde = np.divide((s - self.s_c), Del_S)
                 try:
@@ -632,7 +651,7 @@ class Optimisation:
                             phi_deriv[i,k] = self.basis[k, i] * np.prod(np.divide(np.power(s_tilde, self.basis[k,:]-tmp), factorial(self.basis[k,:])))
                 return np.divide(phi_deriv.T, Del_S).T
         elif self.method == 'omorf' and full_space:
-            Del_S = np.maximum(self.del_k, np.linalg.norm(S_hat-self.s_c, axis=0))
+            Del_S = np.maximum(self.del_k, np.linalg.norm(S_hat-self.s_c, axis=0, ord=np.inf))
             def phi_function(s):
                 s_tilde = np.divide((s - self.s_c), Del_S)
                 try:
@@ -870,7 +889,7 @@ class Optimisation:
                     S_red, f_red = self._sample_set('new')
                 else:
                     S_red, f_red = self._sample_set('improve', S_red, f_red)
-                    S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
+                    S_full, f_full = self._sample_set('replace', S_full, f_full)
                 continue
             if self.S.shape == np.unique(np.vstack((self.S, s_new)), axis=0).shape:
                 ind_repeat = np.argmin(np.linalg.norm(self.S - s_new, ord=np.inf, axis=1))
@@ -905,7 +924,7 @@ class Optimisation:
                     S_red, f_red = self._sample_set('new')
                 else:
                     S_red, f_red = self._sample_set('improve', S_red, f_red)
-                    S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
+                    S_full, f_full = self._sample_set('replace', S_full, f_full)
         self.S = self._remove_scaling(self.S)
         self._choose_best(self.S, self.f)
         return self.s_old, self.f_old

@@ -889,7 +889,7 @@ class Optimisation:
                     S_red, f_red = self._sample_set('new')
                 else:
                     S_red, f_red = self._sample_set('improve', S_red, f_red)
-                    S_full, f_full = self._sample_set('replace', S_full, f_full)
+                    # S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
                 continue
             if self.S.shape == np.unique(np.vstack((self.S, s_new)), axis=0).shape:
                 ind_repeat = np.argmin(np.linalg.norm(self.S - s_new, ord=np.inf, axis=1))
@@ -898,8 +898,9 @@ class Optimisation:
                 f_new = self._blackbox_evaluation(s_new)
             S_red = np.vstack((S_red, s_new))
             f_red = np.vstack((f_red, f_new))
-            S_full = np.vstack((S_full, s_new))
-            f_full = np.vstack((f_full, f_new))
+            S_full, f_full = self._choose_closest_points(self.p)
+            # S_full = np.vstack((S_full, s_new))
+            # f_full = np.vstack((f_full, f_new))
             # Calculate trust-region factor
             rho_k = (self.f_old - f_new) / (m_old - m_new)
             self._choose_best(self.S, self.f)
@@ -908,11 +909,11 @@ class Optimisation:
                 break
             if rho_k >= eta2:
                 S_red, f_red = self._sample_set('replace', S_red, f_red)
-                S_full, f_full = self._sample_set('replace', S_full, f_full)
+                # S_full, f_full = self._sample_set('replace', S_full, f_full)
                 self.del_k *= gam2
             elif rho_k >= eta1:
                 S_red, f_red = self._sample_set('replace', S_red, f_red)
-                S_full, f_full = self._sample_set('replace', S_full, f_full)
+                # S_full, f_full = self._sample_set('replace', S_full, f_full)
             else:
                 if max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) <= self.epsilon*self.del_k:
                     self._calculate_subspace(S_full, f_full)
@@ -924,7 +925,7 @@ class Optimisation:
                     S_red, f_red = self._sample_set('new')
                 else:
                     S_red, f_red = self._sample_set('improve', S_red, f_red)
-                    S_full, f_full = self._sample_set('replace', S_full, f_full)
+                    # S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
         self.S = self._remove_scaling(self.S)
         self._choose_best(self.S, self.f)
         return self.s_old, self.f_old

@@ -242,12 +242,13 @@ class Subspaces(object):
                 alpha=-norm_G
 
             #SVD on delta step 17
+            
             Y,S,Z=np.linalg.svd(delta,full_matrices=False)
+
             UZ=np.dot(U,Z.T)
             t = 1
-            for iter2 in range(0,50):
+            for iter2 in range(0,20):
                 U_new=np.dot(UZ, np.diag(np.cos(S*t))) + np.dot(Y, np.diag(np.sin(S*t)))#step 19
-                # print(U_new)
                 U_new=orth(U_new)
                 #Update the values with the new U matrix
                 y=np.dot(self.sample_points, U_new)
@@ -264,7 +265,6 @@ class Subspaces(object):
                 if np.linalg.norm(res_new)<=np.linalg.norm(res)+alpha*beta*t or t<1e-10:#step 21
                     break
                 t=t*gamma
-
             dist_change = subspace_dist(U, U_new)
             U = U_new
             V = V_new
@@ -272,11 +272,10 @@ class Subspaces(object):
             V_plus = V_plus_new
             res = res_new
             R = R_new
-            if not(tol is None):
-                if dist_change < tol:
-                    if verbose:
-                        print("VP finished with %d iterations" % iteration)
-                    break
+            if dist_change < tol:
+                if verbose:
+                    print("VP finished with %d iterations" % iteration)
+                break
         if iteration == maxiter-1 and verbose:
             print("VP finished with %d iterations" % iteration)
         active_subspace = U

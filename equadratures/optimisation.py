@@ -9,6 +9,7 @@ import numpy as np
 from scipy.special import comb, factorial
 from scipy.stats import linregress
 import warnings
+import time
 warnings.filterwarnings('ignore')
 class Optimisation:
     """
@@ -269,18 +270,18 @@ class Optimisation:
                     options={'disp': False, 'maxiter': 10000})
             sol = {'x': sol['x'], 'fun': sol['fun'], 'nfev': self.num_evals, 'status': sol['status']}
         elif self.method in ['trust-region']:
-            x_opt, f_opt = self._trust_region(x0, del_k=kwargs.get('del_k', None), del_min=kwargs.get('delmin', 1.0e-8), \
+            x_opt, f_opt = self._trust_region(x0, del_k=kwargs.get('del_k', None), del_min=kwargs.get('delmin', 1.0e-6), \
                     eta1=kwargs.get('eta1', 0.0), eta2=kwargs.get('eta2', 0.7), gam1=kwargs.get('gam1', 0.5), \
                     gam2=kwargs.get('gam2', 2.0), omega_s=kwargs.get('omega_s', 0.5), max_evals=kwargs.get('max_evals', 10000), \
                     random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', True), \
-                    epsilon=kwargs.get('epsilon', 2.5))
+                    epsilon=kwargs.get('epsilon', 3.0))
             sol = {'x': x_opt, 'fun': f_opt, 'nfev': self.num_evals}
         elif self.method in ['omorf']:
-            x_opt, f_opt = self._omorf(x0, del_k=kwargs.get('del_k', None), del_min=kwargs.get('delmin', 1.0e-8), \
+            x_opt, f_opt = self._omorf(x0, del_k=kwargs.get('del_k', None), del_min=kwargs.get('delmin', 1.0e-6), \
                     eta1=kwargs.get('eta1', 0.0), eta2=kwargs.get('eta2', 0.7), gam1=kwargs.get('gam1', 0.5), \
                     gam2=kwargs.get('gam2', 2.0), omega_s=kwargs.get('omega_s', 0.5), max_evals=kwargs.get('max_evals', 10000), \
                     random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', True), \
-                    epsilon=kwargs.get('epsilon', 2.5), d=kwargs.get('d', 2), \
+                    epsilon=kwargs.get('epsilon', 3.0), d=kwargs.get('d', 2), \
                     subspace_method=kwargs.get('subspace_method', 'variable-projection'))
             sol = {'x': x_opt, 'fun': f_opt, 'nfev': self.num_evals}
         else:
@@ -318,7 +319,7 @@ class Optimisation:
             U1 = np.delete(U1, index, 1)
         if self.subspace_method == 'variable-projection':
             self.Subs = Subspaces(method='variable-projection', sample_points=S, sample_outputs=f, \
-                    subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2, tol=1.0e-6)
+                    subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2, tol=1.0e-5, max_iter=max(2*self.n, 100))
             self.U = self.Subs.get_subspace()[:, :self.d]
         elif self.subspace_method == 'active-subspaces':
             self.U = U0
@@ -524,10 +525,8 @@ class Optimisation:
     def _LU_pivoting(self, S, f, S_hat, f_hat, full_space, method=None):
         phi_function, phi_function_deriv = self._get_phi_function_and_derivative(S_hat, full_space)
         if full_space:
-            psi = 1.0
             q = self.p
         else:
-            psi = 0.25
             q = self.q
 #       Initialise U matrix of LU factorisation of M matrix (see Conn et al.)
         U = np.zeros((q,q))
@@ -546,7 +545,6 @@ class Optimisation:
                 index = np.argmax(M)
                 if method == 'improve':
                     if k == q - 1:
-                        # if M[index] < psi:
                         flag = False
             else:
                 flag = False
@@ -605,8 +603,10 @@ class Optimisation:
         return S, f
 
     def _get_phi_function_and_derivative(self, S_hat, full_space):
+        Del_S = self.del_k
         if self.method == 'trust-region':
-            Del_S = max(np.linalg.norm(S_hat-self.s_old, axis=1, ord=np.inf))
+            if S_hat.size > 0:
+                Del_S = max(np.linalg.norm(S_hat-self.s_old, axis=1, ord=np.inf))
             def phi_function(s):
                 s_tilde = np.divide((s - self.s_old), Del_S)
                 try:
@@ -632,7 +632,8 @@ class Optimisation:
                             phi_deriv[i,k] = self.basis[k, i] * np.prod(np.divide(np.power(s_tilde, self.basis[k,:]-tmp), factorial(self.basis[k,:])))
                 return np.divide(phi_deriv.T, Del_S).T
         elif self.method == 'omorf' and full_space:
-            Del_S = max(np.linalg.norm(S_hat-self.s_old, axis=1, ord=np.inf))
+            if S_hat.size > 0:
+                Del_S = max(np.linalg.norm(S_hat-self.s_old, axis=1, ord=np.inf))
             def phi_function(s):
                 s_tilde = np.divide((s - self.s_old), Del_S)
                 try:
@@ -649,7 +650,8 @@ class Optimisation:
                     return phi
             phi_function_deriv = None
         elif self.method == 'omorf':
-            Del_S = max(np.linalg.norm(np.dot(S_hat-self.s_old,self.U), axis=1))
+            if S_hat.size > 0:
+                Del_S = max(np.linalg.norm(np.dot(S_hat-self.s_old,self.U), axis=1))
             def phi_function(s):
                 u = np.divide(np.dot((s - self.s_old), self.U), Del_S)
                 try:
@@ -733,14 +735,35 @@ class Optimisation:
         for i in range(self.n):
             bounds.append((self.bounds_l[i], self.bounds_u[i]))
         if self.method == 'trust-region':
+            m_old = np.asscalar(my_poly.get_polyfit(self.s_old))
+            g_old = my_poly.get_polyfit_grad(self.s_old).flatten()
+            H_old = my_poly.get_polyfit_hess(self.s_old).reshape(self.n, self.n)
+            if np.dot(g_old, np.dot(H_old, g_old)) <= 0:
+                tau = 1
+            else:
+                tau = min(np.linalg.norm(g_old)**3 / self.del_k * np.dot(g_old, np.dot(H_old, g_old)), 1)
+            s_cauchy = self.s_old - tau * self.del_k * (g_old / np.linalg.norm(g_old))
+            m_cauchy = np.asscalar(my_poly.get_polyfit(s_cauchy))
             res = optimize.minimize(lambda x: np.asscalar(my_poly.get_polyfit(x)), self.s_old, method='TNC', \
                     jac=lambda x: my_poly.get_polyfit_grad(x).flatten(), bounds=bounds, options={'disp': False})
         elif self.method == 'omorf':
+            m_old = np.asscalar(my_poly.get_polyfit(np.dot(self.s_old,self.U)))
+            g_old = np.dot(self.U, my_poly.get_polyfit_grad(np.dot(self.s_old,self.U)).flatten())
+            H_old = np.dot(self.U, np.dot(my_poly.get_polyfit_hess(np.dot(self.s_old,self.U)).reshape(self.d, self.d), self.U.T))
+            if np.dot(g_old, np.dot(H_old, g_old)) <= 0:
+                tau = 1
+            else:
+                tau = min(np.linalg.norm(g_old)**3 / self.del_k * np.dot(g_old, np.dot(H_old, g_old)), 1)
+            s_cauchy = self.s_old - tau * self.del_k * (g_old / np.linalg.norm(g_old))
+            m_cauchy = np.asscalar(my_poly.get_polyfit(np.dot(s_cauchy,self.U)))
             res = optimize.minimize(lambda x: np.asscalar(my_poly.get_polyfit(np.dot(x,self.U))), self.s_old, \
                     method='TNC', jac=lambda x: np.dot(self.U, my_poly.get_polyfit_grad(np.dot(x,self.U))).flatten(), \
                     bounds=bounds, options={'disp': False})
         s_new = res.x
         m_new = res.fun
+        if m_old - m_new <= 0.01 * (m_old - m_cauchy):
+            s_new = s_cauchy
+            m_new = m_cauchy
         return s_new, m_new
     
     def _choose_best(self, S, f):
@@ -777,8 +800,6 @@ class Optimisation:
         # Construct the sample set
         S, f = self._generate_initial_set()
         for i in range(itermax):
-            # print(self.s_old)
-            # print('-------------')
             self._update_bounds()
             if len(self.f) >= max_evals or self.del_k < del_min:
                 break

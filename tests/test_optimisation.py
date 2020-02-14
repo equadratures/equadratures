@@ -324,7 +324,7 @@ class Test_optimisation(TestCase):
         Opt = eq.Optimisation(method='omorf')
         Opt.add_objective(custom={'function': self.ObjFun2})
         x0 = -2*np.ones(n)
-        sol = Opt.optimise(x0, subspace_method='active-subspaces')
+        sol = Opt.optimise(x0, subspace_method='active-subspaces', d=1)
         np.testing.assert_almost_equal(sol['fun'], -39.1661656*n, decimal=6)
             
     def test_optimise_omorf_bounds(self):

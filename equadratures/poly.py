@@ -12,13 +12,11 @@ MAXIMUM_ORDER_FOR_STATS = 8
 class Poly(object):
     """
     Definition of a polynomial object.
-
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     :param str method: The method used for computing the coefficients. Should be one of: ``compressive-sensing``,
         ``numerical-integration``, ``least-squares``, ``least-squares-with-gradients``, ``minimum-norm``.
     :param dict sampling_args: Optional arguments centered around the specific sampling strategy.
-
             :string mesh: Avaliable options are: ``monte-carlo``, ``sparse-grid``, ``tensor-grid``, ``induced``, or ``user-defined``. Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1] is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
             :string subsampling-algorithm: The ``subsampling-algorithm`` input refers to the optimisation technique for subsampling. In the aforementioned four sampling strategies, we generate a logarithm factor of samples above the required amount and prune down the samples using an optimisation technique (see [1]). Existing optimisation strategies include: ``qr``, ``lu``, ``svd``, ``newton``. These refer to QR with column pivoting [2], LU with row pivoting [3], singular value decomposition with subset selection [2] and a convex relaxation via Newton's method for determinant maximization [4]. Note that if the ``tensor-grid`` option is selected, then subsampling will depend on whether the Basis argument is a total order index set, hyperbolic basis or a tensor order index set.
             :float sampling-ratio: Denotes the extent of undersampling or oversampling required. For values equal to unity (default), the number of rows and columns of the associated Vandermonde-type matrix are equal.
@@ -26,20 +24,15 @@ class Poly(object):
             :numpy.ndarray sample-outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points. Note that if ``sample-points`` is provided as an input, then the code expects ``sample-outputs`` too.
             :numpy.ndarray sample-gradients: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample gradient values over the parameter space.
     :param dict solver_args: Optional arguments centered around the specific solver used for computing the coefficients.
-
             :numpy.ndarray noise-level: The noise level to be used. Can take in both scalar- and vector-valued inputs.
             :bool verbose: The default value is set to ``False``; when set to ``True`` details on the convergence of the solution will be provided. Note for direct methods, this will simply output the condition number of the matrix.
-
     **Sample constructor initialisations**::
-
         import numpy as np
         from equadratures import *
-
         # Subsampling from a tensor grid
         param = Parameter(distribution='uniform', lower=-1., upper=1., order=3)
         basis = Basis('total order')
         poly = Poly(parameters=[param, param], basis=basis, method='least-squares' , sampling_args={'mesh':'tensor-grid', 'subsampling-algorithm':'svd', 'sampling-ratio':1.0})
-
         # User-defined data with compressive sensing
         X = np.loadtxt('inputs.txt')
         y = np.loadtxt('outputs.txt')
@@ -47,12 +40,10 @@ class Poly(object):
         basis = Basis('total order')
         poly = Poly([param, param], basis, method='compressive-sensing', sampling_args={'sample-points':X_red, \
                                                                'sample-outputs':Y_red})
-
         # Using a sparse grid
         param = Parameter(distribution='uniform', lower=-1., upper=1., order=3)
         basis = Basis('sparse-grid', level=7, growth_rule='exponential')
         poly = Poly(parameters=[param, param], basis=basis, method='numerical-integration')
-
     **References**
         1. Constantine, P. G., Eldred, M. S., Phipps, E. T., (2012) Sparse Pseudospectral Approximation Method. Computer Methods in Applied Mechanics and Engineering. 1-12. `Paper <https://www.sciencedirect.com/science/article/pii/S0045782512000953>`__
         2. Xiu, D., Karniadakis, G. E., (2002) The Wiener-Askey Polynomial Chaos for Stochastic Differential Equations. SIAM Journal on Scientific Computing,  24(2), `Paper <https://epubs.siam.org/doi/abs/10.1137/S1064827501387826?journalCode=sjoce3>`__
@@ -61,7 +52,7 @@ class Poly(object):
         5. Bos, L., De Marchi, S., Sommariva, A., Vianello, M., (2010) Computing Multivariate Fekete and Leja points by Numerical Linear Algebra. SIAM Journal on Numerical Analysis, 48(5). `Paper <https://epubs.siam.org/doi/abs/10.1137/090779024>`__
         6. Joshi, S., Boyd, S., (2009) Sensor Selection via Convex Optimization. IEEE Transactions on Signal Processing, 57(2). `Paper <https://ieeexplore.ieee.org/document/4663892>`__
     """
-    def __init__(self, parameters, basis, method=None, sampling_args=None, solver_args=None):
+    def __init__(self, parameters, basis, method='least-squares', sampling_args=None, solver_args=None):
         try:
             len(parameters)
         except TypeError:
@@ -101,36 +92,44 @@ class Poly(object):
             # Now depending on user inputs, override these default values!
             sampling_args_flag = 0
             if self.sampling_args is not None:
-                if 'mesh' in sampling_args:
-                    self.mesh = sampling_args.get('mesh')
-                    sampling_args_flag = 1
-                if 'sampling-ratio' in sampling_args:
-                    self.sampling_ratio = float(sampling_args.get('sampling-ratio'))
-                    sampling_args_flag = 1
-                if 'subsampling-algorithm' in sampling_args:
-                    self.subsampling_algorithm_name = sampling_args.get('subsampling-algorithm')
-                    sampling_args_flag = 1
-                if 'sample-points' in sampling_args:
-                    self.inputs = sampling_args.get('sample-points')
-                    sampling_args_flag = 1
-                    self.mesh = 'user-defined'
-                if 'sample-outputs' in sampling_args:
-                    self.outputs = sampling_args.get('sample-outputs')
-                    sampling_args_flag = 1
-                if 'sample-gradients' in sampling_args:
-                    self.gradients = sampling_args.get('sample-gradients')
-                    sampling_args_flag = 1
-                elif sampling_args_flag == 0:
-                    raise ValueError( 'An input value that you have specified is likely incorrect. Sampling arguments include: mesh, sampling-ratio, subsampling-algorithm, sample-points, sample-outputs and sample-gradients.')
+                if sampling_args.get('sample-points') != None and sampling_args.get('sample-outputs') != None:
+                    print([sampling_args.get('sample-points')], [sampling_args.get('sample-outputs')])
+                    print(np.shape([sampling_args.get('sample-points')]), np.shape([sampling_args.get('sample-outputs')]))
+                    if np.shape([sampling_args.get('sample-points')])[0] == np.shape([sampling_args.get('sample-outputs')])[0] and np.shape([sampling_args.get('sample-outputs')])[1] == 1:
+                        if 'mesh' in sampling_args:
+                            self.mesh = sampling_args.get('mesh')
+                            sampling_args_flag = 1
+                        if 'sampling-ratio' in sampling_args:
+                            self.sampling_ratio = float(sampling_args.get('sampling-ratio'))
+                            sampling_args_flag = 1
+                        if 'subsampling-algorithm' in sampling_args:
+                            self.subsampling_algorithm_name = sampling_args.get('subsampling-algorithm')
+                            sampling_args_flag = 1
+                        if 'sample-points' in sampling_args:
+                            self.inputs = sampling_args.get('sample-points')
+                            sampling_args_flag = 1
+                            self.mesh = 'user-defined'
+                        if 'sample-outputs' in sampling_args:
+                            self.outputs = sampling_args.get('sample-outputs')
+                            sampling_args_flag = 1
+                        if 'sample-gradients' in sampling_args:
+                            self.gradients = sampling_args.get('sample-gradients')
+                            sampling_args_flag = 1
+                        elif sampling_args_flag == 0:
+                            raise ValueError( 'An input value that you have specified is likely incorrect. Sampling arguments include: mesh, sampling-ratio, subsampling-algorithm, sample-points, sample-outputs and sample-gradients.')
+                    else:
+                        print("Wrong input dimensions")
+                else:
+                    print("Empty input or output")
             self._set_solver()
             self._set_subsampling_algorithm()
             self._set_points_and_weights()
         else:
             print('WARNING: Method not declared.')
+
     def _set_parameters(self, parameters):
         """
         Private function that sets the parameters. Required by the Correlated class.
-
         :param Poly self:
             An instance of the Poly object.
         """
@@ -139,7 +138,6 @@ class Poly(object):
     def get_parameters(self):
         """
         Returns the list of parameters
-
         :param Poly self:
             An instance of the Poly object.
         """
@@ -147,7 +145,6 @@ class Poly(object):
     def get_summary(self, filename=None, tosay=False):
         """
         A simple utility that returns file summarising what the polynomial approximation has determined.
-
         :param Poly self:
             An instance of the Poly object.
         :param str filename:
@@ -194,7 +191,6 @@ class Poly(object):
     def _set_subsampling_algorithm(self):
         """
         Private function that sets the subsampling algorithm based on the user-defined method.
-
         :param Poly self:
             An instance of the Poly object.
         """
@@ -203,7 +199,6 @@ class Poly(object):
     def _set_solver(self):
         """
         Private function that sets the solver depending on the user-defined method.
-
         :param Poly self:
             An instance of the Poly object.
         """
@@ -212,7 +207,6 @@ class Poly(object):
     def _set_points_and_weights(self):
         """
         Private function that sets the quadrature points.
-
         :param Poly self:
             An instance of the Poly object.
         """
@@ -241,7 +235,6 @@ class Poly(object):
     def get_model_evaluations(self):
         """
         Returns the points at which the model was evaluated at.
-
         :param Poly self:
             An instance of the Poly class.
         """
@@ -249,37 +242,28 @@ class Poly(object):
     def get_mean_and_variance(self):
         """
         Computes the mean and variance of the model.
-
         :param Poly self:
             An instance of the Poly class.
-
         :return:
             **mean**: The approximated mean of the polynomial fit; output as a float.
-
             **variance**: The approximated variance of the polynomial fit; output as a float.
-
         """
         self._set_statistics()
         return self.statistics_object.get_mean(), self.statistics_object.get_variance()
     def get_skewness_and_kurtosis(self):
         """
         Computes the skewness and kurtosis of the model.
-
         :param Poly self:
             An instance of the Poly class.
-
         :return:
             **skewness**: The approximated skewness of the polynomial fit; output as a float.
-
             **kurtosis**: The approximated kurtosis of the polynomial fit; output as a float.
-
         """
         self._set_statistics()
         return self.statistics_object.get_skewness(), self.statistics_object.get_kurtosis()
     def _set_statistics(self):
         """
         Private method that is used withn the statistics routines.
-
         """
         if self.statistics_object is None:
             if self.method != 'numerical-integration' and self.dimensions <= 6 and self.highest_order <= MAXIMUM_ORDER_FOR_STATS:
@@ -301,12 +285,10 @@ class Poly(object):
     def get_sobol_indices(self, order):
         """
         Computes the Sobol' indices.
-
         :param Poly self:
             An instance of the Poly class.
         :param int highest_sobol_order_to_compute:
             The order of the Sobol' indices required.
-
         :return:
             **sobol_indices**: A dict comprising of Sobol' indices and constitutent mixed orders of the parameters.
         """
@@ -315,10 +297,8 @@ class Poly(object):
     def get_total_sobol_indices(self):
         """
         Computes the total Sobol' indices.
-
         :param Poly self:
             An instance of the Poly class.
-
         :return:
             **total_sobol_indices**: Sobol
         """
@@ -327,12 +307,10 @@ class Poly(object):
     def get_conditional_skewness_indices(self, order):
         """
         Computes the skewness indices.
-
         :param Poly self:
             An instance of the Poly class.
         :param int order:
             The highest order of the skewness indices required.
-
         :return:
             **skewness_indices**: A dict comprising of skewness indices and constitutent mixed orders of the parameters.
         """
@@ -341,12 +319,10 @@ class Poly(object):
     def get_conditional_kurtosis_indices(self, order):
         """
         Computes the kurtosis indices.
-
         :param Poly self:
             An instance of the Poly class.
         :param int order:
             The highest order of the kurtosis indices required.
-
         :return:
             **kurtosis_indices**: A dict comprising of kurtosis indices and constitutent mixed orders of the parameters.
         """
@@ -355,7 +331,6 @@ class Poly(object):
     def set_model(self, model=None, model_grads=None):
         """
         Computes the coefficients of the polynomial via the method selected.
-
         :param Poly self:
             An instance of the Poly class.
         :param callable model:
@@ -396,10 +371,8 @@ class Poly(object):
     def _set_coefficients(self, user_defined_coefficients=None):
         """
         Computes the polynomial approximation coefficients.
-
         :param Poly self:
             An instance of the Poly object.
-
         :param numpy.ndarray user_defined_coefficients:
             A numpy.ndarray of shape (N, 1) where N corresponds to the N coefficients provided by the user
         """
@@ -473,7 +446,6 @@ class Poly(object):
     def get_multi_index(self):
         """
         Returns the multi-index set of the basis.
-
         :param Poly self:
             An instance of the Poly object.
         :return:
@@ -483,7 +455,6 @@ class Poly(object):
     def get_coefficients(self):
         """
         Returns the coefficients of the polynomial approximation.
-
         :param Poly self:
             An instance of the Poly object.
         :return:
@@ -493,7 +464,6 @@ class Poly(object):
     def get_points(self):
         """
         Returns the samples based on the sampling strategy.
-
         :param Poly self:
             An instance of the Poly object.
         :return:
@@ -503,30 +473,25 @@ class Poly(object):
     def get_weights(self):
         """
         Computes quadrature weights.
-
         :param Poly self:
             An instance of the Poly class.
         :return:
             **weights**: A numpy.ndarray of the corresponding quadrature weights with shape (number_of_samples, 1).
-
         """
         return self._quadrature_weights
     def get_points_and_weights(self):
         """
         Returns the samples and weights based on the sampling strategy.
-
         :param Poly self:
             An instance of the Poly object.
         :return:
             **x**: A numpy.ndarray of sampled quadrature points with shape (number_of_samples, dimension).
-
             **w**: A numpy.ndarray of the corresponding quadrature weights with shape (number_of_samples, 1).
         """
         return self._quadrature_points, self._quadrature_weights
     def get_polyfit(self, stack_of_points):
         """
         Evaluates the the polynomial approximation of a function (or model data) at prescribed points.
-
         :param Poly self:
             An instance of the Poly class.
         :param numpy.ndarray stack_of_points:
@@ -539,7 +504,6 @@ class Poly(object):
     def get_polyfit_grad(self, stack_of_points, dim_index = None):
         """
         Evaluates the gradient of the polynomial approximation of a function (or model data) at prescribed points.
-
         :param Poly self:
             An instance of the Poly class.
         :param numpy.ndarray stack_of_points:
@@ -563,7 +527,6 @@ class Poly(object):
     def get_polyfit_hess(self, stack_of_points):
         """
         Evaluates the hessian of the polynomial approximation of a function (or model data) at prescribed points.
-
         :param Poly self:
             An instance of the Poly class.
         :param numpy.ndarray stack_of_points:
@@ -587,7 +550,6 @@ class Poly(object):
     def get_polyfit_function(self):
         """
         Returns a callable polynomial approximation of a function (or model data).
-
         :param Poly self:
             An instance of the Poly class.
         :return:
@@ -598,7 +560,6 @@ class Poly(object):
     def get_polyfit_grad_function(self):
         """
         Returns a callable for the gradients of the polynomial approximation of a function (or model data).
-
         :param Poly self:
             An instance of the Poly class.
         :return:
@@ -608,7 +569,6 @@ class Poly(object):
     def get_polyfit_hess_function(self):
         """
         Returns a callable for the hessian of the polynomial approximation of a function (or model data).
-
         :param Poly self:
             An instance of the Poly class.
         :return:
@@ -618,12 +578,10 @@ class Poly(object):
     def get_poly(self, stack_of_points, custom_multi_index=None):
         """
         Evaluates the value of each polynomial basis function at a set of points.
-
         :param Poly self:
             An instance of the Poly class.
         :param numpy.ndarray stack_of_points:
             An ndarray with shape (number of observations, dimensions) at which the polynomial must be evaluated.
-
         :return:
             **polynomial**: A numpy.ndarray of shape (cardinality, number_of_observations) corresponding to the polynomial basis function evaluations
             at the stack_of_points.
@@ -660,12 +618,10 @@ class Poly(object):
         """
         Evaluates the gradient for each of the polynomial basis functions at a set of points,
         with respect to each input variable.
-
         :param Poly self:
             An instance of the Poly class.
         :param numpy.ndarray stack_of_points:
             An ndarray with shape (number_of_observations, dimensions) at which the gradient must be evaluated.
-
         :return:
             **Gradients**: A list with d elements, where d corresponds to the dimension of the problem. Each element is a numpy.ndarray of shape
             (cardinality, number_of_observations) corresponding to the gradient polynomial evaluations at the stack_of_points.
@@ -715,16 +671,13 @@ class Poly(object):
         """
         Evaluates the Hessian for each of the polynomial basis functions at a set of points,
         with respect to each input variable.
-
         :param Poly self:
             An instance of the Poly class.
         :param numpy.ndarray stack_of_points:
             An ndarray with shape (number_of_observations, dimensions) at which the Hessian must be evaluated.
-
         :return:
             **Hessian**: A list with d^2 elements, where d corresponds to the dimension of the model. Each element is a numpy.ndarray of shape
             (cardinality, number_of_observations) corresponding to the hessian polynomial evaluations at the stack_of_points.
-
         """
         # "Unpack" parameters from "self"
         basis = self.basis.elements
@@ -771,7 +724,6 @@ class Poly(object):
 def evaluate_model_gradients(points, fungrad, format):
     """
     Evaluates the model gradient at given values.
-
     :param numpy.ndarray points:
         An ndarray with shape (number_of_observations, dimensions) at which the gradient must be evaluated.
     :param callable fungrad:
@@ -780,10 +732,8 @@ def evaluate_model_gradients(points, fungrad, format):
         The format in which the output is to be provided: ``matrix`` will output a numpy.ndarray of shape
         (number_of_observations, dimensions) with gradient values, while ``vector`` will stack all the
         vectors in this matrix to yield a numpy.ndarray with shape (number_of_observations x dimensions, 1).
-
     :return:
         **grad_values**: A numpy.ndarray of gradient evaluations.
-
     """
     dimensions = len(points[0,:])
     if format is 'matrix':
@@ -809,12 +759,10 @@ def evaluate_model_gradients(points, fungrad, format):
 def evaluate_model(points, function):
     """
     Evaluates the model function at given values.
-
     :param numpy.ndarray points:
         An ndarray with shape (number_of_observations, dimensions) at which the gradient must be evaluated.
     :param callable function:
         A callable argument for the function.
-
     :return:
         **function_values**: A numpy.ndarray of function evaluations.
     """
@@ -825,19 +773,14 @@ def evaluate_model(points, function):
 def vector_to_2D_grid(coefficients, index_set):
     """
     Handy function that converts a vector of coefficients into a matrix based on index set values.
-
     :param numpy.ndarray coefficients:
         An ndarray with shape (N, 1) where N corresponds to the number of coefficient values.
     :param numpy.ndarray index_set:
         The multi-index set of the basis.
-
     :return:
         **x**: A numpy.ndarray of x values of the meshgrid.
-
         **y**: A numpy.ndarray of y values of the meshgrid.
-
         **z**: A numpy.ndarray of the coefficient values.
-
         **max_order**: int corresponds to the highest order.
     """
     max_order = int(np.max(index_set)) + 1

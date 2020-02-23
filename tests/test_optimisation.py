@@ -4,11 +4,14 @@ from unittest import TestCase
 import unittest
 import equadratures as eq
 
+import warnings
+warnings.filterwarnings('ignore')
+
 class Test_optimisation(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        np.random.seed(42)
+        np.random.seed(0)
         cls.degf = 4
         cls.degg1 = 1
         cls.degg2 = 3
@@ -61,7 +64,6 @@ class Test_optimisation(TestCase):
     def test_optimise_unconstrained_poly(self):
         n = 2
         N = 20
-
         X = np.random.uniform(-1.0, 1.0, (N, n))
         # Function values for f and Poly object
         f = self.ObjFun1(X)
@@ -89,7 +91,6 @@ class Test_optimisation(TestCase):
     def test_optimise_custom_function_linear_ineq_con1(self):
         n = 2
         N = 20
-
         X = np.random.uniform(-1.0, 1.0, (N, n))
         # Function values for f and Poly object
         f = self.ObjFun1(X)
@@ -109,7 +110,6 @@ class Test_optimisation(TestCase):
     def test_optimise_custom_function_linear_ineq_con2(self):
         n = 2
         N = 20
-
         X = np.random.uniform(-1.0, 1.0, (N, n))
         # Function values for f and Poly object
         f = self.ObjFun1(X)
@@ -283,8 +283,17 @@ class Test_optimisation(TestCase):
         Opt.add_objective(custom={'function': self.ObjFun1})
         x0 = np.zeros(n)
         sol = Opt.optimise(x0)
-        if sol['status'] == 0:
-            np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=3)
+        # print(sol)
+        np.testing.assert_almost_equal(sol['fun'], 0.0, decimal=6)
+
+    def test_optimise_trustregion_random(self):
+        n = 2
+        Opt = eq.Optimisation(method='trust-region')
+        Opt.add_objective(custom={'function': self.ObjFun1})
+        x0 = np.zeros(n)
+        sol = Opt.optimise(x0, random_initial=True)
+        # print(sol)
+        np.testing.assert_almost_equal(sol['fun'], 0.0, decimal=6)
          
     def test_optimise_trustregion_bounds(self):
         n = 2
@@ -293,26 +302,36 @@ class Test_optimisation(TestCase):
         Opt.add_bounds(-np.ones(n), np.ones(n))
         x0 = np.zeros(n)
         sol = Opt.optimise(x0)
-        if sol['status'] == 0:
-            np.testing.assert_almost_equal(sol['x'].flatten(), np.array([1.0, 1.0]), decimal=3)
+        # print(sol)
+        np.testing.assert_almost_equal(sol['fun'], 0.0, decimal=6)
+
+    def test_optimise_trustregion_bounds_not_scaled(self):
+        n = 2
+        Opt = eq.Optimisation(method='trust-region')
+        Opt.add_objective(custom={'function': self.ObjFun1})
+        Opt.add_bounds(-np.ones(n), np.ones(n))
+        x0 = np.zeros(n)
+        sol = Opt.optimise(x0, scale_bounds=False)
+        # print(sol)
+        np.testing.assert_almost_equal(sol['fun'], 0.0, decimal=6)
             
     def test_optimise_omorf_vp(self):
         n = 10
         Opt = eq.Optimisation(method='omorf')
         Opt.add_objective(custom={'function': self.ObjFun2})
         x0 = -2*np.ones(n)
-        sol = Opt.optimise(x0, max_evals=2000)
-        if sol['status'] == 0:
-            np.testing.assert_almost_equal(sol['x'].flatten(), -2.90353*np.ones(n), decimal=3)
+        sol = Opt.optimise(x0)
+        # print(sol)
+        np.testing.assert_almost_equal(sol['fun'], -39.1661656*n, decimal=6)
             
     def test_optimise_omorf_as(self):
         n = 10
         Opt = eq.Optimisation(method='omorf')
         Opt.add_objective(custom={'function': self.ObjFun2})
         x0 = -2*np.ones(n)
-        sol = Opt.optimise(x0, max_evals=2000, subspace_method='active-subspaces')
-        if sol['status'] == 0:
-            np.testing.assert_almost_equal(sol['x'].flatten(), -2.90353*np.ones(n), decimal=3)
+        sol = Opt.optimise(x0, subspace_method='active-subspaces')
+        # print(sol)
+        np.testing.assert_almost_equal(sol['fun'], -39.1661656*n, decimal=6)
             
     def test_optimise_omorf_bounds(self):
         n = 10
@@ -320,9 +339,9 @@ class Test_optimisation(TestCase):
         Opt.add_objective(custom={'function': self.ObjFun2})
         Opt.add_bounds(-5.12*np.ones(n), 5.12*np.ones(n))
         x0 = -2*np.ones(n)
-        sol = Opt.optimise(x0, max_evals=2000)
-        if sol['status'] == 0:
-            np.testing.assert_almost_equal(sol['x'].flatten(), -2.90353*np.ones(n), decimal=3)
+        sol = Opt.optimise(x0)
+        # print(sol)
+        np.testing.assert_almost_equal(sol['fun'], -39.1661656*n, decimal=6)
 
 if __name__ == '__main__':
     unittest.main()

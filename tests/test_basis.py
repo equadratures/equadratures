@@ -27,5 +27,12 @@ class TestBasis(TestCase):
         total = Basis('total-order', [4, 4, 4])
         np.testing.assert_almost_equal(hyper.cardinality, total.cardinality, decimal=7, err_msg = "Difference greated than imposed tolerance")
 
+    def test_pruning(self):
+        total = Basis('total-order', [4, 4, 4])
+        N = total.get_cardinality()
+        total.prune(10)
+        N2 = total.get_cardinality()
+        np.testing.assert_equal(N-10, N2)
+
 if __name__== '__main__':
     unittest.main()

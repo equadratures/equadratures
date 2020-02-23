@@ -84,6 +84,18 @@ class Basis(object):
             basis = [0]
         self.elements = basis
         self.cardinality = len(basis)
+    def get_cardinality(self):
+        """
+        Returns the number of elements of an index set.
+
+        :param Basis object: An instance of the Basis class.
+
+        :return:
+            **cardinality**: The number of multi-index elements of the basis.
+
+        """
+        a, b = self.elements.shape
+        return a
     def prune(self, number_of_elements_to_delete):
         """
         Prunes down the number of elements in an index set.

@@ -61,8 +61,9 @@ class Parameter(object):
         1. Xiu, D., Karniadakis, G. E., (2002) The Wiener-Askey Polynomial Chaos for Stochastic Differential Equations. SIAM Journal on Scientific Computing,  24(2), `Paper <https://epubs.siam.org/doi/abs/10.1137/S1064827501387826?journalCode=sjoce3>`__
         2. Gautschi, W., (1985) Orthogonal Polynomials-Constructive Theory and Applications. Journal of Computational and Applied Mathematics 12 (1985), pp. 61-76. `Paper <https://www.sciencedirect.com/science/article/pii/037704278590007X>`__
     """
-    def __init__(self, order, distribution, endpoints=None, shape_parameter_A=None, shape_parameter_B=None, lower=None, upper=None, data=None):
+    def __init__(self, order=1, distribution='Uniform', endpoints=None, shape_parameter_A=None, shape_parameter_B=None, variable='parameter', lower=None, upper=None, data=None):
         self.name = distribution
+        self.variable = variable
         self.order = order
         self.shape_parameter_A = shape_parameter_A
         self.shape_parameter_B = shape_parameter_B
@@ -75,11 +76,11 @@ class Parameter(object):
         self._set_moments()
         if self.endpoints is not None:
             if (self.distribution.bounds[0] == -np.inf) and (self.distribution.bounds[1] == np.inf) and (self.endpoints.lower() == 'both'):
-                raise ValueError( 'Parameter: The lower bound for your distribution is -infinity and the upper bound is infinity. Furthermore, you have selected the to have both endpoints. These options are incompatible!')
+                raise(ValueError, 'Parameter: The lower bound for your distribution is -infinity and the upper bound is infinity. Furthermore, you have selected the to have both endpoints. These options are incompatible!')
             if (self.distribution.bounds[0] == -np.inf) and (self.endpoints.lower() == 'lower'):
-                raise ValueError( 'Parameter: The lower bound for your distribution is -infinity and you have selected the lower bound option in the endpoints. These options are incompatible!')
+                raise(ValueError, 'Parameter: The lower bound for your distribution is -infinity and you have selected the lower bound option in the endpoints. These options are incompatible!')
             if (self.distribution.bounds[1] == np.inf) and (self.endpoints.lower() == 'upper'):
-                raise ValueError( 'Parameter: The upper bound for your distribution is infinity and you have selected the upper bound option in the endpoints. These options are incompatible!')
+                raise(ValueError, 'Parameter: The upper bound for your distribution is infinity and you have selected the upper bound option in the endpoints. These options are incompatible!')
     def _set_distribution(self):
         """
         Private function that sets the distribution.
@@ -336,7 +337,7 @@ class Parameter(object):
         elif self.endpoints.lower() == 'both':
             return get_local_quadrature_lobatto(self, order, ab)
         else:
-            raise ValueError( 'Error in endpoints specification.')
+            raise(ValueError, 'Error in endpoints specification.')
 def get_local_quadrature(self, order=None, ab=None):
     # Check for extra input argument!
     if order is None:
@@ -424,4 +425,4 @@ def get_local_quadrature_lobatto(self, order=None, ab=None):
     ab[N+2, 1] = (endr - endl) * p1l * p1r/det
     return get_local_quadrature(self, order=order+2, ab=ab)
 def distribution_error():
-    raise ValueError( 'Please select a valid distribution for your parameter; documentation can be found at www.effective-quadratures.org')
+    raise(ValueError, 'Please select a valid distribution for your parameter; documentation can be found at www.effective-quadratures.org')

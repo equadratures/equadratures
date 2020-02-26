@@ -15,6 +15,7 @@ The latest version of the code is version 8.1 and was released in December 2019.
 ![](https://img.shields.io/pypi/pyversions/ansicolortags.svg)
 ![](https://img.shields.io/github/stars/Effective-Quadratures/Effective-Quadratures.svg?style=flat-square&logo=github&label=Stars&logoColor=white)
 ![](https://img.shields.io/pypi/dm/equadratures.svg?style=flat-square)
+![](https://img.shields.io/discourse/status?server=https%3A%2F%2Fdiscourse.effective-quadratures.org)
 
 To download and install the code please use the python package index command:
 

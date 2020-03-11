@@ -65,7 +65,6 @@ class Test_optimisation(TestCase):
         n = 2
         N = 20
         X = np.random.uniform(-1.0, 1.0, (N, n))
-        # Function values for f and Poly object
         f = self.ObjFun1(X)
         fparam = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degf)
         fParameters = [fparam for i in range(n)]
@@ -92,7 +91,6 @@ class Test_optimisation(TestCase):
         n = 2
         N = 20
         X = np.random.uniform(-1.0, 1.0, (N, n))
-        # Function values for f and Poly object
         f = self.ObjFun1(X)
         fparam = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degf)
         fParameters = [fparam for i in range(n)]
@@ -111,7 +109,6 @@ class Test_optimisation(TestCase):
         n = 2
         N = 20
         X = np.random.uniform(-1.0, 1.0, (N, n))
-        # Function values for f and Poly object
         f = self.ObjFun1(X)
         fparam = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degf)
         fParameters = [fparam for i in range(n)]
@@ -131,14 +128,12 @@ class Test_optimisation(TestCase):
         N = 20
         bounds = [-np.inf,2.0]
         X = np.random.uniform(-1.0, 1.0, (N, n))
-        # Function values for f and Poly object
         f = self.ObjFun1(X)
         fparam = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degf)
         fParameters = [fparam for i in range(n)]
         myBasis = eq.Basis('total-order')
         fpoly = eq.Poly(fParameters, myBasis,  method='least-squares', sampling_args={'mesh': 'user-defined', 'sample-points':X, 'sample-outputs':f})
         fpoly.set_model()
-        # Active subspace and values for g1
         g1 = self.ConFun1(X)
         g1param = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degg1)
         g1Parameters = [g1param for i in range(n)]
@@ -159,14 +154,12 @@ class Test_optimisation(TestCase):
         N = 20
         bounds = [0.0,np.inf]
         X = np.random.uniform(-1.0, 1.0, (N, n))
-        # Function values for f and Poly object
         f = self.ObjFun1(X)
         fparam = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degf)
         fParameters = [fparam for i in range(n)]
         myBasis = eq.Basis('total-order')
         fpoly = eq.Poly(fParameters, myBasis,  method='least-squares', sampling_args={'mesh': 'user-defined', 'sample-points':X, 'sample-outputs':f})
         fpoly.set_model()
-        # Active subspace and values for g1
         g1 = self.ConFun1(X)
         g1param = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degg1)
         g1Parameters = [g1param for i in range(n)]
@@ -187,7 +180,6 @@ class Test_optimisation(TestCase):
         N = 20
         bounds = [-np.inf,2.0]
         X = np.random.uniform(-1.0, 1.0, (N, n))
-        # Function values for f and Poly object
         f = self.ObjFun1(X)
         fparam = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degf)
         fParameters = [fparam for i in range(n)]
@@ -212,7 +204,6 @@ class Test_optimisation(TestCase):
         N = 20
         bounds = [-np.inf,2.0]
         X = np.random.uniform(-1.0, 1.0, (N, n))
-        # Function values for f and Poly object
         f = self.ObjFun1(X)
         fparam = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degf)
         fParameters = [fparam for i in range(n)]
@@ -235,7 +226,6 @@ class Test_optimisation(TestCase):
         N = 20
         value = 2.0
         X = np.random.uniform(-1.0, 1.0, (N, n))
-        # Function values for f and Poly object
         f = self.ObjFun1(X)
         fparam = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degf)
         fParameters = [fparam for i in range(n)]
@@ -259,7 +249,6 @@ class Test_optimisation(TestCase):
         N = 20
         value = 2.0
         X = np.random.uniform(-1.0, 1.0, (N, n))
-        # Function values for f and Poly object
         f = self.ObjFun1(X)
         fparam = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degf)
         fParameters = [fparam for i in range(n)]
@@ -316,7 +305,7 @@ class Test_optimisation(TestCase):
         Opt = eq.Optimisation(method='omorf')
         Opt.add_objective(custom={'function': self.ObjFun2})
         x0 = -2*np.ones(n)
-        sol = Opt.optimise(x0)
+        sol = Opt.optimise(x0, subspace_method='variable-projection', d=2)
         np.testing.assert_almost_equal(sol['fun'], -39.1661656*n, decimal=6)
             
     def test_optimise_omorf_as(self):
@@ -324,9 +313,9 @@ class Test_optimisation(TestCase):
         Opt = eq.Optimisation(method='omorf')
         Opt.add_objective(custom={'function': self.ObjFun2})
         x0 = -2*np.ones(n)
-        sol = Opt.optimise(x0, subspace_method='active-subspaces', d=1)
+        sol = Opt.optimise(x0)
         np.testing.assert_almost_equal(sol['fun'], -39.1661656*n, decimal=6)
-            
+
     def test_optimise_omorf_bounds(self):
         n = 10
         Opt = eq.Optimisation(method='omorf')

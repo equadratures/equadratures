@@ -11,6 +11,7 @@ from scipy.stats import linregress
 import warnings
 import sys
 import time
+import copy
 warnings.filterwarnings('ignore')
 class Optimisation:
     """
@@ -275,7 +276,7 @@ class Optimisation:
                     eta_1=kwargs.get('eta_1', 0.05), eta_2=kwargs.get('eta_2', 0.9), alpha_1=kwargs.get('alpha_1', 0.25), \
                     alpha_2=kwargs.get('alpha_2', 2.5), omega_s=kwargs.get('omega_s', 0.5), max_evals=kwargs.get('max_evals', 10000), \
                     random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', True), \
-                    epsilon=kwargs.get('epsilon', 3.0), cauchy_level=kwargs.get('cauchy_level', 0.01))
+                    epsilon=kwargs.get('epsilon', 3.0))
             sol = {'x': self.s_old, 'fun': self.f_old, 'nfev': self.num_evals}
         elif self.method in ['omorf']:
             self._omorf(x0, del_k=kwargs.get('del_k', None), del_min=kwargs.get('del_min', 1.0e-6), \
@@ -283,7 +284,7 @@ class Optimisation:
                     alpha_2=kwargs.get('alpha_2', 2.5), omega_s=kwargs.get('omega_s', 0.5), max_evals=kwargs.get('max_evals', 10000), \
                     random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', True), \
                     epsilon=kwargs.get('epsilon', 3.0), d=kwargs.get('d', 1), \
-                    subspace_method=kwargs.get('subspace_method', 'active-subspaces'), lam=kwargs.get('lam', 2.0), cauchy_level=kwargs.get('cauchy_level', 0.01))
+                    subspace_method=kwargs.get('subspace_method', 'active-subspaces'), lam=kwargs.get('lam', 3.0))
             sol = {'x': self.s_old, 'fun': self.f_old, 'nfev': self.num_evals}
         else:
             sol = optimize.minimize(self.objective['function'], x0, method=self.method, bounds = self.bounds, \
@@ -505,8 +506,17 @@ class Optimisation:
             if S.shape != np.unique(S, axis=0).shape:
                 S, index = np.unique(S, axis=0, return_index=True)
                 f = f[index]
-            else:
+            elif max(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf)) > self.epsilon*self.del_k:
                 S, f = self._remove_furthest_point(S, f)
+            else:
+                S_hat = np.copy(S) 
+                f_hat = np.copy(f)
+                S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, self.s_old)
+                S = np.zeros((q, self.n))
+                f = np.zeros((q, 1))
+                S[0, :] = self.s_old
+                f[0, :] = self.f_old
+                S, f = self._LU_pivoting(S, f, S_hat, f_hat, full_space)
         elif method == 'improve':
             S_hat = np.copy(S) 
             f_hat = np.copy(f)
@@ -517,6 +527,14 @@ class Optimisation:
             S[0, :] = self.s_old
             f[0, :] = self.f_old
             S, f = self._LU_pivoting(S, f, S_hat, f_hat, full_space, 'improve')
+        elif method == 'new':
+            S_hat = np.array([])
+            f_hat = np.array([])
+            S = np.zeros((q, self.n))
+            f = np.zeros((q, 1))
+            S[0, :] = self.s_old
+            f[0, :] = self.f_old
+            S, f = self._LU_pivoting(S, f, S_hat, f_hat, full_space)
         elif method == 'best_within_region':
             S_hat, f_hat = self._remove_points_outside_radius(self.S, self.f, self.epsilon*self.del_k)
             S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, self.s_old)
@@ -773,9 +791,13 @@ class Optimisation:
         ind_min = np.argmin(f)
         self.s_old = S[ind_min,:]
         self.f_old = np.asscalar(f[ind_min])
-        return None
+        self._update_bounds()
 
-    def _trust_region(self, s_old, del_k, del_min, eta_1, eta_2, alpha_1, alpha_2, omega_s, max_evals, random_initial, scale_bounds, epsilon, cauchy_level):
+    def _set_del_k(self, value):
+        self.del_k = value
+        self._update_bounds()
+
+    def _trust_region(self, s_old, del_k, del_min, eta_1, eta_2, alpha_1, alpha_2, omega_s, max_evals, random_initial, scale_bounds, epsilon):
         """
         Computes optimum using the ``trust-region`` method
         """
@@ -786,7 +808,6 @@ class Optimisation:
         self.random_initial = random_initial
         self.scale_bounds = scale_bounds
         self.epsilon = epsilon
-        self.cauchy_level = cauchy_level
         Base = Basis('total-order', orders=np.tile([2], self.n))
         self.basis = Base.get_basis()[:,range(self.n-1, -1, -1)]
 
@@ -794,56 +815,58 @@ class Optimisation:
         self.f_old = self._blackbox_evaluation(self.s_old)
         if del_k is None:
             if self.bounds is None:
-                self.del_k = 0.1*max(np.linalg.norm(self.s_old, ord=np.inf), 1.0)
+                self._set_del_k(0.1*max(np.linalg.norm(self.s_old, ord=np.inf), 1.0))
+            elif self.scale_bounds:
+                self._set_del_k(0.1)
             else:
-                self.del_k = 0.1
+                self._set_del_k(0.1*min(np.linalg.norm(self.bounds[1]-self.bounds[0], ord=np.inf), 1.0))
         else:
-            self.del_k = del_k
-        self._update_bounds()
-
+            self._set_del_k(del_k)
         # Construct the sample set
         S, f = self._generate_initial_set()
         for i in range(itermax):
-            self._update_bounds()
-            if self.del_k < del_min:
+            if self.num_evals >= max_evals or self.del_k < del_min:
                 break
-            my_poly = self._build_model(S, f)
+            try:
+                my_poly = self._build_model(S, f)
+            except:
+                S, f = self._sample_set('improve', S, f)
+                continue
             m_old = np.asscalar(my_poly.get_polyfit(self.s_old))
             s_new, m_new = self._compute_step(my_poly)
-            step = s_new - self.s_old
-            step_dist = np.linalg.norm(step, ord=np.inf)
+            step_dist = np.linalg.norm(s_new - self.s_old, ord=np.inf)
             # Safety step implemented in BOBYQA
             if step_dist < omega_s*self.del_k:
                 S, f = self._sample_set('improve', S, f)
                 if max(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf)) <= self.epsilon*self.del_k:
-                    self.del_k = alpha_1*step_dist
+                    self._set_del_k(omega_s*self.del_k)
                 continue
             elif self.S.shape == np.unique(np.vstack((self.S, s_new)), axis=0).shape:
                 ind_repeat = np.argmin(np.linalg.norm(self.S - s_new, ord=np.inf, axis=1))
                 f_new = self.f[ind_repeat]
             else:
                 f_new = self._blackbox_evaluation(s_new)
+            if self.num_evals >= max_evals or self.del_k < del_min:
+                break
             S = np.vstack((S, s_new))
             f = np.vstack((f, f_new))
             # Calculate trust-region factor
             rho_k = (self.f_old - f_new) / (m_old - m_new)
             self._choose_best(self.S, self.f)
-            self._update_bounds()
             if rho_k >= eta_2:
+                self._set_del_k(max(alpha_2*step_dist, self.del_k))
                 S, f = self._sample_set('replace', S, f)
-                self.del_k = max(alpha_2*step_dist, self.del_k)
             elif rho_k >= eta_1:
                 S, f = self._sample_set('replace', S, f)
             else:
                 if max(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf)) <= self.epsilon*self.del_k:
-                    S, f = self._sample_set('improve', S, f)
-                    self.del_k = alpha_1*step_dist
+                    self._set_del_k(alpha_1*step_dist)
                 else:
                     S, f = self._sample_set('improve', S, f)
         self.S = self._remove_scaling(self.S)
         self._choose_best(self.S, self.f)
 
-    def _omorf(self, s_old, del_k, del_min, eta_1, eta_2, alpha_1, alpha_2, omega_s, max_evals, random_initial, scale_bounds, epsilon, d, subspace_method, lam, cauchy_level):
+    def _omorf(self, s_old, del_k, del_min, eta_1, eta_2, alpha_1, alpha_2, omega_s, max_evals, random_initial, scale_bounds, epsilon, d, subspace_method, lam):
         """
         Computes optimum using the ``omorf`` method
         """
@@ -857,7 +880,6 @@ class Optimisation:
         self.subspace_method = subspace_method
         self.epsilon = epsilon
         self.max_evals = max_evals
-        self.cauchy_level = cauchy_level
         Base = Basis('total-order', orders=np.tile([2], self.d))
         self.basis = Base.get_basis()[:,range(self.d-1, -1, -1)]
 
@@ -865,21 +887,26 @@ class Optimisation:
         self.f_old = self._blackbox_evaluation(self.s_old)
         if del_k is None:
             if self.bounds is None:
-                self.del_k = 0.1*max(np.linalg.norm(self.s_old, ord=np.inf), 1.0)
+                self._set_del_k(0.1*max(np.linalg.norm(self.s_old, ord=np.inf), 1.0))
+            elif self.scale_bounds:
+                self._set_del_k(0.1)
             else:
-                self.del_k = 0.1
+                self._set_del_k(0.1*min(np.linalg.norm(self.bounds[1]-self.bounds[0], ord=np.inf), 1.0))
         else:
-            self.del_k = del_k
-        self._update_bounds()
+            self._set_del_k(del_k)
         # Construct the sample set
         S_full, f_full = self._generate_initial_set()
         self._calculate_subspace(S_full, f_full)
-        S_red, f_red = self._sample_set('best_within_region')
+        S_red, f_red = self._sample_set('new')
+        # my_poly = self._build_model(S_red, f_red)
         for i in range(itermax):
-            self._update_bounds()
             if self.num_evals >= max_evals or self.del_k < del_min:
                 break
-            my_poly = self._build_model(S_full, f_full)
+            try:
+                my_poly = self._build_model(S_red, f_red)
+            except:
+                S_red, f_red = self._sample_set('improve', S_red, f_red)
+                continue
             m_old = np.asscalar(my_poly.get_polyfit(np.dot(self.s_old,self.U)))
             s_new, m_new = self._compute_step(my_poly)
             step_dist = np.linalg.norm(s_new - self.s_old, ord=np.inf)
@@ -891,15 +918,13 @@ class Optimisation:
                     except:
                         S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
                         continue
-                    S_red, f_red = self._sample_set('best_within_region')
-                    self.del_k = alpha_1*step_dist
+                    self._set_del_k(omega_s*self.del_k)
                 elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= self.epsilon*self.del_k:
                     S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
                     try:
                         self._calculate_subspace(S_full, f_full)
                     except:
                         continue
-                    S_red, f_red = self._sample_set('best_within_region')
                 else:
                     S_red, f_red = self._sample_set('improve', S_red, f_red)
                 continue
@@ -917,10 +942,9 @@ class Optimisation:
             # Calculate trust-region factor
             rho_k = (self.f_old - f_new) / (m_old - m_new)
             self._choose_best(self.S, self.f)
-            self._update_bounds()
             if rho_k >= eta_2:
+                self._set_del_k(max(alpha_2*step_dist, self.del_k))
                 S_red, f_red = self._sample_set('replace', S_red, f_red)
-                self.del_k = max(alpha_2*step_dist, self.del_k)
             elif rho_k >= eta_1:
                 S_red, f_red = self._sample_set('replace', S_red, f_red)
             else:
@@ -930,15 +954,13 @@ class Optimisation:
                     except:
                         S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
                         continue
-                    S_red, f_red = self._sample_set('best_within_region')
-                    self.del_k = alpha_1*step_dist
+                    self._set_del_k(alpha_1*step_dist)
                 elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= self.epsilon*self.del_k:
                     S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
                     try:
                         self._calculate_subspace(S_full, f_full)
                     except:
                         continue
-                    S_red, f_red = self._sample_set('best_within_region')
                 else:
                     S_red, f_red = self._sample_set('improve', S_red, f_red)
         self.S = self._remove_scaling(self.S)

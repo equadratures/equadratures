@@ -275,14 +275,14 @@ class Optimisation:
             self._trust_region(x0, del_k=kwargs.get('del_k', None), del_min=kwargs.get('del_min', 1.0e-6), \
                     eta_1=kwargs.get('eta_1', 0.05), eta_2=kwargs.get('eta_2', 0.9), alpha_1=kwargs.get('alpha_1', 0.25), \
                     alpha_2=kwargs.get('alpha_2', 2.5), omega_s=kwargs.get('omega_s', 0.5), max_evals=kwargs.get('max_evals', 10000), \
-                    random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', True), \
+                    random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', False), \
                     epsilon=kwargs.get('epsilon', 3.0))
             sol = {'x': self.s_old, 'fun': self.f_old, 'nfev': self.num_evals}
         elif self.method in ['omorf']:
             self._omorf(x0, del_k=kwargs.get('del_k', None), del_min=kwargs.get('del_min', 1.0e-6), \
                     eta_1=kwargs.get('eta_1', 0.05), eta_2=kwargs.get('eta_2', 0.9), alpha_1=kwargs.get('alpha_1', 0.25), \
-                    alpha_2=kwargs.get('alpha_2', 2.5), omega_s=kwargs.get('omega_s', 0.5), max_evals=kwargs.get('max_evals', 10000), \
-                    random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', True), \
+                    alpha_2=kwargs.get('alpha_2', 1.25), omega_s=kwargs.get('omega_s', 0.5), max_evals=kwargs.get('max_evals', 10000), \
+                    random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', False), \
                     epsilon=kwargs.get('epsilon', 3.0), d=kwargs.get('d', 1), \
                     subspace_method=kwargs.get('subspace_method', 'active-subspaces'), lam=kwargs.get('lam', 3.0))
             sol = {'x': self.s_old, 'fun': self.f_old, 'nfev': self.num_evals}
@@ -520,8 +520,9 @@ class Optimisation:
         elif method == 'improve':
             S_hat = np.copy(S) 
             f_hat = np.copy(f)
+            if max(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf)) > self.epsilon*self.del_k:
+                S_hat, f_hat = self._remove_furthest_point(S_hat, f_hat)
             S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, self.s_old)
-            S_hat, f_hat = self._remove_furthest_point(S_hat, f_hat)
             S = np.zeros((q, self.n))
             f = np.zeros((q, 1))
             S[0, :] = self.s_old
@@ -898,7 +899,6 @@ class Optimisation:
         S_full, f_full = self._generate_initial_set()
         self._calculate_subspace(S_full, f_full)
         S_red, f_red = self._sample_set('new')
-        # my_poly = self._build_model(S_red, f_red)
         for i in range(itermax):
             if self.num_evals >= max_evals or self.del_k < del_min:
                 break
@@ -943,7 +943,7 @@ class Optimisation:
             rho_k = (self.f_old - f_new) / (m_old - m_new)
             self._choose_best(self.S, self.f)
             if rho_k >= eta_2:
-                self._set_del_k(max(alpha_2*step_dist, self.del_k))
+                # self._set_del_k(max(alpha_2*step_dist, self.del_k))
                 S_red, f_red = self._sample_set('replace', S_red, f_red)
             elif rho_k >= eta_1:
                 S_red, f_red = self._sample_set('replace', S_red, f_red)

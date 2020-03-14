@@ -6,12 +6,11 @@ from equadratures.parameter import Parameter
 from scipy import optimize
 from scipy.linalg import null_space
 import numpy as np
-from scipy.special import comb, factorial
+from scipy.special import factorial
 from scipy.stats import linregress
 import warnings
 import sys
 import time
-import copy
 warnings.filterwarnings('ignore')
 class Optimisation:
     """
@@ -794,8 +793,8 @@ class Optimisation:
         """
         itermax = 10000
         self.n = s_old.size
-        self.q = int(comb(self.n+2, 2))
-        self.p = int(comb(self.n+2, 2))
+        self.q = int(0.5*(self.n+1)*(self.n+2))
+        self.p = int(0.5*(self.n+1)*(self.n+2))
         self.random_initial = random_initial
         self.scale_bounds = scale_bounds
         Base = Basis('total-order', orders=np.tile([2], self.n))
@@ -807,11 +806,11 @@ class Optimisation:
         self.f_old = self._blackbox_evaluation(self.s_old)
         if del_k is None:
             if self.bounds is None:
-                self._set_del_k(0.1*max(np.linalg.norm(self.s_old, ord=np.inf), 1.0))
+                self._set_del_k(max(0.1*np.linalg.norm(self.s_old, ord=np.inf), 1.0))
             elif self.scale_bounds:
                 self._set_del_k(0.1)
             else:
-                self._set_del_k(0.1*min(np.linalg.norm(self.bounds[1]-self.bounds[0], ord=np.inf), 1.0))
+                self._set_del_k(min(0.1*np.linalg.norm(self.bounds[1]-self.bounds[0], ord=np.inf), 1.0))
         else:
             self._set_del_k(del_k)
         self.rho_k = self.del_k
@@ -873,8 +872,8 @@ class Optimisation:
         itermax = 10000
         self.n = s_old.size
         self.d = d
-        self.q = int(comb(self.d+2, 2))
-        self.p = self.n + 1
+        self.q = int(0.5*(self.d+1)*(self.d+2))
+        self.p = self.n+1
         self.random_initial = random_initial
         self.scale_bounds = scale_bounds
         self.subspace_method = subspace_method
@@ -888,19 +887,22 @@ class Optimisation:
         self.f_old = self._blackbox_evaluation(self.s_old)
         if del_k is None:
             if self.bounds is None:
-                self._set_del_k(0.1*max(np.linalg.norm(self.s_old, ord=np.inf), 1.0))
+                self._set_del_k(max(0.1*np.linalg.norm(self.s_old, ord=np.inf), 1.0))
             elif self.scale_bounds:
                 self._set_del_k(0.1)
             else:
-                self._set_del_k(0.1*min(np.linalg.norm(self.bounds[1]-self.bounds[0], ord=np.inf), 1.0))
+                self._set_del_k(min(0.1*np.linalg.norm(self.bounds[1]-self.bounds[0], ord=np.inf), 1.0))
         else:
             self._set_del_k(del_k)
         self.rho_k = self.del_k
         # Construct the sample set
         S_full, f_full = self._generate_initial_set()
         self._calculate_subspace(S_full, f_full)
-        S_red, f_red = self._sample_set('new')
+        S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full)
         for i in range(itermax):
+            # print(self.S.shape)
+            # print(np.unique(self.S, axis=0).shape)
+            # print('------------')
             if self.num_evals >= max_evals or self.rho_k < del_min:
                 break
             try:

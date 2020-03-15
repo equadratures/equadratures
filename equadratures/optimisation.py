@@ -921,6 +921,7 @@ class Optimisation:
                         # S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full)
                     except:
                         S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
+                        S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full)
                         continue
                     self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
                     if self.del_k == self.rho_k:
@@ -936,6 +937,7 @@ class Optimisation:
                 else:
                     # S_red, f_red = self._sample_set('improve', S_red, f_red)
                     S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
+                S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full)
                 continue
             if self.S.shape == np.unique(np.vstack((self.S, s_new)), axis=0).shape:
                 ind_repeat = np.argmin(np.linalg.norm(self.S - s_new, ord=np.inf, axis=1))

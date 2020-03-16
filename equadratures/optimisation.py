@@ -271,14 +271,14 @@ class Optimisation:
                     options={'disp': False, 'maxiter': 10000})
             sol = {'x': sol['x'], 'fun': sol['fun'], 'nfev': self.num_evals, 'status': sol['status']}
         elif self.method in ['trust-region']:
-            self._trust_region(x0, del_k=kwargs.get('del_k', None), del_min=kwargs.get('del_min', 1.0e-6), eta_1=kwargs.get('eta_1', 0.1), eta_2=kwargs.get('eta_2', 0.7), \
+            self._trust_region(x0, del_k=kwargs.get('del_k', None), del_min=kwargs.get('del_min', 1.0e-6), eta_1=kwargs.get('eta_1', 0.1), eta_2=kwargs.get('eta_2', 0.9), \
                     gam_dec=kwargs.get('gam_dec', 0.5), gam_inc=kwargs.get('gam_inc', 2.0), gam_inc_overline=kwargs.get('gam_inc_overline', 4.0), \
                     alpha_1=kwargs.get('alpha_1', 0.1), alpha_2=kwargs.get('alpha_2', 0.5), omega_s=kwargs.get('omega_s', 0.5),  \
                     max_evals=kwargs.get('max_evals', 10000), random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', False))
             sol = {'x': self.s_old, 'fun': self.f_old, 'nfev': self.num_evals}
         elif self.method in ['omorf']:
             self._omorf(x0, d=kwargs.get('d', 1), subspace_method=kwargs.get('subspace_method', 'active-subspaces'), \
-                    del_k=kwargs.get('del_k', None), del_min=kwargs.get('del_min', 1.0e-6), eta_1=kwargs.get('eta_1', 0.1), eta_2=kwargs.get('eta_2', 0.7), \
+                    del_k=kwargs.get('del_k', None), del_min=kwargs.get('del_min', 1.0e-6), eta_1=kwargs.get('eta_1', 0.1), eta_2=kwargs.get('eta_2', 0.9), \
                     gam_dec=kwargs.get('gam_dec', 0.98), gam_inc=kwargs.get('gam_inc', 2.0), gam_inc_overline=kwargs.get('gam_inc_overline', 4.0), \
                     alpha_1=kwargs.get('alpha_1', 0.9), alpha_2=kwargs.get('alpha_2', 0.95), omega_s=kwargs.get('omega_s', 0.5), \
                     max_evals=kwargs.get('max_evals', 10000), random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', False))
@@ -829,12 +829,13 @@ class Optimisation:
             step_dist = np.linalg.norm(s_new - self.s_old, ord=np.inf)
             # Safety step implemented in BOBYQA
             if step_dist < omega_s*self.rho_k:
-                S, f = self._sample_set('improve', S, f)
+                self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
                 if max(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
-                    self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
                     if self.del_k == self.rho_k:
                         self._set_del_k(alpha_2*self.rho_k)
                         self.rho_k *= alpha_1
+                else:
+                    S, f = self._sample_set('improve', S, f)
                 continue
             elif self.S.shape == np.unique(np.vstack((self.S, s_new)), axis=0).shape:
                 ind_repeat = np.argmin(np.linalg.norm(self.S - s_new, ord=np.inf, axis=1))
@@ -915,17 +916,15 @@ class Optimisation:
             step_dist = np.linalg.norm(s_new - self.s_old, ord=np.inf)
             # Safety step implemented in BOBYQA
             if step_dist < omega_s*self.rho_k:
+                self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
                 if max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
                     try:
                         self._calculate_subspace(S_full, f_full)
+                        if self.del_k == self.rho_k:
+                            self._set_del_k(alpha_2*self.rho_k)
+                            self.rho_k *= alpha_1
                     except:
                         S_full, f_full = self._sample_set('improve', S_full, f_full)
-                        S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full, full_space=False)
-                        continue
-                    self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
-                    if self.del_k == self.rho_k:
-                        self._set_del_k(alpha_2*self.rho_k)
-                        self.rho_k *= alpha_1
                     S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full, full_space=False)
                 elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
                     S_full, f_full = self._sample_set('improve', S_full, f_full)
@@ -946,8 +945,6 @@ class Optimisation:
                 break
             S_full = np.vstack((S_full, s_new))
             f_full = np.vstack((f_full, f_new))
-            # S_full, f_full = self._choose_closest_points(2*self.p)
-            # S_full, f_full = self._sample_set('best_of_large_set', S_full, f_full, full_space=True)
             S_red = np.vstack((S_red, s_new))
             f_red = np.vstack((f_red, f_new))
             # Calculate trust-region factor
@@ -961,23 +958,21 @@ class Optimisation:
             if r_k >= eta_2:
                 self._set_del_k(max(gam_inc*self.del_k, gam_inc_overline*step_dist))
                 S_full, f_full = self._sample_set('replace', S_full, f_full)
-                S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full, full_space=False)
+                S_red, f_red = self._sample_set('replace', S_red, f_red, full_space=False)
             elif r_k >= eta_1:
                 self._set_del_k(max(gam_dec*self.del_k, step_dist, self.rho_k))
                 S_full, f_full = self._sample_set('replace', S_full, f_full)
-                S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full, full_space=False)
+                S_red, f_red = self._sample_set('replace', S_red, f_red, full_space=False)
             else:
                 self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
                 if max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
                     try:
                         self._calculate_subspace(S_full, f_full)
+                        if self.del_k == self.rho_k:
+                            self._set_del_k(alpha_2*self.rho_k)
+                            self.rho_k *= alpha_1
                     except:
                         S_full, f_full = self._sample_set('improve', S_full, f_full)
-                        S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full, full_space=False)
-                        continue
-                    if self.del_k == self.rho_k:
-                        self._set_del_k(alpha_2*self.rho_k)
-                        self.rho_k *= alpha_1
                     S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full, full_space=False)
                 elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
                     S_full, f_full = self._sample_set('improve', S_full, f_full)

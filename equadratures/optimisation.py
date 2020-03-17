@@ -271,21 +271,21 @@ class Optimisation:
                     options={'disp': False, 'maxiter': 10000})
             sol = {'x': sol['x'], 'fun': sol['fun'], 'nfev': self.num_evals, 'status': sol['status']}
         elif self.method in ['trust-region']:
-            self._trust_region(x0, del_k=kwargs.get('del_k', None), del_min=kwargs.get('del_min', 1.0e-6), eta_1=kwargs.get('eta_1', 0.1), eta_2=kwargs.get('eta_2', 0.9), \
-                    gam_dec=kwargs.get('gam_dec', 0.5), gam_inc=kwargs.get('gam_inc', 2.0), gam_inc_overline=kwargs.get('gam_inc_overline', 4.0), \
+            self._trust_region(x0, del_k=kwargs.get('del_k', None), del_min=kwargs.get('del_min', 1.0e-6), eta_1=kwargs.get('eta_1', 0.05), eta_2=kwargs.get('eta_2', 0.9), \
+                    gam_dec=kwargs.get('gam_dec', 0.5), gam_inc=kwargs.get('gam_inc', 2.0), gam_inc_overline=kwargs.get('gam_inc_overline', 2.5), \
                     alpha_1=kwargs.get('alpha_1', 0.1), alpha_2=kwargs.get('alpha_2', 0.5), omega_s=kwargs.get('omega_s', 0.5),  \
                     max_evals=kwargs.get('max_evals', 10000), random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', False))
             sol = {'x': self.s_old, 'fun': self.f_old, 'nfev': self.num_evals}
         elif self.method in ['omorf']:
             self._omorf(x0, d=kwargs.get('d', 1), subspace_method=kwargs.get('subspace_method', 'active-subspaces'), \
-                    del_k=kwargs.get('del_k', None), del_min=kwargs.get('del_min', 1.0e-6), eta_1=kwargs.get('eta_1', 0.1), eta_2=kwargs.get('eta_2', 0.9), \
-                    gam_dec=kwargs.get('gam_dec', 0.98), gam_inc=kwargs.get('gam_inc', 2.0), gam_inc_overline=kwargs.get('gam_inc_overline', 4.0), \
+                    del_k=kwargs.get('del_k', None), del_min=kwargs.get('del_min', 1.0e-6), eta_1=kwargs.get('eta_1', 0.05), eta_2=kwargs.get('eta_2', 0.9), \
+                    gam_dec=kwargs.get('gam_dec', 0.98), gam_inc=kwargs.get('gam_inc', 2.0), gam_inc_overline=kwargs.get('gam_inc_overline', 2.5), \
                     alpha_1=kwargs.get('alpha_1', 0.9), alpha_2=kwargs.get('alpha_2', 0.95), omega_s=kwargs.get('omega_s', 0.5), \
                     max_evals=kwargs.get('max_evals', 10000), random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', False))
             sol = {'x': self.s_old, 'fun': self.f_old, 'nfev': self.num_evals}
         else:
             sol = optimize.minimize(self.objective['function'], x0, method=self.method, bounds = self.bounds, \
-                    constraints=self.constraints, options={'disp': False, 'maxiter': 10000})
+                    constraints=self.constraints, options={'disp': False, 'maxiter': 10000})    
             sol = {'x': sol['x'], 'fun': sol['fun'], 'nfev': self.num_evals, 'status': sol['status']}
         if self.maximise:
             sol['fun'] *= -1.0
@@ -917,6 +917,7 @@ class Optimisation:
             # Safety step implemented in BOBYQA
             if step_dist < omega_s*self.rho_k:
                 self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
+                # if np.amax(S_full-self.s_old, axis=1) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
                 if max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
                     try:
                         self._calculate_subspace(S_full, f_full)
@@ -926,15 +927,21 @@ class Optimisation:
                     except:
                         S_full, f_full = self._sample_set('improve', S_full, f_full)
                     S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full, full_space=False)
-                elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
+                # elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
+                #     S_full, f_full = self._sample_set('improve', S_full, f_full)
+                #     try:
+                #         self._calculate_subspace(S_full, f_full)
+                #     except:
+                #         pass
+                #     S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full, full_space=False)
+                else:
                     S_full, f_full = self._sample_set('improve', S_full, f_full)
                     try:
                         self._calculate_subspace(S_full, f_full)
                     except:
                         pass
                     S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full, full_space=False)
-                else:
-                    S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
+                    # S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
                 continue
             if self.S.shape == np.unique(np.vstack((self.S, s_new)), axis=0).shape:
                 ind_repeat = np.argmin(np.linalg.norm(self.S - s_new, ord=np.inf, axis=1))
@@ -974,14 +981,20 @@ class Optimisation:
                     except:
                         S_full, f_full = self._sample_set('improve', S_full, f_full)
                     S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full, full_space=False)
-                elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
+                # elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
+                #     S_full, f_full = self._sample_set('improve', S_full, f_full)
+                #     try:
+                #         self._calculate_subspace(S_full, f_full)
+                #     except:
+                #         pass
+                #     S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full, full_space=False)
+                else:
                     S_full, f_full = self._sample_set('improve', S_full, f_full)
                     try:
                         self._calculate_subspace(S_full, f_full)
                     except:
                         pass
                     S_red, f_red = self._sample_set('best_of_large_set', S_full, f_full, full_space=False)
-                else:
-                    S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
+                    # S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
         self.S = self._remove_scaling(self.S)
         self._set_iterate()

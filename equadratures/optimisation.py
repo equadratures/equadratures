@@ -544,6 +544,13 @@ class Optimisation:
             S[0, :] = self.s_old
             f[0, :] = self.f_old
             S, f = self._LU_pivoting(S, f, S_hat, f_hat, full_space)
+        elif method == 'best_within_region':
+            S_hat, f_hat = self._remove_points_outside_radius(self.S, self.f, max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k))
+            S = np.zeros((q, self.n))
+            f = np.zeros((q, 1))
+            S[0, :] = self.s_old
+            f[0, :] = self.f_old
+            S, f = self._LU_pivoting(S, f, S_hat, f_hat, full_space)
         return S, f
     
     def _LU_pivoting(self, S, f, S_hat, f_hat, full_space, method=None):
@@ -900,8 +907,7 @@ class Optimisation:
         self._calculate_subspace(S_full, f_full)
         S_red, f_red = self._sample_set('new', full_space=False)
         for i in range(itermax):
-            # print(self.S.shape)
-            # print(np.unique(self.S, axis=0).shape)
+            # print(self.f_old)
             # print('------------')
             if self.num_evals >= max_evals or self.rho_k < del_min:
                 break
@@ -916,18 +922,35 @@ class Optimisation:
             # Safety step implemented in BOBYQA
             if step_dist < omega_s*self.rho_k:
                 self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
-                if max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
+                if max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
+                    S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
+                elif max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
+                    S_full, f_full = self._sample_set('improve', S_full, f_full)
                     try:
                         self._calculate_subspace(S_full, f_full)
-                        if self.del_k == self.rho_k:
-                            self._set_del_k(alpha_2*self.rho_k)
-                            self.rho_k *= alpha_1
                     except:
-                        S_full, f_full = self._sample_set('improve', S_full, f_full)
-                elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
-                    S_full, f_full = self._sample_set('improve', S_full, f_full)
+                        pass
+                    # S_red, f_red = self._sample_set('best_within_region', full_space=False)
                 else:
-                    S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
+                    if self.del_k == self.rho_k:
+                        self._set_del_k(alpha_2*self.rho_k)
+                        self.rho_k *= alpha_1
+                    # try:
+                    #     self._calculate_subspace(S_full, f_full)
+                    # except:
+                    #     S_full, f_full = self._sample_set('improve', S_full, f_full)
+                # if max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
+                #     try:
+                #         self._calculate_subspace(S_full, f_full)
+                #         if self.del_k == self.rho_k:
+                #             self._set_del_k(alpha_2*self.rho_k)
+                #             self.rho_k *= alpha_1
+                #     except:
+                #         S_full, f_full = self._sample_set('improve', S_full, f_full)
+                # elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
+                #     S_full, f_full = self._sample_set('improve', S_full, f_full)
+                # else:
+                #     S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
                 continue
             if self.S.shape == np.unique(np.vstack((self.S, s_new)), axis=0).shape:
                 ind_repeat = np.argmin(np.linalg.norm(self.S - s_new, ord=np.inf, axis=1))
@@ -952,17 +975,32 @@ class Optimisation:
                 self._set_del_k(max(gam_dec*self.del_k, step_dist, self.rho_k))
             else:
                 self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
-                if max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
+                if max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
+                    S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
+                elif max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
+                    S_full, f_full = self._sample_set('improve', S_full, f_full)
                     try:
                         self._calculate_subspace(S_full, f_full)
-                        if self.del_k == self.rho_k:
-                            self._set_del_k(alpha_2*self.rho_k)
-                            self.rho_k *= alpha_1
                     except:
-                        S_full, f_full = self._sample_set('improve', S_full, f_full)
-                elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
-                    S_full, f_full = self._sample_set('improve', S_full, f_full)
+                        pass
+                    # S_red, f_red = self._sample_set('best_within_region', full_space=False)
                 else:
-                    S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
+                    if self.del_k == self.rho_k:
+                        self._set_del_k(alpha_2*self.rho_k)
+                        self.rho_k *= alpha_1
+            # else:
+            #     self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
+            #     if max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
+            #         try:
+            #             self._calculate_subspace(S_full, f_full)
+            #             if self.del_k == self.rho_k:
+            #                 self._set_del_k(alpha_2*self.rho_k)
+            #                 self.rho_k *= alpha_1
+            #         except:
+            #             S_full, f_full = self._sample_set('improve', S_full, f_full)
+            #     elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
+            #         S_full, f_full = self._sample_set('improve', S_full, f_full)
+            #     else:
+            #         S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
         self.S = self._remove_scaling(self.S)
         self._set_iterate()

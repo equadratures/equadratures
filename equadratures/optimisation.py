@@ -11,6 +11,7 @@ from scipy.stats import linregress
 import warnings
 import sys
 import time
+import matplotlib.pyplot as plt
 warnings.filterwarnings('ignore')
 class Optimisation:
     """
@@ -347,14 +348,10 @@ class Optimisation:
         else:
             direcs = self._coordinate_directions(self.p, self.bounds_l-self.s_old, self.bounds_u-self.s_old)
         S = np.zeros((self.p, self.n))
-        f = np.zeros((self.p, 1))
         S[0, :] = self.s_old
-        f[0, :] = self.f_old
         for i in range(1, self.p):
-            del_s = np.minimum(np.maximum(self.bounds_l-self.s_old, direcs[i, :]), self.bounds_u-self.s_old)
-            S[i, :] = self.s_old + del_s
-            f[i, :] = self._blackbox_evaluation(self.s_old+del_s)
-        return S, f
+            S[i, :] = self.s_old + np.minimum(np.maximum(self.bounds_l-self.s_old, direcs[i, :]), self.bounds_u-self.s_old)
+        return S
 
     def _coordinate_directions(self, num_pnts, lower, upper):
         """
@@ -500,22 +497,21 @@ class Optimisation:
         else:
             q = self.q
         if method == 'replace':
-            S = np.vstack((S, s_new))
-            f = np.vstack((f, f_new))
+            S_hat = np.copy(S) 
+            f_hat = np.copy(f)
+            S_hat = np.vstack((S_hat, s_new))
+            f_hat = np.vstack((f_hat, f_new))
             if S.shape != np.unique(S, axis=0).shape:
-                S, index = np.unique(S, axis=0, return_index=True)
-                f = f[index]
+                S_hat, index = np.unique(S_hat, axis=0, return_index=True)
+                f_hat = f_hat[index]
             elif max(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
-                S, f = self._remove_furthest_point(S, f)
-            else:
-                S_hat = np.copy(S) 
-                f_hat = np.copy(f)
-                S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, self.s_old)
-                S = np.zeros((q, self.n))
-                f = np.zeros((q, 1))
-                S[0, :] = self.s_old
-                f[0, :] = self.f_old
-                S, f = self._LU_pivoting(S, f, S_hat, f_hat, full_space)
+                S_hat, f_hat = self._remove_furthest_point(S_hat, f_hat)
+            S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, self.s_old)
+            S = np.zeros((q, self.n))
+            f = np.zeros((q, 1))
+            S[0, :] = self.s_old
+            f[0, :] = self.f_old
+            S, f = self._LU_pivoting(S, f, S_hat, f_hat, full_space)
         elif method == 'improve':
             S_hat = np.copy(S) 
             f_hat = np.copy(f)
@@ -574,9 +570,8 @@ class Optimisation:
             if f_hat.size > 0:
                 M = np.absolute(np.dot(phi_function(S_hat),v).flatten())
                 index = np.argmax(M)
-                if method == 'improve':
-                    if k == q - 1:
-                        flag = False
+                if (method == 'improve' and k == q - 1) or M[index] < 1.0e-5:
+                    flag = False
             else:
                 flag = False
 #           If index exists, choose the point with that index and delete it from possible choices
@@ -824,7 +819,15 @@ class Optimisation:
             self._set_del_k(del_k)
         self.rho_k = self.del_k
         # Construct the sample set
-        S, f = self._generate_initial_set()
+        S = self._generate_initial_set()
+        f = np.zeros((self.p, 1))
+        f[0, :] = self.f_old
+        for i in range(1, S.shape[0]):
+            f[i, :] = self._blackbox_evaluation(S[i, :])
+            if self.num_evals >= max_evals:
+                self.S = self._remove_scaling(self.S)
+                self._set_iterate()
+                return
         for i in range(itermax):
             if self.num_evals >= max_evals or self.rho_k < del_min:
                 break
@@ -903,12 +906,20 @@ class Optimisation:
             self._set_del_k(del_k)
         self.rho_k = self.del_k
         # Construct the sample set
-        S_full, f_full = self._generate_initial_set()
+        S_full = self._generate_initial_set()
+        f_full = np.zeros((self.p, 1))
+        f_full[0, :] = self.f_old
+        for i in range(1, S_full.shape[0]):
+            f_full[i, :] = self._blackbox_evaluation(S_full[i, :])
+            if self.num_evals >= max_evals:
+                self.S = self._remove_scaling(self.S)
+                self._set_iterate()
+                return
+        S_full, f_full = self._sample_set('best_within_region', full_space=True)
         self._calculate_subspace(S_full, f_full)
-        S_red, f_red = self._sample_set('new', full_space=False)
+        S_red, f_red= self._sample_set('new', full_space=False)
+        flag = True
         for i in range(itermax):
-            # print(self.f_old)
-            # print('------------')
             if self.num_evals >= max_evals or self.rho_k < del_min:
                 break
             try:
@@ -925,21 +936,29 @@ class Optimisation:
                 if max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
                     S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
                 elif max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
-                    S_full, f_full = self._sample_set('improve', S_full, f_full)
+                    S_full, f_full  = self._sample_set('improve', S_full, f_full)
                     try:
                         self._calculate_subspace(S_full, f_full)
+                        flag = True
                     except:
                         pass
-                    S_red, f_red = self._sample_set('best_within_region', full_space=False)
+                    S_red, f_red  = self._sample_set('best_within_region', full_space=False)
                 else:
-                    try:
-                        self._calculate_subspace(S_full, f_full)
-                        if self.del_k == self.rho_k:
-                            self._set_del_k(alpha_2*self.rho_k)
-                            self.rho_k *= alpha_1
-                    except:
-                        S_full, f_full = self._sample_set('improve', S_full, f_full)
-                        S_red, f_red = self._sample_set('best_within_region', full_space=False)
+                    if flag:
+                        S_red, f_red  = self._sample_set('new', full_space=False)
+                        flag = False
+                        continue
+                    else:
+                        flag = False
+                        try:
+                            self._calculate_subspace(S_full, f_full)
+                            flag = True
+                            if self.del_k == self.rho_k:
+                                self._set_del_k(alpha_2*self.rho_k)
+                                self.rho_k *= alpha_1
+                        except:
+                            S_full, f_full  = self._sample_set('improve', S_full, f_full)
+                            S_red, f_red  = self._sample_set('best_within_region', full_space=False) 
                 continue
             if self.S.shape == np.unique(np.vstack((self.S, s_new)), axis=0).shape:
                 ind_repeat = np.argmin(np.linalg.norm(self.S - s_new, ord=np.inf, axis=1))
@@ -967,34 +986,29 @@ class Optimisation:
                 if max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
                     S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
                 elif max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
-                    S_full, f_full = self._sample_set('improve', S_full, f_full)
+                    S_full, f_full  = self._sample_set('improve', S_full, f_full)
                     try:
                         self._calculate_subspace(S_full, f_full)
+                        flag = True
                     except:
                         pass
-                    S_red, f_red = self._sample_set('best_within_region', full_space=False)
+                    S_red, f_red  = self._sample_set('best_within_region', full_space=False)
                 else:
-                    try:
-                        self._calculate_subspace(S_full, f_full)
-                        if self.del_k == self.rho_k:
-                            self._set_del_k(alpha_2*self.rho_k)
-                            self.rho_k *= alpha_1
-                    except:
-                        S_full, f_full = self._sample_set('improve', S_full, f_full)
-                        S_red, f_red = self._sample_set('best_within_region', full_space=False)
-            # else:
-            #     self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
-            #     if max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
-            #         try:
-            #             self._calculate_subspace(S_full, f_full)
-            #             if self.del_k == self.rho_k:
-            #                 self._set_del_k(alpha_2*self.rho_k)
-            #                 self.rho_k *= alpha_1
-            #         except:
-            #             S_full, f_full = self._sample_set('improve', S_full, f_full)
-            #     elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= max(self.epsilon1*self.del_k, self.epsilon2*self.rho_k):
-            #         S_full, f_full = self._sample_set('improve', S_full, f_full)
-            #     else:
-            #         S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
+                    if flag:
+                        S_red, f_red  = self._sample_set('new', full_space=False)
+                        flag = False
+                        continue
+                    else:
+                        flag = False
+                        try:
+                            self._calculate_subspace(S_full, f_full)
+                            flag = True
+                            if self.del_k == self.rho_k:
+                                self._set_del_k(alpha_2*self.rho_k)
+                                self.rho_k *= alpha_1
+                        except:
+                            S_full, f_full  = self._sample_set('improve', S_full, f_full)
+                            S_red, f_red  = self._sample_set('best_within_region', full_space=False) 
         self.S = self._remove_scaling(self.S)
         self._set_iterate()
+        return

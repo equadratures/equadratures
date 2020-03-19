@@ -361,6 +361,19 @@ class Optimisation:
                 self.f = np.vstack((self.f, f))
         return np.asscalar(f)
 
+    def _update_bounds(self):
+        if self.bounds is not None:
+            if self.scale_bounds:
+                self.bounds_l = np.maximum(np.zeros(self.n), self.s_old-self.del_k)
+                self.bounds_u = np.minimum(np.ones(self.n), self.s_old+self.del_k)
+            else:
+                self.bounds_l = np.maximum(self.bounds[0], self.s_old-self.del_k)
+                self.bounds_u = np.minimum(self.bounds[1], self.s_old+self.del_k)
+        else:
+            self.bounds_l = self.s_old-self.del_k
+            self.bounds_u = self.s_old+self.del_k
+        return None
+
     def _generate_initial_set(self):
         """
         Generates an initial set of samples using either coordinate directions or orthogonal, random directions
@@ -475,18 +488,14 @@ class Optimisation:
         else:
             return S
 
-    def _update_bounds(self):
-        if self.bounds is not None:
-            if self.scale_bounds:
-                self.bounds_l = np.maximum(np.zeros(self.n), self.s_old-self.del_k)
-                self.bounds_u = np.minimum(np.ones(self.n), self.s_old+self.del_k)
-            else:
-                self.bounds_l = np.maximum(self.bounds[0], self.s_old-self.del_k)
-                self.bounds_u = np.minimum(self.bounds[1], self.s_old+self.del_k)
+    def _update_geometry_trust_region(self, S, f):
+        if max(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k):
+            S, f = self._sample_set('improve', S, f)
         else:
-            self.bounds_l = self.s_old-self.del_k
-            self.bounds_u = self.s_old+self.del_k
-        return None
+            if self.del_k == self.rho_k:
+                self._set_del_k(self.alpha_2*self.rho_k)
+                self._set_rho_k(self.alpha_1*self.rho_k)
+        return S, f
 
     def _update_geometry_omorf(self, S_full, f_full, S_red, f_red):
         if max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k):
@@ -496,7 +505,7 @@ class Optimisation:
                 self.need_new_S_red = True
             except:
                 self.need_new_S_red = False
-        elif self.need_new_S_red:
+        elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k):
             S_red, f_red  = self._sample_set('new', full_space=False)
             self.need_new_S_red = False
         else:
@@ -505,15 +514,6 @@ class Optimisation:
                 self._set_rho_k(self.alpha_1*self.rho_k)
                 self.need_new_S_red = True
         return S_full, f_full, S_red, f_red
-
-    def _update_geometry_trust_region(self, S, f):
-        if max(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k):
-            S, f = self._sample_set('improve', S, f)
-        else:
-            if self.del_k == self.rho_k:
-                self._set_del_k(self.alpha_2*self.rho_k)
-                self._set_rho_k(self.alpha_1*self.rho_k)
-        return S, f
     
     def _sample_set(self, method, S=None, f=None, s_new=None, f_new=None, full_space=True):
         if full_space:
@@ -548,16 +548,18 @@ class Optimisation:
             f[0, :] = self.f_old
             S, f = self._LU_pivoting(S, f, S_hat, f_hat, full_space, 'improve')
         elif method == 'new':
-            S_hat = np.array([])
-            f_hat = np.array([])
+            S_hat, f_hat = self._remove_points_outside_limits()
+            S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, self.s_old)
             S = np.zeros((q, self.n))
             f = np.zeros((q, 1))
             S[0, :] = self.s_old
             f[0, :] = self.f_old
-            S, f = self._LU_pivoting(S, f, S_hat, f_hat, full_space)
+            S, f = self._LU_pivoting(S, f, S_hat, f_hat, full_space, 'new')
         return S, f
     
     def _LU_pivoting(self, S, f, S_hat, f_hat, full_space, method=None):
+        psi_1 = 1.0e-3
+        psi_2 = 0.25
         phi_function, phi_function_deriv = self._get_phi_function_and_derivative(S_hat, full_space)
         if full_space:
             q = self.p
@@ -578,7 +580,9 @@ class Optimisation:
             if f_hat.size > 0:
                 M = np.absolute(np.dot(phi_function(S_hat),v).flatten())
                 index = np.argmax(M)
-                if (method == 'improve' and k == q - 1) or M[index] < 1.0e-5:
+                if method == 'improve' and (k == q - 1 or M[index] < psi_1):
+                    flag = False
+                elif method == 'new' and M[index] < psi_2:
                     flag = False
             else:
                 flag = False
@@ -767,6 +771,12 @@ class Optimisation:
         f = np.delete(f, ind_distant, 0)
         return S, f
 
+    def _remove_points_outside_limits(self):
+        ind_inside = np.where(np.linalg.norm(self.S-self.s_old, axis=1, ord=np.inf) <= max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k))[0]
+        S = self.S[ind_inside, :]
+        f = self.f[ind_inside]
+        return S, f
+
     def _build_model(self, S, f):
         """
         Constructs quadratic model for ``trust-region`` or ``omorf`` methods
@@ -805,6 +815,28 @@ class Optimisation:
         m_new = res.fun
         return s_new, m_new
 
+    def _start(self, n, random_initial, scale_bounds, alpha_1, alpha_2, d=None, subspace_method=None):
+        self.n = n
+        self.random_initial = random_initial
+        self.scale_bounds = scale_bounds
+        self.epsilon_1 = 2.0
+        self.epsilon_2 = 10.0
+        self.alpha_1 = alpha_1
+        self.alpha_2 = alpha_2
+        if self.method == 'trust-region':
+            self.q = int(0.5*(self.n+1)*(self.n+2))
+            self.p = int(0.5*(self.n+1)*(self.n+2))
+            Base = Basis('total-order', orders=np.tile([2], self.n))
+            self.basis = Base.get_basis()[:,range(self.n-1, -1, -1)]
+        elif self.method == 'omorf':
+            self.d = d
+            self.subspace_method = subspace_method
+            self.q = int(0.5*(self.d+1)*(self.d+2))
+            self.p = self.n+1
+            Base = Basis('total-order', orders=np.tile([2], self.d))
+            self.basis = Base.get_basis()[:,range(self.d-1, -1, -1)]
+
+
     def _finish(self):
         self.S = self._remove_scaling(self.S)
         self._set_iterate()
@@ -815,17 +847,7 @@ class Optimisation:
         Computes optimum using the ``trust-region`` method
         """
         itermax = 10000
-        self.n = s_old.size
-        self.q = int(0.5*(self.n+1)*(self.n+2))
-        self.p = int(0.5*(self.n+1)*(self.n+2))
-        self.random_initial = random_initial
-        self.scale_bounds = scale_bounds
-        Base = Basis('total-order', orders=np.tile([2], self.n))
-        self.basis = Base.get_basis()[:,range(self.n-1, -1, -1)]
-        self.epsilon_1 = 2.0
-        self.epsilon_2 = 10.0
-        self.alpha_1 = alpha_1
-        self.alpha_2 = alpha_2
+        self._start(s_old.size, random_initial, scale_bounds, alpha_1, alpha_2)
 
         self.s_old = self._apply_scaling(s_old)
         self.f_old = self._blackbox_evaluation(self.s_old)
@@ -892,20 +914,7 @@ class Optimisation:
         Computes optimum using the ``omorf`` method
         """
         itermax = 10000
-        self.n = s_old.size
-        self.d = d
-        self.q = int(0.5*(self.d+1)*(self.d+2))
-        self.p = self.n+1
-        self.random_initial = random_initial
-        self.scale_bounds = scale_bounds
-        self.subspace_method = subspace_method
-        self.max_evals = max_evals
-        Base = Basis('total-order', orders=np.tile([2], self.d))
-        self.basis = Base.get_basis()[:,range(self.d-1, -1, -1)]
-        self.epsilon_1 = 2.0
-        self.epsilon_2 = 10.0
-        self.alpha_1 = alpha_1
-        self.alpha_2 = alpha_2
+        self._start(s_old.size, random_initial, scale_bounds, alpha_1, alpha_2, d, subspace_method)
 
         self.s_old = self._apply_scaling(s_old)
         self.f_old = self._blackbox_evaluation(self.s_old)
@@ -929,7 +938,7 @@ class Optimisation:
                 self._finish()
                 return
         self._calculate_subspace(S_full, f_full)
-        S_red, f_red= self._sample_set('new', full_space=False)
+        S_red, f_red = self._sample_set('new', full_space=False)
         self.need_new_S_red = False
         for i in range(itermax):
             if self.num_evals >= max_evals or self.rho_k < rho_min:

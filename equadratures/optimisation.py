@@ -491,10 +491,9 @@ class Optimisation:
     def _update_geometry_trust_region(self, S, f):
         if max(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k):
             S, f = self._sample_set('improve', S, f)
-        else:
-            if self.del_k == self.rho_k:
-                self._set_del_k(self.alpha_2*self.rho_k)
-                self._set_rho_k(self.alpha_1*self.rho_k)
+        elif self.del_k == self.rho_k:
+            self._set_del_k(self.alpha_2*self.rho_k)
+            self._set_rho_k(self.alpha_1*self.rho_k)
         return S, f
 
     def _update_geometry_omorf(self, S_full, f_full, S_red, f_red):
@@ -502,17 +501,13 @@ class Optimisation:
             S_full, f_full = self._sample_set('improve', S_full, f_full)
             try:
                 self._calculate_subspace(S_full, f_full)
-                self.need_new_S_red = True
             except:
-                self.need_new_S_red = False
+                pass
         elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k):
             S_red, f_red  = self._sample_set('new', full_space=False)
-            self.need_new_S_red = False
-        else:
-            if self.del_k == self.rho_k:
-                self._set_del_k(self.alpha_2*self.rho_k)
-                self._set_rho_k(self.alpha_1*self.rho_k)
-                self.need_new_S_red = True
+        elif self.del_k == self.rho_k:
+            self._set_del_k(self.alpha_2*self.rho_k)
+            self._set_rho_k(self.alpha_1*self.rho_k)
         return S_full, f_full, S_red, f_red
     
     def _sample_set(self, method, S=None, f=None, s_new=None, f_new=None, full_space=True):
@@ -521,14 +516,9 @@ class Optimisation:
         else:
             q = self.q
         if method == 'replace':
-            S_hat = np.copy(S) 
-            f_hat = np.copy(f)
-            S_hat = np.vstack((S_hat, s_new))
-            f_hat = np.vstack((f_hat, f_new))
-            if S.shape != np.unique(S, axis=0).shape:
-                S_hat, index = np.unique(S_hat, axis=0, return_index=True)
-                f_hat = f_hat[index]
-            elif max(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k):
+            S_hat = np.vstack((S, s_new))
+            f_hat = np.vstack((f, f_new))
+            if max(np.linalg.norm(S_hat-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k):
                 S_hat, f_hat = self._remove_furthest_point(S_hat, f_hat, self.s_old)
             S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, self.s_old)
             S = np.zeros((q, self.n))
@@ -539,7 +529,7 @@ class Optimisation:
         elif method == 'improve':
             S_hat = np.copy(S) 
             f_hat = np.copy(f)
-            if max(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k):
+            if max(np.linalg.norm(S_hat-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k):
                 S_hat, f_hat = self._remove_furthest_point(S_hat, f_hat, self.s_old)
             S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, self.s_old)
             S = np.zeros((q, self.n))
@@ -559,7 +549,10 @@ class Optimisation:
     
     def _LU_pivoting(self, S, f, S_hat, f_hat, full_space, method=None):
         psi_1 = 1.0e-3
-        psi_2 = 0.25
+        if self.method == 'omorf' and full_space:
+            psi_2 = 1.0
+        else:
+            psi_2 = 0.25
         phi_function, phi_function_deriv = self._get_phi_function_and_derivative(S_hat, full_space)
         if full_space:
             q = self.p
@@ -580,7 +573,7 @@ class Optimisation:
             if f_hat.size > 0:
                 M = np.absolute(np.dot(phi_function(S_hat),v).flatten())
                 index = np.argmax(M)
-                if method == 'improve' and (k == q - 1 or M[index] < psi_1):
+                if method == 'improve' and ((k == q - 1 and M[index] < psi_2) or M[index] < psi_1):
                     flag = False
                 elif method == 'new' and M[index] < psi_2:
                     flag = False
@@ -597,37 +590,19 @@ class Optimisation:
             else:
                 try:
                     s = self._find_new_point(v, phi_function, phi_function_deriv, full_space)
+                    if np.unique(np.vstack((S[:k, :], s)), axis=0).shape[0] != k:
+                        s = self._find_new_point_alternative(v, phi_function, S[:k, :])
                 except:
-                    s = self._find_new_point_alternative(v, phi_function)
-                if f_hat.size > 0:
-                    if M[index] >= abs(np.dot(v, phi_function(s))):
-                        s = S_hat[index,:]
-                        S[k, :] = s
-                        f[k, :] = f_hat[index]
-                        S_hat = np.delete(S_hat, index, 0)
-                        f_hat = np.delete(f_hat, index, 0)
-                    elif self.S.shape == np.unique(np.vstack((self.S, s)), axis=0).shape:
-                        s = self._find_new_point_alternative(v, phi_function)
-                        if M[index] >= abs(np.dot(v, phi_function(s))):
-                            s = S_hat[index,:]
-                            S[k, :] = s
-                            f[k, :] = f_hat[index]
-                            S_hat = np.delete(S_hat, index, 0)
-                            f_hat = np.delete(f_hat, index, 0)
-                        else:
-                            S[k, :] = s
-                            f[k, :] = self._blackbox_evaluation(s)
-                    else:
-                        S[k, :] = s
-                        f[k, :] = self._blackbox_evaluation(s)
+                    s = self._find_new_point_alternative(v, phi_function, S[:k, :])
+                if f_hat.size > 0 and M[index] >= abs(np.dot(v, phi_function(s))):
+                    s = S_hat[index,:]
+                    S[k, :] = s
+                    f[k, :] = f_hat[index]
+                    S_hat = np.delete(S_hat, index, 0)
+                    f_hat = np.delete(f_hat, index, 0)
                 else:
-                    if self.S.shape == np.unique(np.vstack((self.S, s)), axis=0).shape:
-                        s = self._find_new_point_alternative(v, phi_function)
-                        S[k, :] = s
-                        f[k, :] = self._blackbox_evaluation(s)
-                    else:
-                        S[k, :] = s
-                        f[k, :] = self._blackbox_evaluation(s)
+                    S[k, :] = s
+                    f[k, :] = self._blackbox_evaluation(s)
 #           Update U factorisation in LU algorithm
             phi = phi_function(s)
             U[k,k] = np.dot(v, phi)
@@ -720,7 +695,7 @@ class Optimisation:
         bounds = []
         for i in range(self.n):
             bounds.append((self.bounds_l[i], self.bounds_u[i])) 
-        if full_space:
+        if self.method == 'omorf' and full_space:
             c = v[1:]
             res1 = optimize.linprog(c, bounds=bounds)
             res2 = optimize.linprog(-c, bounds=bounds)
@@ -743,19 +718,19 @@ class Optimisation:
                 s = res2['x']
         return s
 
-    def _find_new_point_alternative(self, v, phi_function):
+    def _find_new_point_alternative(self, v, phi_function, S):
         num = int(0.5*(self.n+1)*(self.n+2))
         direcs = self._coordinate_directions(num, self.bounds_l-self.s_old, self.bounds_u-self.s_old)
-        S = np.zeros((num, self.n))
+        S_tmp = np.zeros((num, self.n))
         for i in range(num):
-            S[i, :] = self.s_old + np.minimum(np.maximum(self.bounds_l-self.s_old, direcs[i, :]), self.bounds_u-self.s_old)
-        M = np.absolute(np.dot(phi_function(S), v).flatten())
+            S_tmp[i, :] = self.s_old + np.minimum(np.maximum(self.bounds_l-self.s_old, direcs[i, :]), self.bounds_u-self.s_old)
+        M = np.absolute(np.dot(phi_function(S_tmp), v).flatten())
         indices = np.argsort(M, kind='mergesort')
         for index in reversed(indices):
-            s = S[index,:]
-            if self.S.shape != np.unique(np.vstack((self.S, s)), axis=0).shape:
-                break
-        return s
+            s = S_tmp[index,:]
+            if np.unique(np.vstack((S, s)), axis=0).shape[0] == S.shape[0]+1:
+                return s
+        return S_tmp[indices[0], :]
 
     @staticmethod
     def _remove_point_from_set(S, f, s):
@@ -772,7 +747,8 @@ class Optimisation:
         return S, f
 
     def _remove_points_outside_limits(self):
-        ind_inside = np.where(np.linalg.norm(self.S-self.s_old, axis=1, ord=np.inf) <= max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k))[0]
+        ind_inside = np.where(np.linalg.norm(self.S-self.s_old, axis=1, ord=np.inf) <= max(self.epsilon_1*self.del_k, \
+                self.epsilon_2*self.rho_k))[0]
         S = self.S[ind_inside, :]
         f = self.f[ind_inside]
         return S, f
@@ -836,7 +812,6 @@ class Optimisation:
             Base = Basis('total-order', orders=np.tile([2], self.d))
             self.basis = Base.get_basis()[:,range(self.d-1, -1, -1)]
 
-
     def _finish(self):
         self.S = self._remove_scaling(self.S)
         self._set_iterate()
@@ -882,7 +857,7 @@ class Optimisation:
             step_dist = np.linalg.norm(s_new - self.s_old, ord=np.inf)
             # Safety step implemented in BOBYQA
             if step_dist < omega_s*self.rho_k:
-                self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
+                self._set_del_k(max(gam_dec*self.del_k, self.rho_k))
                 S, f = self._update_geometry_trust_region(S, f)
                 continue
             f_new = self._blackbox_evaluation(s_new)
@@ -939,7 +914,6 @@ class Optimisation:
                 return
         self._calculate_subspace(S_full, f_full)
         S_red, f_red = self._sample_set('new', full_space=False)
-        self.need_new_S_red = False
         for i in range(itermax):
             if self.num_evals >= max_evals or self.rho_k < rho_min:
                 self._finish()
@@ -953,7 +927,8 @@ class Optimisation:
             step_dist = np.linalg.norm(s_new - self.s_old, ord=np.inf)
             # Safety step implemented in BOBYQA
             if step_dist < omega_s*self.rho_k:
-                self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
+                # self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
+                self._set_del_k(max(gam_dec*self.del_k, self.rho_k))
                 S_full, f_full, S_red, f_red = self._update_geometry_omorf(S_full, f_full, S_red, f_red)
                 continue
             f_new = self._blackbox_evaluation(s_new)
@@ -963,7 +938,7 @@ class Optimisation:
             # Calculate trust-region factor
             del_f = self.f_old - f_new
             del_m = np.asscalar(my_poly.get_polyfit(np.dot(self.s_old,self.U))) - m_new
-            if abs(del_f) < 100*np.finfo(float).eps and abs(del_m) < 100*np.finfo(float).eps:
+            if abs(del_m) < 100*np.finfo(float).eps:
                 r_k = 1.0
             else:
                 r_k = del_f / del_m

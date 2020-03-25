@@ -512,11 +512,11 @@ class Optimisation:
             except:
                 pass
         elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) > dist:
-            S_red, f_red  = self._sample_set('new', full_space=False)
+            S_red, f_red  = self._sample_set('improve', S_red, f_red, full_space=False)
         elif self.del_k == self.rho_k:
-            self._set_del_k(self.alpha_2*self.rho_k)
             if self.count >= 3 and r_k < 0:
                 self.count = 0
+                self._set_del_k(self.alpha_2*self.rho_k)
                 if self.rho_k > 250*self.rho_min:
                     self._set_rho_k(self.alpha_1*self.rho_k)
                 elif 16*self.rho_min < self.rho_k < 250*self.rho_min:

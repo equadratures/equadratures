@@ -6,7 +6,7 @@ from equadratures.parameter import Parameter
 from scipy import optimize
 from scipy.linalg import null_space
 import numpy as np
-from scipy.special import comb, factorial
+from scipy.special import factorial
 from scipy.stats import linregress
 import warnings
 warnings.filterwarnings('ignore')
@@ -269,100 +269,134 @@ class Optimisation:
                     options={'disp': False, 'maxiter': 10000})
             sol = {'x': sol['x'], 'fun': sol['fun'], 'nfev': self.num_evals, 'status': sol['status']}
         elif self.method in ['trust-region']:
-            x_opt, f_opt = self._trust_region(x0, del_k=kwargs.get('del_k', None), del_min=kwargs.get('delmin', 1.0e-8), \
-                    eta1=kwargs.get('eta1', 0.0), eta2=kwargs.get('eta2', 0.7), gam1=kwargs.get('gam1', 0.5), \
-                    gam2=kwargs.get('gam2', 2.0), omega_s=kwargs.get('omega_s', 0.5), max_evals=kwargs.get('max_evals', 10000), \
-                    random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', True), \
-                    epsilon=kwargs.get('epsilon', 1.05))
-            sol = {'x': x_opt, 'fun': f_opt, 'nfev': self.num_evals}
+            self._trust_region(x0, del_k=kwargs.get('del_k', None), rho_min=kwargs.get('rho_min', 1.0e-6), \
+                    eta_1=kwargs.get('eta_1', 0.1), eta_2=kwargs.get('eta_2', 0.7), \
+                    gam_dec=kwargs.get('gam_dec', 0.5), gam_inc=kwargs.get('gam_inc', 2.0), \
+                    gam_inc_overline=kwargs.get('gam_inc_overline', 2.5), alpha_1=kwargs.get('alpha_1', 0.1), \
+                    alpha_2=kwargs.get('alpha_2', 0.5), omega_s=kwargs.get('omega_s', 0.5),  \
+                    max_evals=kwargs.get('max_evals', 10000), random_initial=kwargs.get('random_initial', False), \
+                    scale_bounds=kwargs.get('scale_bounds', False))
+            sol = {'x': self.s_old, 'fun': self.f_old, 'nfev': self.num_evals}
         elif self.method in ['omorf']:
-            x_opt, f_opt = self._omorf(x0, del_k=kwargs.get('del_k', None), del_min=kwargs.get('delmin', 1.0e-8), \
-                    eta1=kwargs.get('eta1', 0.1), eta2=kwargs.get('eta2', 0.7), gam1=kwargs.get('gam1', 0.5), \
-                    gam2=kwargs.get('gam2', 2.0), omega_s=kwargs.get('omega_s', 0.5), max_evals=kwargs.get('max_evals', 10000), \
-                    random_initial=kwargs.get('random_initial', False), scale_bounds=kwargs.get('scale_bounds', True), \
-                    epsilon=kwargs.get('epsilon', 1.05), d=kwargs.get('d', 2), \
-                    subspace_method=kwargs.get('subspace_method', 'variable-projection'))
-            sol = {'x': x_opt, 'fun': f_opt, 'nfev': self.num_evals}
+            self._omorf(x0, d=kwargs.get('d', 1), subspace_method=kwargs.get('subspace_method', 'active-subspaces'), \
+                    del_k=kwargs.get('del_k', None), rho_min=kwargs.get('rho_min', 1.0e-8), eta_1=kwargs.get('eta_1', 0.1), \
+                    eta_2=kwargs.get('eta_2', 0.7), gam_dec=kwargs.get('gam_dec', 0.98), gam_inc=kwargs.get('gam_inc', 2.0), \
+                    gam_inc_overline=kwargs.get('gam_inc_overline', 2.5), alpha_1=kwargs.get('alpha_1', 0.9), \
+                    alpha_2=kwargs.get('alpha_2', 0.95), omega_s=kwargs.get('omega_s', 0.5), \
+                    max_evals=kwargs.get('max_evals', 1000), random_initial=kwargs.get('random_initial', False), \
+                    scale_bounds=kwargs.get('scale_bounds', False))
+            sol = {'x': self.s_old, 'fun': self.f_old, 'nfev': self.num_evals}
         else:
-            sol = optimize.minimize(self.objective['function'], x0, method=self.method, bounds = self.bounds, \
-                    constraints=self.constraints, options={'disp': False, 'maxiter': 10000})
+            sol = optimize.minimize(self.objective['function'], x0, method=self.method, bounds=self.bounds, \
+                    constraints=self.constraints, options={'disp': False, 'maxiter': 10000})    
             sol = {'x': sol['x'], 'fun': sol['fun'], 'nfev': self.num_evals, 'status': sol['status']}
         if self.maximise:
             sol['fun'] *= -1.0
         return sol
     
+    def _set_iterate(self):
+        ind_min = np.argmin(self.f)
+        self.s_old = self.S[ind_min,:]
+        self.f_old = np.asscalar(self.f[ind_min])
+        self._update_bounds()
+
+    def _set_del_k(self, value):
+        self.del_k = value
+        self._update_bounds()
+
+    def _set_rho_k(self, value):
+        self.rho_k = value
+
+    def _set_unsuccessful_iterate_counter(self, count):
+        self.count = count
+
+    def _set_ratio(self, r_k):
+        self.r_k = r_k
+    
     def _calculate_subspace(self, S, f):
-        parameters = [Parameter(distribution='uniform', lower=np.min(S[:,i]), upper=np.max(S[:,i]), order=1) for i in range(0, self.n)]
-        self.poly = Poly(parameters, basis=Basis('total-order'), method='least-squares', \
-                     sampling_args={'sample-points': S, 'sample-outputs': f})
-        self.poly.set_model()
-        self.Subs = Subspaces(full_space_poly=self.poly, method='active-subspace', subspace_dimension=self.d)
+        parameters = [Parameter(distribution='uniform', lower=self.bounds_l[i], \
+                upper=self.bounds_u[i], order=1) for i in range(0, self.n)]
+        poly = Poly(parameters, basis=Basis('total-order'), method='least-squares', \
+                sampling_args={'sample-points': S, 'sample-outputs': f})
+        poly.set_model()
+        Subs = Subspaces(full_space_poly=poly, method='active-subspace', subspace_dimension=self.d)
+        U0 = Subs.get_subspace()[:,0].reshape(-1,1)
+        U1 = Subs.get_subspace()[:,1:]
+        for i in range(self.d-1):
+            R = []
+            for j in range(U1.shape[1]):
+                U = np.hstack((U0, U1[:, j].reshape(-1,1)))
+                Y = np.dot(S, U)
+                myParameters = [Parameter(distribution='uniform', lower=np.min(Y[:,k]), upper=np.max(Y[:,k]), \
+                        order=2) for k in range(Y.shape[1])]
+                myBasis = Basis('total-order')
+                poly = Poly(myParameters, myBasis, method='least-squares', \
+                        sampling_args={'sample-points':Y, 'sample-outputs':f})
+                poly.set_model()
+                _,_,r,_,_ = linregress(poly.get_polyfit(Y).flatten(),f.flatten()) 
+                R.append(r**2)
+            index = np.argmax(R)
+            U0 = np.hstack((U0, U1[:, index].reshape(-1,1)))
+            U1 = np.delete(U1, index, 1)
         if self.subspace_method == 'variable-projection':
-            U0 = self.Subs.get_subspace()[:,:self.d]
-            self.Subs = Subspaces(method='variable-projection', sample_points=S, sample_outputs=f, \
-                    subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2, max_iter=300, tol=1.0e-8)
-            self.U = self.Subs.get_subspace()[:, :self.d]
+            Subs = Subspaces(method='variable-projection', sample_points=S, sample_outputs=f, \
+                    subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2, tol=1.0e-5, max_iter=2*self.d*self.n)
+            self.U = Subs.get_subspace()[:, :self.d]
         elif self.subspace_method == 'active-subspaces':
-            U0 = self.Subs.get_subspace()[:,1].reshape(-1,1)
-            U1 = null_space(U0.T)
             self.U = U0
-            for i in range(self.d-1):
-                R = []
-                for j in range(U1.shape[1]):
-                    U = np.hstack((self.U, U1[:, j].reshape(-1,1)))
-                    Y = np.dot(S, U)
-                    myParameters = [Parameter(distribution='uniform', lower=np.min(Y[:,k]), upper=np.max(Y[:,k]), \
-                            order=2) for k in range(Y.shape[1])]
-                    myBasis = Basis('total-order')
-                    poly = Poly(myParameters, myBasis, method='least-squares', \
-                            sampling_args={'sample-points':Y, 'sample-outputs':f})
-                    poly.set_model()
-                    f_eval = poly.get_polyfit(Y)
-                    _,_,r,_,_ = linregress(f_eval.flatten(),f.flatten()) 
-                    R.append(r**2)
-                index = np.argmax(R)
-                self.U = np.hstack((self.U, U1[:, index].reshape(-1,1)))
-                U1 = np.delete(U1, index, 1)
 
     def _blackbox_evaluation(self, s):
         """
         Evaluates the point s for ``trust-region`` or ``omorf`` methods
         """
         s = s.reshape(1,-1)
-        f = np.array([[self.objective['function'](self._remove_scaling(s.flatten()))]])
-        self.num_evals += 1
-        if self.f.size == 0:
-            self.S = s
-            self.f = f
+        if self.S.size > 0 and np.unique(np.vstack((self.S, s)), axis=0).shape[0] == self.S.shape[0]:
+            ind_repeat = np.argmin(np.linalg.norm(self.S - s, ord=np.inf, axis=1))
+            f = self.f[ind_repeat]
         else:
-            self.S = np.vstack((self.S, s))
-            self.f = np.vstack((self.f, f))
+            f = np.array([[self.objective['function'](self._remove_scaling(s.flatten()))]])
+            self.num_evals += 1
+            if self.f.size == 0:
+                self.S = s
+                self.f = f
+            else:
+                self.S = np.vstack((self.S, s))
+                self.f = np.vstack((self.f, f))
         return np.asscalar(f)
 
-    def _generate_initial_set(self):
+    def _update_bounds(self):
+        if self.bounds is not None:
+            if self.scale_bounds:
+                self.bounds_l = np.maximum(np.zeros(self.n), self.s_old-self.del_k)
+                self.bounds_u = np.minimum(np.ones(self.n), self.s_old+self.del_k)
+            else:
+                self.bounds_l = np.maximum(self.bounds[0], self.s_old-self.del_k)
+                self.bounds_u = np.minimum(self.bounds[1], self.s_old+self.del_k)
+        else:
+            self.bounds_l = self.s_old-self.del_k
+            self.bounds_u = self.s_old+self.del_k
+        return None
+
+    def _generate_set(self, num):
         """
         Generates an initial set of samples using either coordinate directions or orthogonal, random directions
         """
         if self.random_initial:
-            direcs = self._initial_random_directions(self.p, self.bounds_l-self.s_old, self.bounds_u-self.s_old)
+            direcs = self._random_directions(num, self.bounds_l-self.s_old, self.bounds_u-self.s_old)
         else:
-            direcs = self._initial_coordinate_directions(self.p, self.bounds_l-self.s_old, self.bounds_u-self.s_old)
-        S = np.zeros((self.p, self.n))
-        f = np.zeros((self.p, 1))
+            direcs = self._coordinate_directions(num, self.bounds_l-self.s_old, self.bounds_u-self.s_old)
+        S = np.zeros((num, self.n))
         S[0, :] = self.s_old
-        f[0, :] = self.f_old
-        for i in range(1, self.p):
-            del_s = np.minimum(np.maximum(self.bounds_l-self.s_old, direcs[i, :]), self.bounds_u-self.s_old)
-            S[i, :] = self.s_old + del_s
-            f[i, :] = self._blackbox_evaluation(self.s_old+del_s)
-        return S, f
+        for i in range(1, num):
+            S[i, :] = self.s_old + np.minimum(np.maximum(self.bounds_l-self.s_old, direcs[i, :]), self.bounds_u-self.s_old)
+        return S
 
-    def _initial_coordinate_directions(self, num_pnts, lower, upper):
+    def _coordinate_directions(self, num_pnts, lower, upper):
         """
         Generates coordinate directions
         """
-        at_lower_boundary = (lower > -0.01 * self.del_k)
-        at_upper_boundary = (upper < 0.01 * self.del_k)
+        at_lower_boundary = (lower > -1.e-8 * self.del_k)
+        at_upper_boundary = (upper < 1.e-8 * self.del_k)
         direcs = np.zeros((num_pnts, self.n))
         for i in range(1, num_pnts):
             if 1 <= i < self.n + 1:
@@ -387,7 +421,7 @@ class Optimisation:
                 direcs[i, q-1] = direcs[q, q-1]
         return direcs
 
-    def _initial_random_directions(self, num_pnts, lower, upper):
+    def _random_directions(self, num_pnts, lower, upper):
         """
         Generates orthogonal, random directions
         """
@@ -412,7 +446,7 @@ class Optimisation:
         for i in range(nactive):
             idx = idx_active[i]
             direcs[idx, ninactive+i] = 1.0 if idx_l[idx] else -1.0
-            direcs[:, ninactive+i] = get_scale(direcs[:, ninactive+i], self.del_k, lower, upper) * direcs[:, ninactive+i]
+            direcs[:, ninactive+i] = self._get_scale(direcs[:, ninactive+i], self.del_k, lower, upper) * direcs[:, ninactive+i]
             sign = 1.0 if idx_l[idx] else -1.0
             if upper[idx] - lower[idx] > self.del_k:
                 direcs[idx, self.n+ninactive+i] = 2.0*sign*self.del_k
@@ -440,45 +474,6 @@ class Optimisation:
             elif dirn[j] > 0.0:
                 scale = min(scale, upper[j] / dirn[j])
         return scale
-        
-    @staticmethod
-    def _remove_point_from_set(S, f, s):
-        ind_current = np.where(np.linalg.norm(S-s, axis=1, ord=np.inf) == 0.0)[0]
-        S = np.delete(S, ind_current, 0)
-        f = np.delete(f, ind_current, 0)
-        return S, f
-
-    def _choose_closest_points(self, n):
-        ind_closest = np.argsort(np.linalg.norm(self.S-self.s_old, axis=1, ord=np.inf))[:n]
-        S = self.S[ind_closest,:]
-        f = self.f[ind_closest]
-        return S, f
-
-    def _remove_furthest_point(self, S, f):
-        ind_distant = np.argmax(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf))
-        S = np.delete(S, ind_distant, 0)
-        f = np.delete(f, ind_distant, 0)
-        return S, f
-
-    def _remove_points_outside_radius(self, S, f, radius):
-        ind_inside = np.where(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf) < radius)[0]
-        S = S[ind_inside,:]
-        f = f[ind_inside]
-        return S, f
-
-    def _update_bounds(self):
-        if self.bounds is not None:
-            if self.scale_bounds:
-                self.bounds_l = np.maximum(np.zeros(self.n), self.s_old-self.del_k)
-                self.bounds_u = np.minimum(np.ones(self.n), self.s_old+self.del_k)
-            else:
-                self.bounds_l = np.maximum(self.bounds[0], self.s_old-self.del_k)
-                self.bounds_u = np.minimum(self.bounds[1], self.s_old+self.del_k)
-        else:
-            self.bounds_l = self.s_old-self.del_k
-            self.bounds_u = self.s_old+self.del_k
-        self.s_c = 0.5 * (self.bounds_l + self.bounds_u)
-        return None
 
     def _apply_scaling(self, S):
         if self.bounds is not None and self.scale_bounds:
@@ -495,41 +490,92 @@ class Optimisation:
             return shift + np.multiply(S, scale)
         else:
             return S
+
+    def _update_geometry_trust_region(self, S, f):
+        if max(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k):
+            S, f = self._sample_set('improve', S, f)
+        elif self.del_k == self.rho_k:
+            self._set_del_k(self.alpha_2*self.rho_k)
+            if self.count >= 3 and self.r_k < 0:
+                if self.rho_k >= 250*self.rho_min:
+                    self._set_rho_k(self.alpha_1*self.rho_k)
+                elif 16*self.rho_min < self.rho_k < 250*self.rho_min:
+                    self._set_rho_k(np.sqrt(self.rho_k*self.rho_min))
+                else:
+                    self._set_rho_k(self.rho_min)
+        return S, f
+
+    def _update_geometry_omorf(self, S_full, f_full, S_red, f_red):
+        dist = max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k)
+        if max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) > dist:
+            S_full, f_full = self._sample_set('improve', S_full, f_full)
+            try:
+                self._calculate_subspace(S_full, f_full)
+            except:
+                pass
+        elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) > dist:
+            S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
+        elif self.del_k == self.rho_k:
+            self._set_del_k(self.alpha_2*self.rho_k)
+            if self.count >= 3 and self.r_k < 0:
+                if self.rho_k >= 250*self.rho_min:
+                    self._set_rho_k(self.alpha_1*self.rho_k)
+                elif 16*self.rho_min < self.rho_k < 250*self.rho_min:
+                    self._set_rho_k(np.sqrt(self.rho_k*self.rho_min))
+                else:
+                    self._set_rho_k(self.rho_min)
+        return S_full, f_full, S_red, f_red
     
-    def _sample_set(self, method, S=None, f=None, full_space=False):
+    def _sample_set(self, method, S=None, f=None, s_new=None, f_new=None, full_space=True):
         if full_space:
             q = self.p
         else:
             q = self.q
+        dist = max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k)
         if method == 'replace':
-            S, f = self._remove_furthest_point(S, f)
-        elif method == 'improve':
-            S_hat = np.copy(S) 
-            f_hat = np.copy(f)
-            S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, self.s_old)
-            S_hat, f_hat = self._remove_furthest_point(S_hat, f_hat)
-            S = np.zeros((q, self.n))
-            f = np.zeros((q, 1))
-            S[0, :] = self.s_old
-            f[0, :] = self.f_old
-            S, f = self._LU_pivoting(S, f, S_hat, f_hat, full_space, 'improve')
-        elif method == 'new':
-            S_hat, f_hat = self._remove_points_outside_radius(self.S, self.f, self.epsilon*self.del_k)
+            S_hat = np.vstack((S, s_new))
+            f_hat = np.vstack((f, f_new))
+            if S_hat.shape != np.unique(S_hat, axis=0).shape:
+                S_hat, indices = np.unique(S_hat, axis=0, return_index=True)
+                f_hat = f_hat[indices]
+            elif f_hat.size > q and max(np.linalg.norm(S_hat-self.s_old, axis=1, ord=np.inf)) > dist:
+                S_hat, f_hat = self._remove_furthest_point(S_hat, f_hat, self.s_old)
             S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, self.s_old)
             S = np.zeros((q, self.n))
             f = np.zeros((q, 1))
             S[0, :] = self.s_old
             f[0, :] = self.f_old
             S, f = self._LU_pivoting(S, f, S_hat, f_hat, full_space)
+        elif method == 'improve':
+            S_hat = np.copy(S)
+            f_hat = np.copy(f)
+            if max(np.linalg.norm(S_hat-self.s_old, axis=1, ord=np.inf)) > dist:
+                S_hat, f_hat = self._remove_furthest_point(S_hat, f_hat, self.s_old)
+            S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, self.s_old)
+            S = np.zeros((q, self.n))
+            f = np.zeros((q, 1))
+            S[0, :] = self.s_old
+            f[0, :] = self.f_old
+            S, f = self._LU_pivoting(S, f, S_hat, f_hat, full_space, 'improve')
+        elif method == 'new':
+            S_hat = f_hat = np.array([])
+            S = np.zeros((q, self.n))
+            f = np.zeros((q, 1))
+            S[0, :] = self.s_old
+            f[0, :] = self.f_old
+            S, f = self._LU_pivoting(S, f, S_hat, f_hat, full_space, 'new')
         return S, f
     
     def _LU_pivoting(self, S, f, S_hat, f_hat, full_space, method=None):
+        psi_1 = 1.0e-4
+        if self.method == 'omorf' and full_space:
+            psi_2 = 1.0
+        else:
+            psi_2 = 0.25
         phi_function, phi_function_deriv = self._get_phi_function_and_derivative(S_hat, full_space)
         if full_space:
-            psi = 1.0
             q = self.p
         else:
-            psi = 0.25
             q = self.q
 #       Initialise U matrix of LU factorisation of M matrix (see Conn et al.)
         U = np.zeros((q,q))
@@ -544,14 +590,14 @@ class Optimisation:
 #           If there are still points to choose from, find if points meet criterion. If so, use the index to choose 
 #           point with given index to be next point in regression/interpolation set
             if f_hat.size > 0:
-                M = np.absolute(np.array([np.dot(phi_function(S_hat),v)]).flatten())
+                M = np.absolute(np.dot(phi_function(S_hat),v).flatten())
                 index = np.argmax(M)
-                if M[index] < 1.0e-4:
+                if M[index] < psi_1:
                     flag = False
-                elif method == 'improve':
-                    if k == q - 1:
-                        if M[index] < psi:
-                            flag = False
+                elif method == 'improve' and (k == q - 1 and M[index] < psi_2):
+                    flag = False
+                elif method == 'new' and M[index] < psi_2:
+                    flag = False
             else:
                 flag = False
 #           If index exists, choose the point with that index and delete it from possible choices
@@ -563,38 +609,21 @@ class Optimisation:
                 f_hat = np.delete(f_hat, index, 0)
 #           If index doesn't exist, solve an optimisation problem to find the point in the range which best satisfies criterion
             else:
-                s = self._find_new_point(v, phi_function, phi_function_deriv, full_space)
-                if f_hat.size > 0:
-                    if M[index] >= abs(np.dot(v, phi_function(s))):
-                        s = S_hat[index,:]
-                        S[k, :] = s
-                        f[k, :] = f_hat[index]
-                        S_hat = np.delete(S_hat, index, 0)
-                        f_hat = np.delete(f_hat, index, 0)
-                    elif self.S.shape == np.unique(np.vstack((self.S, s)), axis=0).shape:
-                        rand = np.random.normal(size=self.n)
-                        s = np.minimum(np.maximum(self.bounds_l, self.s_old + self.del_k*rand/np.linalg.norm(rand)), self.bounds_u)
-                        if M[index] >= abs(np.dot(v, phi_function(s))):
-                            s = S_hat[index,:]
-                            S[k, :] = s
-                            f[k, :] = f_hat[index]
-                            S_hat = np.delete(S_hat, index, 0)
-                            f_hat = np.delete(f_hat, index, 0)
-                        else:
-                            S[k, :] = s
-                            f[k, :] = self._blackbox_evaluation(s)
-                    else:
-                        S[k, :] = s
-                        f[k, :] = self._blackbox_evaluation(s)
+                try:
+                    s = self._find_new_point(v, phi_function, phi_function_deriv, full_space)
+                    if np.unique(np.vstack((S[:k, :], s)), axis=0).shape[0] != k+1:
+                        s = self._find_new_point_alternative(v, phi_function, S[:k, :])
+                except:
+                    s = self._find_new_point_alternative(v, phi_function, S[:k, :])
+                if f_hat.size > 0 and M[index] >= abs(np.dot(v, phi_function(s))):
+                    s = S_hat[index,:]
+                    S[k, :] = s
+                    f[k, :] = f_hat[index]
+                    S_hat = np.delete(S_hat, index, 0)
+                    f_hat = np.delete(f_hat, index, 0)
                 else:
-                    if self.S.shape == np.unique(np.vstack((self.S, s)), axis=0).shape:
-                        rand = np.random.normal(size=self.n)
-                        s = np.minimum(np.maximum(self.bounds_l, self.s_old + self.del_k*rand/np.linalg.norm(rand)), self.bounds_u)
-                        S[k, :] = s
-                        f[k, :] = self._blackbox_evaluation(s)
-                    else:
-                        S[k, :] = s
-                        f[k, :] = self._blackbox_evaluation(s)
+                    S[k, :] = s
+                    f[k, :] = self._blackbox_evaluation(s)
 #           Update U factorisation in LU algorithm
             phi = phi_function(s)
             U[k,k] = np.dot(v, phi)
@@ -605,10 +634,12 @@ class Optimisation:
         return S, f
 
     def _get_phi_function_and_derivative(self, S_hat, full_space):
+        Del_S = self.del_k
         if self.method == 'trust-region':
-            Del_S = np.maximum(self.del_k, np.linalg.norm(S_hat-self.s_c, axis=0))
+            if S_hat.size > 0:
+                Del_S = max(np.linalg.norm(S_hat-self.s_old, axis=1, ord=np.inf))
             def phi_function(s):
-                s_tilde = np.divide((s - self.s_c), Del_S)
+                s_tilde = np.divide((s - self.s_old), Del_S)
                 try:
                     m,n = s_tilde.shape
                 except:
@@ -622,19 +653,21 @@ class Optimisation:
                 else:
                     return phi
             def phi_function_deriv(s):
-                s_tilde = np.divide((s - self.s_c), Del_S)
+                s_tilde = np.divide((s - self.s_old), Del_S)
                 phi_deriv = np.zeros((self.n, self.q))
                 for i in range(self.n):
                     for k in range(1, self.q):
                         if self.basis[k, i] != 0.0:
                             tmp = np.zeros(self.n)
                             tmp[i] = 1
-                            phi_deriv[i,k] = self.basis[k, i] * np.prod(np.divide(np.power(s_tilde, self.basis[k,:]-tmp), factorial(self.basis[k,:])))
+                            phi_deriv[i,k] = self.basis[k, i] * np.prod(np.divide(np.power(s_tilde, self.basis[k,:]-tmp), \
+                                    factorial(self.basis[k,:])))
                 return np.divide(phi_deriv.T, Del_S).T
         elif self.method == 'omorf' and full_space:
-            Del_S = np.maximum(self.del_k, np.linalg.norm(S_hat-self.s_c, axis=0))
+            if S_hat.size > 0:
+                Del_S = max(np.linalg.norm(S_hat-self.s_old, axis=1, ord=np.inf))
             def phi_function(s):
-                s_tilde = np.divide((s - self.s_c), Del_S)
+                s_tilde = np.divide((s - self.s_old), Del_S)
                 try:
                     m,n = s_tilde.shape
                 except:
@@ -649,9 +682,10 @@ class Optimisation:
                     return phi
             phi_function_deriv = None
         elif self.method == 'omorf':
-            Del_S = np.linalg.norm(np.dot(S_hat-self.s_c,self.U), axis=0)
+            if S_hat.size > 0:
+                Del_S = max(np.linalg.norm(np.dot(S_hat-self.s_old,self.U), axis=1))
             def phi_function(s):
-                u = np.divide(np.dot((s - self.s_c), self.U), Del_S)
+                u = np.divide(np.dot((s - self.s_old), self.U), Del_S)
                 try:
                     m,n = u.shape
                 except:
@@ -665,24 +699,24 @@ class Optimisation:
                 else:
                     return phi
             def phi_function_deriv(s):
-                u = np.divide(np.dot((s - self.s_c), self.U), Del_S)
+                u = np.divide(np.dot((s - self.s_old), self.U), Del_S)
                 phi_deriv = np.zeros((self.d, self.q))
                 for i in range(self.d):
                     for k in range(1, self.q):
                         if self.basis[k, i] != 0.0:
                             tmp = np.zeros(self.d)
                             tmp[i] = 1
-                            phi_deriv[i,k] = self.basis[k, i] * np.prod(np.divide(np.power(u, self.basis[k,:]-tmp), factorial(self.basis[k,:])))
+                            phi_deriv[i,k] = self.basis[k, i] * np.prod(np.divide(np.power(u, self.basis[k,:]-tmp), \
+                                    factorial(self.basis[k,:])))
                 phi_deriv = np.divide(phi_deriv.T, Del_S).T
                 return np.dot(self.U, phi_deriv)
         return phi_function, phi_function_deriv
-
     
     def _find_new_point(self, v, phi_function, phi_function_deriv, full_space=False):
         bounds = []
         for i in range(self.n):
             bounds.append((self.bounds_l[i], self.bounds_u[i])) 
-        if full_space:
+        if self.method == 'omorf' and full_space:
             c = v[1:]
             res1 = optimize.linprog(c, bounds=bounds)
             res2 = optimize.linprog(-c, bounds=bounds)
@@ -705,13 +739,44 @@ class Optimisation:
                 s = res2['x']
         return s
 
+    def _find_new_point_alternative(self, v, phi_function, S):
+        S_tmp = self._generate_set(int(0.5*(self.n+1)*(self.n+2)))
+        M = np.absolute(np.dot(phi_function(S_tmp), v).flatten())
+        indices = np.argsort(M)[::-1][:len(M)]
+        for index in indices:
+            s = S_tmp[index,:]
+            if np.unique(np.vstack((S, s)), axis=0).shape[0] == S.shape[0]+1:
+                return s
+        return S_tmp[indices[0], :]
+
+    @staticmethod
+    def _remove_point_from_set(S, f, s):
+        ind_current = np.where(np.linalg.norm(S-s, axis=1, ord=np.inf) == 0.0)[0]
+        S = np.delete(S, ind_current, 0)
+        f = np.delete(f, ind_current, 0)
+        return S, f
+
+    @staticmethod
+    def _remove_furthest_point(S, f, s):
+        ind_distant = np.argmax(np.linalg.norm(S-s, axis=1, ord=np.inf))
+        S = np.delete(S, ind_distant, 0)
+        f = np.delete(f, ind_distant, 0)
+        return S, f
+
+    def _remove_points_outside_limits(self):
+        ind_inside = np.where(np.linalg.norm(self.S-self.s_old, axis=1, ord=np.inf) <= max(self.epsilon_1*self.del_k, \
+                self.epsilon_2*self.rho_k))[0]
+        S = self.S[ind_inside, :]
+        f = self.f[ind_inside]
+        return S, f
+
     def _build_model(self, S, f):
         """
         Constructs quadratic model for ``trust-region`` or ``omorf`` methods
         """
         if self.method == 'trust-region':
-            myParameters = [Parameter(distribution='uniform', lower=np.min(S[:,i]), \
-                    upper=np.max(S[:,i]), order=2) for i in range(self.n)]
+            myParameters = [Parameter(distribution='uniform', lower=self.bounds_l[i], \
+                    upper=self.bounds_u[i], order=2) for i in range(self.n)]
             myBasis = Basis('total-order')
             my_poly = Poly(myParameters, myBasis, method='least-squares', \
                     sampling_args={'sample-points':S, 'sample-outputs':f})
@@ -742,173 +807,166 @@ class Optimisation:
         s_new = res.x
         m_new = res.fun
         return s_new, m_new
-    
-    def _choose_best(self, S, f):
-        ind_min = np.argmin(f)
-        self.s_old = S[ind_min,:]
-        self.f_old = np.asscalar(f[ind_min])
-        return None
 
-    def _trust_region(self, s_old, del_k, del_min, eta1, eta2, gam1, gam2, omega_s, max_evals, random_initial, scale_bounds, epsilon):
+    def _start(self, s_old, del_k, rho_min, random_initial, scale_bounds, alpha_1, alpha_2, d=None, subspace_method=None):
+        self.n = s_old.size
+        self.random_initial = random_initial
+        self.scale_bounds = scale_bounds
+        self.epsilon_1 = 2.0
+        self.epsilon_2 = 10.0
+        self.alpha_1 = alpha_1
+        self.alpha_2 = alpha_2
+        self.rho_min = rho_min
+        if self.method == 'trust-region':
+            self.q = int(0.5*(self.n+1)*(self.n+2))
+            self.p = int(0.5*(self.n+1)*(self.n+2))
+            Base = Basis('total-order', orders=np.tile([2], self.n))
+            self.basis = Base.get_basis()[:,range(self.n-1, -1, -1)]
+        elif self.method == 'omorf':
+            self.d = d
+            self.subspace_method = subspace_method
+            self.q = int(0.5*(self.d+1)*(self.d+2))
+            self.p = self.n+1
+            Base = Basis('total-order', orders=np.tile([2], self.d))
+            self.basis = Base.get_basis()[:,range(self.d-1, -1, -1)]
+        self.s_old = self._apply_scaling(s_old)
+        self.f_old = self._blackbox_evaluation(self.s_old)
+        if del_k is None:
+            if self.bounds is None:
+                self._set_del_k(max(0.1*np.linalg.norm(self.s_old, ord=np.inf), 1.0))
+            elif self.scale_bounds:
+                self._set_del_k(0.1)
+            else:
+                self._set_del_k(min(0.1*np.linalg.norm(self.bounds[1]-self.bounds[0], ord=np.inf), 1.0))
+        else:
+            self._set_del_k(del_k)
+        self._set_unsuccessful_iterate_counter(0)
+        self._set_rho_k(self.del_k)
+
+    def _finish(self):
+        self.S = self._remove_scaling(self.S)
+        self._set_iterate()
+
+    def _trust_region(self, s_old, del_k, rho_min, eta_1, eta_2, gam_dec, gam_inc, gam_inc_overline, alpha_1, alpha_2, \
+            omega_s, max_evals, random_initial, scale_bounds):
         """
         Computes optimum using the ``trust-region`` method
         """
         itermax = 10000
-        self.n = s_old.size
-        self.q = int(comb(self.n+2, 2))
-        self.p = int(comb(self.n+2, 2))
-        self.random_initial = random_initial
-        self.scale_bounds = scale_bounds
-        self.epsilon = epsilon
-        Base = Basis('total-order', orders=np.tile([2], self.n))
-        self.basis = Base.get_basis()[:,range(self.n-1, -1, -1)]
-
-        self.s_old = self._apply_scaling(s_old)
-        self.f_old = self._blackbox_evaluation(self.s_old)
-        if del_k is None:
-            if self.bounds is None:
-                self.del_k = 0.1*max(np.linalg.norm(self.s_old, ord=np.inf), 1.0)
-            else:
-                self.del_k = 0.1
-        else:
-            self.del_k = del_k
-        self._update_bounds()
+        self._start(s_old, del_k, rho_min, random_initial, scale_bounds, alpha_1, alpha_2)
 
         # Construct the sample set
-        S, f = self._generate_initial_set()
+        S = self._generate_set(self.p)
+        f = np.zeros((self.p, 1))
+        f[0, :] = self.f_old
+        for i in range(1, self.p):
+            f[i, :] = self._blackbox_evaluation(S[i, :])
+            if self.num_evals >= max_evals:
+                self._finish()
+                return
         for i in range(itermax):
-            # print(self.s_old)
-            # print('-------------')
-            self._update_bounds()
-            if len(self.f) >= max_evals or self.del_k < del_min:
+            if self.num_evals >= max_evals or self.rho_k <= rho_min:
                 break
-            my_poly = self._build_model(S, f)
-            m_old = np.asscalar(my_poly.get_polyfit(self.s_old))
-            s_new, m_new = self._compute_step(my_poly)
-            # Safety step implemented in BOBYQA
-            if np.linalg.norm(s_new - self.s_old, ord=np.inf) < omega_s*self.del_k:
+            try:
+                my_poly = self._build_model(S, f)
+            except:
                 S, f = self._sample_set('improve', S, f)
-                if max(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf)) <= self.epsilon*self.del_k:
-                    self.del_k *= gam1
                 continue
-            elif self.S.shape == np.unique(np.vstack((self.S, s_new)), axis=0).shape:
-                ind_repeat = np.argmin(np.linalg.norm(self.S - s_new, ord=np.inf, axis=1))
-                f_new = self.f[ind_repeat]
-            else:
-                f_new = self._blackbox_evaluation(s_new)
-            S = np.vstack((S, s_new))
-            f = np.vstack((f, f_new))
+            s_new, m_new = self._compute_step(my_poly)
+            step_dist = np.linalg.norm(s_new - self.s_old, ord=np.inf)
+            # Safety step implemented in BOBYQA
+            if step_dist < omega_s*self.rho_k:
+                self._set_ratio(-0.1)
+                self._set_unsuccessful_iterate_counter(3)
+                self._set_del_k(max(gam_dec*self.del_k, self.rho_k))
+                S, f = self._update_geometry_trust_region(S, f)
+                continue
+            f_new = self._blackbox_evaluation(s_new)
+            if self.num_evals >= max_evals or self.rho_k <= self.rho_min:
+                self._finish()
+                return
+            S, f = self._sample_set('replace', S, f, s_new, f_new)
             # Calculate trust-region factor
-            rho_k = (self.f_old - f_new) / (m_old - m_new)
-            self._choose_best(self.S, self.f)
-            self._update_bounds()
-            if len(self.f) >= max_evals or self.del_k < del_min:
-                break
-            if rho_k >= eta2:
-                S, f = self._sample_set('replace', S, f)
-                self.del_k *= gam2
-            elif rho_k >= eta1:
-                S, f = self._sample_set('replace', S, f)
+            del_f = self.f_old - f_new
+            del_m = np.asscalar(my_poly.get_polyfit(self.s_old)) - m_new
+            if abs(del_m) < 100*np.finfo(float).eps:
+                self._set_ratio(1.0)
             else:
-                if max(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf)) <= self.epsilon*self.del_k:
-                    S, f = self._sample_set('improve', S, f)
-                    self.del_k *= gam1
-                else:
-                    S, f = self._sample_set('improve', S, f)
-        self.S = self._remove_scaling(self.S)
-        self._choose_best(self.S, self.f)
-        return self.s_old, self.f_old
+                self._set_ratio(del_f / del_m)
+            self._set_iterate()
+            if self.r_k >= eta_2:
+                self._set_unsuccessful_iterate_counter(0)
+                self._set_del_k(max(gam_inc*self.del_k, gam_inc_overline*step_dist))
+            elif self.r_k >= eta_1:
+                self._set_unsuccessful_iterate_counter(0)
+                self._set_del_k(max(gam_dec*self.del_k, step_dist, self.rho_k))
+            else:
+                self._set_unsuccessful_iterate_counter(self.count+1)
+                self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
+                S, f = self._update_geometry_trust_region(S, f)
+        self._finish()
+        return
 
-
-    def _omorf(self, s_old, del_k, del_min, eta1, eta2, gam1, gam2, omega_s, max_evals, random_initial, scale_bounds, epsilon, d, subspace_method):
+    def _omorf(self, s_old, d, subspace_method, del_k, rho_min, eta_1, eta_2, gam_dec, gam_inc, gam_inc_overline, \
+            alpha_1, alpha_2, omega_s, max_evals, random_initial, scale_bounds):
         """
         Computes optimum using the ``omorf`` method
         """
         itermax = 10000
-        self.n = s_old.size
-        self.d = d
-        self.q = int(comb(self.d+2, 2))
-        self.p = self.n + 1
-        self.random_initial = random_initial
-        self.scale_bounds = scale_bounds
-        self.subspace_method = subspace_method
-        self.epsilon = epsilon
-        Base = Basis('total-order', orders=np.tile([2], self.d))
-        self.basis = Base.get_basis()[:,range(self.d-1, -1, -1)]
-
-        self.s_old = self._apply_scaling(s_old)
-        self.f_old = self._blackbox_evaluation(self.s_old)
-        if del_k is None:
-            if self.bounds is None:
-                self.del_k = 0.1*max(np.linalg.norm(self.s_old, ord=np.inf), 1.0)
-            else:
-                self.del_k = 0.1
-        else:
-            self.del_k = del_k
-        self._update_bounds()
+        self._start(s_old, del_k, rho_min, random_initial, scale_bounds, alpha_1, alpha_2, d, subspace_method)
 
         # Construct the sample set
-        S_full, f_full = self._generate_initial_set()
+        S_full = self._generate_set(self.p)
+        f_full = np.zeros((self.p, 1))
+        f_full[0, :] = self.f_old
+        for i in range(1, self.p):
+            f_full[i, :] = self._blackbox_evaluation(S_full[i, :])
+            if self.num_evals >= max_evals:
+                self._finish()
+                return
         self._calculate_subspace(S_full, f_full)
-        S_red, f_red = self._sample_set('new')
+        S_red, f_red = self._sample_set('new', full_space=False)
         for i in range(itermax):
-            # print(self.f_old)
-            # print(self.num_evals)
-            # print('--------------')
-            self._update_bounds()
-            if len(self.f) >= max_evals or self.del_k < del_min:
-                break
-            my_poly = self._build_model(S_red, f_red)
-            m_old = np.asscalar(my_poly.get_polyfit(np.dot(self.s_old,self.U)))
-            s_new, m_new = self._compute_step(my_poly)
-            # Safety step implemented in BOBYQA
-            if np.linalg.norm(s_new - self.s_old, ord=np.inf) < omega_s*self.del_k:
-                if max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) <= self.epsilon*self.del_k:
-                    self._calculate_subspace(S_full, f_full)
-                    S_red, f_red = self._sample_set('new')
-                    self.del_k *= gam1
-                elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= self.epsilon*self.del_k:
-                    S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
-                    self._calculate_subspace(S_full, f_full)
-                    S_red, f_red = self._sample_set('new')
-                else:
-                    S_red, f_red = self._sample_set('improve', S_red, f_red)
-                    S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
+            if self.num_evals >= max_evals or self.rho_k <= self.rho_min:
+                self._finish()
+                return
+            try:
+                my_poly = self._build_model(S_red, f_red)
+            except:
+                S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
                 continue
-            if self.S.shape == np.unique(np.vstack((self.S, s_new)), axis=0).shape:
-                ind_repeat = np.argmin(np.linalg.norm(self.S - s_new, ord=np.inf, axis=1))
-                f_new = self.f[ind_repeat]
-            else:
-                f_new = self._blackbox_evaluation(s_new)
-            S_red = np.vstack((S_red, s_new))
-            f_red = np.vstack((f_red, f_new))
-            S_full = np.vstack((S_full, s_new))
-            f_full = np.vstack((f_full, f_new))
+            s_new, m_new = self._compute_step(my_poly)
+            step_dist = np.linalg.norm(s_new - self.s_old, ord=np.inf)
+            # Safety step implemented in BOBYQA
+            if step_dist < omega_s*self.rho_k:
+                self._set_ratio(-0.1)
+                self._set_unsuccessful_iterate_counter(3)
+                self._set_del_k(max(0.5*self.del_k, self.rho_k))
+                S_full, f_full, S_red, f_red = self._update_geometry_omorf(S_full, f_full, S_red, f_red)
+                continue
+            f_new = self._blackbox_evaluation(s_new)
+            if self.num_evals >= max_evals or self.rho_k <= self.rho_min:
+                self._finish()
+                return
             # Calculate trust-region factor
-            rho_k = (self.f_old - f_new) / (m_old - m_new)
-            self._choose_best(self.S, self.f)
-            self._update_bounds()
-            if len(self.f) >= max_evals or self.del_k < del_min:
-                break
-            if rho_k >= eta2:
-                S_red, f_red = self._sample_set('replace', S_red, f_red)
-                S_full, f_full = self._sample_set('replace', S_full, f_full)
-                self.del_k *= gam2
-            elif rho_k >= eta1:
-                S_red, f_red = self._sample_set('replace', S_red, f_red)
-                S_full, f_full = self._sample_set('replace', S_full, f_full)
+            del_f = self.f_old - f_new
+            del_m = np.asscalar(my_poly.get_polyfit(np.dot(self.s_old,self.U))) - m_new
+            if abs(del_m) < 100*np.finfo(float).eps:
+                self._set_ratio(1.0)
             else:
-                if max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) <= self.epsilon*self.del_k:
-                    self._calculate_subspace(S_full, f_full)
-                    S_red, f_red = self._sample_set('new')
-                    self.del_k *= gam1
-                elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) <= self.epsilon*self.del_k:
-                    S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
-                    self._calculate_subspace(S_full, f_full)
-                    S_red, f_red = self._sample_set('new')
-                else:
-                    S_red, f_red = self._sample_set('improve', S_red, f_red)
-                    S_full, f_full = self._sample_set('improve', S_full, f_full, full_space=True)
-        self.S = self._remove_scaling(self.S)
-        self._choose_best(self.S, self.f)
-        return self.s_old, self.f_old
+                self._set_ratio(del_f / del_m)
+            self._set_iterate()
+            S_red, f_red = self._sample_set('replace', S_red, f_red, s_new, f_new, full_space=False)
+            S_full, f_full = self._sample_set('replace', S_full, f_full, s_new, f_new)
+            if self.r_k >= eta_2:
+                self._set_unsuccessful_iterate_counter(0)
+                self._set_del_k(max(gam_inc*self.del_k, gam_inc_overline*step_dist))
+            elif self.r_k >= eta_1:
+                self._set_unsuccessful_iterate_counter(0)
+                self._set_del_k(max(gam_dec*self.del_k, step_dist, self.rho_k))
+            else:
+                self._set_unsuccessful_iterate_counter(self.count+1)
+                self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
+                S_full, f_full, S_red, f_red = self._update_geometry_omorf(S_full, f_full, S_red, f_red)
+        self._finish()
+        return

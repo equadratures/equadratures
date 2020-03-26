@@ -7,7 +7,7 @@ Consider the task of integrating the function
 
 .. math::
 
-	I = \int_{-1}^{-1} f\left( s \right) \rho \left( s \right) ds
+	I = \int_{-1}^{1} f\left( s \right) \rho \left( s \right) ds
 
 where the measure :math:`\rho \left( s \right)` is the uniform distribution over :math:`[-1,1]`. Our task is to numerically approximate this integral using a quadrature rule, i.e.,
 

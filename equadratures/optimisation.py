@@ -281,8 +281,8 @@ class Optimisation:
             self._omorf(x0, d=kwargs.get('d', 1), subspace_method=kwargs.get('subspace_method', 'active-subspaces'), \
                     del_k=kwargs.get('del_k', None), rho_min=kwargs.get('rho_min', 1.0e-8), eta_1=kwargs.get('eta_1', 0.1), \
                     eta_2=kwargs.get('eta_2', 0.7), gam_dec=kwargs.get('gam_dec', 0.98), gam_inc=kwargs.get('gam_inc', 2.0), \
-                    gam_inc_overline=kwargs.get('gam_inc_overline', 4.0), alpha_1=kwargs.get('alpha_1', 0.1), \
-                    alpha_2=kwargs.get('alpha_2', 0.9), omega_s=kwargs.get('omega_s', 0.95), \
+                    gam_inc_overline=kwargs.get('gam_inc_overline', 4.0), alpha_1=kwargs.get('alpha_1', 0.9), \
+                    alpha_2=kwargs.get('alpha_2', 0.95), omega_s=kwargs.get('omega_s', 0.5), \
                     max_evals=kwargs.get('max_evals', 1000), random_initial=kwargs.get('random_initial', False), \
                     scale_bounds=kwargs.get('scale_bounds', False))
             sol = {'x': self.s_old, 'fun': self.f_old, 'nfev': self.num_evals}
@@ -498,7 +498,7 @@ class Optimisation:
             self._set_del_k(self.alpha_2*self.rho_k)
             if self.count >= 3 and self.r_k < 0:
                 self._set_unsuccessful_iterate_counter(0)
-                if self.rho_k > 250*self.rho_min:
+                if self.rho_k >= 250*self.rho_min:
                     self._set_rho_k(self.alpha_1*self.rho_k)
                 elif 16*self.rho_min < self.rho_k < 250*self.rho_min:
                     self._set_rho_k(np.sqrt(self.rho_k*self.rho_min))
@@ -515,12 +515,12 @@ class Optimisation:
             except:
                 pass
         elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) > dist:
-            S_red, f_red  = self._sample_set('improve', S_red, f_red, full_space=False)
+            S_red, f_red = self._sample_set('improve', S_red, f_red, full_space=False)
         elif self.del_k == self.rho_k:
             self._set_del_k(self.alpha_2*self.rho_k)
             if self.count >= 3 and self.r_k < 0:
                 self._set_unsuccessful_iterate_counter(0)
-                if self.rho_k > 250*self.rho_min:
+                if self.rho_k >= 250*self.rho_min:
                     self._set_rho_k(self.alpha_1*self.rho_k)
                 elif 16*self.rho_min < self.rho_k < 250*self.rho_min:
                     self._set_rho_k(np.sqrt(self.rho_k*self.rho_min))
@@ -883,7 +883,7 @@ class Optimisation:
                 self._finish()
                 return
         for i in range(itermax):
-            if self.num_evals >= max_evals or self.rho_k < rho_min:
+            if self.num_evals >= max_evals or self.rho_k <= rho_min:
                 break
             try:
                 my_poly = self._build_model(S, f)
@@ -900,7 +900,7 @@ class Optimisation:
                 S, f = self._update_geometry_trust_region(S, f)
                 continue
             f_new = self._blackbox_evaluation(s_new)
-            if self.num_evals >= max_evals or self.rho_k < self.rho_min:
+            if self.num_evals >= max_evals or self.rho_k <= self.rho_min:
                 self._finish()
                 return
             S, f = self._sample_set('replace', S, f, s_new, f_new)

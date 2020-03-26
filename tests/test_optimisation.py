@@ -271,7 +271,7 @@ class Test_optimisation(TestCase):
         Opt = eq.Optimisation(method='trust-region')
         Opt.add_objective(custom={'function': self.ObjFun1})
         x0 = np.zeros(n)
-        sol = Opt.optimise(x0, del_k=0.2)
+        sol = Opt.optimise(x0, del_k=0.1, scale_bounds=True)
         # print(sol)
         np.testing.assert_almost_equal(sol['fun'], 0.0, decimal=4)
 
@@ -280,27 +280,7 @@ class Test_optimisation(TestCase):
         Opt = eq.Optimisation(method='trust-region')
         Opt.add_objective(custom={'function': self.ObjFun1})
         x0 = np.zeros(n)
-        sol = Opt.optimise(x0, del_k=0.2, random_initial=True)
-        # print(sol)
-        np.testing.assert_almost_equal(sol['fun'], 0.0, decimal=4)
-         
-    def test_optimise_trustregion_bounds(self):
-        n = 2
-        Opt = eq.Optimisation(method='trust-region')
-        Opt.add_objective(custom={'function': self.ObjFun1})
-        Opt.add_bounds(-np.ones(n), np.ones(n))
-        x0 = np.zeros(n)
-        sol = Opt.optimise(x0, del_k=0.1, scale_bounds=True)
-        # print(sol)
-        np.testing.assert_almost_equal(sol['fun'], 0.0, decimal=4)
-
-    def test_optimise_trustregion_bounds_not_scaled(self):
-        n = 2
-        Opt = eq.Optimisation(method='trust-region')
-        Opt.add_objective(custom={'function': self.ObjFun1})
-        Opt.add_bounds(-np.ones(n), np.ones(n))
-        x0 = np.zeros(n)
-        sol = Opt.optimise(x0, del_k=0.2)
+        sol = Opt.optimise(x0, del_k=0.1, random_initial=True)
         # print(sol)
         np.testing.assert_almost_equal(sol['fun'], 0.0, decimal=4)
             
@@ -309,7 +289,7 @@ class Test_optimisation(TestCase):
         Opt = eq.Optimisation(method='omorf')
         Opt.add_objective(custom={'function': self.ObjFun2})
         x0 = -2*np.ones(n)
-        sol = Opt.optimise(x0, del_k=0.2, subspace_method='variable-projection', d=2)
+        sol = Opt.optimise(x0, del_k=0.1, subspace_method='variable-projection', d=2)
         # print(sol)
         np.testing.assert_almost_equal(sol['fun'], -39.1661656*n, decimal=4)
             
@@ -318,7 +298,7 @@ class Test_optimisation(TestCase):
         Opt = eq.Optimisation(method='omorf')
         Opt.add_objective(custom={'function': self.ObjFun2})
         x0 = -2*np.ones(n)
-        sol = Opt.optimise(x0, del_k=0.2)
+        sol = Opt.optimise(x0, del_k=0.1)
         # print(sol)
         np.testing.assert_almost_equal(sol['fun'], -39.1661656*n, decimal=4)
 
@@ -328,7 +308,7 @@ class Test_optimisation(TestCase):
         Opt.add_objective(custom={'function': self.ObjFun2})
         Opt.add_bounds(-5.12*np.ones(n), 5.12*np.ones(n))
         x0 = -2*np.ones(n)
-        sol = Opt.optimise(x0, del_k=0.2)
+        sol = Opt.optimise(x0, del_k=0.1)
         # print(sol)
         np.testing.assert_almost_equal(sol['fun'], -39.1661656*n, decimal=4)
 

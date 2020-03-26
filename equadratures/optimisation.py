@@ -280,9 +280,9 @@ class Optimisation:
         elif self.method in ['omorf']:
             self._omorf(x0, d=kwargs.get('d', 1), subspace_method=kwargs.get('subspace_method', 'active-subspaces'), \
                     del_k=kwargs.get('del_k', None), rho_min=kwargs.get('rho_min', 1.0e-8), eta_1=kwargs.get('eta_1', 0.1), \
-                    eta_2=kwargs.get('eta_2', 0.7), gam_dec=kwargs.get('gam_dec', 0.5), gam_inc=kwargs.get('gam_inc', 2.0), \
+                    eta_2=kwargs.get('eta_2', 0.7), gam_dec=kwargs.get('gam_dec', 0.98), gam_inc=kwargs.get('gam_inc', 2.0), \
                     gam_inc_overline=kwargs.get('gam_inc_overline', 4.0), alpha_1=kwargs.get('alpha_1', 0.1), \
-                    alpha_2=kwargs.get('alpha_2', 0.5), omega_s=kwargs.get('omega_s', 0.5), \
+                    alpha_2=kwargs.get('alpha_2', 0.9), omega_s=kwargs.get('omega_s', 0.95), \
                     max_evals=kwargs.get('max_evals', 1000), random_initial=kwargs.get('random_initial', False), \
                     scale_bounds=kwargs.get('scale_bounds', False))
             sol = {'x': self.s_old, 'fun': self.f_old, 'nfev': self.num_evals}
@@ -585,7 +585,7 @@ class Optimisation:
         return S, f
     
     def _LU_pivoting(self, S, f, S_hat, f_hat, full_space, method=None):
-        psi_1 = 1.0e-4
+        psi_1 = 0
         if self.method == 'omorf' and full_space:
             psi_2 = 1.0
         else:

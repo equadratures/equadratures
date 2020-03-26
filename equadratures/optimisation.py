@@ -9,9 +9,6 @@ import numpy as np
 from scipy.special import factorial
 from scipy.stats import linregress
 import warnings
-import sys
-import time
-import matplotlib.pyplot as plt
 warnings.filterwarnings('ignore')
 class Optimisation:
     """
@@ -272,7 +269,7 @@ class Optimisation:
                     options={'disp': False, 'maxiter': 10000})
             sol = {'x': sol['x'], 'fun': sol['fun'], 'nfev': self.num_evals, 'status': sol['status']}
         elif self.method in ['trust-region']:
-            self._trust_region(x0, del_k=kwargs.get('del_k', None), rho_min=kwargs.get('rho_min', 1.0e-8), \
+            self._trust_region(x0, del_k=kwargs.get('del_k', None), rho_min=kwargs.get('rho_min', 1.0e-6), \
                     eta_1=kwargs.get('eta_1', 0.1), eta_2=kwargs.get('eta_2', 0.7), \
                     gam_dec=kwargs.get('gam_dec', 0.5), gam_inc=kwargs.get('gam_inc', 2.0), \
                     gam_inc_overline=kwargs.get('gam_inc_overline', 4.0), alpha_1=kwargs.get('alpha_1', 0.1), \
@@ -309,6 +306,12 @@ class Optimisation:
 
     def _set_rho_k(self, value):
         self.rho_k = value
+
+    def _set_unsuccessful_iterate_counter(self, count):
+        self.count = count
+
+    def _set_ratio(self, r_k):
+        self.r_k = r_k
     
     def _calculate_subspace(self, S, f):
         parameters = [Parameter(distribution='uniform', lower=self.bounds_l[i], \
@@ -488,13 +491,13 @@ class Optimisation:
         else:
             return S
 
-    def _update_geometry_trust_region(self, S, f, r_k):
+    def _update_geometry_trust_region(self, S, f):
         if max(np.linalg.norm(S-self.s_old, axis=1, ord=np.inf)) > max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k):
             S, f = self._sample_set('improve', S, f)
         elif self.del_k == self.rho_k:
             self._set_del_k(self.alpha_2*self.rho_k)
-            if self.count >= 3 and r_k < 0:
-                self.count = 0
+            if self.count >= 3 and self.r_k < 0:
+                self._set_unsuccessful_iterate_counter(0)
                 if self.rho_k > 250*self.rho_min:
                     self._set_rho_k(self.alpha_1*self.rho_k)
                 elif 16*self.rho_min < self.rho_k < 250*self.rho_min:
@@ -503,7 +506,7 @@ class Optimisation:
                     self._set_rho_k(self.rho_min)
         return S, f
 
-    def _update_geometry_omorf(self, S_full, f_full, S_red, f_red, r_k):
+    def _update_geometry_omorf(self, S_full, f_full, S_red, f_red):
         dist = max(self.epsilon_1*self.del_k, self.epsilon_2*self.rho_k)
         if max(np.linalg.norm(S_full-self.s_old, axis=1, ord=np.inf)) > dist:
             S_full, f_full = self._sample_set('improve', S_full, f_full)
@@ -514,9 +517,9 @@ class Optimisation:
         elif max(np.linalg.norm(S_red-self.s_old, axis=1, ord=np.inf)) > dist:
             S_red, f_red  = self._sample_set('improve', S_red, f_red, full_space=False)
         elif self.del_k == self.rho_k:
-            if self.count >= 3 and r_k < 0:
-                self.count = 0
-                self._set_del_k(self.alpha_2*self.rho_k)
+            self._set_del_k(self.alpha_2*self.rho_k)
+            if self.count >= 3 and self.r_k < 0:
+                self._set_unsuccessful_iterate_counter(0)
                 if self.rho_k > 250*self.rho_min:
                     self._set_rho_k(self.alpha_1*self.rho_k)
                 elif 16*self.rho_min < self.rho_k < 250*self.rho_min:
@@ -557,8 +560,6 @@ class Optimisation:
             f[0, :] = self.f_old
             S, f = self._LU_pivoting(S, f, S_hat, f_hat, full_space, 'improve')
         elif method == 'new':
-            # S_hat, f_hat = self._remove_points_outside_limits()
-            # S_hat, f_hat = self._remove_point_from_set(S_hat, f_hat, self.s_old)
             S_hat = f_hat = np.array([])
             S = np.zeros((q, self.n))
             f = np.zeros((q, 1))
@@ -834,7 +835,6 @@ class Optimisation:
         self.alpha_1 = alpha_1
         self.alpha_2 = alpha_2
         self.rho_min = rho_min
-        self.count = 0
         if self.method == 'trust-region':
             self.q = int(0.5*(self.n+1)*(self.n+2))
             self.p = int(0.5*(self.n+1)*(self.n+2))
@@ -847,7 +847,6 @@ class Optimisation:
             self.p = self.n+1
             Base = Basis('total-order', orders=np.tile([2], self.d))
             self.basis = Base.get_basis()[:,range(self.d-1, -1, -1)]
-
         self.s_old = self._apply_scaling(s_old)
         self.f_old = self._blackbox_evaluation(self.s_old)
         if del_k is None:
@@ -859,6 +858,7 @@ class Optimisation:
                 self._set_del_k(min(0.1*np.linalg.norm(self.bounds[1]-self.bounds[0], ord=np.inf), 1.0))
         else:
             self._set_del_k(del_k)
+        self._set_unsuccessful_iterate_counter(0)
         self._set_rho_k(self.del_k)
 
     def _finish(self):
@@ -894,9 +894,10 @@ class Optimisation:
             step_dist = np.linalg.norm(s_new - self.s_old, ord=np.inf)
             # Safety step implemented in BOBYQA
             if step_dist < omega_s*self.rho_k:
-                self.count = 3
+                self._set_unsuccessful_iterate_counter(self.count+1)
+                self._set_ratio(-0.1)
                 self._set_del_k(max(gam_dec*self.del_k, self.rho_k))
-                S, f = self._update_geometry_trust_region(S, f, -0.1)
+                S, f = self._update_geometry_trust_region(S, f)
                 continue
             f_new = self._blackbox_evaluation(s_new)
             if self.num_evals >= max_evals or self.rho_k < self.rho_min:
@@ -906,21 +907,21 @@ class Optimisation:
             # Calculate trust-region factor
             del_f = self.f_old - f_new
             del_m = np.asscalar(my_poly.get_polyfit(self.s_old)) - m_new
-            if abs(del_f) < 100*np.finfo(float).eps and abs(del_m) < 100*np.finfo(float).eps:
-                r_k = 1.0
+            if abs(del_m) < 100*np.finfo(float).eps:
+                self._set_ratio(1.0)
             else:
-                r_k = del_f / del_m
+                self._set_ratio(del_f / del_m)
             self._set_iterate()
-            if r_k >= eta_2:
-                self.count = 0
+            if self.r_k >= eta_2:
+                self._set_unsuccessful_iterate_counter(0)
                 self._set_del_k(max(gam_inc*self.del_k, gam_inc_overline*step_dist))
-            elif r_k >= eta_1:
-                self.count = 0
+            elif self.r_k >= eta_1:
+                self._set_unsuccessful_iterate_counter(0)
                 self._set_del_k(max(gam_dec*self.del_k, step_dist, self.rho_k))
             else:
-                self.count += 1
+                self._set_unsuccessful_iterate_counter(self.count+1)
                 self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
-                S, f = self._update_geometry_trust_region(S, f, r_k)
+                S, f = self._update_geometry_trust_region(S, f)
         self._finish()
         return
 
@@ -943,6 +944,7 @@ class Optimisation:
                 return
         self._calculate_subspace(S_full, f_full)
         S_red, f_red = self._sample_set('new', full_space=False)
+
         for i in range(itermax):
             if self.num_evals >= max_evals or self.rho_k <= self.rho_min:
                 self._finish()
@@ -956,9 +958,10 @@ class Optimisation:
             step_dist = np.linalg.norm(s_new - self.s_old, ord=np.inf)
             # Safety step implemented in BOBYQA
             if step_dist < omega_s*self.rho_k:
-                self.count = 3
+                self._set_unsuccessful_iterate_counter(self.count+1)
+                self._set_ratio(-0.1)
                 self._set_del_k(max(gam_dec*self.del_k, self.rho_k))
-                S_full, f_full, S_red, f_red = self._update_geometry_omorf(S_full, f_full, S_red, f_red, -0.1)
+                S_full, f_full, S_red, f_red = self._update_geometry_omorf(S_full, f_full, S_red, f_red)
                 continue
             f_new = self._blackbox_evaluation(s_new)
             if self.num_evals >= max_evals or self.rho_k <= self.rho_min:
@@ -968,21 +971,21 @@ class Optimisation:
             del_f = self.f_old - f_new
             del_m = np.asscalar(my_poly.get_polyfit(np.dot(self.s_old,self.U))) - m_new
             if abs(del_m) < 100*np.finfo(float).eps:
-                r_k = 1.0
+                self._set_ratio(1.0)
             else:
-                r_k = del_f / del_m
+                self._set_ratio(del_f / del_m)
             self._set_iterate()
             S_red, f_red = self._sample_set('replace', S_red, f_red, s_new, f_new, full_space=False)
             S_full, f_full = self._sample_set('replace', S_full, f_full, s_new, f_new)
-            if r_k >= eta_2:
-                self.count = 0
+            if self.r_k >= eta_2:
+                self._set_unsuccessful_iterate_counter(0)
                 self._set_del_k(max(gam_inc*self.del_k, gam_inc_overline*step_dist))
-            elif r_k >= eta_1:
-                self.count = 0
+            elif self.r_k >= eta_1:
+                self._set_unsuccessful_iterate_counter(0)
                 self._set_del_k(max(gam_dec*self.del_k, step_dist, self.rho_k))
             else:
-                self.count += 1
+                self._set_unsuccessful_iterate_counter(self.count+1)
                 self._set_del_k(max(min(gam_dec*self.del_k, step_dist), self.rho_k))
-                S_full, f_full, S_red, f_red = self._update_geometry_omorf(S_full, f_full, S_red, f_red, r_k)
+                S_full, f_full, S_red, f_red = self._update_geometry_omorf(S_full, f_full, S_red, f_red)
         self._finish()
         return

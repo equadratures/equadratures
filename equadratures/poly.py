@@ -60,6 +60,7 @@ class Poly(object):
         4. Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations. SIAM/ASA Journal on Uncertainty Quantification, 5(1). `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
         5. Bos, L., De Marchi, S., Sommariva, A., Vianello, M., (2010) Computing Multivariate Fekete and Leja points by Numerical Linear Algebra. SIAM Journal on Numerical Analysis, 48(5). `Paper <https://epubs.siam.org/doi/abs/10.1137/090779024>`__
         6. Joshi, S., Boyd, S., (2009) Sensor Selection via Convex Optimization. IEEE Transactions on Signal Processing, 57(2). `Paper <https://ieeexplore.ieee.org/document/4663892>`__
+        7. Rogers, S., Girolami, M., (2016) Variability in predictions. In: A First Course in Machine Learning, Second Edition (2nd. ed.). Chapman & Hall/CRC.
     """
     def __init__(self, parameters, basis, method=None, sampling_args=None, solver_args=None):
         try:
@@ -768,6 +769,38 @@ class Poly(object):
                 H.append(polynomialhessian)
 
         return H
+    def get_polyvar(self, stack_of_points):
+        """
+        Evaluates the variance of the polynomial approximation at prescribed points, following the approach from [7].
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param numpy.ndarray stack_of_points:
+            An ndarray with shape (number_of_observations, dimensions) at which the polynomial variance must be evaluated at.
+        :return:
+            **var**: A numpy.ndarray of shape (number_of_observations,1) corresponding to the variance of the polynomial approximation at each point.
+        """
+        w = self.get_coefficients()
+        x = self.inputs
+        y = self.outputs
+        # Check that dimensions of x and stack_of_points match
+        _, dimensions = self.basis.elements.shape
+        if stack_of_points.ndim == 1:
+            no_of_points = 1
+        else:
+            no_of_points, _ = stack_of_points.shape
+        if stack_of_points.shape[1] != dimensions: raise ValueError('get_polyvar(): dimensions of training data and stack_of_points do not match') 
+        # 
+        xb     = self.get_poly(x)
+        xtestb = self.get_poly(stack_of_points)
+        ytest = self.get_polyfit(stack_of_points)
+        # Empirical variance (RMS of poly approx)
+        sigma2 = ((y - self.get_polyfit(x))**2).mean()
+        # Get variance 
+        xtestb = xtestb.T
+        xb = xb.T
+        var = np.diag(sigma2*np.dot(np.dot(xtestb,np.linalg.inv(np.dot(xb.T,xb))),xtestb.T))
+        return var.reshape(-1,1)
 def evaluate_model_gradients(points, fungrad, format):
     """
     Evaluates the model gradient at given values.

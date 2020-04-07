@@ -8,7 +8,7 @@ from scipy.stats import skew
 def fun(x):
      return 5.0 * x[0]**3 - x[0]*x[1] + 3.0*x[1]*x[2]**3 + 32.0
 
-class TestF(TestCase):
+class TestCorrelated(TestCase):
      def test_nataf(self):
           zeta_1 = Parameter(distribution='truncated-gaussian', shape_parameter_A = 3.0, shape_parameter_B = 2.0, order=3, lower=-2.0, upper=4.0)
           zeta_2 = Parameter(distribution='truncated-gaussian', shape_parameter_A = -1.0, shape_parameter_B = 0.1, order=3, lower=-5.0, upper=5.0)

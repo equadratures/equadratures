@@ -23,5 +23,26 @@ class TestC(TestCase):
         true_coefficients = np.asarray([22.47470337, 17.50891379, 4.97964868])
         np.testing.assert_array_almost_equal(coefficients, true_coefficients, decimal=4, err_msg='Problem!')
 
+    def test_polyvar(self):
+        N = 10
+        our_function = lambda x:  0.3*x**4 -1.6*x**3 +0.6*x**2 +2.4*x - 0.5
+        n = 4 # degree of polynomial
+        dimensions = 1
+        
+        x_train = np.asarray([-0.64632395, -0.18877934, -0.01358774, 0.45976263, 0.46337817, 0.66119015, 0.68384465, 0.9602067, 0.96965, 0.98821018])
+        y_train = np.asarray([-1.08314486, -0.72882292, -0.93002666, 0.42621992, 0.73289331, 0.98535082, 0.85108678, 1.15953546, 1.41458158, 0.97508757])
+        x_test = np.linspace(-1.5, 1.5, 5)
+        
+        param = Parameter(distribution='Uniform', lower=-1, upper=1, order=n)
+        myBasis = Basis('Univariate')
+        poly = Poly(param, myBasis, method='least-squares', sampling_args={'sample-points':x_train.reshape(-1,1), 'sample-outputs':y_train.reshape(-1,1)} )
+        poly.set_model()
+        
+        testvar = poly.get_polyvar(x_test.reshape(-1,1))
+        std = np.sqrt(testvar)
+        true_std = [12.83481772],[0.41590942],[0.12530528],[0.1271031],[3.61383742]
+
+        np.testing.assert_array_almost_equal(std, true_std, decimal=7, err_msg='Problem!')
+
 if __name__== '__main__':
     unittest.main()

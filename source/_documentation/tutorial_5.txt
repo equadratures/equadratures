@@ -1,126 +1,133 @@
-Sparse and tensor grid quadrature rules
+Multi-index sets
 ========================================
 
-This tutorial replicates part of Figure 5 from Constantine's 2012 CMAME paper [1], *Sparse Pseudospectral Approximation Method*. This paper demonstrates how sparse grids should be used to compute coefficients for polynomial approximations by evaluating the model on a sparse grid as opposed to a full tensor grid.
+This notebook covers multi-indices: a key ingredient in constructing multivariate polynomials. There are five different types of index sets in Effective Quadratures:
+
+
+.. list-table:: Multi-index sets in Effective Quadratures.
+   :widths: 10 25 60
+   :header-rows: 1
+
+   * - Option
+     - Index set
+     - Parameters
+   * - 1
+     - Tensor grid
+     - List of max. individual orders
+   * - 2
+     - Total order
+     - List of max. individual orders
+   * - 3
+     - Sparse grid
+     - Growth rule and level parameter
+   * - 4
+     - Hyperbolic basis
+     - List of max. individual orders and a truncation parameter
+   * - 5
+     - Euclidean degree
+     - List of max. individual orders
+
+In what follows, we will briefly demonstrate how we construct them and plot them.
 
 .. code::
-	
+
 	from equadratures import *
 	import numpy as np
 
-Our goal is to approximate the following function
-
-.. math::
-
-	f(x_1, x_2) = \frac{1}{2 + 16(x_1 - 0.1)^2 + 25(x_2 + 0.1)^2 },
-
-where :math:`x_1` and :math:`x_2` are bounded in the hypercube :math:`[-1, 1]^2`. As before, our first step is to declare the function.
+We begin by defining a tensor grid index set in three dimensions:
 
 .. code::
 
-	def function(x):
-    		return 1.0/(2.0 + 16*(x[0] - 0.1)**2 + 25*(x[1] + 0.1)**2 )
-	
-	order = 100
-	x1 = Parameter(lower=-1, upper=1, order=order, distribution='Uniform')
-	x2 = Parameter(lower=-1, upper=1, order=order, distribution ='Uniform')
+	tensor = Basis('tensor-grid', [4,4,4])
+	elements = tensor.elements
 
-
-We will first aim to approximate this function using a full tensor grid. This should provide some basis for comparison. We begin by defining the parameters and the tensor grid.
-
-.. code::
-
-	tensor = Basis('Tensor grid')
-	myPoly = Polyint([x1, x2], tensor)
-	myPoly.computeCoefficients(function)
-
+	# Plot!
 	fig = plt.figure()
-	ax = fig.add_subplot(1,1,1)
-	plt.scatter(myPoly.quadraturePoints[:,0], myPoly.quadraturePoints[:,1] , marker='o', s=2, color='tomato')
-	adjust_spines(ax, ['left', 'bottom'])
-	plt.xlabel('$\zeta_1$', fontsize=13)
-	plt.ylabel('$\zeta_2$', fontsize=13)
-	plt.xticks(fontsize=13)
-	plt.yticks(fontsize=13)
-	plt.savefig('Figure_ten_pts.png' , dpi=200, bbox_inches='tight', pad_inches=0.1)
+	ax = fig.add_subplot(111, projection='3d')
+	ax.scatter(elements[:,0], elements[:,1], elements[:,2],  marker='s', s=80, color='crimson')
+	ax.set_xlabel('$i_i$')
+	ax.set_ylabel('$i_2$')
+	ax.set_zlabel('$i_3$')
+	plt.savefig('Basis_tensor.png' , dpi=200, bbox_inches='tight', pad_inches=0.1)
 
-	x, y, z, max_order = twoDgrid(myPoly.coefficients, myPoly.multi_index)
-	G = np.log10(np.abs(z))
-	fig = plt.figure()
-	ax = fig.add_subplot(1,1,1)
-	cax = plt.scatter(x, y, s=30, marker='o', c=G, cmap='jet', alpha=1.0, vmin=-16.0, vmax=0.)
-	plt.xlim(-0.5, max_order)
-	plt.ylim(-0.5, max_order)
-	adjust_spines(ax, ['left', 'bottom'])
-	ax.set_axisbelow(True)
-	plt.xlabel('$i_1$', fontsize=13)
-	plt.ylabel('$i_2$', fontsize=13)
-	cbar = plt.colorbar(extend='neither', spacing='proportional',
-                orientation='vertical', shrink=0.8, format="%.0f")
-	cbar.ax.tick_params(labelsize=13)
-	plt.savefig('Pseudo_1.png',   dpi=300, bbox_inches='tight')
+.. figure:: Figures/tutorial_5_fig_a.png
+   :scale: 40 %
 
-.. figure:: Figures/Pseudo_1.png
-   :scale: 30 %
+    Figure. Tensor multi-index set.
 
-.. figure:: Figures/Figure_ten_pts.png
-   :scale: 40%
 
-The figures above show us the coefficient magnitude (log base-10 scale) and the corresponding quadrature points. Now, let us try to obtain the same result using SPAM. This can be easily done in Effective Quadratures. We start by declaring a sparse grid multi-index.
+It is readily apparent that the tensor grid index set has virtually every element within the order [4,4,4] cube. Lets suppose that one does not want to afford :math:`4^3` computations, necessary to approximate all the coefficients associated with a tensor index set multivariate polynomial. One can then opt for a sparse grid, which are select linear combination of select tensor products. In Effective Quadratures, they can be declared as follows:
+
+.. code:
+
+  sparse = Basis('sparse-grid', level=2, growth_rule='linear')
+  sparse.dimension = 3
+  a, b, c = sparse.getBasis()
+  print(a)
+
+	>> [[0. 0. 2.]
+ 	[0. 0. 3.]
+ 	[0. 0. 4.]
+ 	[0. 1. 1.]
+ 	[0. 1. 2.]
+ 	[0. 1. 3.]
+ 	[0. 2. 0.]
+ 	[0. 2. 1.]
+ 	[0. 2. 2.]
+ 	[0. 3. 0.]
+ 	[0. 3. 1.]
+ 	[0. 4. 0.]
+ 	[1. 0. 1.]
+ 	[1. 0. 2.]
+ 	[1. 0. 3.]
+ 	[1. 1. 0.]
+ 	[1. 1. 1.]
+ 	[1. 1. 2.]
+ 	[1. 2. 0.]
+ 	[1. 2. 1.]
+ 	[1. 3. 0.]
+ 	[2. 0. 0.]
+ 	[2. 0. 1.]
+ 	[2. 0. 2.]
+ 	[2. 1. 0.]
+ 	[2. 1. 1.]
+ 	[2. 2. 0.]
+	[3. 0. 0.]
+ 	[3. 0. 1.]
+ 	[3. 1. 0.]
+ 	[4. 0. 0.]]
+
+Here :math:`a` are the select tensor product grids used, and :math:`b` are the linear coefficients used when combining the tensor product grids. While the code can perform integrations and coefficient approximation using sparse grids, we recommend users to stick to the effective subsampling approach that uses least squares. In both theory and practice, the results are identical. We now move on to the three other index sets: Total order, Euclidean and a Hyperbolic basis.
 
 .. code::
-	
-	sparse = Basis('Sparse grid', level=7, growth_rule='exponential')
 
-Then we proceed to compute the coefficients using the SPAM. The calls to the Polyint subroutine are unchanged, apart from the basis.
+	euclid = Basis('euclidean-degree', [4,4,4])
+
+.. figure:: Figures/tutorial_5_fig_b.png
+   :scale: 40 %
+
+   Figure. Euclidean degree multi-index set.
+
 
 .. code::
 
-	sparse = Basis('Sparse grid', level=7, growth_rule='exponential')
-	mySparsePoly = Polyint([x1, x2], sparse)
-	mySparsePoly.computeCoefficients(function)
+	total = Basis('total-order', [4,4,4])
 
-And again, for the plots we have:
+.. figure:: Figures/tutorial_5_fig_c.png
+   :scale: 40 %
+
+   Figure. Total order multi-index set.
+
+And finally the hyperbolic one:
+
 
 .. code::
 
-	x, y, z, max_order = twoDgrid(mySparsePoly.coefficients, mySparsePoly.multi_index)
-	G = np.log10(np.abs(z))
-	fig = plt.figure()
-	ax = fig.add_subplot(1,1,1)
-	cax = plt.scatter(x, y, s=30, marker='o', c=G, cmap='jet', alpha=1.0, vmin=-16.0, vmax=0.)
-	plt.xlim(-0.5, max_order)
-	plt.ylim(-0.5, max_order)
-	adjust_spines(ax, ['left', 'bottom'])
-	ax.set_axisbelow(True)
-	plt.xlabel('$i_1$', fontsize=13)
-	plt.ylabel('$i_2$', fontsize=13)
-	cbar = plt.colorbar(extend='neither', spacing='proportional',
-                orientation='vertical', shrink=0.8, format="%.0f")
-	cbar.ax.tick_params(labelsize=13)
-	plt.savefig('Pseudo_2.png',   dpi=300, bbox_inches='tight')
+	hyper = Basis('hyperbolic-basis', [4,4,4], q=0.5)
 
+.. figure:: Figures/tutorial_5_fig_d.png
+   :scale: 40 %
 
-	fig = plt.figure()
-	ax = fig.add_subplot(1,1,1)
-	plt.scatter(mySparsePoly.quadraturePoints[:,0], mySparsePoly.quadraturePoints[:,1] , marker='o', s=2, color='tomato')
-	adjust_spines(ax, ['left', 'bottom'])
-	plt.xlabel('$\zeta_1$', fontsize=13)
-	plt.ylabel('$\zeta_2$', fontsize=13)
-	plt.xticks(fontsize=13)
-	plt.yticks(fontsize=13)
-	plt.savefig('FigureDD.png' , dpi=200, bbox_inches='tight', pad_inches=0.1)
-	print len(np.unique(mySparsePoly.quadraturePoints, axis=0))
-	>> 1421
+   Figure. Hyperbolic basis multi-index set.
 
-.. figure:: Figures/Pseudo_2.png
-   :scale: 30 %
-
-.. figure:: Figures/FigureDD.png
-   :scale: 40%
-
-The total number of points in the sparse grid is 1421 compared to 10,201 in the full tensor grid; the savings is evident. SPAM leverages the anistropic nature of the coefficients to deliver nearly the same level of approximation.
-
-**References**
-
-.. [1]  Constantine, P. G., Eldred, M. S. and Phipps, E. T., (2012) Sparse pseudospectral approximation method. Computer Methods in Applied Mechanics and Engineering 229: 1-12.
+The hyperbolic basis takes in a q value, which varies between 0.1 and 1.0. Feel free to play around with this parameter and see what the effect on the total number of basis terms are. This is known as the cardinality of the index set. The full source code for this tutorial can be found `here. <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/source/_documentation/codes/tutorial_5.py>`__

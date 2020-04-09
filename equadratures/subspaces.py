@@ -41,7 +41,7 @@ class Subspaces(object):
         2. Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery Active Subspace Performance Maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__.
         3. Hokanson, J., Constantine, P., (2018) Data-driven Polynomial Ridge Approximation Using Variable Projection. SIAM Journal of Scientific Computing, 40(3), A1566-A1589. `Paper <https://epubs.siam.org/doi/abs/10.1137/17M1117690>`__.
     """
-    def __init__(self, method, full_space_poly=None, sample_points=None, sample_outputs=None, polynomial_degree=2, subspace_dimension=2, bootstrap=False):
+    def __init__(self, method, full_space_poly=None, sample_points=None, sample_outputs=None, polynomial_degree=2, subspace_dimension=2, bootstrap=False, subspace_init=None, max_iter=1000, tol=None):
         self.full_space_poly = full_space_poly
         self.sample_points = sample_points
         self.Y = None # for the zonotope vertices
@@ -67,7 +67,7 @@ class Subspaces(object):
             self.sample_outputs = self.full_space_poly.get_model_evaluations()
             self._get_active_subspace()
         elif self.method == 'variable-projection':
-            self._get_variable_projection(None,None,None,1000,None,False)
+            self._get_variable_projection(None,None,tol,max_iter,subspace_init,False)
     def get_subspace_polynomial(self):
         """
         Returns a polynomial defined over the dimension reducing subspace.
@@ -182,6 +182,7 @@ class Subspaces(object):
             * **U (ndarray)**: The active subspace found
             * **R (double)**: Cost of deviation in fitting
         """
+        # NOTE: How do we know these are the best values of gamma and beta?
         if gamma is None:
             gamma=0.1
         if beta is None:
@@ -196,14 +197,10 @@ class Subspaces(object):
             tol = 1e-7
         y=np.dot(self.sample_points,U)
         minmax=np.zeros((2, self.subspace_dimension))
-        for i in range(0, self.subspace_dimension):
-            minmax[0,i]=min(y[:,i])
-            minmax[1,i]=max(y[:,i])
+        minmax[0,:] = np.amin(y, axis=0)
+        minmax[1,:] = np.amax(y, axis=0)
         #Construct the affine transformation
-        eta=np.zeros((M,self.subspace_dimension))
-        for i in range(0,M):
-            for j in range(0,self.subspace_dimension):
-                eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
+        eta = 2 * np.divide((y - minmax[0,:]), (minmax[1,:]-minmax[0,:])) - 1
 
         #Construct the _vandermonde matrix step 6
         V,Polybasis=vandermonde(eta, self.polynomial_degree)
@@ -218,8 +215,9 @@ class Subspaces(object):
             J=jacobian_vp(V,V_plus,U,y, self.sample_outputs,Polybasis,eta,minmax, self.sample_points)
             #Calculate the gradient of Jacobian #step 10
             G=np.zeros((m, self.subspace_dimension))
+            # NOTE: Can be vectorised
             for i in range(0,M):
-                G=G+res[i]*J[i,:,:]
+                G += res[i]*J[i,:,:]
 
             #conduct the SVD for J_vec
             vec_J = np.reshape(J,(M,m*self.subspace_dimension))
@@ -244,22 +242,19 @@ class Subspaces(object):
                 alpha=-norm_G
 
             #SVD on delta step 17
+            
             Y,S,Z=np.linalg.svd(delta,full_matrices=False)
+
             UZ=np.dot(U,Z.T)
             t = 1
-            for iter2 in range(0,50):
+            for iter2 in range(0,20):
                 U_new=np.dot(UZ, np.diag(np.cos(S*t))) + np.dot(Y, np.diag(np.sin(S*t)))#step 19
                 U_new=orth(U_new)
                 #Update the values with the new U matrix
                 y=np.dot(self.sample_points, U_new)
-                minmax=np.zeros((2,self.subspace_dimension))
-                for i in range(0,self.subspace_dimension):
-                    minmax[0,i]=min(y[:,i])
-                    minmax[1,i]=max(y[:,i])
-                eta=np.zeros((M,self.subspace_dimension))
-                for i in range(0,M):
-                    for j in range(0,self.subspace_dimension):
-                        eta[i,j]=2*(y[i,j]-minmax[0,j])/(minmax[1,j]-minmax[0,j])-1
+                minmax[0,:] = np.amin(y, axis=0)
+                minmax[1,:] = np.amax(y, axis=0)
+                eta = 2 * np.divide((y - minmax[0,:]), (minmax[1,:]-minmax[0,:])) - 1
 
                 V_new,Polybasis=vandermonde(eta, self.polynomial_degree)
                 V_plus_new=np.linalg.pinv(V_new)
@@ -270,7 +265,6 @@ class Subspaces(object):
                 if np.linalg.norm(res_new)<=np.linalg.norm(res)+alpha*beta*t or t<1e-10:#step 21
                     break
                 t=t*gamma
-
             dist_change = subspace_dist(U, U_new)
             U = U_new
             V = V_new
@@ -278,11 +272,10 @@ class Subspaces(object):
             V_plus = V_plus_new
             res = res_new
             R = R_new
-            if not(tol is None):
-                if dist_change < tol:
-                    if verbose:
-                        print("VP finished with %d iterations" % iteration)
-                    break
+            if dist_change < tol:
+                if verbose:
+                    print("VP finished with %d iterations" % iteration)
+                break
         if iteration == maxiter-1 and verbose:
             print("VP finished with %d iterations" % iteration)
         active_subspace = U

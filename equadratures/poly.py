@@ -224,6 +224,7 @@ class Poly(object):
             W = np.mat( np.diag(np.sqrt(quadrature_weights)))
             A = W * P.T
             self.A = A
+            self.P = P
             mm, nn = A.shape
             m_refined = int(np.round(self.sampling_ratio * nn))
             z = self.subsampling_algorithm_function(A, m_refined)
@@ -236,6 +237,7 @@ class Poly(object):
             W = np.mat( np.diag(np.sqrt(quadrature_weights)))
             A = W * P.T
             self.A = A
+            self.P = P
     def get_model_evaluations(self):
         """
         Returns the points at which the model was evaluated at.

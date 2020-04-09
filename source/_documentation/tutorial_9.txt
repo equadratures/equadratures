@@ -1,7 +1,7 @@
 Computing Sobol' (sensitivity) indices
 ========================================
 
-In many computational problems there are a few key inputs that actually dictate the state of the output. Computing the Sobol indices of the inputs is one approach to determine which inputs are the *drivers*. Typically computation of the Sobol indices involves a large number of samples -- significantly more than required to get the variance in the data. However as shown in Blatman et al. [1], using orthogonal polynomials these can be computed with relative ease. In this notebook we demonstrate how we can compute these indices using effective quadratures. 
+In many computational problems there are a few key inputs that actually dictate the state of the output. Computing the Sobol' indices of the inputs is one approach to determine which inputs are the *drivers*. Typically computation of the Sobol' indices involves a large number of samples -- significantly more than required to get the variance in the data. However as shown in Blatman et al. [1], using orthogonal polynomials these can be computed with relative ease. In this notebook we demonstrate how we can compute these indices using effective quadratures. 
 
 We consider the well-known piston problem from Kenett et al. [2] that is a non-linear, seven-dimensional problem that outputs the piston cycle time given various piston parameters. These parameters and their bounds are shown in the table below.
 
@@ -46,9 +46,9 @@ where
 
 	V=\frac{S}{2k}\left(\sqrt{A^{2}+4k\frac{P_{0}V_{0}}{T_{0}}T_{a}}-A\right),
 
-and :math:`A=P_{0}S+19.62M-\frac{kV_{0}}{S}`. The estimated *normalized* Sobol indices from Owen et al. [3] are given to be:
+and :math:`A=P_{0}S+19.62M-\frac{kV_{0}}{S}`. The estimated *unnormalized* Sobol' indices (denoted :math:`\tau_i^2`) from Kenett et al. [2] are given to be:
 
-.. list-table:: Normalized Sobol' indices (see [3] for further details).
+.. list-table:: Unnormalized Sobol' indices (see [3] for further details).
    :widths: 30 15 15 15 15 15 15 15
    :header-rows: 1
 
@@ -60,7 +60,7 @@ and :math:`A=P_{0}S+19.62M-\frac{kV_{0}}{S}`. The estimated *normalized* Sobol i
      - P_0
      - T_a
      - T_0
-   * - :math:`10^2 \tau^{(2)} \; \text{indices}`
+   * - :math:`10^2 \tau^{2} \; \text{indices}`
      - 0.073
      - 1.088
      - 0.626
@@ -69,7 +69,13 @@ and :math:`A=P_{0}S+19.62M-\frac{kV_{0}}{S}`. The estimated *normalized* Sobol i
      - -0.002
      - -0.002
 
-Note that these values are effectively the Sobol index multiplied by the variance. See [3] for further details.
+These values measure the effect of varying each of the 7 input parameters on the output, the piston cycle time :math:`C`. Dividing these values by the variance of the output gives the normalised Sobol' indices. For example, the first order normalised Sobol' index for the :math:`i^{th}` input parameter is
+
+.. math::
+
+  S_i = \frac{\tau_i^2}{\sigma^2}
+
+See Section 2.2 in [3] for further details. We wish to use Effective Quadratures to compute these values for the piston problem. 
 
 .. code::
 	
@@ -98,34 +104,34 @@ As before, we begin by defining each parameter and its range using four points f
     		C = 2 * np.pi * np.sqrt(mass/(spring + area**2 * pressure * volume * ambtemp/(gastemp * V**2)))
     		return C
 
-We will opt for a total order basis set with effective quadrature subsampling!
+We will opt for a total order basis set with qr subsampling!
 
 .. code::
 
-	mybasis = Basis('Total order')
-	Pleastsquares = Polylsq(parameters, mybasis, mesh='tensor', optimization='greedy-qr', oversampling=1.0)
+  mybasis = Basis('total-order')
+  mypoly  = Poly(parameters, mybasis, method='least-squares',sampling_args={'mesh':'tensor-grid', 'subsampling-algorithm':'qr', 'sampling-ratio':1.0})
 
 Now (and this is the important part), we wish to ascertain how many model evaluations will be required for computing these sensitivities. The objective is for these to be orders of magnitude lower than other methods for computing Sobol' indices.
 
 .. code::
-	
-	print mybasis.cardinality
+
+	print(mypoly.basis.cardinality)
 	>> 120
 
-Excellent! So the number of model evaluations we will require is 120! Now lets compute the coefficients and ascertain which of the variables above are the most important. P
+Excellent! So the number of model evaluations we will require is 120! Now lets compute the coefficients and get the Sobol indices to ascertain which of the variables above are the most important.
 
 .. code::
 
-	Pleastsquares.computeCoefficients(piston)
-	Sleastsquares = Pleastsquares.getStatistics()
+  mypoly.set_model(piston)
+  mean, var = mypoly.get_mean_and_variance()
+  sobol = mypoly.get_sobol_indices(1)
 
-Printing the output to the screen, we obtain
+For the *unnormalised* Sobol' indices we obtain 
 
 .. code::
 
-	data = Sleastsquares.getSobol(1).values()
-	for i in range(0, len(parameters)):
-    		print float(data[i]) * 10**2 * Sleastsquares.variance
+  for i in range(0, len(parameters)):
+      print(float(sobol[(i,)]) * 10**2 * var)
 
 	>> 0.0790729230512
 	>> 1.04006909416
@@ -135,43 +141,42 @@ Printing the output to the screen, we obtain
 	>> 5.74465327578e-05
 	>> 0.00180048511613
 
-which are similar to the values obtained by Owen. To generate a plot, one simply uses the code below.
+which are similar to the values obtained by Owen. Next, we plot the *normalized* Sobol' indices with the code below.
 
 .. code::
 
-	fig = plt.figure()
-        ax = fig.add_subplot(1,1,1)
-        data_1 = np.arange(7) - 0.10 + 1
-        for i in range(0, len(data)):
-            plt.bar(i+1, data[i], color='steelblue',linewidth=1.5)
-        ax.set_axisbelow(True)
-        adjust_spines(ax, ['left', 'bottom'])
-        plt.xlabel(r'Parameters', fontsize=16)
-        plt.ylabel(r'First order Sobol indices', fontsize=16)
-        xTickMarks = [r'$M$', r'$S$', r'$V_0$', r'$k$', r'$P_0$', r'$T_a$', r'$T_0$']
-        ax.set_xticks(data_1+0.10)
-        xtickNames = ax.set_xticklabels(xTickMarks)
-        plt.setp(xtickNames, rotation=45, fontsize=16)
-        plt.tight_layout()
-        plt.savefig('Sobol.png', dpi=300, bbox_inches='tight')
+  fig = plt.figure()
+  ax = fig.add_subplot(1,1,1)
+  data_1 = np.arange(7) - 0.10 + 1
+  for i in range(0, len(sobol)):
+      plt.bar(i+1, sobol[(i,)], color='steelblue',linewidth=1.5)
+  ax.set_axisbelow(True)
+  #adjust_spines(ax, ['left', 'bottom'])
+  plt.xlabel(r'Parameters', fontsize=16)
+  plt.ylabel(r"First order Sobol' indices", fontsize=16)
+  xTickMarks = [r'$M$', r'$S$', r'$V_0$', r'$k$', r'$P_0$', r'$T_a$', r'$T_0$']
+  ax.set_xticks(data_1+0.10)
+  xtickNames = ax.set_xticklabels(xTickMarks)
+  plt.setp(xtickNames, rotation=45, fontsize=16)
+  plt.tight_layout()
+  plt.savefig('../Figures/tutorial_9_fig_a.png', dpi=300, bbox_inches='tight',pad_inches=0.1)
 
-
-.. figure:: Figures/Sobol.png
+.. figure:: Figures/tutorial_9_fig_a.png
    :scale: 40 %
 
    Figure. First order Sobol' indices for the piston problem.
 
 
-
-More generally, if one wanted to obtain higher order Sobol' indices, one can use the following code.
+We can also obtain higher order Sobol indices, which tell us about the importance of interaction between input parameters. For example, for the :math:`2^{nd}` order indices:
 
 .. code::
 
-	sobol_info = Sleastsquares.getSobol(2)
-        for key, value in sobol_info.iteritems():
-            print str('Parameter numbers: ')+str(key)+', Sobol index value: '+str(value)
+  sobol_2nd = mypoly.get_sobol_indices(2)
+  for key, value in sobol_2nd.items():
+      print(str('Parameter numbers: ')+str(key)+", Sobol' index value: "+str(value))
 
-This concludes this notebook on the computation of Sobol' indices.
+This concludes this notebook on the computation of Sobol' indices. The full source code for this tutorial can be found `here <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/source/_documentation/codes/tutorial_9.py>`__.
+
 
 **References**
 

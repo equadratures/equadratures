@@ -1,10 +1,10 @@
 Constructing orthogonal polynomials
 ========================================
-In this tutorial we describe how one can construct orthogonal polynomials in Effective Quadratures. For starters, we consider Legendre polynomials---orthogonal with respect to the uniform weight function. We define a Parameter :math:`s` with :math:`\rho(s) \sim \mathcal{U}[-1,1]`. 
+In this tutorial we describe how one can construct orthogonal polynomials in Effective Quadratures. For starters, we consider Legendre polynomials---orthogonal with respect to the uniform weight function. We define a Parameter :math:`s` with :math:`\rho(s) \sim \mathcal{U}[-1,1]`.
 
 
 .. code::
-	
+
 	from equadratures import *
 	import numpy as np
 	import matplotlib.pyplot as plt
@@ -19,7 +19,7 @@ We restrict our attention to the first five orthogonal polynomials, where the pa
 
 	\mathbf{P}\left(i,j\right)=\psi_{i}\left(\lambda_{j}\right) \; \; \text{where} \; \; i=1, \ldots, p; \; j = 1, \ldots, N,
 
-where :math:`N` is the number of points :math:`\lambda_{j}` discretizing the domain of :math:`s`, and :math:`p` is the maximum polynomial order, set to 5. Plots of the polynomials are shown below. 
+where :math:`N` is the number of points :math:`\lambda_{j}` discretizing the domain of :math:`s`, and :math:`p` is the maximum polynomial order, set to 5. Plots of the polynomials are shown below.
 
 .. code::
 
@@ -62,7 +62,7 @@ where :math:`\delta_{ij}` is the Kronecker delta. In Effective Quadratures, we m
 	=\int_{-1}^{1}\frac{1}{\sqrt{2i+1}}\psi_{j}\left(s\right)\frac{1}{\sqrt{2j+1}}\psi_{j}\left(s\right)ds \\
 	=\delta ij
 
-Introducing these scaling factors, we now can plot the standard Legendre polynomials; these are reported in the Wikipedia `entry <https://en.wikipedia.org/wiki/Legendre_polynomials>`__. 
+Introducing these scaling factors, we now can plot the standard Legendre polynomials; these are reported in the Wikipedia `entry <https://en.wikipedia.org/wiki/Legendre_polynomials>`__.
 
 
 .. code::
@@ -92,3 +92,4 @@ Introducing these scaling factors, we now can plot the standard Legendre polynom
 
    Figure. The first six (normalized) Legendre polynomials
 
+	 The full source code for this tutorial can be found `here. <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/source/_documentation/codes/tutorial_3.py>`__

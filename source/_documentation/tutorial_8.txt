@@ -1,121 +1,119 @@
-Polynomials via compressive sensing
+Sparse and tensor grid quadrature rules
 ========================================
-Recall that in Effective-Quadratures, we approximate models using a linear combination of orthogonal polynomials
 
-.. math::
-	
-	f\left(s\right)=\sum_{i=0}^{N-1}x_{i}\psi_{i}\left(\zeta\right)
-
-To find the polynomial coefficients :math:`x_i`, we need to evaluate an integral
-
-.. math::
-
-	x_{i}=\int_{\mathcal{D}}f\left(\zeta\right)\psi_{i}\left(\zeta\right)\rho\left(\zeta\right)d\zeta.
-
-
-To numerically evaluate the integral, we often use quadrature rules or least squares, both of which require at least as many observations as the number of basis terms as we use. To reduce computational costs related to evaluating the model, we ask if we could afford to use fewer observations than basis terms. This motivates the idea of compressive sensing (CS). In CS, we assume that the solution we seek is sparse---i.e., there are only a few non-zero coefficients and many coefficients near zero. If the solution is sufficiently sparse, it can be shown that the solution is guaranteed to be found with high probability using a number of observations that scales with the sparsity (number of non-zeros) of the solution instead of the number of basis terms. This permits us to solve for the coefficients using fewer observations than basis terms.
-
-With this technique, we solve for the sparsest compatible coefficients given our observations. This is NP-hard, but we can implement this in polynomial time using the basis pursuit denoising algorithm:
-
-
-.. math::
-
-	\text{minimize} \; \; \left\Vert \boldsymbol{x} \right\Vert _{1} \\
-	\text{such that} \; \; \left\Vert \boldsymbol{Ax}-\boldsymbol{b}\right\Vert \leq\eta
-
-where :math:`\boldsymbol{A}` is the Vendermonde-like matrix of polynomial term evaluations, :math:`\boldsymbol{b}` is a vector of model evaluations, and :math:`\eta` a positive constant representing the error we allow in our approximation. We have implemented utilities for calculating coefficients using CS in Effective Quadratures; based on the work of Tang and Iaccarino [1] and using the basis pursuit de-noising approaches in [2, 3].
-
-We demonstrate the capabilities of CS using a dataset, obtained from [4]. In this data, we measure the system efficiency of a blade using five blade design parameters, measured at five stations along the blade. This gives us 25 variables in total. We are given 548 observations in total. These are loaded in the arrays X and Y:
+This tutorial replicates part of Figure 5 from Constantine's 2012 CMAME paper [1], *Sparse Pseudospectral Approximation Method*. This paper demonstrates how sparse grids should be used to compute coefficients for polynomial approximations by evaluating the model on a sparse grid as opposed to a full tensor grid.
 
 .. code::
 
-	import sys
-	sys.path.append('../') 
 	from equadratures import *
 	import numpy as np
-	import scipy.stats as st
 
-	X = np.loadtxt("data/h_X.dat")
-	Y = np.loadtxt("data/h_Y.dat") 
+Our goal is to approximate the following function
 
-We fit a quadratic in 25 dimensions to the data using a total order basis set (yielding 351 basis terms).
+.. math::
 
-.. code::
+	f(x_1, x_2) = \frac{1}{2 + 16(x_1 - 0.1)^2 + 25(x_2 + 0.1)^2 },
 
-	N = X.shape[0]
-	p_order = 2
-	params = []
-	basis_orders = []
-
-	for i in range(25):
-    		params.append(Parameter(p_order, distribution = 'Custom', data = np.reshape(X[:,i], (N,))))
-    		basis_orders.append(p_order)
-
-	basis = Basis("total order", orders = basis_orders)
-
-Hence, for least squares (LS) we expect that at least 351 observations are required. However, as we shall demonstrate, we do not need so many for CS. We randomly pick 200 out of the 548 observations and attempt to recover the coefficients. That is, we randomly sample 200 rows out of X and Y:
+where :math:`x_1` and :math:`x_2` are bounded in the hypercube :math:`[-1, 1]^2`. As before, our first step is to declare the function.
 
 .. code::
 
-	num_obs = 200
-	chosen_points = np.random.choice(range(N), size = num_obs, replace = False)
-	X_red = X[chosen_points,:]
-	Y_red = Y[chosen_points]
+	def function(x):
+    		return 1.0/(2.0 + 16*(x[0] - 0.1)**2 + 25*(x[1] + 0.1)**2 )
+
+	order = 100
+	x1 = Parameter(lower=-1, upper=1, order=order, distribution='Uniform')
+	x2 = Parameter(lower=-1, upper=1, order=order, distribution ='Uniform')
 
 
-We then initialize the polycs class, which automatically calculates the coefficients for us.
-
-.. code::
-	polycs = Polycs(params, basis, training_inputs = X_red, training_outputs = Y_red)
-
-To verify that the coefficients we calculate are sensible, we verify the fit on data not used for training.
+We will first aim to approximate this function using a full tensor grid. This should provide some basis for comparison. We begin by defining the parameters and the tensor grid.
 
 .. code::
 
-	remaining_pts = np.delete(np.arange(N), chosen_points)
-	chosen_valid_pts = np.random.choice(remaining_pts, size = 30, replace = False)
-	x_eval = X[chosen_valid_pts]
-	y_eval = np.squeeze(np.asarray(polycs.evaluatePolyFit(x_eval)))
-	y_valid = Y[chosen_valid_pts].flatten()
+	tensor = Basis('tensor-grid')
+	myPoly = Poly([x1, x2], tensor, method='numerical-integration')
+	myPoly.set_model(function)
 
-Now lets generate some plots!
-
-.. code::	
-
-	a,b,r,_,_ = st.linregress(y_eval.flatten(),y_valid.flatten())
-	r2 = "$R^2$ value = " + str(np.round(r**2, 4))
 	fig = plt.figure()
 	ax = fig.add_subplot(1,1,1)
-	plt.scatter(y_eval, y_valid, s=150, c='tomato', marker='o')
+	plt.scatter(myPoly.get_points()[:,0], myPoly.get_points()[:,1] , marker='o', s=2, color='tomato')
+	plt.xlabel('$s_1$', fontsize=13)
+	plt.ylabel('$s_2$', fontsize=13)
+	plt.xticks(fontsize=13)
+	plt.yticks(fontsize=13)
+
+	x, y, z, max_order = vector_to_2D_grid(myPoly.get_coefficients(), myPoly.basis.get_elements() )
+	G = np.log10(np.abs(z))
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	cax = plt.scatter(x, y, s=30, marker='o', c=G, cmap='jet', alpha=1.0, vmin=-16.0, vmax=0.)
+	plt.xlim(-0.5, max_order)
+	plt.ylim(-0.5, max_order)
+	plt.xlabel('$i_1$', fontsize=13)
+	plt.ylabel('$i_2$', fontsize=13)
+	cbar = plt.colorbar(extend='neither', spacing='proportional',
+	            orientation='vertical', shrink=0.8, format="%.0f")
+	cbar.ax.tick_params(labelsize=13)
+
+.. figure:: Figures/tutorial_8_fig_a.png
+   :scale: 40 %
+
+.. figure:: Figures/tutorial_8_fig_b.png
+   :scale: 40%
+
+The figures above show us the coefficient magnitude (log base-10 scale) and the corresponding quadrature points. Now, let us try to obtain the same result using SPAM. This can be easily done in Effective Quadratures. We start by declaring a sparse grid multi-index.
+
+.. code::
+
+	sparse = Basis('sparse-grid', level=7, growth_rule='exponential')
+
+Then we proceed to compute the coefficients using the SPAM. The calls to the Polyint subroutine are unchanged, apart from the basis.
+
+.. code::
+
+	myPoly = Polyint([x1, x2], sparse)
+	myPoly.set_model(function)
+
+And again, for the plots we have:
+
+.. code::
+
+	x, y, z, max_order = twoDgrid(myPoly.get_coefficients(), myPoly.basis.get_elements())
+	G = np.log10(np.abs(z))
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	cax = plt.scatter(x, y, s=30, marker='o', c=G, cmap='jet', alpha=1.0, vmin=-16.0, vmax=0.)
+	plt.xlim(-0.5, max_order)
+	plt.ylim(-0.5, max_order)
 	adjust_spines(ax, ['left', 'bottom'])
 	ax.set_axisbelow(True)
-	plt.xlabel('Polynomial fit evaluations')
-	plt.ylabel('Non-dimensionalized efficiencies')
-	plt.xlim([-0.5, 0.4])
-	plt.ylim([-0.5, 0.4])
-	yfit = [b + a * xi for xi in y_eval]
-	plt.plot(y_eval, yfit, 'r-')
-	plt.text(0.1, 0.5, r2 , horizontalalignment='left', verticalalignment='center', transform=ax.transAxes, fontsize=12, color='gray', weight='bold')
-	plt.savefig('Fig_4.png', dpi=200, bbox_inches='tight')
+	plt.xlabel('$i_1$', fontsize=13)
+	plt.ylabel('$i_2$', fontsize=13)
+	cbar = plt.colorbar(extend='neither', spacing='proportional',
+                orientation='vertical', shrink=0.8, format="%.0f")
+	cbar.ax.tick_params(labelsize=13)
+	
 
 
-.. figure:: Figures/Fig_4.png
-   :scale: 30 %
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	plt.scatter(mySparsePoly.quadraturePoints[:,0], mySparsePoly.quadraturePoints[:,1] , marker='o', s=2, color='tomato')
+	adjust_spines(ax, ['left', 'bottom'])
+	plt.xlabel('$\zeta_1$', fontsize=13)
+	plt.ylabel('$\zeta_2$', fontsize=13)
+	plt.xticks(fontsize=13)
+	plt.yticks(fontsize=13)
 
-   Figure. A comparison of the sparse polynomial approximation with the testing data points.
 
-.. figure:: Figures/Fig_5.png
-   :scale: 30 %
+.. figure:: Figures/tutorial_8_fig_c.png
+   :scale: 40 %
 
-   Figure. Coefficient values for the approximation.
+.. figure:: Figures/tutorial_8_fig_d.png
+   :scale: 40%
+
+The total number of points in the sparse grid is 1421 compared to 10,201 in the full tensor grid; the savings is evident. SPAM leverages the anistropic nature of the coefficients to deliver nearly the same level of approximation. The full source code for this tutorial can be found `here. <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/source/_documentation/codes/tutorial_8.py>`__
+
 
 **References**
 
-
-.. [1] Tang, G., Iaccarino, G. Subsampled Gauss quadrature nodes for estimating polynomial chaos expansions. SIAM/ASA Journal on Uncertainty Quantification 2.1 (2014): 423-443. `Paper <https://epubs.siam.org/doi/abs/10.1137/130913511>`__
-
-.. [2] Chen, S. S., Donoho, D. L., and Saunders, M. A. Atomic decomposition by basis pursuit. SIAM review 43.1 (2001): 129-159. `Paper <https://epubs.siam.org/doi/abs/10.1137/S003614450037906X>`__
-
-.. [3] Candes, E. J., Romberg, J., Tao, T., Robust uncertainty principles: Exact signal reconstruction from highly incomplete frequency information. IEEE Transactions on information theory 52.2 (2006): 489-509. `Paper <https://ieeexplore.ieee.org/abstract/document/1580791/>`__
-
-.. [4] Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. Turbomachinery active subspace performance maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__
+- Constantine, P. G., Eldred, M. S. and Phipps, E. T., (2012) Sparse pseudospectral approximation method. Computer Methods in Applied Mechanics and Engineering 229: 1-12.

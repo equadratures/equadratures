@@ -132,107 +132,105 @@ We look at a compressor fan design problem. The 25 design variables can be viewe
 
 .. code::
 
-        import numpy as np
-        import scipy
         from equadratures import *
+	import numpy as np
+	import matplotlib.pyplot as plt
+	from scipy.spatial import ConvexHull, convex_hull_plot_2d
+	from mpl_toolkits.mplot3d import axes3d
 
 .. code::
 
-        X = np.loadtxt('X.dat')
-        fX = np.loadtxt('Y.dat')
+        X = np.loadtxt('../data/design_parameters.dat')
+	y = np.loadtxt('../data/non_dimensionalized_efficiency.dat')
+	title = 'Normalised efficiency'
 
-This dataset contains 554 pairs of inputs (designs of blades) and outputs (CFD-evaluataed efficiency). The dimension of inputs is 25 (25D design space). Using variable projection, we wish to find a surrogate model for this relationship in 2D. All input vectors are put in X.dat, while the outputs are in Y.dat. They are stored as variables X and fX respectively.
+This dataset contains 554 pairs of inputs (designs of blades) and outputs (CFD-evaluataed efficiency). The dimension of inputs is 25 (25D design space). All input vectors are in X , while the outputs are in y.
 
-.. code::
-
-        n=2
-        p=2
-
-:math:`n` stands for the dimensionality of the active subspace. This indicates the active subspace :math:`\mathbf{U}` found would be of :math:`25\times 2`. :math:`p` stands for the degree of polynomial basis terms.
+The first order of business is to construct a global quadratic model
 
 .. code::
 
-        listing=[]
-        for i in range(0,n):
-            listing.append(p)
-        Object=Basis('Total order',listing)
+        s = Parameter(distribution='uniform', lower=-1., upper=1., order=2)
+	myparameters = [s for _ in range(0, 25)]
+	mybasis = Basis('total-order')
+	mypoly = Poly(parameters=myparameters, basis=mybasis, method='least-squares', \
+              sampling_args= {'mesh': 'user-defined', 'sample-points': X, 'sample-outputs': y})
+	mypoly.set_model()
 
-        #Establish n Parameter objects
-        params=[]
-        P=Parameter(order=p,distribution='uniform',lower=-1,upper=1)
-        for i in range(0,n):
-            params.append(P)
+Next, we compute the active subspace
 
-        #Use the params list to establish the Poly object
-        Polybasis=Poly(params,Object)
-        [eigs, eigVecs]=computeActiveSubspaces(poly, samples=None)
-
-When the eigenvectors are calculated we can obtain the active subspace and use it for data visualisation.
 
 .. code::
 
-    U=[[ 0.00516216,  0.04112609],
-       [ 0.03252687, -0.051099  ],
-       [ 0.00581692,  0.07217146],
-       [-0.00987772,  0.03119806],
-       [-0.05858704, -0.03244601],
-       [-0.01428118, -0.05230511],
-       [-0.1623095 ,  0.2072276 ],
-       [-0.3283939 ,  0.40349012],
-       [-0.6241481 ,  0.25910419],
-       [-0.54341045, -0.00826396],
-       [-0.00473819, -0.08955527],
-       [-0.06157155, -0.03425097],
-       [-0.10538732, -0.10090391],
-       [-0.23248244, -0.46835899],
-       [-0.30954273, -0.66814152],
-       [ 0.02354317,  0.04322685],
-       [ 0.00773911,  0.03261493],
-       [ 0.00163526,  0.09699416],
-       [ 0.00643778,  0.01850486],
-       [-0.00950668, -0.03398397],
-       [ 0.02127018,  0.03193002],
-       [ 0.03069474, -0.07206712],
-       [ 0.03907251,  0.00717337],
-       [ 0.06740341, -0.0766393 ],
-       [ 0.05573985, -0.04064798]]
+        mysubspace = Subspaces(full_space_poly=mypoly, method='active-subspace')
+	W = mysubspace.get_subspace()
+	e = mysubspace.get_eigenvalues()
+
+and plot the eigenvalues to determine how many *active* variables we require.
 
 .. code::
 
-        active1 = np.dot( X , U[:,0] ) 
-        active2 = np.dot( X , U[:,1] )
+        fig = plt.figure(figsize=(7,4))
+	ax = fig.add_subplot(111)
+	plt.semilogy(e, 'o')
+	plt.ylabel('Eigenvalues (log-scale)')
+	plt.xlabel('Design parameters')
+
+.. figure:: Figures/tutorial_11_fig_a.png
+   :scale: 30 %
+
+We can then project all the samples we have within the design space onto the first few dimensions of the active subspace.
+
+.. code::
+	
+	true_dimensions = 1
+	u = X @ W[:, 0:true_dimensions]
+	fig = plt.figure(figsize=(7,4))
+	ax = fig.add_subplot(111)
+	plt.plot(u[:,0], y, 'o', color='gold', markeredgecolor='k', lw=1, ms=13, alpha=0.8)
+	plt.ylabel(title)
+	plt.xlabel('u')
+
+.. figure:: Figures/tutorial_11_fig_b.png
+   :scale: 30 %
+
+And for two dimensions
 
 .. code::
 
-        from matplotlib.mlab import griddata
-        def grid(x, y, z, resX=40, resY=40):
-            "Convert 3 column data to matplotlib grid"
-            xi = np.linspace(min(x), max(x), resX)
-            yi = np.linspace(min(y), max(y), resY)
-            Z = griddata(x, y, z, xi, yi, interp='linear')
-            X, Y = np.meshgrid(xi, yi)
-            return X, Y, Z
-        
-        X, Y, Z = grid(active1, active2, fX)
-        fig = plt.figure()
-        ax = fig.add_subplot(1,1,1)
-        cax = plt.contourf(X, Y, Z, 20, vmin=-1, vmax=0.5)
-        cax = ax.scatter(active1, active2,c=fX, marker='o', s=30)
-        cbar = plt.colorbar(cax, extend='neither', spacing='proportional', orientation='vertical', shrink=0.8)
-        ax.set_xlabel('Active variable 1, $\mathbf{XU_{1}}$')
-        ax.set_ylabel('Active variable 2, $\mathbf{XU_{2}}$')
-        plt.xlim([-2.0, 2.0])
-        plt.ylim([-2.0, 2.0])
-        adjust_spines(ax, ['left', 'bottom'])
-        ax.set_title('Efficiency along $\mathbf{U_{1}}$ and $\mathbf{U_{2}}$')
-        plt.show()
+	true_dimensions = 2
+	u = X @ W[:, 0:true_dimensions]
+	fig = plt.figure(figsize=(10,10))
+	ax = fig.add_subplot(111, projection='3d')
+	ax.scatter(u[:,0],u[:,1], y, s=50, c=y, marker='o', edgecolor='k', lw=1, alpha=0.8)
+	ax.set_xlabel('u1')
+	ax.set_ylabel('u2')
+	ax.set_zlabel(title)
 
-.. figure:: Figures/DR.png
-   :scale: 100 %
+.. figure:: Figures/tutorial_11_fig_c.png
+   :scale: 30 %
+
+Finally, we can also compute the zonotope associated with the 2D projection.
+
+.. code::
+
+	z = X @ W[:,0:true_dimensions]
+	pts = mysubspace.get_zonotope_vertices()
+	hull = ConvexHull(pts)
+	fig = plt.figure(figsize=(11,8))
+	ax = fig.add_subplot(111)
+	plt.plot(z[:,0], z[:,1], 'o', color='gold', markeredgecolor='k', lw=1, ms=13, alpha=0.8)
+	for simplex in hull.simplices:
+    		plt.plot(pts[simplex, 0], pts[simplex, 1], 'k-', lw=2)
+
+.. figure:: Figures/tutorial_11_fig_d.png
+   :scale: 30 %
+
+The full source code for this tutorial can be found `here. <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/source/_documentation/codes/tutorial_11.py>`__
 
 **References**
 
-.. [1]  Constantine, P. G. (2015) Active subspaces: Emerging ideas for dimension reduction in parameter studies, Volume 2, SIAM, 2015.
+-  Constantine, P. G. (2015) Active subspaces: Emerging ideas for dimension reduction in parameter studies, Volume 2, SIAM, 2015.
 
-.. [2] Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery active subspace performance maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__
+- Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery active subspace performance maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__
 

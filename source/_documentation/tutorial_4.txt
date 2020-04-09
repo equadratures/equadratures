@@ -1,10 +1,10 @@
 Computing moments
 ========================================
 
-This tutorial raises a very important question. Why bother using polynomials for estimating moments? What exactly is the advantage? Moreover, are we guaranteed that we will converge to the Monte Carlo solution? The answer is a resounding yes! Infact this is precisely what Dongbin Xiu and George Karniandakis showed in their seminal paper [1]. As always we begin with some definitions: Parameter, Polyint and Basis. We will also incorporate the Statistics class.
+This tutorial raises a very important question. Why bother using polynomials for estimating moments? What exactly is the advantage? Moreover, are we guaranteed that we will converge to the Monte Carlo solution? The answer is a resounding yes! Infact this is precisely what Dongbin Xiu and George Karniandakis showed in their seminal paper [1]. As always we begin with some definitions: Parameter, Poly and Basis.
 
 .. code::
-	
+
 	from equadratures import *
 	import numpy as np
 
@@ -28,8 +28,8 @@ Next, we set the number of evaluation points in each direction. Lets opt for 7 p
 	mu = 1
 	sigma = 2
 	variance = sigma**2
-	x1 = Parameter(distribution="Gaussian", shape_parameter_A=mu, shape_parameter_B=variance, order=6)
-	x2 = Parameter(distribution="Gaussian", shape_parameter_A=mu, shape_parameter_B=variance, order=6)
+	x1 = Parameter(distribution="Gaussian", shape_parameter_A=mu, shape_parameter_B=variance, order=4)
+	x2 = Parameter(distribution="Gaussian", shape_parameter_A=mu, shape_parameter_B=variance, order=4)
 	parameters = [x1, x2]
 
 Now, we can set the problem up, compute the coefficients, and then ask Effective Quadratures to output the mean and the variance.
@@ -37,13 +37,14 @@ Now, we can set the problem up, compute the coefficients, and then ask Effective
 .. code::
 
 	parameters = [x1, x2]
-        basis = Basis('Tensor grid')
-        uqProblem = Polyint(parameters, basis)
-        uqProblem.computeCoefficients(rosenbrock_fun)
-        myStats = uqProblem.getStatistics()
-	print myStats.mean, myStats.variance
-		
-	>> 6804.0 476659232.0
+	basis = Basis('Tensor grid')
+	uqProblem = Poly(parameters, basis, method='numerical-integration')
+	uqProblem.computeCoefficients(rosenbrock_fun)
+	uqProblem.set_model(rosenbrock_fun)
+	mean, variance = uqProblem.get_mean_and_variance()
+	print(mean, variance)
+
+	>> 6804.000000000022 476659232.0000047
 
 Now, we compare these results with Monte Carlo.
 
@@ -56,11 +57,27 @@ Now, we compare these results with Monte Carlo.
             f[i,0] = rosenbrock_fun([s[i,0], s[i,1]])
 	print np.mean(f), np.var(f)
 
-	>> 6825.114, 4727315412.89
+	>> 6813.941920252046 483131338.5544447
 
-The results are very close!
+The results are very close! In fact the polynomial approximation results are exact, because Rosenbrock's function is a polynomial itself!
+
+But what order should we use? This is a tough question to answer without any apriori knowledge of the function we wish to obtain statistical moments from. We defer this question to the later tutorials, but will explore the effect of the order on  accuracy. The plots below show the convergence in mean and variance with different number of samples.
+
+
+.. figure:: Figures/tutorial_4_fig_a.png
+   :scale: 30 %
+
+   Figure. Comparative convergence of the mean.
+
+
+.. figure:: Figures/tutorial_4_fig_b.png
+	    :scale: 30 %
+
+		Figure. Comparative convergence of the variance.
+
+The full source code for this tutorial can be found `here. <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/source/_documentation/codes/tutorial_4.py>`__
 
 
 **References**
 
-.. [1] Xiu, D., and Karniadakis, G. E., (2002) The Wiener--Askey polynomial chaos for stochastic differential equations. SIAM journal on scientific computing 24.2: 619-644.
+- Xiu, D., Karniandakis, G. E., (2002). The Wiener-Askey Polynomial Chaos for Stochastic Differential Equations. SIAM Journal on Scientific Computing,  24(2), `Paper <https://epubs.siam.org/doi/abs/10.1137/S1064827501387826?journalCode=sjoce3>`__

@@ -1,213 +1,121 @@
-Polynomial least squares approximations
-========================================
-Motivated by reducing the number of samples required for constructing polynomial approximations, we recast our problem of finding suitable quadrature points, with ideas from least squares. Here, we solve 
+Bayesian polynomial regression
+==============================================
 
-.. math::
-	\text{minimize} \; \; \left\Vert \boldsymbol{Ax}-\boldsymbol{b}\right\Vert_{2}
+In this tutorial we present a Bayesian analogue to polynomial regression; the material presented here is heavily derived  from Chapter 3.8 in Rogers and Girolami. We will aim to fit a Bayesian polynomial regression model to the data we considered in the prior tutorial. Bayesian approaches are characterized by four key elements: the model, the prior, the likelihood and the posterior.
 
-where entries of :math:`\boldsymbol{A}` are given by 
+**The model**
 
-.. math::
-	\boldsymbol{A}(i,j) = \sqrt{w_{j}} \psi_{i}\left(\bar{\zeta}_{j}\right)
-
-which is the weighted :math:`i`-th orthogonal polynomial evaluated at the :math:`j`-th quadrature point. Elements of :math:`\boldsymbol{b}` are given by 
+We define our model as
 
 .. math::
 
-	\boldsymbol{b}(j)=\sqrt{w_{j}} f(\bar{\zeta}_{j})
+  \mathbf{f} = \mathbf{Ax} + \boldsymbol{\epsilon},
 
-where :math:`f(\cdot)` represents the function to be evaluated. Now if the quadrature points are weights are taken from a tensor grid, then there is equivalence between a polynomial least squares approximation and a pseudospectral approximation. However, seeing as our motivation is to reduce the number of points used, in tutorial we opt for a few different sampling strategies, based on the work in [1,2].
-
-**For low dimensions**
-
-First, we discuss the *effectively subsampled approach*---also the namesake of our code---where one subsamples (deterministically) points from a tensor grid [2]. This subsampling strategy is performed via QR column pivoting. First, we examine the difference (both in syntax and execution) of a tensor grid versus this effectively subsampled approach. For this *low dimensional problem* we shall utilize `Rosenbrock's function <https://en.wikipedia.org/wiki/Rosenbrock_function>`__. 
+where :math:`\mathbf{A} \in \mathbb{R}^{N \times M}` is our *Vandermonde* type matrix, comprising of :math:`M` orthogonal polynomials evaluated at the :math:`N` *sample inputs*. In other words each entry of :math:`\mathbf{A}` can be given by
 
 .. math::
 
-	f\left(\zeta_{1},\zeta_{2}\right)=\left(a-\zeta_{1}\right)^{2}+b\left(\zeta_{2}-\zeta_{1}^{2}\right)^{2} \\
-	\text{where} \; \; a=1 \; \; \text{and} \; \; b=100.
+  \mathbf{A}_{ij} = \psi_i \left(  \lambda_j \right).
+
+Returning back to the first equation, we have :math:`\boldsymbol{\epsilon} \in \mathbb{R}^{N}` which is the noise associated with each *sample output*, i.e., each element of the vector. To simplify matters, we introduce the standard Gaussian assumption for the noise
+
+.. math::
+
+   \boldsymbol{\epsilon} = \mathcal{N} \left( \boldsymbol{0}, \boldsymbol{\Sigma} \right),
+
+where :math:`\boldsymbol{0}` indicates the zero vector and :math:`\boldsymbol{\Sigma}` denotes the covariance matrix associated with the noisy measurements. We assume that these are known. Infact we will assume that
+
+.. math::
+
+  \boldsymbol{\Sigma} = \sigma^2 \mathbf{I}
+
+where :math:`\mathbf{I}` is the identity matrix; we set :math:`\sigma=1.5`.
+
+**The likelihood**
+
+In a Bayesian context, the likelihood can be interpreted as a model of some parameters given data. It is formed from the joint probability of both the same data and its associated model parameters. Our likelihood function here is given by
+
+.. math::
+
+  p \left( \mathbf{f} | \mathbf{x}, \mathbf{A}, \sigma^2 \right) = \mathcal{N} \left( \mathbf{Ax}, \sigma^2 \mathbf{I}     \right).
 
 
-.. code::
-	
-	import numpy as np
-	from equadratures import *
-	import matplotlib.pyplot as plt
-	from mpl_toolkits.mplot3d import axes3d
-	from matplotlib import cm
+**The prior**
 
-	zeta_1 = Parameter(distribution='uniform', order=4, lower= -2.0, upper=2.0)
-	zeta_2 = Parameter(distribution='uniform', order=4, lower=-1.0, upper=3.0)
+One of the goals of polynomial regression is to ascertain the value of our coefficients :math:`\mathbf{x}`. As we would like an exact expression for the posterior, as Rogers and Girolami state, we require a prior that is **conjugate** to the Gaussian likelihood above. The simplest choice for facilitating this conjugacy is to ensure that our prior too is Gaussian. We therefore write our prior as
 
-	def fun(x):
-		a = 1.0
-		b = 100.0
-    		return (a - x[0])**2 + b * (x[1] - x[0]**2)**2
+.. math::
 
-	
-Now, we first setup the standard tensor grid
+  p \left( \mathbf{x} | \boldsymbol{\mu}_{0} , \boldsymbol{\Sigma}_{0} \right) = \mathcal{N} \left( \boldsymbol{\mu}_{0}, \boldsymbol{\Sigma}_{0}  \right),
 
-.. code::
-
-	myBasis = Basis('tensor grid')
-	myPoly = Polyint([zeta_1, zeta_2], myBasis)
-	myPoly.computeCoefficients(fun)
-	
-Followed by the polynomial least squares approximation, using the Polylsq class. Three additional inputs are required:
-
-- the :code:`mesh` from which subsamples will be selected;
-- the :code:`optimization` strategy used to select subsamples;
-- the :code:`oversampling` ratio, which sets the ratio of the number of rows to columns.
-
-Opting for the QR column pivoting routine on a tensor grid and without any oversampling (not typically recommended), we have:
-
-.. code::
-	
-	myBasis = Basis('total order')	
-	myPoly2 = Polylsq([zeta_1, zeta_2], myBasis, mesh='tensor', optimization='greedy-qr', oversampling=1.0)
-	myPoly2.computeCoefficients(fun)
-	
-As expected, the effectively subsampled grid uses fewer points than the tensor grid.
+where we set :math:`\boldsymbol{\mu} = \boldsymbol{0}` and :math:`\boldsymbol{\Sigma}_{0} = 10 \mathbf{I}`. The high-level idea is that we generate random coefficients---sampling from :math:`\mathcal{N} \left( \boldsymbol{\mu}_{0}, \boldsymbol{\Sigma}_{0}  \right)`---for the first six Legendre polynomials and plot them!
 
 .. code::
 
-	fig = plt.figure()
-	ax = fig.add_subplot(1,1,1)
-	plt.plot(myPoly.quadraturePoints[:,0], myPoly.quadraturePoints[:,1], 'o', ms=18, c='crimson', label='Tensor grid')
-	plt.plot(myPoly2.quadraturePoints[:,0], myPoly2.quadraturePoints[:,1], 'd', ms=18, c='navy', alpha=0.6, label='Effectively subsampled')
-	adjust_spines(ax, ['left', 'bottom'])
-	ax.set_axisbelow(True)
-	plt.xlabel('$\zeta_1$', fontsize=15)
-	plt.ylabel('$\zeta_2$', fontsize=15)
-	plt.xlim([0.0 , 1.1])
-	plt.ylim([-1.25 , 1.25])
-	plt.legend(loc='upper center', ncol=2, shadow=True, fancybox=True)
-	plt.savefig('Fig_003.png', dpi=200, bbox_inches='tight')
-	
-.. figure:: Figures/Fig_003.png
-   :scale: 30 %
+  p_order = 5
+  myBasis = Basis('Univariate')
+  poly = Poly(myParameters, myBasis)
 
-   Figure. A comparison of quadrature points from a tensor grid with effectively subsampled quadrature points.
+  P = poly.get_poly(x_test).T # Extracting the Vandermonde-type matrix!
 
-Next, we compare the response surfaces. 
+  # Define the prior!
+  mu_0 = np.zeros((p_order+1))
+  Sigma_0 = 100. * np.eye(p_order+1)
+  samples = 300
+  coefficients_dist = np.random.multivariate_normal(mu_0, Sigma_0, (samples,p_order+1))
 
-.. code::
+.. figure:: Figures/tutorial_7_fig_a.png
+   :scale: 40 %
 
-	N = 20
-	z1 = np.linspace(zeta_1.lower, zeta_1.upper, N)
-	z2 = np.linspace(zeta_2.lower, zeta_2.upper, N)
-	[Z1, Z2] = np.meshgrid(z1, z2)
-	Z1_vec = np.reshape(Z1, (N*N, 1))
-	Z2_vec = np.reshape(Z2, (N*N, 1))
-	samples = np.hstack([Z1_vec, Z2_vec])
+   Figure. Samples from the prior distribution (grey lines) assigned to the polynomial coefficients.
 
-	PolyApprox2 = myPoly2.evaluatePolyFit( samples )
-	PolyApprox2 = np.reshape(PolyApprox2, (N, N))
 
-	PolyApprox = myPoly.evaluatePolyFit( samples )
-	PolyApprox = np.reshape(PolyApprox, (N, N))
+**The posterior**
 
-	# Response surfaces
-	fig = plt.figure()
-	ax = fig.add_subplot(111, projection='3d')
-	surf = ax.plot_surface(Z1, Z2, PolyApprox2, rstride=1, cstride=1, cmap=cm.gist_earth, linewidth=0, alpha=0.6, label='Tensor grid')
-	wire = ax.plot_wireframe(Z1, Z2, PolyApprox, edgecolor='red', rstride=1, cstride=1, alpha=0.6, label='Effectively subsampled')
-	ax.set_xlabel('$\zeta_1$', fontsize=15)
-	ax.set_ylabel('$\zeta_2$', fontsize=15)
-	ax.view_init(44, -129)
-	plt.savefig('Fig_007.png', dpi=200, bbox_inches='tight')
-	plt.close()
+But clearly this isn't too informative. What we want is to posterior! The posterior can be expressed as a product of the likelihood and the prior. In this tutorial, we know our posterior will also be a Gaussian distribution. What is not known is its precise mean and covariance. Using Bayes' rule, one can express the posterior distribution as
 
-.. figure:: Figures/Fig_007.png
-   :scale: 30 %
+.. math::
 
-   Figure. A comparison of response surfaces: the red wireframe is the approximation obtained via the effectively subsampled approach, while the surface is the approximation obtained from the tensor grid.
+  p \left( \mathbf{x} | \mathbf{f}, \mathbf{A}, \sigma^2  \right) \propto  p \left( \mathbf{f} | \mathbf{x}, \mathbf{A}, \sigma^2 \right) p \left( \mathbf{x} | \boldsymbol{\mu}_{0} , \boldsymbol{\Sigma}_{0} \right),
 
-Next, we compare the coefficients. It is important to note that the effectively subsampled strategy only seeks to approximate the coefficients associated with a total order basis.
+which upon simplification yields
+
+.. math::
+
+  = \text{exp} \left\{  -\frac{1}{2} \left( \frac{1}{\sigma^2} \left( \mathbf{f} - \mathbf{Ax}  \right)^{T}  \left( \mathbf{f} - \mathbf{Ax}  \right)  +   \left( \mathbf{x} - \boldsymbol{\mu} \right)^{T}  \boldsymbol{\Sigma}_{0}^{-1}  \left( \mathbf{x} - \boldsymbol{\mu} \right)     \right)     \right\}.
+
+The covariance and the mean can then be given as
+
+.. math::
+
+  \boldsymbol{\Sigma}_{\mathbf{x}} = \left( \frac{1}{\sigma^2} \mathbf{A}^{T} \mathbf{A}  + \boldsymbol{\Sigma}^{-1}_{0}    \right)^{-1}
+
+.. math::
+
+    \boldsymbol{\mu}_{\mathbf{x}} = \boldsymbol{\Sigma}_{\mathbf{x}} \left( \frac{1}{\sigma^2} \mathbf{A}^{T} \mathbf{f} + \boldsymbol{\Sigma}_{0}^{-1} \boldsymbol{\mu}_{0}   \right)
+
+respectively.
 
 .. code::
 
-	x, y, z, max_order = twoDgrid(myPoly.coefficients, myPoly.basis.elements)
-	G = np.log10(np.abs(z))
-	fig = plt.figure()
-	ax = fig.add_subplot(1,1,1)
-	cax = plt.scatter(x, y, s=480, marker='o', c=G, cmap='jet', alpha=0.8, vmax=2, vmin=-12)
-	plt.xlim(-0.5, max_order)
-	plt.ylim(-0.5, max_order)
-	adjust_spines(ax, ['left', 'bottom'])
-	ax.set_axisbelow(True)
-	plt.xlabel('$i_1$', fontsize=13)
-	plt.ylabel('$i_2$', fontsize=13)
-	cbar = plt.colorbar(extend='neither', spacing='proportional',
-                orientation='vertical', shrink=0.8, format="%.0f")
-	cbar.ax.tick_params(labelsize=13)
-	plt.savefig('Fig_008.png', dpi=200, bbox_inches='tight')
-	plt.close()
+  values = np.array([0,2,9, 11]) # only selecting 4 sample points!
+  x_use = x_train[values]
+  y_use = y_train[values]
+  Sigma_measurements = noise**2 * np.eye(len(values))
+  P_data = poly.get_poly(x_use).T
+  # and now computing the posterior covariance and mean...
+  Sigma_x = np.linalg.inv( P_data.T @ np.linalg.inv(Sigma_measurements) @ P_data  + np.linalg.inv(Sigma_0) )
+  mu_x = Sigma_x @   P_data.T @ np.linalg.inv(Sigma_measurements) @ y_use
+  coefficients_dist = np.random.multivariate_normal(mu_x.flatten(), Sigma_x, (samples,p_order+1))
 
-	x, y, z, max_order = twoDgrid(myPoly2.coefficients, myPoly2.basis.elements)
-	G = np.log10(np.abs(z))
-	fig = plt.figure()
-	ax = fig.add_subplot(1,1,1)
-	cax = plt.scatter(x, y, s=480, marker='o', c=G, cmap='jet', alpha=0.8, vmax=2, vmin=-12)
-	plt.xlim(-0.5, max_order)
-	plt.ylim(-0.5, max_order)
-	adjust_spines(ax, ['left', 'bottom'])
-	ax.set_axisbelow(True)
-	plt.xlabel('$i_1$', fontsize=13)
-	plt.ylabel('$i_2$', fontsize=13)
-	cbar = plt.colorbar(extend='neither', spacing='proportional',
-                orientation='vertical', shrink=0.8, format="%.0f")
-	cbar.ax.tick_params(labelsize=13)
-	plt.savefig('Fig_009.png', dpi=200, bbox_inches='tight')
-	plt.close()
+.. figure:: Figures/tutorial_7_fig_b.png
+   :scale: 40 %
 
-.. figure:: Figures/Fig_008.png
-   :scale: 30 %
+   Figure. Samples created from the coefficients drawn from the posterior after observing four data points. The mean is shown in blue.
 
-   Figure. Polynomial coefficients obtained using the tensor grid.
+The full source code for this tutorial can be found `here. <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/source/_documentation/codes/tutorial_7.py>`__
 
-.. figure:: Figures/Fig_009.png
-   :scale: 30 %
-
-   Figure. Polynomial coefficients obtained using the effectively subsampled approach.
-
-
-**For high dimensions**
-
-Now, we shall attempt to use a different sampling strategy, more suited for high dimensional problems. We shall try to approximate moments of a 20D function: a sum of Gaussians. We begin by defining the parameters, function and the polynomial.
-
-.. code::
-
-	dimensions = 20
-	zeta_1 = Parameter(distribution='gaussian', shape_parameter_A = 10.0, shape_parameter_B=0.5, order=1)
-	myParams = [zeta_1 for i in range(dimensions)]
-
-	def fun(x):
-    		return np.sum(x)
-
-
-	myBasis = Basis('Total order')
-	myPoly = Polylsq(parameters=myParams, basis=myBasis, mesh='tensor', optimization='random', oversampling=1.5)
-	print np.linalg.cond(myPoly.Az)
-	print myPoly.Az.shape
-
-Here we have opted for randomly subsampling points from an existing tensor grid, which doesn't require the code to store the entire Vandermonde matrix in memory. Its always a good practice to check the condition number of this matrix (see above). Here we obtain a condition number of about 7.4, which is pretty good! 
-
-Next, we compute the mean and variance...
-
-.. code::
-	
-	myPoly.computeCoefficients(fun)
-	stats = myPoly.getStatistics(light=True, max_sobol_order=1)
-	print stats.mean, stats.variance
-
-We obtain a mean of 200.0 and a variance of 10.0. This is correct as the sum of 20 Gaussians with an individual mean of 10 and variance of 0.5 will be 200 and 10 respectively. 
 
 **References**
 
-
-.. [1] Seshadri, P., Iaccarino, G., Ghisu, T. Quadrature Strategies for Constructing Polynomial Approximations. [To appear in Springer shortly]. Preprint available: `Paper <https://arxiv.org/abs/1805.07296>`__.
-
-.. [2] Seshadri, P., Narayan, A., Sankaran M. Effectively Subsampled Quadratures for Least Squares Polynomial Approximations." SIAM/ASA Journal on Uncertainty Quantification 5.1 (2017): 1003-1023. `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__.
-
-
+- Rogers, S., Girolami, M. (2016). A First Course in Machine Learning. Chapman and Hall/CRC, Boca Raton, Florida, U.S.A.

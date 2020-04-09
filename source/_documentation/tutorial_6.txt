@@ -1,145 +1,95 @@
-Polynomial regression for time varying data
+Polynomial regression
 ==============================================
 
-In this tutorial we show an example of using Effective Quadratures on a regression problem for a data set. We are going to use the `Avocado Prices <https://www.kaggle.com/neuromusic/avocado-prices>`__, and fit an autoregressive model to the time series data of total organic avocado volume sold in the US against time. An autoregressive (AR) model treats the time series as a wide sense stationary random process. The value at one time instant depends on some previous values linearly, plus some Gaussian noise. An order P AR process is defined as:
+So you have some data, and you'd like to get a "best-fit" curve through the data. No problem. That's pretty much what this guide seeks to do. So let's get started; consider the data set below.
 
-.. math::
-    Y_{t} = \sum_{i=1}^{P} a_i Y_{t-i} + \epsilon_t,
+.. list-table:: Sample data for regression.
+   :widths: 25 25
+   :header-rows: 1
 
-where :math:`\epsilon_t \sim \mathcal{N} (0,\sigma)` is an additive zero mean white Gaussian noise. To estimate the parameters :math:`{a_i, \sigma}`, we can use maximum likelihood. It can be shown that under this model, the AR coefficients :math:`{a_i}` can be found via least squares,
+   * - X
+     - Y
+   * - 0
+     - 6.8053
+   * - 0.0714
+     - -1.5184
+   * - 0.1429
+     - 1.6416
+   * - 0.2857
+     - 6.3543
+   * - 0.3571
+     - 14.3442
+   * - 0.4286
+     - 16.4426
+   * - 0.5714
+     - 18.1953
+   * - 0.6429
+     - 28.9913
+   * - 0.7143
+     - 27.2246
+   * - 0.7857
+     - 40.3759
+   * - 0.9286
+     - 55.3726
+   * - 1.0000
+     - 72.0
 
-.. math::
-    \text{minimize} \qquad \left\Vert \mathbf{\Phi a} - \boldsymbol{b} \right\Vert_2,
-
-where :math:`\mathbf{b}` contains the time series data, :math:`\phi_i`, the :math:`i^{th}` column of :math:`\Phi`, contains the time series shifted by :math:`i` time steps, and :math:`\mathbf{a}` contains the AR coefficients. Once we find the maximum likelihood estimate of :math:`\mathbf{a}`, we can find the optimal :math:`\sigma`:
-
-.. math::
-    \sigma^* = \frac{\left\Vert \mathbf{\Phi a^*} - \boldsymbol{b} \right\Vert_2^2}{T-1+P},
-
-where :math:`T` is the total length of the time series. The least squares problem can be solved via EQ by the Polyreg module. To start, we first import the required modules and data.
-
-.. code::
-	
-    from equadratures import *
-    import numpy as np
-    import matplotlib.pyplot as plt
-    import pandas as pd
-
-    data = pd.read_csv("../avocado.csv")
-    data = data.loc[(data['region'] == 'TotalUS') & (data['type'] == 'organic')]
-
-    input_vals = data.as_matrix(columns = ['Date'])
-    output_vals = data.as_matrix(columns = ['Total Volume'])
-
-We then convert the input values from date strings to sorted, numerically indexed data.
-
-.. code::
-
-    tt = input_vals.copy()
-    for t in range(input_vals.shape[0]):
-        tt[t] = pd.Timestamp(input_vals[t][0]).value
-
-    tt = (tt / 1e11 - np.min(tt / 1e11)) / 6048
-    ind = np.argsort(tt, axis = 0)
-    tt = np.sort(tt, axis=0)
-
-Then, we standardize the volume values to zero mean and unit variance.
-
-.. code::
-    yy = np.squeeze((output_vals - np.mean(output_vals)) / np.std(output_vals))
-    yy = np.squeeze(yy[ind])
-
-We can visualize the time series by plotting yy against tt. 
+Our goal is to compute the best fit a polynomial approximation through this data set. We begin by calling two classes from the code. The first class is the Parameter class, that handles all the information regarding the independent variable, or parameter. The second class is the Polyreg class, which actually generates the "best-fit" curve using the information in the parameter. To begin, lets load the data.
 
 .. code::
 
-    plt.scatter(tt, yy)
-    plt.xlabel('Time index')
-    plt.ylabel('Normalized volume')
-    plt.show()
+	from equadratures import *
+	import numpy as np
 
-.. figure:: Figures/time_series.png
-   :scale: 100 %
+	dimensions = 1
+	M = 12
+	param = Parameter(distribution='Uniform', lower=0, upper=1., order=1)
+	myParameters = [param for i in range(dimensions)] # one-line for loop for parameters
+	x_train = np.mat([0,0.0714,0.1429,0.2857,0.3571,0.4286,0.5714,0.6429,0.7143,0.7857,0.9286,1.0000], dtype='float64')
+	y_train = np.mat([6.8053,-1.5184,1.6416,6.3543,14.3442,16.4426,18.1953,28.9913,27.2246,40.3759,55.3726,72.0], dtype='float64')
+	x_train = np.reshape(x_train, (M, 1))
+	y_train = np.reshape(y_train, (M, 1))
 
-   Figure. Time series data
-
-
-Since the time series depends linearly on its history, the appropriate polynomial degree is 1 in every variable. Using an isotropic total order basis allows us to conform to the setup specified above. In this application, the distribution of the parameters is not critical, so we will use a uniform distribution in each variable, covering all the range of the data. The following code sets up the model for P = 1.
-
-.. code::
-
-    p_order = 1
-    ar_order = 1
-
-    yy_fit = yy[ar_order:]
-    xx_fit = np.zeros((len(yy) - ar_order, ar_order))
-
-    parameters = []
-    for a in range(ar_order):
-        b = yy[a:-ar_order+a].flatten().astype('float64')
-        xx_fit[:, a] = b
-        parameters.append(Parameter(distribution="uniform", lower = 0, upper = 3, order = p_order))
-
-    polybasis = Basis("total order")
-    poly = Polyreg(parameters, polybasis, training_inputs = xx_fit, training_outputs = yy_fit)
-
-Running this calculates our AR coefficients. To ensure that we are getting something sensible, we can check the condition number of the design matrix.
+Now we use the univariate basis in the polyreg class.
 
 .. code::
 
-    print poly.cond
+  myBasis = Basis('Univariate')
+  poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':x_train, 'sample-outputs':y_train} )
+  poly.set_model()
+  N = 100
+  x_test = np.reshape(np.linspace(0, 1, N), (N, 1) )
 
-This should not be too high. Next, we calculate the estimate of the noise variance.
+	# Plot the results
+  fig = plt.figure()
+  ax = fig.add_subplot(1,1,1)
+  for i in range(0, M):
+    plt.scatter(x_train[i,0], y_train[i,0], marker='o', s=80, color='tomato')
+  plt.plot(x_test, poly.get_polyfit(x_test), 'k-')
+  plt.xlabel('$X$', fontsize=13)
+  plt.ylabel('$Y$', fontsize=13)
+  plt.xticks(fontsize=13)
+  plt.yticks(fontsize=13)
 
-.. code::
+.. figure:: Figures/tutorial_6_fig_a.png
+   :scale: 40 %
 
-    residue = yy_fit - np.squeeze(np.asarray(poly.evaluatePolyFit(xx_fit)))
-    sigma = np.linalg.norm(residue)**2 / (len(tt) + 1 - ar_order)
+   Figure. A linear model fit (-) for the data (o).
 
-Finally, we can use the estimated coefficients to predict future sales. We will predict 50 time steps ahead, and estimate the standard errors of the predictions (:math:`\sqrt{n\sigma}` n steps ahead).
 
-.. code::
-
-    prediction_length = 50
-    tt_pred = np.linspace(float(tt[-1, :]), float(tt[-1, :]) + prediction_length, num = prediction_length)
-    last_tt = tt[:-ar_order - 1:-1].flatten()
-    last_yy = yy[:-ar_order-1:-1].flatten()
-    flat_coeffs = np.squeeze(np.asarray(poly.coefficients))
-    predictions = np.zeros((prediction_length))
-    for p in range(prediction_length):
-
-        last_yy_aug = np.hstack([[1.0], last_yy])
-        prediction = np.sum(flat_coeffs * last_yy_aug) + np.random.randn() * np.sqrt(sigma)
-        if len(last_yy) == 1:
-            last_yy = [prediction]
-        else:
-            last_yy = np.append(last_yy[1:], prediction)
-        predictions[p] = prediction
-
-    yy_errors = np.sqrt(sigma * np.arange(1,prediction_length+1))
-
-We can then visualize the predictions.
+Now, we repeat the same experiment, but increase the order of the polynomial!
 
 .. code::
 
-    plt.scatter(tt, yy)
-    plt.errorbar(tt_pred, predictions, yerr = yy_errors, fmt = 'ro', elinewidth=0.5)
-    plt.xlabel('Time index')
-    plt.ylabel('Normalized volume')
-    plt.show()
-
-.. figure:: Figures/prediction_1.png
-   :scale: 100 %
-
-   Figure. Prediction using AR(1) model.
+  myBasis = Basis('Univariate')
+  param = Parameter(distribution='Uniform', lower=0, upper=1., order=2)
+  myParameters = [param for i in range(dimensions)] # one-line for loop for parameters
+  poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':x_train, 'sample-outputs':y_train} )
 
 
-The predicted points fail to capture the periodicity of the data, and seems to have lost the upward trend. This is because we are too restrictive in limiting the lookback of the prediction. Increasing P will allow us to use more information and possibly capture the periodicity and trend better, at the cost of increased complexity of the model. There is also a risk of causing the predictions to become unstable and diverge. It turns out a good balance is given by P = 40. Rerunning the above with P = 40 gives the following.
+.. figure:: Figures/tutorial_6_fig_b.png
+   :scale: 40 %
 
-.. figure:: Figures/prediction_40.png
-   :scale: 100 %
+   Figure. A quadratic model fit (-) for the data (o).
 
-   Figure. Prediction using AR(40) model.
-
-
-For an even better model, one could consider other options such as sine transforming the output (which would require a priori knowledge or estimation of the period).
+The full source code for this tutorial can be found `here. <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/source/_documentation/codes/tutorial_6.py>`__

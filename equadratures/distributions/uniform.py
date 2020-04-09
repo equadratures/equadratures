@@ -18,12 +18,15 @@ class Uniform(Distribution):
         self.lower = lower
         self.upper = upper
         self.bounds = np.array([-1.0, 1.0])
-        if (self.lower is not None) and (self.upper is not None):
-            self.mean = 0.5 * (self.upper + self.lower)
-            self.variance = 1.0/12.0 * (self.upper - self.lower)**2
-            self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
-            self.parent = uniform(loc=(self.lower), scale=(self.upper-self.lower))
-        # self.mean = 0.0
+        if (self.lower is None) or (self.upper is None):
+            print('One or more bounds not specified. Assuming [0, 1].')
+            self.lower = 0.0
+            self.upper = 1.0
+        self.mean = 0.5 * (self.upper + self.lower)
+        self.variance = 1.0/12.0 * (self.upper - self.lower)**2
+        self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
+        self.parent = uniform(loc=(self.lower), scale=(self.upper-self.lower))
+
         self.skewness = 0.0
         self.shape_parameter_A = 0.
         self.shape_parameter_B = 0.

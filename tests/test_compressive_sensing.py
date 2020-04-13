@@ -1113,7 +1113,7 @@ class TestB(TestCase):
         params = []
         basis_orders = []
         for i in range(25):
-                params.append(Parameter(p_order, distribution = 'Custom', data = np.reshape(X[:,i], (N,))))
+                params.append(Parameter(p_order, distribution = 'Uniform', lower=-1., upper=1.) )
                 basis_orders.append(p_order)
 
         basis = Basis("total-order", orders = basis_orders)

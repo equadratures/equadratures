@@ -18,6 +18,7 @@ class Cauchy(Distribution):
         self.location = location
         self.scale = scale
         self.bounds = np.array([-np.inf, np.inf])
+        self.mean = np.nan
         self.skewness = np.nan
         self.kurtosis = np.nan
         if self.scale is not None:

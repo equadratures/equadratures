@@ -380,7 +380,7 @@ def least_absolute_residual(A, b):
     A1 = np.hstack([A, -np.eye(N)])
     A2 = np.hstack([-A, -np.eye(N)])
     AA = np.vstack([A1, A2])
-    bb = np.vstack([b, -b])
+    bb = np.hstack([b.reshape(-1), -b.reshape(-1)])
     print(N, d)
     print(AA.shape)
     print(bb.shape)

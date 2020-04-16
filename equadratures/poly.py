@@ -16,7 +16,7 @@ class Poly(object):
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     :param str method: The method used for computing the coefficients. Should be one of: ``compressive-sensing``,
-        ``numerical-integration``, ``least-squares``, ``least-squares-with-gradients``, ``minimum-norm``.
+        ``numerical-integration``, ``least-squares``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``minimum-norm``.
     :param dict sampling_args: Optional arguments centered around the specific sampling strategy.
 
             :string mesh: Avaliable options are: ``monte-carlo``, ``sparse-grid``, ``tensor-grid``, ``induced``, or ``user-defined``. Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1] is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
@@ -89,7 +89,7 @@ class Poly(object):
         if self.method is not None:
             if self.method == 'numerical-integration' or self.method == 'integration':
                 self.mesh = self.basis.basis_type
-            elif self.method == 'least-squares':
+            elif self.method == 'least-squares' or self.method == 'least-absolute-residual':
                 self.mesh = 'tensor-grid'
             elif self.method == 'least-squares-with-gradients':
                 self.gradient_flag = 1

@@ -6,12 +6,13 @@ from scipy.optimize import linprog
 class Solver(object):
     """
     Returns solver functions for solving Ax=b
-    :param string method: The method used for solving the linear system. Options include: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration`` and ``least-squares-with-gradients``.
+    :param string method: The method used for solving the linear system. Options include: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration``, ``least-squares-with-gradients`` and ``least-absolute-residual``.
     :param dict solver_args: Optional arguments centered around the specific solver.
             :param numpy.ndarray noise-level: The noise-level to be used in the basis pursuit de-noising solver.
             :param bool verbose: Default value of this input is set to ``False``; when ``True`` a string is printed to the screen detailing the solver convergence and condition number of the matrix.
     """
     def __init__(self, method, solver_args):
+        print(method)
         self.method = method
         self.solver_args = solver_args
         self.noise_level = None
@@ -32,7 +33,7 @@ class Solver(object):
         elif self.method.lower() == 'least-absolute-residual':
             self.solver = lambda A, b: least_absolute_residual(A, b)
         else:
-            raise ValueError('You have not selected a valid method for solving the coefficients of the polynomial. Choose from compressed-sensing, least-squares, least-squares-with-gradients, minimum-norm or numerical-integration.')
+            raise ValueError('You have not selected a valid method for solving the coefficients of the polynomial. Choose from compressed-sensing, least-squares, least-squares-with-gradients, least-absolute-residual, minimum-norm or numerical-integration.')
     def get_solver(self):
         return self.solver
 def least_squares(A, b, verbose):

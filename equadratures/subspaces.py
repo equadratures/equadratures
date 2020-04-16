@@ -41,7 +41,7 @@ class Subspaces(object):
         2. Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery Active Subspace Performance Maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__.
         3. Hokanson, J., Constantine, P., (2018) Data-driven Polynomial Ridge Approximation Using Variable Projection. SIAM Journal of Scientific Computing, 40(3), A1566-A1589. `Paper <https://epubs.siam.org/doi/abs/10.1137/17M1117690>`__.
     """
-    def __init__(self, method, full_space_poly=None, sample_points=None, sample_outputs=None, polynomial_degree=2, subspace_dimension=2, bootstrap=False, subspace_init=None, max_iter=1000, tol=None):
+    def __init__(self, method, full_space_poly=None, sample_points=None, sample_outputs=None, polynomial_degree=2, subspace_dimension=2, bootstrap=False, subspace_init=None, max_iter=1000, tol=None, poly_method='least-squares'):
         self.full_space_poly = full_space_poly
         self.sample_points = sample_points
         self.Y = None # for the zonotope vertices
@@ -52,6 +52,7 @@ class Subspaces(object):
         self.subspace_dimension = subspace_dimension
         self.polynomial_degree = polynomial_degree
         self.bootstrap = bootstrap
+        self.poly_method = poly_method
         if self.method.lower() == 'active-subspace' or self.method.lower() == 'active-subspaces':
             self.method == 'active-subspace'
             if self.full_space_poly is None:
@@ -59,7 +60,7 @@ class Subspaces(object):
                 param = Parameter(distribution='uniform', lower=-1, upper=1., order=self.polynomial_degree)
                 myparameters = [param for _ in range(d)]
                 mybasis = Basis("total-order")
-                mypoly = Poly(myparameters, mybasis, method='least-squares', sampling_args={'sample-points':self.sample_points, \
+                mypoly = Poly(myparameters, mybasis, method=poly_method, sampling_args={'sample-points':self.sample_points, \
                                                                     'sample-outputs':self.sample_outputs})
                 mypoly.set_model()
                 self.full_space_poly = mypoly
@@ -88,7 +89,7 @@ class Subspaces(object):
                 order=self.polynomial_degree)
             myparameters.append(param)
         mybasis = Basis("total-order")
-        subspacepoly = Poly(myparameters, mybasis, method='least-squares', sampling_args={'sample-points':projected_points, \
+        subspacepoly = Poly(myparameters, mybasis, method=self.poly_method, sampling_args={'sample-points':projected_points, \
                                                                     'sample-outputs':self.sample_outputs})
         subspacepoly.set_model()
         return subspacepoly

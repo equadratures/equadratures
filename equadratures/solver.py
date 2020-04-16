@@ -2,6 +2,7 @@
 import numpy as np
 from scipy.linalg import qr
 from copy import deepcopy
+from scipy.optimize import linprog
 class Solver(object):
     """
     Returns solver functions for solving Ax=b
@@ -28,6 +29,8 @@ class Solver(object):
             self.solver = lambda A, b: orthogonal_linear_system(A, b)
         elif self.method.lower() == 'least-squares-with-gradients':
             self.solver = lambda A, b, C, d: constrained_least_squares(A, b, C, d, self.verbose)
+        elif self.method.lower() == 'least-absolute-residual':
+            self.solver = lambda A, b: least_absolute_residual(A, b)
         else:
             raise ValueError('You have not selected a valid method for solving the coefficients of the polynomial. Choose from compressed-sensing, least-squares, least-squares-with-gradients, minimum-norm or numerical-integration.')
     def get_solver(self):
@@ -370,3 +373,17 @@ def _l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cg
           print('Newton iter = ' + str(niter) + ', Functional = ' + str(f) + ', Newton decrement = ' + str(lambda2/2) + ', Stepsize = ' + str(stepsize))
           print('                CG Res = ' + str(cgres) + ', CG Iter = ' + str(cgiter))
     return xp, up, niter
+
+def least_absolute_residual(A, b):
+    N, d = A.shape
+    c = np.hstack([np.zeros(d), np.ones(N)])
+    A1 = np.hstack([A, -np.eye(N)])
+    A2 = np.hstack([-A, -np.eye(N)])
+    AA = np.vstack([A1, A2])
+    bb = np.vstack([b, -b])
+    print(N, d)
+    print(AA.shape)
+    print(bb.shape)
+
+    res = linprog(c, A_ub=AA, b_ub=bb)
+    return res.x[:d]

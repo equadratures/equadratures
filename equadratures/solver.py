@@ -417,7 +417,7 @@ def least_absolute_residual(A, b, verbose):
         res = linprog(c, A_ub=AA, b_ub=bb)
         return res.x[:d]
 
-def huber(A, b, verbose, M, sigma):
+def huber(A, b, verbose, M):
     '''
     Solves Ax=b by minimising the Huber loss function. 
     This function is identical to the least squares (L2) penalty for small residuals (i.e. ||Ax-b||**2<=M). 

@@ -89,7 +89,7 @@ class Poly(object):
         if self.method is not None:
             if self.method == 'numerical-integration' or self.method == 'integration':
                 self.mesh = self.basis.basis_type
-            elif self.method == 'least-squares' or self.method == 'least-absolute-residual':
+            elif self.method == 'least-squares' or self.method == 'least-absolute-residual' or self.method=='huber' or self.method=='elastic-net':
                 self.mesh = 'tensor-grid'
             elif self.method == 'least-squares-with-gradients':
                 self.gradient_flag = 1

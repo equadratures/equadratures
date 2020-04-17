@@ -41,7 +41,7 @@ class Solver(object):
         elif self.method.lower() == 'least-absolute-residual':
             self.solver = lambda A, b: least_absolute_residual(A, b, self.verbose)
         elif self.method.lower() == 'huber':
-            self.solver = lambda A, b: huber(A, b, self.verbose, self.param1, self.param2)
+            self.solver = lambda A, b: huber(A, b, self.verbose, self.param1)
         elif self.method.lower() == 'elastic-net':
             self.solver = lambda A, b: elastic_net(A, b, self.verbose, self.param1, self.param2)
         else:
@@ -426,9 +426,13 @@ def huber(A, b, verbose, M, sigma):
     '''
     N,d = A.shape
     if M == None: M = 1.35
-    if sigma == None: sigma = np.ptp(b)*0.05
 
     if verbose: print('Huber regression with M=%.2f.' %M)
+
+    # Solve OLS and use residual to estimate scale factor
+    x = least_squares(A, b, False)
+    res = np.dot(A,x) - b
+    sigma = np.median(np.abs(res-np.median(res)))/0.6745
 
     # Use cvxpy with OSQP for optimising
     if use_cvxpy:
@@ -479,12 +483,12 @@ def elastic_net(A, b, verbose, lamda_val, alpha_val):
         lamda2.value = lamda_val*(1.-alpha_val)
         prob.solve(solver=cv.OSQP,verbose=verbose)
         x = x.value
-        return x
 
     # Use scipy linprog for optimising
     else:
         raise ValueError( 'At present cvxpy, must be installed for elastic net regression to be selected.')
+
     # Rescale the coefficents to avoid double shrinkage
     x *= (1.+(lamda-alpha))
-    return x
+    return x.reshape(-1,1)
 

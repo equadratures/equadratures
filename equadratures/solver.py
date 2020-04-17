@@ -487,8 +487,5 @@ def elastic_net(A, b, verbose, lamda_val, alpha_val):
     # Use scipy linprog for optimising
     else:
         raise ValueError( 'At present cvxpy, must be installed for elastic net regression to be selected.')
-
-    # Rescale the coefficents to avoid double shrinkage
-    x *= (1.+(lamda-alpha))
     return x.reshape(-1,1)
 

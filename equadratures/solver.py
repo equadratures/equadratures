@@ -429,8 +429,9 @@ def huber(A, b, verbose, M):
 
     if verbose: print('Huber regression with M=%.2f.' %M)
 
-    # Solve OLS and use residual to estimate scale factor
-    x = least_squares(A, b, False)
+    # Solve least_absolute_residual and use residual to estimate scale factor
+#    x = least_squares(A, b, False)
+    x = least_absolute_residual(A, b, False)
     res = np.dot(A,x) - b
     sigma = np.median(np.abs(res-np.median(res)))/0.6745
 

@@ -424,28 +424,30 @@ def huber(A, b, verbose, M):
     But on large residuals (||Ax-b||**2>M), its penalty is lower (L1) and increases linearly rather than quadratically. 
     It is thus more forgiving of outliers.
     '''
-    N,d = A.shape
-    if M == None: M = 1.35
-
     if verbose: print('Huber regression with M=%.2f.' %M)
 
-    # Solve least_absolute_residual and use residual to estimate scale factor
-#    x = least_squares(A, b, False)
-    x = least_absolute_residual(A, b, False)
-    res = np.dot(A,x) - b
-    sigma = np.median(np.abs(res-np.median(res)))/0.6745
+    N,d = A.shape
+    if M == None: M = 1.0
 
     # Use cvxpy with OSQP for optimising
     if use_cvxpy:
         if verbose: print('Solving using cvxpy with OSQP solver')
-        # Define problem
+#       # Define problem as a Quadratic problem
+        #       minimize    1/2 z.T * z + M * np.ones(m).T * (r + s)
+        #       subject to  Ax - b - z = r - s
+        #                   r >= 0
+        #                   s >= 0
+        # See eq. (24) from https://doi.org/10.1109/34.877518
         b = b.squeeze()
         x = cv.Variable(d)
-        objective = cv.sum(sigma + cv.huber((A*x - b)/sigma,M=M)*sigma) #TODO - add regularisation (optional: l2 penalty seems to be common)
-        prob = cv.Problem(cv.Minimize(objective))
-        # Solve with OSQP
-        #TODO - need max_iter param for OSQP solve
-        prob.solve(solver=cv.OSQP,verbose=verbose)
+        z = cv.Variable(N)
+        r = cv.Variable(N)
+        s = cv.Variable(N)
+        objective = cv.Minimize(.5 * cv.sum_squares(z) + M*cv.sum(r + s))
+        constraints = [A@x - b - z == r - s,
+                       r >= 0, s >= 0]
+        prob = cv.Problem(objective, constraints)
+        prob.solve(solver=cv.OSQP,verbose=verbose,polish=True)
         return x.value 
 
     # Use scipy linprog for optimising

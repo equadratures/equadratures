@@ -15,9 +15,11 @@ class Solver(object):
         self.solver_args = solver_args
         self.noise_level = None
         self.verbose = False
+        self.max_iter = None
         if self.solver_args is not None:
             if 'noise-level' in self.solver_args: self.noise_level = solver_args.get('noise-level')
             if 'verbose' in self.solver_args: self.verbose = solver_args.get('verbose')
+            if 'max-iter' in self.solver_args: self.max_iter = solver_args.get('max-iter')
         if self.method.lower() == 'compressed-sensing' or self.method.lower() == 'compressive-sensing':
             self.solver = lambda A, b: basis_pursuit_denoising(A, b, self.noise_level, self.verbose)
         elif self.method.lower() == 'least-squares':
@@ -28,6 +30,8 @@ class Solver(object):
             self.solver = lambda A, b: orthogonal_linear_system(A, b)
         elif self.method.lower() == 'least-squares-with-gradients':
             self.solver = lambda A, b, C, d: constrained_least_squares(A, b, C, d, self.verbose)
+        elif self.method.lower() == 'relevance-vector-machine':
+            self.solver = lambda A, b: rvm(A, b, self.max_iter)
         else:
             raise ValueError('You have not selected a valid method for solving the coefficients of the polynomial. Choose from compressed-sensing, least-squares, least-squares-with-gradients, minimum-norm or numerical-integration.')
     def get_solver(self):
@@ -370,3 +374,57 @@ def _l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cg
           print('Newton iter = ' + str(niter) + ', Functional = ' + str(f) + ', Newton decrement = ' + str(lambda2/2) + ', Stepsize = ' + str(stepsize))
           print('                CG Res = ' + str(cgres) + ', CG Iter = ' + str(cgiter))
     return xp, up, niter
+
+def rvm(A, b, max_iter):
+    if max_iter is None:
+        max_iter = 1000
+    K, card = A.shape
+    alpha = np.ones(card)
+    alpha_0 = 1.0
+    remaining_coeff_ind = np.arange(card)
+    removed = np.array([], dtype=int)
+
+    Alpha_diag = np.diag(alpha)
+
+    Sigma = np.linalg.inv(alpha_0 * A.T @ A + Alpha_diag)
+    mu = alpha_0 * Sigma @ A.T @ b
+
+    Phi = A.copy()
+
+    all_L = []
+
+    for i in range(max_iter):
+
+        C = 1.0 / alpha_0 * np.eye(K) + Phi @ np.diag(1.0 / np.diag(Alpha_diag)) @ Phi.T
+        L = -0.5 * (K * np.log(2.0 * np.pi) + np.linalg.slogdet(C)[1] + b.T @ np.linalg.inv(C) @ b)
+
+        all_L.append(L)
+        gamma = 1.0 - alpha * np.diag(Sigma)
+
+        remaining_ind = np.where(gamma >= 1e-10)[0]
+
+        removed = np.append(removed, remaining_coeff_ind[np.where(gamma < 1e-10)[0]])
+        remaining_coeff_ind = np.setdiff1d(remaining_coeff_ind, remaining_coeff_ind[np.where(gamma < 1e-10)[0]])
+
+
+        alpha_new = (gamma / mu ** 2)[remaining_ind]
+        alpha_0_new = (K - np.sum(gamma)) / np.linalg.norm(b - Phi @ mu) ** 2
+
+        alpha = alpha_new.copy()
+        alpha_0 = alpha_0_new
+        Phi = Phi[:, remaining_ind]
+
+        Alpha_diag = np.diag(alpha)
+        Sigma = np.linalg.inv(alpha_0 * Phi.T @ Phi + Alpha_diag)
+
+        mu = alpha_0 * Sigma @ Phi.T @ b
+        if len(all_L) > 1:
+            residual = np.abs((all_L[-1] - all_L[-2]) / (all_L[-1] - all_L[0]))
+            if residual < 1e-3:
+                break
+
+    if i == max_iter - 1: print('WARNING: Maximum iteration limit reached in solver.py')
+    mean_coeffs = np.zeros(card)
+    mean_coeffs[remaining_coeff_ind] = mu.copy()
+
+    return mean_coeffs

@@ -4,6 +4,8 @@ from equadratures.poly import Poly, evaluate_model, evaluate_model_gradients
 from equadratures.basis import Basis
 import numpy as np
 from scipy import stats
+from scipy.stats import multivariate_normal, norm
+from scipy.linalg import lu
 from scipy import optimize
 from copy import deepcopy
 
@@ -29,8 +31,10 @@ class Correlations(object):
         sup_lim = - inf_lim
         p1 = Parameter(distribution = 'uniform', lower = inf_lim, upper = sup_lim, order = 31)
         myBasis = Basis('tensor-grid')
-        Pols = Poly([p1, p1], myBasis, method='numerical-integration')
+        self.Pols = Poly([p1, p1], myBasis, method='numerical-integration')
+        Pols = self.Pols
         p = Pols.get_points()
+        # w = Pols.get_weights()
         w = Pols.get_weights() * (sup_lim - inf_lim)**2
         p1 = p[:,0]
         p2 = p[:,1]
@@ -40,27 +44,29 @@ class Correlations(object):
                 if self.R[i,j] == 0:
                     R0[i,j] = 0.0
                 else:
-                  tp11 = -(np.array(self.D[i].get_icdf(self.std.get_cdf(points=p1))) - self.D[i].mean ) / np.sqrt( self.D[i].variance )
-                  tp22 = -(np.array(self.D[j].get_icdf(self.std.get_cdf(points=p2))) -  self.D[j].mean)/np.sqrt( self.D[j].variance )
+                    z1 = np.array(self.D[i].get_icdf(self.std.get_cdf(points=p1)))
+                    z2 = np.array(self.D[j].get_icdf(self.std.get_cdf(points=p2)))
 
-                  rho_ij = self.R[i,j]
-                  bivariateNormalPDF = (1.0 / (2.0 * np.pi * np.sqrt(1.0-rho_ij**2)) * np.exp(-1.0/(2.0*(1.0 - rho_ij**2)) * (p1**2 - 2.0 * rho_ij * p1 * p2  + p2**2 )))
-                  coefficientsIntegral = np.flipud(tp11*tp22 * w)
+                    tp11 = (z1 - self.D[i].mean) / np.sqrt( self.D[i].variance )
+                    tp22 = (z2 - self.D[j].mean)/ np.sqrt( self.D[j].variance )
 
-                  def check_difference(rho_ij):
-                      bivariateNormalPDF = (1.0 / (2.0 * np.pi * np.sqrt(1.0-rho_ij**2)) * np.exp(-1.0/(2.0*(1.0 - rho_ij**2)) * (p1**2 - 2.0 * rho_ij * p1 * p2  + p2**2 )))
-                      diff = np.dot(coefficientsIntegral, bivariateNormalPDF)
-                      return diff - self.R[i,j]
+                    coefficientsIntegral = np.flipud(tp11*tp22 * w)
+                    def check_difference(rho_ij):
+                        bivariateNormalPDF = (1.0 / (2.0 * np.pi * np.sqrt(1.0-rho_ij**2)) * np.exp(-1.0/(2.0*(1.0 - rho_ij**2)) * (p1**2 - 2.0 * rho_ij * p1 * p2  + p2**2 )))
+                        diff = np.dot(coefficientsIntegral, bivariateNormalPDF)
+                        return diff - self.R[i,j]
 
-                  if (self.D[i].name!='custom') or (self.D[j].name!='custom'):
-                    rho = optimize.newton(check_difference, self.R[i,j], maxiter=50)
-                  else:
-                    res = optimize.least_squares(check_difference, R[i,j], bounds=(-0.999,0.999), ftol=1.e-03)
-                    rho = res.x
-                    print('A Custom Marginal is present')
+                    if (self.D[i].name!='custom') or (self.D[j].name!='custom'):
+                        rho = optimize.newton(check_difference, self.R[i,j], maxiter=50)
+                    else:
+                        # ???
+                        res = optimize.least_squares(check_difference, self.R[i,j], bounds=(-0.999,0.999), ftol=1.e-03)
+                        rho = res.x
+                        print('A Custom Marginal is present')
 
-                  R0[i,j] = rho
-                  R0[j,i] = R0[i,j]
+                    R0[i,j] = rho
+                    R0[j,i] = R0[i,j]
+        self.R0 = R0.copy()
 
         self.A = np.linalg.cholesky(R0)
         if verbose is True:
@@ -68,14 +74,20 @@ class Correlations(object):
             print(self.A)
             print('The fictive matrix is:')
             print(R0)
+
+        # Why generate quad points from normal, not from original marginals?
         list_of_parameters = []
         for i in range(0, len(self.D)):
             standard_parameter = Parameter(order=self.D[i].order, distribution='gaussian', shape_parameter_A = 0., shape_parameter_B = 1.)
             list_of_parameters.append(standard_parameter)
+
+        # have option so that we don't need to obtain
         self.polystandard = deepcopy(self.poly)
-        self.polystandard._set_parameters(list_of_parameters)
-        self.standard_samples = self.polystandard.get_points()
-        self._points = self.get_correlated_from_uncorrelated(self.standard_samples)
+
+        if hasattr(self.polystandard, '_quadrature_points'):
+            self.standard_samples = self.polystandard._quadrature_points
+            self.polystandard._set_parameters(list_of_parameters)
+            self._points = self.get_correlated_from_uncorrelated(self.standard_samples)
     def get_points(self):
         """
         Returns the correlated samples based on the quadrature rules used in poly.
@@ -98,6 +110,7 @@ class Correlations(object):
         :param callable model_grads:
             The gradient of the function that needs to be approximated. In the absence of a callable gradient function, the input can be a matrix of gradient evaluations at the quadrature points.
         """
+        # Need to account for the nataf transform here?
         model_values = None
         model_grads_values = None
         if callable(model):
@@ -131,57 +144,64 @@ class Correlations(object):
         :return:
             **C**: A numpy.ndarray of shape (N, M), which contains the correlated samples.
         """
-        X = X.T
+        # This seems to assume original marginal densities are gaussian?
+        N = X.shape[0]
+        d = len(self.D)
+        # convert to gaussian here...
+        # It should *not* be used to convert quad points... because they aren't
+        # distributed as the marginal distribution! (Or should it?)
+        # It happens to work with Gaussian quadrature points for Gaussian densities
+        # because the icdf matches exactly and it becomes only a linear transform
 
-        invA = np.linalg.inv(self.A)
-        Z = np.linalg.solve(invA, X)
-        Z = Z.T
+        W = X @ self.A.T
 
-        xc = np.zeros((len(Z[:,0]), len(self.D)))
-        for i in range(len(self.D)):
-            for j in range(len(Z[:,0])):
-                xc[j,i] = self.std.get_cdf(points=Z[j,i])
-        Xc = np.zeros((len(Z[:,0]),len(self.D)))
-        for i in range(len(self.D)):
-            for j in range(len(Z[:,0])):
-                temporary = np.matrix(xc[j,i])
-                temp = self.D[i].get_icdf(temporary)
-
-                t = temp[0]
-                Xc[j,i] = t
-        return Xc
-    def get_correlated_samples(self, N=None):
+        U = np.zeros((N, d))
+        for i in range(d):
+            U[:,i] = self.std.get_cdf(points=W[:,i])
+        Z = np.zeros((N, d))
+        for i in range(d):
+            Z[:,i] = self.D[i].get_icdf(U[:,i])
+        return Z
+    def get_correlated_samples(self, N):
         """
         Method for generating correlated samples.
 
         :param int N: Number of correlated samples required.
-        :param numpy.ndarray X: Samples of correlated points from the marginals; of shape (N,M)
 
         :return:
             **C**: A numpy.ndarray of shape (N, M), which contains the correlated samples.
         """
-        if N is not None:
+        d = len(self.D)
+        X_test = np.random.multivariate_normal(np.zeros(d), np.eye(d), size=N)
 
-            distro = list()
-            for i in range(len(self.D)):
-                    distro1 = self.std.get_samples(N)
+        X_test = X_test @ self.A.T
 
-                    # check dimensions ------------------#
-                    distro1 = np.matrix(distro1)
-                    dimension = np.shape(distro1)
-                    if dimension[0] == N:
-                        distro1 = distro1.T
-                    #------------------------------------#
-                    distro.append(distro1)
+        U_test = np.zeros(X_test.shape)
+        for i in range(d):
+            U_test[:, i] = self.std.get_cdf(X_test[:, i])
 
-            distro = np.reshape(distro, (len(self.D),N))
-            interm = np.dot(self.A, distro)
-            correlated = np.zeros((len(self.D),N))
-            for i in range(len(self.D)):
-                for j in range(N):
-                    correlated[i,j] = self.D[i].get_icdf(self.std.get_cdf(interm[i,j]))
-            correlated = correlated.T
-            return correlated
+        Z_test = np.zeros(U_test.shape)
+        for i in range(d):
+            Z_test[:, i] = self.D[i].get_icdf(U_test[:, i])
+        return Z_test
 
-        else:
-             raise ValueError( 'One input must be given to "get Correlated Samples" method: please choose between sampling N points or giving an array of uncorrelated data ')
+    def get_pdf(self, X):
+        """
+        Evaluate PDF at the sample points.
+        :param numpy.ndarray X: Sample points (Number of points by dimensions)
+        :return:
+            **C**: A numpy.ndarray of shape (N,) with evaluations of the PDF.
+        """
+
+        poly = self.poly
+        if len(X.shape) == 1:
+            X = X.reshape(-1, 1)
+        d = X.shape[1]
+        parameters = poly.get_parameters()
+        U = np.zeros(X.shape)
+        for i in range(d):
+            U[:, i] = norm.ppf(parameters[i].get_cdf(X[:, i]))
+        cop_num = multivariate_normal(mean=np.zeros(d), cov=self.R0).pdf(U)
+        cop_den = np.prod(np.array([norm.pdf(U[:, i]) for i in range(d)]), axis=0)
+        marginal_prod = np.prod(np.array([parameters[i].get_pdf(X[:, i]) for i in range(d)]), axis=0)
+        return cop_num / cop_den * marginal_prod

@@ -1,17 +1,17 @@
 import numpy as np
 from copy import deepcopy
-from sklearn.metrics import mean_squared_error
-
 from equadratures.parameter import Parameter
 from equadratures.poly import Poly
 from equadratures.basis import Basis
+from graphviz import Digraph
 
 class PolyTree(object):
 
-	def __init__(self, max_depth=5, min_samples_leaf=10, order=3):
+	def __init__(self, max_depth=5, min_samples_leaf=10, order=3, basis='tensor-grid'):
 		self.max_depth = max_depth
 		self.min_samples_leaf = min_samples_leaf
 		self.order = order
+		self.basis = basis
 		self.tree = None
 
 	def get_polys(self):
@@ -39,7 +39,7 @@ class PolyTree(object):
 			global index_node_global
 
 			def _create_node(X, y, depth, container):
-				poly_loss, poly = _fit_poly(X, y, self.order)
+				poly_loss, poly = _fit_poly(X, y, self.order, self.basis)
 
 				node = {"name": "node",
 						"index": container["index_node_global"],
@@ -55,11 +55,12 @@ class PolyTree(object):
 
 				return node
 
-			def _split_traverse_node(node, container, order):
+			def _split_traverse_node(node, container):
 
 				result = _splitter(node, max_depth=max_depth,
 								   min_samples_leaf=min_samples_leaf,
-								   order=order)
+								   order=self.order,
+								   basis=self.basis)
 				if not result["did_split"]:
 					return
 
@@ -77,13 +78,13 @@ class PolyTree(object):
 				node["children"]["right"]["poly"] = poly_right
 
 				# Split nodes
-				_split_traverse_node(node["children"]["left"], container, order)
-				_split_traverse_node(node["children"]["right"], container, order)
+				_split_traverse_node(node["children"]["left"], container)
+				_split_traverse_node(node["children"]["right"], container)
 
 
 			container = {"index_node_global": 0}
 			root = _create_node(X, y, 0, container)
-			_split_traverse_node(root, container, self.order)
+			_split_traverse_node(root, container)
 
 			return root
 
@@ -105,10 +106,77 @@ class PolyTree(object):
 		y_pred = np.array([_predict(self.tree, np.array(x)) for x in X])
 		return y_pred
 
-	def loss(self, X, y, y_pred):
-		return mean_squared_error(X, y, y_pred)
+	def loss(self, y, y_pred):
+		mse = sum([(y[i]-y_pred[i]) ** 2 for i in range(len(y))]) / len(y)
+		return mse
 
-def _splitter(node, max_depth, min_samples_leaf, order):
+	def export_graphviz(self, output_filename, feature_names,
+						export_png=True, export_pdf=False):
+		
+		g = Digraph('g', node_attr={'shape': 'record', 'height': '.1'})
+
+		def build_graphviz_recurse(node, parent_node_index=0, parent_depth=0, edge_label=""):
+
+			# Empty node
+			if node is None:
+				return
+
+			# Create node
+			node_index = node["index"]
+			if node["children"]["left"] is None and node["children"]["right"] is None:
+				threshold_str = ""
+			else:
+				threshold_str = "{} <= {:.1f}\\n".format(feature_names[node['j_feature']], node["threshold"])
+
+			print(threshold_str, node["n_samples"], node["loss"])
+
+			label_str = "{} n_samples = {}\\n loss = {:.6f}".format(threshold_str, node["n_samples"], node["loss"])
+
+			# Create node
+			nodeshape = "rectangle"
+			bordercolor = "black"
+			fillcolor = "white"
+			fontcolor = "black"
+			g.attr('node', label=label_str, shape=nodeshape)
+			g.node('node{}'.format(node_index),
+				   color=bordercolor, style="filled",
+				   fillcolor=fillcolor, fontcolor=fontcolor)
+
+			# Create edge
+			if parent_depth > 0:
+				g.edge('node{}'.format(parent_node_index),
+					   'node{}'.format(node_index), label=edge_label)
+
+			# Traverse child or append leaf value
+			build_graphviz_recurse(node["children"]["left"],
+								   parent_node_index=node_index,
+								   parent_depth=parent_depth + 1,
+								   edge_label="")
+			build_graphviz_recurse(node["children"]["right"],
+								   parent_node_index=node_index,
+								   parent_depth=parent_depth + 1,
+								   edge_label="")
+
+		# Build graph
+		build_graphviz_recurse(self.tree,
+							   parent_node_index=0,
+							   parent_depth=0,
+							   edge_label="")
+
+		# Export pdf
+		if export_pdf:
+			print("Saving model tree diagram to '{}.pdf'...".format(output_filename))
+			g.format = "pdf"
+			g.render(filename=output_filename, view=False, cleanup=True)
+
+		# Export png
+		if export_png:
+			print("Saving model tree diagram to '{}.png'...".format(output_filename))
+			g.format = "png"
+			g.render(filename=output_filename, view=False, cleanup=True)
+
+
+def _splitter(node, max_depth, min_samples_leaf, order, basis):
 	# Extract data
 	X, y = node["data"]
 	depth = node["depth"]
@@ -147,8 +215,8 @@ def _splitter(node, max_depth, min_samples_leaf, order):
 					continue
 
 				# Compute weight loss function
-				loss_left, poly_left = _fit_poly(X_left, y_left, order)
-				loss_right, poly_right = _fit_poly(X_right, y_right, order)
+				loss_left, poly_left = _fit_poly(X_left, y_left, order, basis)
+				loss_right, poly_right = _fit_poly(X_right, y_right, order, basis)
 				loss_split = (N_left*loss_left + N_right*loss_right) / N
 
 				# Update best parameters if loss is lower
@@ -171,7 +239,7 @@ def _splitter(node, max_depth, min_samples_leaf, order):
 
 	return result
 
-def _fit_poly(X, y, order):
+def _fit_poly(X, y, order, basis):
 
 	N, d = X.shape
 	myParameters = []
@@ -182,37 +250,14 @@ def _fit_poly(X, y, order):
 		d_max = max(d)
 		myParameters.append(Parameter(distribution='Uniform', lower=d_min, upper=d_max, order=order))
 
-	myBasis = Basis('tensor-grid')
+	myBasis = Basis(basis)
 	poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X, 'sample-outputs':y})
 	poly.set_model()
 
-	return mean_squared_error(y, poly.get_polyfit(X)), poly
+	return float(sum([(y[i]-poly.get_polyfit(X)[i]) ** 2 for i in range(len(y))])) / N, poly
 
 def _split_data(j_feature, threshold, X, y):
 	idx_left = np.where(X[:, j_feature] <= threshold)[0]
 	idx_right = np.delete(np.arange(0, len(X)), idx_left)
 	assert len(idx_left) + len(idx_right) == len(X)
 	return (X[idx_left], y[idx_left]), (X[idx_right], y[idx_right])
-
-
-import random
-
-def f(x1,x2):
-	return x1 ** 2 - x2 ** 2
-
-def sample():
-	X, y = [], []
-	for i in range(50):
-		x1, x2 = random.random(), random.random()        
-		X.append(np.array([x1, x2]))
-		y.append(np.array(f(x1, x2)))
-	return np.array(X), np.array(y)
-
-X, y = sample()
-y = np.reshape(y, (y.shape[0], 1))
-
-tree = PolyTree()
-tree.fit(X, y)
-
-for poly in tree.get_polys():
-	print(poly.get_mean_and_variance())

@@ -3,7 +3,7 @@ from copy import deepcopy
 from equadratures.parameter import Parameter
 from equadratures.poly import Poly
 from equadratures.basis import Basis
-from graphviz import Digraph
+from urllib.parse import quote
 
 class PolyTree(object):
 
@@ -110,9 +110,9 @@ class PolyTree(object):
 		mse = sum([(y[i]-y_pred[i]) ** 2 for i in range(len(y))]) / len(y)
 		return mse
 
-	def export_graphviz(self, output_filename, feature_names,
-						export_png=True, export_pdf=False):
-		
+	def get_graphviz(self, feature_names):
+			
+		from graphviz import Digraph
 		g = Digraph('g', node_attr={'shape': 'record', 'height': '.1'})
 
 		def build_graphviz_recurse(node, parent_node_index=0, parent_depth=0, edge_label=""):
@@ -127,10 +127,11 @@ class PolyTree(object):
 				threshold_str = ""
 			else:
 				threshold_str = "{} <= {:.1f}\\n".format(feature_names[node['j_feature']], node["threshold"])
-
-			print(threshold_str, node["n_samples"], node["loss"])
-
-			label_str = "{} n_samples = {}\\n loss = {:.6f}".format(threshold_str, node["n_samples"], node["loss"])
+			
+			indices = []
+			for i in range(len(feature_names)):
+				indices.append("{} : {}\\n".format(feature_names[i], node["poly"].get_sobol_indices(1)[i,]))
+			label_str = "{} n_samples = {}\\n loss = {:.6f}\\n sobol indices: {}".format(threshold_str, node["n_samples"], node["loss"], [i for i in indices])
 
 			# Create node
 			nodeshape = "rectangle"
@@ -163,18 +164,7 @@ class PolyTree(object):
 							   parent_depth=0,
 							   edge_label="")
 
-		# Export pdf
-		if export_pdf:
-			print("Saving model tree diagram to '{}.pdf'...".format(output_filename))
-			g.format = "pdf"
-			g.render(filename=output_filename, view=False, cleanup=True)
-
-		# Export png
-		if export_png:
-			print("Saving model tree diagram to '{}.png'...".format(output_filename))
-			g.format = "png"
-			g.render(filename=output_filename, view=False, cleanup=True)
-
+		print('https://dreampuf.github.io/GraphvizOnline/#' + quote(str(g.source)))
 
 def _splitter(node, max_depth, min_samples_leaf, order, basis):
 	# Extract data
@@ -251,10 +241,15 @@ def _fit_poly(X, y, order, basis):
 		myParameters.append(Parameter(distribution='Uniform', lower=d_min, upper=d_max, order=order))
 
 	myBasis = Basis(basis)
-	poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X, 'sample-outputs':y})
-	poly.set_model()
-
-	return float(sum([(y[i]-poly.get_polyfit(X)[i]) ** 2 for i in range(len(y))])) / N, poly
+	try:	
+		poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'mesh': 'user-defined', 'sample-points':X, 'sample-outputs':y})
+		poly.set_model()
+	except Exception as e:
+		print(e)
+		print(X,y)
+	mse = float(sum([(y[i]-poly.get_polyfit(X)[i]) ** 2 for i in range(N)])) / N
+	print(mse)
+	return mse, poly
 
 def _split_data(j_feature, threshold, X, y):
 	idx_left = np.where(X[:, j_feature] <= threshold)[0]

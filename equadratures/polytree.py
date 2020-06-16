@@ -7,12 +7,16 @@ from urllib.parse import quote
 
 class PolyTree(object):
 
-	def __init__(self, max_depth=5, min_samples_leaf=10, order=3, basis='tensor-grid'):
+	def __init__(self, max_depth=5, min_samples_leaf=10, order=3, basis='tensor-grid', search='exhaustive', samples=10, logging=False):
 		self.max_depth = max_depth
 		self.min_samples_leaf = min_samples_leaf
 		self.order = order
 		self.basis = basis
 		self.tree = None
+		self.search = search
+		self.samples = samples
+		self.logging = logging
+		self.log = []
 
 	def get_polys(self):
 		def _search_tree(node, polys):
@@ -31,15 +35,108 @@ class PolyTree(object):
 
 	def fit(self, X, y):
 
-		max_depth = self.max_depth
-		min_samples_leaf = self.min_samples_leaf
-
 		def _build_tree():
 
-			global index_node_global
+			global index_node_global			
+			
+			def _splitter(node):
+				# Extract data
+				X, y = node["data"]
+				depth = node["depth"]
+				N, d = X.shape
 
+				# Find feature splits that might improve loss
+				did_split = False
+				loss_best = node["loss"]
+				data_best = None
+				polys_best = None
+				j_feature_best = None
+				threshold_best = None
+
+				# Perform threshold split search only if node has not hit max depth
+				if (depth >= 0) and (depth < self.max_depth):
+
+					for j_feature in range(d):
+
+						if self.search == 'exhaustive':
+							threshold_search = X[:, j_feature]
+						elif self.search == 'uniform':
+							if self.samples > len(X[:,j_feature]):
+								samples = len(X[:,j_feature])
+							else:
+								samples = self.samples
+							threshold_search = np.linspace(np.min(X[:,j_feature]), np.max(X[:,j_feature]), num=samples)
+						else:
+							raise Exception('Incorrect search type! Must be \'exhaustive\' or \'uniform\'')
+						# Perform threshold split search on j_feature
+						for threshold in np.sort(threshold_search):
+
+							# Split data based on threshold
+							(X_left, y_left), (X_right, y_right) = _split_data(j_feature, threshold, X, y)
+							#print(j_feature, threshold, X_left, X_right)
+							N_left, N_right = len(X_left), len(X_right)
+
+							# Do not attempt to split if split conditions not satisfied
+							if not (N_left >= self.min_samples_leaf and N_right >= self.min_samples_leaf):
+								continue
+
+							# Compute weight loss function
+							loss_left, poly_left = _fit_poly(X_left, y_left)
+							loss_right, poly_right = _fit_poly(X_right, y_right)
+							loss_split = (N_left*loss_left + N_right*loss_right) / N	
+							
+							# Update best parameters if loss is lower
+							if loss_split < loss_best:
+								if self.logging: self.log.append({'event': 'best_split', 'data': {'j_feature':j_feature, 'threshold':threshold, 'loss': loss_split}})
+								did_split = True
+								loss_best = loss_split
+								polys_best = [poly_left, poly_right]
+								data_best = [(X_left, y_left), (X_right, y_right)]
+								j_feature_best = j_feature
+								threshold_best = threshold
+	
+							elif self.logging: self.log.append({'event': 'try_split', 'data': {'j_feature':j_feature, 'threshold':threshold, 'loss': loss_split}})
+				# Return the best result
+				result = {"did_split": did_split,
+						  "loss": loss_best,
+						  "polys": polys_best,
+						  "data": data_best,
+						  "j_feature": j_feature_best,
+						  "threshold": threshold_best,
+						  "N": N}
+
+				return result
+
+			def _fit_poly(X, y):
+
+				N, d = X.shape
+				myParameters = []
+
+				for dimension in range(d):
+					values = [X[i,dimension] for i in range(N)]
+					values_min = min(values)
+
+					values_max = max(values)
+					if values_min == values_max:
+						myParameters.append(Parameter(distribution='Uniform', lower=values_min-0.01, upper=values_max+0.01, order=self.order))
+					else: 
+						myParameters.append(Parameter(distribution='Uniform', lower=values_min, upper=values_max, order=self.order))
+				myBasis = Basis(self.basis)
+				container["index_node_global"] += 1
+				poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X, 'sample-outputs':y})
+				poly.set_model()
+				
+				mse = float(sum([(y[i]-poly.get_polyfit(X)[i]) ** 2 for i in range(N)])) / N
+				return mse, poly
+
+			def _split_data(j_feature, threshold, X, y):
+				idx_left = np.where(X[:, j_feature] <= threshold)[0]
+				idx_right = np.delete(np.arange(0, len(X)), idx_left)
+				assert len(idx_left) + len(idx_right) == len(X)
+				return (X[idx_left], y[idx_left]), (X[idx_right], y[idx_right])
+					
 			def _create_node(X, y, depth, container):
-				poly_loss, poly = _fit_poly(X, y, self.order, self.basis)
+				poly_loss, poly = _fit_poly(X, y)
 
 				node = {"name": "node",
 						"index": container["index_node_global"],
@@ -57,11 +154,9 @@ class PolyTree(object):
 
 			def _split_traverse_node(node, container):
 
-				result = _splitter(node, max_depth=max_depth,
-								   min_samples_leaf=min_samples_leaf,
-								   order=self.order,
-								   basis=self.basis)
+				result = _splitter(node)
 				if not result["did_split"]:
+					self.log.append({"event": "UP"})
 					return
 
 				node["j_feature"] = result["j_feature"]
@@ -77,11 +172,13 @@ class PolyTree(object):
 				node["children"]["left"]["poly"] = poly_left
 				node["children"]["right"]["poly"] = poly_right
 
-				# Split nodes
+				# Split nodes	
+				self.log.append({"event": "DOWN", "data": {"direction": "LEFT", "j_feature": result["j_feature"], "threshold": result["threshold"]}})
 				_split_traverse_node(node["children"]["left"], container)
-				_split_traverse_node(node["children"]["right"], container)
-
-
+				self.log.append({"event": "DOWN", "data": {"direction": "RIGHT", "j_feature": result["j_feature"], "threshold": result["threshold"]}})
+				_split_traverse_node(node["children"]["right"], container)	
+				
+				self.log.append({"event": "UP"})
 			container = {"index_node_global": 0}
 			root = _create_node(X, y, 0, container)
 			_split_traverse_node(root, container)
@@ -166,93 +263,3 @@ class PolyTree(object):
 
 		print('https://dreampuf.github.io/GraphvizOnline/#' + quote(str(g.source)))
 
-def _splitter(node, max_depth, min_samples_leaf, order, basis):
-	# Extract data
-	X, y = node["data"]
-	depth = node["depth"]
-	N, d = X.shape
-
-	# Find feature splits that might improve loss
-	did_split = False
-	loss_best = node["loss"]
-	data_best = None
-	polys_best = None
-	j_feature_best = None
-	threshold_best = None
-
-	# Perform threshold split search only if node has not hit max depth
-	if (depth >= 0) and (depth < max_depth):
-
-		for j_feature in range(d):
-
-			threshold_search = []
-			for i in range(N):
-				threshold_search.append(X[i, j_feature])
-
-			# Perform threshold split search on j_feature
-			for threshold in threshold_search:
-
-				# Split data based on threshold
-				(X_left, y_left), (X_right, y_right) = _split_data(j_feature, threshold, X, y)
-				N_left, N_right = len(X_left), len(X_right)
-
-				# Splitting conditions
-				split_conditions = [N_left >= min_samples_leaf,
-									N_right >= min_samples_leaf]
-
-				# Do not attempt to split if split conditions not satisfied
-				if not all(split_conditions):
-					continue
-
-				# Compute weight loss function
-				loss_left, poly_left = _fit_poly(X_left, y_left, order, basis)
-				loss_right, poly_right = _fit_poly(X_right, y_right, order, basis)
-				loss_split = (N_left*loss_left + N_right*loss_right) / N
-
-				# Update best parameters if loss is lower
-				if loss_split < loss_best:
-					did_split = True
-					loss_best = loss_split
-					polys_best = [poly_left, poly_right]
-					data_best = [(X_left, y_left), (X_right, y_right)]
-					j_feature_best = j_feature
-					threshold_best = threshold
-
-	# Return the best result
-	result = {"did_split": did_split,
-			  "loss": loss_best,
-			  "polys": polys_best,
-			  "data": data_best,
-			  "j_feature": j_feature_best,
-			  "threshold": threshold_best,
-			  "N": N}
-
-	return result
-
-def _fit_poly(X, y, order, basis):
-
-	N, d = X.shape
-	myParameters = []
-
-	for d in range(d):
-		d = [X[i,d] for i in range(N)]
-		d_min = min(d)
-		d_max = max(d)
-		myParameters.append(Parameter(distribution='Uniform', lower=d_min, upper=d_max, order=order))
-
-	myBasis = Basis(basis)
-	try:	
-		poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'mesh': 'user-defined', 'sample-points':X, 'sample-outputs':y})
-		poly.set_model()
-	except Exception as e:
-		print(e)
-		print(X,y)
-	mse = float(sum([(y[i]-poly.get_polyfit(X)[i]) ** 2 for i in range(N)])) / N
-	print(mse)
-	return mse, poly
-
-def _split_data(j_feature, threshold, X, y):
-	idx_left = np.where(X[:, j_feature] <= threshold)[0]
-	idx_right = np.delete(np.arange(0, len(X)), idx_left)
-	assert len(idx_left) + len(idx_right) == len(X)
-	return (X[idx_left], y[idx_left]), (X[idx_right], y[idx_right])

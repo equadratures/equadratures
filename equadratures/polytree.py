@@ -16,7 +16,7 @@ class PolyTree(object):
     :param int order:
     	The order of the generated orthogonal polynomials.
     :param str basis:
-    	The type of index set used for the basis. Options include: ``univariate``, ``total-order``, ``tensor-grid``, ``sparse-grid``, ``hyperbolic-basis`` [1] and ``euclidean-degree`` [2]; all basis are isotropic. 
+    	The type of index set used for the basis. Options include: ``univariate``, ``total-order``, ``tensor-grid``, ``sparse-grid``, ``hyperbolic-basis`` and ``euclidean-degree``; all basis are isotropic. 
     :param str search:
     	The method of search to be used. Options include ``uniform`` and ``exhaustive``
     :param int samples:
@@ -36,9 +36,6 @@ class PolyTree(object):
         
         tree.fit(X,y)
 
-    **References**
-        1. Blatman, G., Sudret, B., (2011) Adaptive Sparse Polynomial Chaos Expansion Based on Least Angle Regression. Journal of Computational Physics, 230(6), 2345-2367.
-        2. Trefethen, L., (2017) Multivariate Polynomial Approximation in the Hypercube. Proceedings of the American Mathematical Society, 145(11), 4837-4844. `Pre-print <https://arxiv.org/pdf/1608.02216v1.pdf>`
     """
 	def __init__(self, max_depth=5, min_samples_leaf=20, order=3, basis='tensor-grid', search='exhaustive', samples=10, logging=False):
 		self.max_depth = max_depth

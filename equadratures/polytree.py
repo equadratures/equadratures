@@ -40,7 +40,7 @@ class PolyTree(object):
         1. Blatman, G., Sudret, B., (2011) Adaptive Sparse Polynomial Chaos Expansion Based on Least Angle Regression. Journal of Computational Physics, 230(6), 2345-2367.
         2. Trefethen, L., (2017) Multivariate Polynomial Approximation in the Hypercube. Proceedings of the American Mathematical Society, 145(11), 4837-4844. `Pre-print <https://arxiv.org/pdf/1608.02216v1.pdf>`
     """
-	def __init__(self, max_depth=5, min_samples_leaf=10, order=3, basis='tensor-grid', search='exhaustive', samples=10, logging=False):
+	def __init__(self, max_depth=5, min_samples_leaf=20, order=3, basis='tensor-grid', search='exhaustive', samples=10, logging=False):
 		self.max_depth = max_depth
 		self.min_samples_leaf = min_samples_leaf
 		self.order = order
@@ -50,6 +50,29 @@ class PolyTree(object):
 		self.samples = samples
 		self.logging = logging
 		self.log = []
+	
+	def get_splits(self):
+		"""
+		Returns the list of splits made 
+
+		:return:
+			**splits**: A list of Splits made in the format of a nested list: [[split, dimension], ...]
+		"""
+
+		def _search_tree(node, splits):
+			if node["children"]["left"] != None:
+				if [node["threshold"], node["j_feature"]] not in splits:
+					splits.append([node["threshold"], node["j_feature"]])
+				splits = _search_tree(node["children"]["left"], splits)
+							
+			if node["children"]["right"] != None:
+				if [node["threshold"], node["j_feature"]] not in splits:
+					splits.append([node["threshold"], node["j_feature"]])
+				splits = _search_tree(node["children"]["right"], splits)
+
+			return splits
+		
+		return _search_tree(self.tree, [])
 
 	def get_polys(self):
 		"""
@@ -259,7 +282,7 @@ class PolyTree(object):
 		y_pred = np.array([_predict(self.tree, np.array(x)) for x in X])
 		return y_pred
 
-	def get_graphviz(self, feature_names):
+	def get_graphviz(self, feature_names, file_name):
 		"""
 		Returns a url to the rendered graphviz representation of the tree.
 
@@ -318,5 +341,11 @@ class PolyTree(object):
 							   parent_depth=0,
 							   edge_label="")
 
-		print('https://dreampuf.github.io/GraphvizOnline/#' + quote(str(g.source)))
+		try:
+			g.render(view=True)
+		except:
+			file_name = file_name + ".txt"
+			with open(file_name, "w") as file:
+				file.write(str(g.source))
+				print("GraphViz source file written to " + file_name + " and can be viewed using an online renderer. Alternatively you can install graphviz on your system to render locally")
 

@@ -1,3 +1,0 @@
-Your problem has been defined by 2 parameters.
-Parameter 1 is a uniform distribution over the support 0.12415420512214348 to 0.9556012981193956.
-Parameter 2 is a uniform distribution over the support 0.4485945912541235 to 0.9809450653353382.

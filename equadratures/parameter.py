@@ -16,7 +16,7 @@ from equadratures.distributions.studentst import Studentst
 from equadratures.distributions.logistic import Logistic
 from equadratures.distributions.gumbel import Gumbel
 from equadratures.distributions.chi import Chi
-from equadratures.distributions.custom import Custom
+from equadratures.distributions.analytical import Analytical
 import numpy as np
 import scipy as sc
 
@@ -37,13 +37,13 @@ class Parameter(object):
         `students-t <https://en.wikipedia.org/wiki/Student%27s_t-distribution>`_, `logistic <https://en.wikipedia.org/wiki/Log-normal_distribution>`_,
         `gumbel <https://en.wikipedia.org/wiki/Gumbel_distribution>`_, `chi <https://en.wikipedia.org/wiki/Chi_distribution>`_  and `chi-squared <https://en.wikipedia.org/wiki/Chi-squared_distribution>`_.
         If no string is provided, a ``uniform`` distribution is assumed. If the user provides data, and would like to generate orthogonal
-        polynomials (and quadrature rules) based on the data, they can set this option to be ``custom`` (see [1, 2]).
+        polynomials (and quadrature rules) based on the data, they can set this option to be ``Analytical`` (see [1, 2]).
     :param float shape_parameter_A:
         Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a ``gaussian`` (or ``truncated-gaussian``), this represents the mean. In the case of a beta distribution this represents the alpha value. For a ``uniform`` distribution this input is not required.
     :param float shape_parameter_B:
         This is the second shape parameter that characterizes the distribution selected. In the case of a ``gaussian`` or ``truncated-gaussian``, this is the variance.
     :param numpy.ndarray data:
-        A data-set with shape (number_of_data_points, 2), where the first column comprises of parameter values, while the second column corresponds to the data observations. This input should only be used with the ``custom`` distribution.
+        A data-set with shape (number_of_data_points, 2), where the first column comprises of parameter values, while the second column corresponds to the data observations. This input should only be used with the ``Analytical`` distribution.
     :param string endpoints:
         If set to ``both``, then the quadrature points and weights will have end-points, based on Gauss-Lobatto quadrature rules. If set to ``upper`` or ``lower`` a Gauss-Radau rule is used to compute one end-point at either the upper or lower bound.
 
@@ -62,7 +62,7 @@ class Parameter(object):
         1. Xiu, D., Karniadakis, G. E., (2002) The Wiener-Askey Polynomial Chaos for Stochastic Differential Equations. SIAM Journal on Scientific Computing,  24(2), `Paper <https://epubs.siam.org/doi/abs/10.1137/S1064827501387826?journalCode=sjoce3>`__
         2. Gautschi, W., (1985) Orthogonal Polynomials-Constructive Theory and Applications. Journal of Computational and Applied Mathematics 12 (1985), pp. 61-76. `Paper <https://www.sciencedirect.com/science/article/pii/037704278590007X>`__
     """
-    def __init__(self, order=1, distribution='Uniform', endpoints=None, shape_parameter_A=None, shape_parameter_B=None, variable='parameter', lower=None, upper=None, data=None):
+    def __init__(self, order=1, distribution='Uniform', endpoints=None, shape_parameter_A=None, shape_parameter_B=None, variable='parameter', lower=None, upper=None, weight_function=None):
         self.name = distribution
         self.variable = variable
         self.order = order
@@ -71,7 +71,7 @@ class Parameter(object):
         self.lower = lower
         self.upper = upper
         self.endpoints = endpoints
-        self.data = data
+        self.weight_function = weight_function
         self._set_distribution()
         self._set_bounds()
         self._set_moments()
@@ -93,8 +93,8 @@ class Parameter(object):
             self.distribution = Gaussian(self.shape_parameter_A, self.shape_parameter_B)
         elif self.name.lower() == 'uniform':
             self.distribution = Uniform(self.lower, self.upper)
-        elif self.name.lower() == 'custom':
-            self.distribution = Custom(self.data)
+        elif self.name.lower() == 'analytical':
+            self.distribution = Analytical(self.weight_function)
         elif self.name.lower() == 'beta':
             self.distribution = Beta(self.lower, self.upper, self.shape_parameter_A, self.shape_parameter_B)
         elif self.name.lower() == 'truncated-gaussian':
@@ -127,6 +127,8 @@ class Parameter(object):
             self.distribution = Lognormal(self.shape_parameter_A)
         else:
             distribution_error()
+        self.mean = self.distribution.mean
+        self.variance = self.distribution.variance
     def _set_moments(self):
         """
         Private function that sets the mean and the variance of the distribution.
@@ -287,9 +289,20 @@ class Parameter(object):
             order = order + 1
         gridPoints = np.asarray(points).copy()
         ab = self.get_recurrence_coefficients(order)
-        if (any(gridPoints) < self.bounds[0]) or (any(gridPoints) > self.bounds[1]):
-            for r in range(0, len(gridPoints)):
-                gridPoints[r] = (gridPoints[r] - self.bounds[0]) / (self.bounds[1] - self.bounds[0])
+        """
+        print('Before:')
+        print(gridPoints)
+
+        for q in range(0, gridPoints.shape[0]):
+            if (gridPoints[q] < self.bounds[0]) or (gridPoints[q] > self.bounds[1]):
+                grid_flag = 1
+        if grid_flag == 1:
+            for r in range(0, gridPoints.shape[0]):
+                gridPoints[r] = (self.bounds[1] - self.bounds[0]) * ( (gridPoints[r] - self.lower) / (self.upper - self.lower) )  + self.bounds[0]
+            #print(gridPoints)
+        print('After:')
+        print(gridPoints)
+        """
 
         orthopoly = np.zeros((order, len(gridPoints)))  # create a matrix full of zeros
         derivative_orthopoly = np.zeros((order, len(gridPoints)))
@@ -304,7 +317,7 @@ class Parameter(object):
         # Cases
         if order == 1:  # CHANGED 2/2/18
             return orthopoly, derivative_orthopoly, dderivative_orthopoly
-        orthopoly[1, :] = ((gridPointsII[:, 0] - ab[0, 0]) * orthopoly[0, :]) * (1.0) / (1.0 * np.sqrt(ab[1, 1]))
+        orthopoly[1, :] = ((gridPointsII[:, 0] - ab[0, 0]) * orthopoly[0, :])  * (1.0) / (1.0 * np.sqrt(ab[1, 1]))
         derivative_orthopoly[1, :] = orthopoly[0, :] / (np.sqrt(ab[1, 1]))
         if order == 2:  # CHANGED 2/2/18
             return orthopoly, derivative_orthopoly, dderivative_orthopoly

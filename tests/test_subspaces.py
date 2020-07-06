@@ -1124,29 +1124,6 @@ class TestG(TestCase):
         W = mysubspace2.get_subspace()
         poly = mysubspace2.get_subspace_polynomial()
 
-    def test_find_another_subspace(self):
-        X, Y = data()
-        N = X.shape[0]
-        num_obs = 500
-        params = []
-        basis_orders = []
-        for i in range(25):
-                params.append(Parameter(order=2, distribution = 'Custom', data = np.reshape(X[:,i], (N,))))
-                basis_orders.append(2)
-
-        basis = Basis("total-order", orders = basis_orders)
-        num_obs = 200
-        chosen_points = np.random.choice(range(N), size = num_obs, replace = False)
-        X_red = X[chosen_points,:]
-        Y_red = Y[chosen_points]
-        remaining_pts = np.delete(np.arange(N), chosen_points)
-        chosen_valid_pts = np.random.choice(remaining_pts, size = 30, replace = False)
-        x_eval = X[chosen_valid_pts]
-        poly = Poly(params, basis, method='compressive-sensing', sampling_args={'sample-points':X_red, 'sample-outputs':Y_red})
-        poly.set_model()
-        mysubspace = Subspaces(method='active-subspace', full_space_poly=poly)
-        W = mysubspace.get_subspace()
-        e = mysubspace.get_eigenvalues()
     def test_get_zonotope_vertices(self):
         X, Y = data()
         N = X.shape[0]

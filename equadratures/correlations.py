@@ -21,7 +21,7 @@ class Correlations(object):
         1. Melchers, R. E., (1945) Structural Reliability Analysis and Predictions. John Wiley and Sons, second edition.
 
     """
-    def __init__(self, poly, correlation_matrix, verbose=False):
+    def __init__(self, poly, correlation_matrix, method='nataf-transform', verbose=False):
         self.poly = poly
         D = self.poly.get_parameters()
         self.D = D
@@ -69,25 +69,46 @@ class Correlations(object):
         self.R0 = R0.copy()
 
         self.A = np.linalg.cholesky(R0)
-        if verbose is True:
+        if verbose:
             print('The Cholesky decomposition of fictive matrix R0 is:')
             print(self.A)
             print('The fictive matrix is:')
             print(R0)
 
-        # Why generate quad points from normal, not from original marginals?
-        list_of_parameters = []
-        for i in range(0, len(self.D)):
-            standard_parameter = Parameter(order=self.D[i].order, distribution='gaussian', shape_parameter_A = 0., shape_parameter_B = 1.)
-            list_of_parameters.append(standard_parameter)
+        if method.lower() == 'nataf-transform':
+            list_of_parameters = []
+            for i in range(0, len(self.D)):
+                standard_parameter = Parameter(order=self.D[i].order, distribution='gaussian', shape_parameter_A = 0., shape_parameter_B = 1.)
+                list_of_parameters.append(standard_parameter)
 
-        # have option so that we don't need to obtain
-        self.polystandard = deepcopy(self.poly)
+            # have option so that we don't need to obtain
+            self.corrected_poly = deepcopy(self.poly)
 
-        if hasattr(self.polystandard, '_quadrature_points'):
-            self.standard_samples = self.polystandard._quadrature_points
-            self.polystandard._set_parameters(list_of_parameters)
-            self._points = self.get_correlated_from_uncorrelated(self.standard_samples)
+            if hasattr(self.corrected_poly, '_quadrature_points'):
+                self.corrected_poly._set_parameters(list_of_parameters)
+                self.standard_samples = self.corrected_poly._quadrature_points
+                self._points = self.get_correlated_from_uncorrelated(self.standard_samples)
+        elif method.lower() == 'gram-schmidt':
+            basis_card = poly.basis.cardinality
+            oversampling = 10
+
+            N_Psi = oversampling * basis_card
+            S_samples = self.get_correlated_samples(N=N_Psi)
+            w_weights = 1.0 / N_Psi * np.ones(N_Psi)
+            Psi = poly.get_poly(S_samples).T
+            WPsi = np.diag(np.sqrt(w_weights)) @ Psi
+
+            self.R_Psi = np.linalg.qr(WPsi)[1]
+            self.corrected_poly = deepcopy(poly)
+            self.corrected_poly.inv_R_Psi = np.linalg.inv(self.R_Psi)
+            self.corrected_poly.corr = self
+            self.corrected_poly._set_points_and_weights()
+
+            if hasattr(self.corrected_poly, '_quadrature_points'):
+                # TODO: Correlated quadrature points?
+                self._points = poly._quadrature_points
+        else:
+            raise ValueError('Invalid method for correlations.')
     def get_points(self):
         """
         Returns the correlated samples based on the quadrature rules used in poly.
@@ -122,7 +143,7 @@ class Correlations(object):
                 model_grads_values = evaluate_model_gradients(self._points, model_grads)
             else:
                 model_grads_values = model_grads
-        self.polystandard.set_model(model_values, model_grads_values)
+        self.corrected_poly.set_model(model_values, model_grads_values)
     def get_transformed_poly(self):
         """
         Returns the transformed polynomial.
@@ -133,7 +154,7 @@ class Correlations(object):
         :return:
             **poly**: An instance of the Poly class.
         """
-        return self.polystandard
+        return self.corrected_poly
     def get_correlated_from_uncorrelated(self, X):
         """
         Method for mapping uncorrelated variables from standard normal space to a new physical space in which variables are correlated.

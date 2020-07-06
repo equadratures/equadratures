@@ -98,6 +98,8 @@ class Poly(object):
                 self.mesh = 'monte-carlo'
             elif self.method == 'minimum-norm':
                 self.mesh = 'monte-carlo'
+            elif self.method == 'relevance-vector-machine':
+                self.mesh = 'monte-carlo'
             # Now depending on user inputs, override these default values!
             sampling_args_flag = 0
             if self.sampling_args is not None:

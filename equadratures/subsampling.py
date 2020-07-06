@@ -10,16 +10,19 @@ class Subsampling(object):
     """
     def __init__(self, subsampling_algorithm):
         self.subsampling_algorithm = subsampling_algorithm
-        if self.subsampling_algorithm == 'qr':
-            self.algorithm = lambda A, k : get_qr_column_pivoting(A, k)
-        elif self.subsampling_algorithm == 'svd':
-            self.algorithm = lambda A, k : get_svd_subset_selection(A, k)
-        elif self.subsampling_algorithm == 'newton':
-            self.algorithm = lambda A, k : get_newton_determinant_maximization(A, k)
-        elif self.subsampling_algorithm == 'random':
-            self.algorithm = 0 #np.random.choice(int(m), m_refined, replace=False)
-        elif self.subsampling_algorithm == None:
+        if self.subsampling_algorithm is None:
             self.algorithm = lambda A, k: _get_all_pivots(A, k)
+        elif self.subsampling_algorithm.lower() == 'qr':
+            self.algorithm = lambda A, k : get_qr_column_pivoting(A, k)
+        elif self.subsampling_algorithm.lower() == 'svd':
+            self.algorithm = lambda A, k : get_svd_subset_selection(A, k)
+        elif self.subsampling_algorithm.lower() == 'newton':
+            self.algorithm = lambda A, k : get_newton_determinant_maximization(A, k)
+        elif self.subsampling_algorithm.lower() == 'lu':
+            self.algorithm = lambda A, k : get_lu_row_pivoting(A, k)
+        elif self.subsampling_algorithm.lower() == 'random':
+            # Is this a placeholder?
+            self.algorithm = 0 #np.random.choice(int(m), m_refined, replace=False)
     def get_subsampling_method(self):
         return self.algorithm
 def _get_all_pivots(Ao, number_of_subsamples):
@@ -44,6 +47,14 @@ def get_svd_subset_selection(Ao, number_of_subsamples):
     _, _, V = svd(A.T)
     _, _, pvec = qr(V[:, 0:number_of_subsamples].T , pivoting=True )
     z = pvec[0:number_of_subsamples]
+    return z
+def get_lu_row_pivoting(Ao, number_of_subsamples):
+    """
+    Retain rows with largest pivots in LU factorisation. AKA Leja sequence.
+    """
+    A = Ao.copy()
+    P = lu(A)[0]
+    z = np.where(P==1)[1][:number_of_subsamples]
     return z
 def get_newton_determinant_maximization(Ao, number_of_subsamples):
     """

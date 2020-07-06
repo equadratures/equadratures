@@ -120,6 +120,13 @@ class Poly(object):
                 if 'sample-gradients' in sampling_args:
                     self.gradients = sampling_args.get('sample-gradients')
                     sampling_args_flag = 1
+                if 'gram-schmidt-correction' in sampling_args:
+                    R_Psi = sampling_args.get('gram-schmidt-correction')
+                    self.inv_R_Psi = np.linalg.inv(R_Psi)
+                    sampling_args_flag = 1
+                if 'correlations' in sampling_args:
+                    self.corr = sampling_args.get('correlations')
+                    sampling_args_flag = 1
                 elif sampling_args_flag == 0:
                     raise ValueError( 'An input value that you have specified is likely incorrect. Sampling arguments include: mesh, sampling-ratio, subsampling-algorithm, sample-points, sample-outputs and sample-gradients.')
             self._set_solver()
@@ -216,8 +223,12 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
+        if hasattr(self, 'corr'):
+            corr = self.corr
+        else:
+            corr = None
         self.quadrature = Quadrature(parameters=self.parameters, basis=self.basis, \
-                        points=self.inputs, mesh=self.mesh)
+                        points=self.inputs, mesh=self.mesh, corr=corr)
         quadrature_points, quadrature_weights = self.quadrature.get_points_and_weights()
         if self.subsampling_algorithm_name is not None:
             P = self.get_poly(quadrature_points)
@@ -370,6 +381,7 @@ class Poly(object):
                 y = evaluate_model(self._quadrature_points, model)
             else:
                 y = model
+                # TODO: This error gives messages that are usually not clear
                 assert(y.shape[0] == self._quadrature_points.shape[0])
             if y.shape[1] != 1:
                 raise ValueError( 'model values should be a column vector.')
@@ -655,6 +667,8 @@ class Poly(object):
         for k in range(dimensions):
             basis_entries_this_dim = basis[:, k].astype(int)
             polynomial *= p[k][basis_entries_this_dim]
+        if hasattr(self, 'inv_R_Psi'):
+            polynomial = self.inv_R_Psi.T @ polynomial
         return polynomial
     def get_poly_grad(self, stack_of_points, dim_index = None):
         """
@@ -709,6 +723,8 @@ class Poly(object):
                         polynomialgradient *= dp[k][basis_entries_this_dim]
                     else:
                         polynomialgradient *= p[k][basis_entries_this_dim]
+                if hasattr(self, 'inv_R_Psi'):
+                    polynomialgradient = self.inv_R_Psi.T @ polynomialgradient
                 R.append(polynomialgradient)
         return R
     def get_poly_hess(self, stack_of_points):
@@ -765,6 +781,8 @@ class Poly(object):
                         else:
                             polynomialhessian[i, :] = p[k][int(basis[i, k])] * temp
                         temp = polynomialhessian[i, :]
+                if hasattr(self, 'inv_R_Psi'):
+                    polynomialhessian = self.inv_R_Psi.T @ polynomialhessian
                 H.append(polynomialhessian)
 
         return H

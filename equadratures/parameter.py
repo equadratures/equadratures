@@ -18,6 +18,7 @@ from equadratures.distributions.gumbel import Gumbel
 from equadratures.distributions.chi import Chi
 from equadratures.distributions.custom import Custom
 import numpy as np
+import scipy as sc
 
 class Parameter(object):
     """
@@ -224,12 +225,16 @@ class Parameter(object):
             if order == 1:
                 V = [1.0]
         else:
-            D,V = np.linalg.eig(self.get_jacobi_matrix(order))
-            V = np.mat(V) # convert to matrix
-            i = np.argsort(D) # get the sorted indices
-            i = np.array(i) # convert to array
-            V = V[:,i]
-        return V
+            #D,V = np.linalg.eig(self.get_jacobi_matrix(order))
+            D, V = sc.linalg.eigh(JacobiMat)
+            idx = D.argsort()[::-1]
+            eigs = D[idx]
+            eigVecs = V[:, idx]
+            #V = np.mat(V) # convert to matrix
+            #i = np.argsort(D) # get the sorted indices
+            #i = np.array(i) # convert to array
+            #V = V[:,i]
+        return eigVecs
     def get_jacobi_matrix(self, order=None, ab=None):
         """
         Computes the Jacobi matrix---a tridiagonal matrix of the recurrence coefficients.
@@ -362,18 +367,23 @@ def get_local_quadrature(self, order=None, ab=None):
         w = [1.0]
     else:
         # Compute eigenvalues & eigenvectors of Jacobi matrix
-        D,V = np.linalg.eig(JacobiMat)
-        V = np.mat(V) # convert to matrix
-        local_points = np.sort(D) # sort by the eigenvalues
-        i = np.argsort(D) # get the sorted indices
-        i = np.array(i) # convert to array
+        #D,V = np.linalg.eig(JacobiMat)
+        D, V = sc.linalg.eigh(JacobiMat)
+        #V = np.mat(V) # convert to matrix
+        #local_points = np.sort(D) # sort by the eigenvalues
+        #i = np.argsort(D) # get the sorted indices
+        #i = np.array(i) # convert to array
+        idx = D.argsort()[::-1]
+        eigs = D[idx]
+        eigVecs = V[:, idx]
+
         w = np.linspace(1,order+1,order) # create space for weights
         p = np.ones((int(order),1))
-        for u in range(0, len(i) ):
-            w[u] = ab[0,1] * (V[0,i[u]]**2) # replace weights with right value
-            p[u,0] = local_points[u]
-            if (p[u,0] < 1e-16) and (-1e-16 < p[u,0]):
-                p[u,0] = np.abs(p[u,0])
+        for u in range(0, len(idx) ):
+            w[u] = float(ab[0,1]) * (eigVecs[0,idx[u]]**2) # replace weights with right value
+            p[u,0] = eigs[u]
+            #if (p[u,0] < 1e-16) and (-1e-16 < p[u,0]):
+            #    p[u,0] = np.abs(p[u,0])
     return p, w
 def get_local_quadrature_radau(self, order=None, ab=None):
     if self.endpoints.lower() == 'lower':

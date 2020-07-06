@@ -7,6 +7,7 @@ from equadratures.correlations import Correlations
 from equadratures.optimisation import Optimisation
 from equadratures.subspaces import Subspaces
 from equadratures.poly import evaluate_model, evaluate_model_gradients, vector_to_2D_grid
+from equadratures.polytree import PolyTree
 import numpy as np
 import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))

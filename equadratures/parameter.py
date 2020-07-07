@@ -226,7 +226,7 @@ class Parameter(object):
                 V = [1.0]
         else:
             #D,V = np.linalg.eig(self.get_jacobi_matrix(order))
-            D, V = sc.linalg.eigh(JacobiMat)
+            D, V = sc.linalg.eigh(self.get_jacobi_matrix(order))
             idx = D.argsort()[::-1]
             eigs = D[idx]
             eigVecs = V[:, idx]

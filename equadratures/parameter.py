@@ -384,6 +384,7 @@ def get_local_quadrature(self, order=None, ab=None):
             p[u,0] = eigs[u]
             #if (p[u,0] < 1e-16) and (-1e-16 < p[u,0]):
             #    p[u,0] = np.abs(p[u,0])
+        p = p[::-1]
     return p, w
 def get_local_quadrature_radau(self, order=None, ab=None):
     if self.endpoints.lower() == 'lower':

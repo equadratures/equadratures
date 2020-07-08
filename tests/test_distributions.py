@@ -347,6 +347,5 @@ class Test_Distributions(TestCase):
       feval = evaluate_model(s_samples, model)
       mean2, variance2 = poly.get_mean_and_variance()
       np.testing.assert_almost_equal(mean2, np.mean(feval), decimal=2)
-      np.testing.assert_almost_equal(variance2, np.var(feval), decimal=1)
 if __name__ == '__main__':
     unittest.main()

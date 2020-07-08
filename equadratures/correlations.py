@@ -10,6 +10,7 @@ from scipy import optimize
 from copy import deepcopy
 
 class Correlations(object):
+    #TODO: fix documentation
     """
     The class defines a Nataf transformation. The input correlated marginals are mapped from their physical space to a new
     standard normal space, in which points are uncorrelated.
@@ -21,9 +22,16 @@ class Correlations(object):
         1. Melchers, R. E., (1945) Structural Reliability Analysis and Predictions. John Wiley and Sons, second edition.
 
     """
-    def __init__(self, poly, correlation_matrix, method='nataf-transform', verbose=False):
-        self.poly = poly
-        D = self.poly.get_parameters()
+    def __init__(self, correlation_matrix, poly=None, parameters=None, method=None, verbose=False):
+        if (poly is None) and (method is not None):
+            raise ValueError('Need to specify poly for probability transform.')
+        if poly is not None:
+            self.poly = poly
+            D = self.poly.get_parameters()
+        elif parameters is not None:
+            D = parameters
+        else:
+            raise ValueError('Need to specify either poly or parameters.')
         self.D = D
         self.R = correlation_matrix
         self.std = Parameter(order=5, distribution='normal',shape_parameter_A = 0.0, shape_parameter_B = 1.0)
@@ -75,7 +83,9 @@ class Correlations(object):
             print('The fictive matrix is:')
             print(R0)
 
-        if method.lower() == 'nataf-transform':
+        if method is None:
+            pass
+        elif method.lower() == 'nataf-transform':
             list_of_parameters = []
             for i in range(0, len(self.D)):
                 standard_parameter = Parameter(order=self.D[i].order, distribution='gaussian', shape_parameter_A = 0., shape_parameter_B = 1.)
@@ -214,11 +224,11 @@ class Correlations(object):
             **C**: A numpy.ndarray of shape (N,) with evaluations of the PDF.
         """
 
-        poly = self.poly
+        parameters = self.D
         if len(X.shape) == 1:
             X = X.reshape(-1, 1)
         d = X.shape[1]
-        parameters = poly.get_parameters()
+
         U = np.zeros(X.shape)
         for i in range(d):
             U[:, i] = norm.ppf(parameters[i].get_cdf(X[:, i]))

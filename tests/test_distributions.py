@@ -338,7 +338,7 @@ class Test_Distributions(TestCase):
       np.testing.assert_almost_equal(mean, pdf.mean, decimal=5)
       np.testing.assert_almost_equal(var, pdf.variance, decimal=5)
       s = Parameter(distribution='analytical', weight_function=pdf, order=2)
-      s_samples = s.get_samples(500000)
+      s_samples = s.get_samples(50000)
       basis = Basis('univariate')
       poly = Poly(s, basis, method='numerical-integration')
       def model(input):

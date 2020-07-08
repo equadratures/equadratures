@@ -228,7 +228,7 @@ class Parameter(object):
                 V = [1.0]
         else:
             #D,V = np.linalg.eig(self.get_jacobi_matrix(order))
-            D, V = sc.linalg.eigh(JacobiMat)
+            D, V = sc.linalg.eigh(self.get_jacobi_matrix(order))
             idx = D.argsort()[::-1]
             eigs = D[idx]
             eigVecs = V[:, idx]
@@ -397,6 +397,7 @@ def get_local_quadrature(self, order=None, ab=None):
             p[u,0] = eigs[u]
             #if (p[u,0] < 1e-16) and (-1e-16 < p[u,0]):
             #    p[u,0] = np.abs(p[u,0])
+        p = p[::-1]
     return p, w
 def get_local_quadrature_radau(self, order=None, ab=None):
     if self.endpoints.lower() == 'lower':

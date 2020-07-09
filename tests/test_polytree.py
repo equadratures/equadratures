@@ -4,16 +4,18 @@ from equadratures import *
 import numpy as np
 import scipy.stats as st
 
-np.random.seed(0)
 def unison_shuffled_copies(a, b):
     assert len(a) == len(b)
     p = np.random.permutation(len(a))
     return a[p], b[p]
 
-class TestC(TestCase):
+class Test_polytree(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        np.random.seed(0)
 
     def test_gen_use(self):
-        
         X = np.linspace(0, 1, num=100)
         y = np.concatenate((25*(X[0:50]-0.25)**2 - 1.0625, 25*(X[50:100]-0.75)**2 - 1.0625))
 
@@ -32,7 +34,6 @@ class TestC(TestCase):
         tree = polytree.PolyTree(search='uniform')
         tree.fit(x_train, y_train)
         _, _, uniform_r_value, _, _ = st.linregress(y_test, tree.predict(x_test).reshape(-1))
-
         self.assertTrue(uniform_r_value ** 2 > 0.9)
         self.assertTrue(exhaustive_r_value ** 2 > 0.9)
 

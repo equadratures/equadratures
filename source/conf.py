@@ -188,7 +188,8 @@ html_theme_options = {
 
     # Tab name for entire site. (Default: "Site")
     'navbar_site_name': "Explore",
-
+    "rightsidebar": "true",
+    "relbarbgcolor": "black",
     # A list of tuples containing pages or urls to link to.
     # Valid tuples should be in the following forms:
     #    (name, page)                 # a link to a page
@@ -245,7 +246,7 @@ html_theme_options = {
                      # Currently, the supported themes are:
                      # - Bootstrap 2: https://bootswatch.com/2
                      # - Bootstrap 3: https://bootswatch.com/3
-                     'bootswatch_theme': "cerulean",
+                     'bootswatch_theme': "united",
                      'page_toc_position': 'sidebar-left',
 
                      # Choose Bootstrap version.

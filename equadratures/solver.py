@@ -23,11 +23,13 @@ class Solver(object):
         self.param1 = None
         self.param2 = None
         self.verbose = False
+        self.max_iter = None
         if self.solver_args is not None:
             if 'noise-level' in self.solver_args: self.noise_level = solver_args.get('noise-level')
             if 'param1' in self.solver_args: self.param1 = solver_args.get('param1')
             if 'param2' in self.solver_args: self.param2 = solver_args.get('param2')
             if 'verbose' in self.solver_args: self.verbose = solver_args.get('verbose')
+            if 'max-iter' in self.solver_args: self.max_iter = solver_args.get('max-iter')
         if self.method.lower() == 'compressed-sensing' or self.method.lower() == 'compressive-sensing':
             self.solver = lambda A, b: basis_pursuit_denoising(A, b, self.noise_level, self.verbose)
         elif self.method.lower() == 'least-squares':
@@ -44,6 +46,8 @@ class Solver(object):
             self.solver = lambda A, b: huber(A, b, self.verbose, self.param1)
         elif self.method.lower() == 'elastic-net':
             self.solver = lambda A, b: elastic_net(A, b, self.verbose, self.param1, self.param2)
+        elif self.method.lower() == 'relevance-vector-machine':
+            self.solver = lambda A, b: rvm(A, b, self.max_iter)
         else:
             raise ValueError('You have not selected a valid method for solving the coefficients of the polynomial. Choose from compressed-sensing, least-squares, least-squares-with-gradients, least-absolute-residual, minimum-norm, numerical-integration, huber or elastic-net.')
     def get_solver(self):
@@ -492,3 +496,56 @@ def elastic_net(A, b, verbose, lamda_val, alpha_val):
         raise ValueError( 'At present cvxpy, must be installed for elastic net regression to be selected.')
     return x.reshape(-1,1)
 
+def rvm(A, b, max_iter):
+    if max_iter is None:
+        max_iter = 1000
+    K, card = A.shape
+    alpha = np.ones(card)
+    alpha_0 = 1.0
+    remaining_coeff_ind = np.arange(card)
+    removed = np.array([], dtype=int)
+
+    Alpha_diag = np.diag(alpha)
+
+    Sigma = np.linalg.inv(alpha_0 * A.T @ A + Alpha_diag)
+    mu = alpha_0 * Sigma @ A.T @ b
+
+    Phi = A.copy()
+
+    all_L = []
+
+    for i in range(max_iter):
+
+        C = 1.0 / alpha_0 * np.eye(K) + Phi @ np.diag(1.0 / np.diag(Alpha_diag)) @ Phi.T
+        L = -0.5 * (K * np.log(2.0 * np.pi) + np.linalg.slogdet(C)[1] + b.T @ np.linalg.inv(C) @ b)
+
+        all_L.append(L)
+        gamma = 1.0 - alpha * np.diag(Sigma)
+
+        remaining_ind = np.where(gamma >= 1e-10)[0]
+
+        removed = np.append(removed, remaining_coeff_ind[np.where(gamma < 1e-10)[0]])
+        remaining_coeff_ind = np.setdiff1d(remaining_coeff_ind, remaining_coeff_ind[np.where(gamma < 1e-10)[0]])
+
+
+        alpha_new = (gamma / mu ** 2)[remaining_ind]
+        alpha_0_new = (K - np.sum(gamma)) / np.linalg.norm(b - Phi @ mu) ** 2
+
+        alpha = alpha_new.copy()
+        alpha_0 = alpha_0_new
+        Phi = Phi[:, remaining_ind]
+
+        Alpha_diag = np.diag(alpha)
+        Sigma = np.linalg.inv(alpha_0 * Phi.T @ Phi + Alpha_diag)
+
+        mu = alpha_0 * Sigma @ Phi.T @ b
+        if len(all_L) > 1:
+            residual = np.abs((all_L[-1] - all_L[-2]) / (all_L[-1] - all_L[0]))
+            if residual < 1e-3:
+                break
+
+    if i == max_iter - 1: print('WARNING: Maximum iteration limit reached in solver.py')
+    mean_coeffs = np.zeros(card)
+    mean_coeffs[remaining_coeff_ind] = mu.copy()
+
+    return mean_coeffs

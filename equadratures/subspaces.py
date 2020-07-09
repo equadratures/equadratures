@@ -55,7 +55,7 @@ class Subspaces(object):
         self.poly_method = poly_method
         self.solver_args = solver_args
         if self.method.lower() == 'active-subspace' or self.method.lower() == 'active-subspaces':
-            self.method == 'active-subspace'
+            self.method = 'active-subspace'
             if self.full_space_poly is None:
                 N, d = self.sample_points.shape
                 param = Parameter(distribution='uniform', lower=-1, upper=1., order=self.polynomial_degree)
@@ -129,15 +129,17 @@ class Subspaces(object):
         """
         bs_trials=50
         if self.full_space_poly.get_points() is None:
-            d = poly.dimensions
-            if alpha is None:
-                alpha = 4
-            if k is None or k > d:
-                k = d
-            M = int(alpha * k * np.log(d))
-            X = np.zeros((M, d))
-            for j in range(0, d):
-                X[:, j] =  np.reshape(self.full_space_poly.parameters[j].get_samples(M), M)
+            # This should never happen because set_model has been called in __init__...
+            pass
+            # d = poly.dimensions
+            # if alpha is None:
+            #     alpha = 4
+            # if k is None or k > d:
+            #     k = d
+            # M = int(alpha * k * np.log(d))
+            # X = np.zeros((M, d))
+            # for j in range(0, d):
+            #     X[:, j] =  np.reshape(self.full_space_poly.parameters[j].get_samples(M), M)
         else:
             X = self.full_space_poly.get_points()
             M, d = X.shape

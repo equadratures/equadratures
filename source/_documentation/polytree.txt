@@ -1,0 +1,7 @@
+Polynomial Regression Tree
+==================
+
+.. automodule:: equadratures.polytree
+    :members:
+
+

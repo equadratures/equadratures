@@ -1,6 +1,7 @@
 from unittest import TestCase
 import unittest
 from equadratures import *
+from equadratures.datasets import standardise, unstandardise
 import numpy as np
 import scipy.stats as st
 import os
@@ -1140,8 +1141,8 @@ class TestG(TestCase):
         for j in range(d): #randomly scale each column of X
             scale = np.random.uniform()*10.0
             Xorig[:,j] *= scale
-        X = subspaces.standardise(Xorig)
-        np.testing.assert_array_almost_equal(Xorig,subspaces.unstandardise(X,Xorig),decimal=8)
+        X = standardise(Xorig)
+        np.testing.assert_array_almost_equal(Xorig,unstandardise(X,Xorig),decimal=8)
         num_obs = 500
         chosen_points = np.random.choice(range(N), size = num_obs, replace = False)
         X_red = X[chosen_points,:]
@@ -1158,7 +1159,7 @@ class TestG(TestCase):
         U_random_entry = U[np.random.randint(0, 99), :]
         np.testing.assert_array_almost_equal(U_random_entry, active_sample_coord, decimal=4)
         # Rescale samples (S) to original coordinates
-        Sorig = subspaces.unstandardise(S,Xorig)
+        Sorig = unstandardise(S,Xorig)
 
 if __name__== '__main__':
     unittest.main()

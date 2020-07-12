@@ -362,7 +362,7 @@ def _l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cg
         up = u + s*du
         rp = r + s*Adx
 
-        Fu1p = xp - up
+        fu1p = xp - up
         fu2p = -xp - up
 
         fep = 0.5 * (np.linalg.norm(rp)**2 - epsilon**2)

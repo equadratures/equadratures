@@ -10,17 +10,18 @@ from scipy import optimize
 from copy import deepcopy
 
 class Correlations(object):
-    #TODO: fix documentation
     """
-    The class defines a Nataf transformation. The input correlated marginals are mapped from their physical space to a new
-    standard normal space, in which points are uncorrelated.
+    The class defines methods for polynomial approximations with correlated inputs, including the Nataf transform and Gram-Schmidt process.
 
-    :param Poly poly: A polynomial object.
     :param numpy.ndarray correlation_matrix: The correlation matrix associated with the joint distribution.
+    :param Poly poly: Polynomial defined with parameters with marginal distributions in uncorrelated space.
+    :param list parameters: List of parameters with marginal distributions.
+    :param str method: `nataf-transform` or `gram-schmidt`.
+    :param bool verbose: Display Cholesky decomposition of the fictive matrix.
 
     **References**
         1. Melchers, R. E., (1945) Structural Reliability Analysis and Predictions. John Wiley and Sons, second edition.
-
+        2. Jakeman, J. D. et al., (2019) Polynomial chaos expansions for dependent random variables.
     """
     def __init__(self, correlation_matrix, poly=None, parameters=None, method=None, verbose=False):
         if (poly is None) and (method is not None):
@@ -64,13 +65,13 @@ class Correlations(object):
                         diff = np.dot(coefficientsIntegral, bivariateNormalPDF)
                         return diff - self.R[i,j]
 
-                    if (self.D[i].name!='custom') or (self.D[j].name!='custom'):
-                        rho = optimize.newton(check_difference, self.R[i,j], maxiter=50)
-                    else:
-                        # ???
-                        res = optimize.least_squares(check_difference, self.R[i,j], bounds=(-0.999,0.999), ftol=1.e-03)
-                        rho = res.x
-                        print('A Custom Marginal is present')
+                    # if (self.D[i].name!='custom') or (self.D[j].name!='custom'):
+                    rho = optimize.newton(check_difference, self.R[i,j], maxiter=50)
+                    # else:
+                    #     # ???
+                    #     res = optimize.least_squares(check_difference, self.R[i,j], bounds=(-0.999,0.999), ftol=1.e-03)
+                    #     rho = res.x
+                    #     print('A Custom Marginal is present')
 
                     R0[i,j] = rho
                     R0[j,i] = R0[i,j]
@@ -97,7 +98,8 @@ class Correlations(object):
             if hasattr(self.corrected_poly, '_quadrature_points'):
                 self.corrected_poly._set_parameters(list_of_parameters)
                 self.standard_samples = self.corrected_poly._quadrature_points
-                self._points = self.get_correlated_from_uncorrelated(self.standard_samples)
+                self._points = self.get_correlated_samples(X=self.standard_samples)
+                # self.corrected_poly._quadrature_points = self._points.copy()
         elif method.lower() == 'gram-schmidt':
             basis_card = poly.basis.cardinality
             oversampling = 10
@@ -107,16 +109,26 @@ class Correlations(object):
             w_weights = 1.0 / N_Psi * np.ones(N_Psi)
             Psi = poly.get_poly(S_samples).T
             WPsi = np.diag(np.sqrt(w_weights)) @ Psi
+            self.WPsi = WPsi
 
-            self.R_Psi = np.linalg.qr(WPsi)[1]
+            R_Psi = np.linalg.qr(WPsi)[1]
+
+            self.R_Psi = R_Psi
+            self.R_Psi[0, :] *= np.sign(self.R_Psi[0, 0])
             self.corrected_poly = deepcopy(poly)
             self.corrected_poly.inv_R_Psi = np.linalg.inv(self.R_Psi)
             self.corrected_poly.corr = self
             self.corrected_poly._set_points_and_weights()
 
+            P = self.corrected_poly.get_poly(self.corrected_poly._quadrature_points)
+            W = np.mat(np.diag(np.sqrt(self.corrected_poly._quadrature_weights)))
+            A = W * P.T
+            self.corrected_poly.A = A
+            self.corrected_poly.P = P
+
             if hasattr(self.corrected_poly, '_quadrature_points'):
                 # TODO: Correlated quadrature points?
-                self._points = poly._quadrature_points
+                self._points = self.corrected_poly._quadrature_points
         else:
             raise ValueError('Invalid method for correlations.')
     def get_points(self):
@@ -165,47 +177,24 @@ class Correlations(object):
             **poly**: An instance of the Poly class.
         """
         return self.corrected_poly
-    def get_correlated_from_uncorrelated(self, X):
-        """
-        Method for mapping uncorrelated variables from standard normal space to a new physical space in which variables are correlated.
-
-        :param Correlations self: An instance of the Correlations object.
-        :param numpy.ndarray X: Samples of uncorrelated points from the marginals; of shape (N,M)
-
-        :return:
-            **C**: A numpy.ndarray of shape (N, M), which contains the correlated samples.
-        """
-        # This seems to assume original marginal densities are gaussian?
-        N = X.shape[0]
-        d = len(self.D)
-        # convert to gaussian here...
-        # It should *not* be used to convert quad points... because they aren't
-        # distributed as the marginal distribution! (Or should it?)
-        # It happens to work with Gaussian quadrature points for Gaussian densities
-        # because the icdf matches exactly and it becomes only a linear transform
-
-        W = X @ self.A.T
-
-        U = np.zeros((N, d))
-        for i in range(d):
-            U[:,i] = self.std.get_cdf(points=W[:,i])
-        Z = np.zeros((N, d))
-        for i in range(d):
-            Z[:,i] = self.D[i].get_icdf(U[:,i])
-        return Z
-    def get_correlated_samples(self, N):
+    def get_correlated_samples(self, N=None, X=None):
         """
         Method for generating correlated samples.
 
         :param int N: Number of correlated samples required.
+        :param ndarray X: (Optional) Points in the uncorrelated space to map to the correlated space.
 
         :return:
             **C**: A numpy.ndarray of shape (N, M), which contains the correlated samples.
         """
         d = len(self.D)
-        X_test = np.random.multivariate_normal(np.zeros(d), np.eye(d), size=N)
 
-        X_test = X_test @ self.A.T
+        if X is None:
+            if N is None:
+                raise ValueError('Need to specify number of points to generate.')
+            X = np.random.multivariate_normal(np.zeros(d), np.eye(d), size=N)
+
+        X_test = X @ self.A.T
 
         U_test = np.zeros(X_test.shape)
         for i in range(d):

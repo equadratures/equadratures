@@ -240,7 +240,7 @@ class Poly(object):
             m_refined = int(np.round(self.sampling_ratio * nn))
             z = self.subsampling_algorithm_function(A, m_refined)
             self._quadrature_points = quadrature_points[z,:]
-            self._quadrature_weights =  quadrature_weights[z] / np.sum(quadrature_weights[z])
+            self._quadrature_weights = quadrature_weights[z] / np.sum(quadrature_weights[z])
         else:
             self._quadrature_points = quadrature_points
             self._quadrature_weights = quadrature_weights
@@ -289,14 +289,27 @@ class Poly(object):
         return self.statistics_object.get_skewness(), self.statistics_object.get_kurtosis()
     def _set_statistics(self):
         """
-        Private method that is used withn the statistics routines.
+        Private method that is used within the statistics routines.
 
         """
         if self.statistics_object is None:
-            if self.method != 'numerical-integration' and self.dimensions <= 6 and self.highest_order <= MAXIMUM_ORDER_FOR_STATS:
+            if hasattr(self, 'inv_R_Psi'):
+                # quad_pts, quad_wts = self.quadrature.get_points_and_weights()
+                N_quad = 20000
+                quad_pts = self.corr.get_correlated_samples(N=N_quad)
+                quad_wts = 1.0 / N_quad * np.ones(N_quad)
+                poly_vandermonde_matrix = self.get_poly(quad_pts)
+            elif self.method != 'numerical-integration' and self.dimensions <= 6 and self.highest_order <= MAXIMUM_ORDER_FOR_STATS:
                 quad = Quadrature(parameters=self.parameters, basis=Basis('tensor-grid', orders= np.array(self.parameters_order) + 1), \
                     mesh='tensor-grid', points=None)
                 quad_pts, quad_wts = quad.get_points_and_weights()
+                poly_vandermonde_matrix = self.get_poly(quad_pts)
+            elif self.mesh == 'monte-carlo':
+                quad = Quadrature(parameters=self.parameters,
+                                  basis=self.basis, mesh=self.mesh, points=None, oversampling=10.0)
+                quad_pts, quad_wts = quad.get_points_and_weights()
+                N_quad = len(quad_wts)
+                quad_wts = 1.0 / N_quad * np.ones(N_quad)
                 poly_vandermonde_matrix = self.get_poly(quad_pts)
             else:
                 poly_vandermonde_matrix = self.get_poly(self._quadrature_points)

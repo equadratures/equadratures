@@ -13,7 +13,7 @@ class Quadrature(object):
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     """
-    def __init__(self, parameters, basis, points, mesh, corr=None):
+    def __init__(self, parameters, basis, points, mesh, corr=None, oversampling=7.0):
         self.parameters = parameters
         self.basis = basis
         self.points = points
@@ -26,7 +26,7 @@ class Quadrature(object):
             self.list = self.samples.tensor_product_list
             self.sparse_weights = self.samples.sparse_weights
         elif self.mesh.lower() == 'monte-carlo':
-            self.samples = Montecarlo(self.parameters, self.basis, corr)
+            self.samples = Montecarlo(self.parameters, self.basis, corr, oversampling)
             self.list = None
         elif self.mesh.lower() == 'induced':
             self.samples = Induced(self.parameters, self.basis)

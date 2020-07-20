@@ -306,7 +306,7 @@ class Poly(object):
                 poly_vandermonde_matrix = self.get_poly(quad_pts)
             elif self.mesh == 'monte-carlo':
                 quad = Quadrature(parameters=self.parameters,
-                                  basis=self.basis, mesh=self.mesh, points=None, oversampling=10.0)
+                                  basis=self.basis, points=None, mesh=self.mesh, oversampling=10.0)
                 quad_pts, quad_wts = quad.get_points_and_weights()
                 N_quad = len(quad_wts)
                 quad_wts = 1.0 / N_quad * np.ones(N_quad)

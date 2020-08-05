@@ -469,7 +469,7 @@ def huber(A, b, verbose, M, opt):
 
 def elastic_net(A, b, verbose, lamda_val, alpha_val, opt):
     '''
-    Solves 0.5*||Ax=b||_2 + lamda*( alpha*||x||_1  + 0.5*(1-alpha)*||x||_2**2).
+    Solves 0.5*||Ax-b||_2 + lamda*( alpha*||x||_1  + 0.5*(1-alpha)*||x||_2**2).
     Elastic net regression: L2 cost function, with mix of L1 and L2 penalties (scaled by lamda1 and lamda2).
     The penalties shrink the parameter estimates in the hopes of reducing variance, improving prediction accuracy, and aiding interpetation.
     lamda controls amount of penalisation i.e. lamda=0 gives OLS. default is 1. 

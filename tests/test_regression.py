@@ -147,6 +147,62 @@ class TestC(TestCase):
         irrelevent_coeffs = np.sum(np.abs(coeffs[idx[ideal_coeffs:]]))/np.sum(np.abs(coeffs))
         self.assertTrue(irrelevent_coeffs < 1e-5,msg='irrelevent_coeffs = %.2e' %irrelevent_coeffs)
 
+    def test_polyuq_empirical(self):
+        """ 
+        Tests the get poly eq routine when no variance data is given, i.e. when estimating the 
+        empirical variance from training data.
+        """
+        # Generate data
+        dim = 3
+        n = 1
+        N = 200
+        data_noise = 0.05
+        X,y = datasets.gen_linear(n_observations=N,n_dim=dim,bias=0.5,n_relevent=1,noise=data_noise,random_seed=1)
+        X_train, X_test, y_train, y_test = datasets.train_test_split(X,y,train=0.7,random_seed=42)
+        N_train = X_train.shape[0]
+        N_test  = X_test.shape[0]
+        
+        # Fit poly and approx its variance
+        param = Parameter(distribution='Uniform', lower=-1, upper=1, order=n)
+        myParameters = [param for i in range(dim)] # one-line for loop for parameters
+        myBasis = Basis('tensor-grid')
+        poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X_train, 'sample-outputs':y_train.reshape(-1,1)} )
+        poly.set_model()
+        y_pred, y_std = poly.get_polyfit(X_test,uq=True)
+        np.testing.assert_array_almost_equal(y_std.mean(), 0.327769998, decimal=5, err_msg='Problem!')
+
+    def test_polyuq_prescribed(self):
+        """
+        Tests the get poly uq routine when variance data is given in sampling_args. 
+        """
+        # Generate data
+        dim = 1
+        n = 5
+        N = 100
+        data_noise = 0.0
+        state = np.random.RandomState(42)
+        our_function = lambda x:  0.3*x**4 -1.6*x**3 +0.6*x**2 +2.4*x - 0.5
+        X = state.uniform(-1,1,N)
+        y = our_function(X)
+        X_train, X_test, y_train, y_test = datasets.train_test_split(X,y,train=0.7,random_seed=42)
+        N_train = X_train.shape[0]
+        N_test  = X_test.shape[0]
+
+        # Array of prescribed variances at each training data point
+        y_var = state.uniform(0.05,0.2,N_train)**2
+        
+        # Fit poly with prescribed variances
+        param = Parameter(distribution='Uniform', lower=-1, upper=1, order=n)
+        myParameters = [param for i in range(dim)] # one-line for loop for parameters
+        myBasis = Basis('univariate')
+        poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X_train.reshape(-1,1), 
+                                                                                  'sample-outputs':y_train.reshape(-1,1), 
+                                                                                  'sample-output-variances':y_var} )
+        poly.set_model()
+        y_pred, y_std = poly.get_polyfit(X_test,uq=True)
+
+        np.testing.assert_array_almost_equal(y_std.mean(), 0.682095574, decimal=5, err_msg='Problem!')
+
 if __name__== '__main__':
     unittest.main()
 

@@ -61,6 +61,8 @@ class Poly(object):
         4. Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations. SIAM/ASA Journal on Uncertainty Quantification, 5(1). `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
         5. Bos, L., De Marchi, S., Sommariva, A., Vianello, M., (2010) Computing Multivariate Fekete and Leja points by Numerical Linear Algebra. SIAM Journal on Numerical Analysis, 48(5). `Paper <https://epubs.siam.org/doi/abs/10.1137/090779024>`__
         6. Joshi, S., Boyd, S., (2009) Sensor Selection via Convex Optimization. IEEE Transactions on Signal Processing, 57(2). `Paper <https://ieeexplore.ieee.org/document/4663892>`__
+        7. Rogers, S., Girolami, M., (2016) Variability in predictions. In: A First Course in Machine Learning, Second Edition (2nd. ed.). Chapman & Hall/CRC. `Book <https://github.com/wwkenwong/book/blob/master/Simon%20Rogers%2C%20Mark%20Girolami%20A%20First%20Course%20in%20Machine%20Learning.pdf>`__
+
     """
     def __init__(self, parameters, basis, method=None, sampling_args=None, solver_args=None):
         try:
@@ -82,6 +84,7 @@ class Poly(object):
         # Initialize some default values!
         self.inputs = None
         self.outputs = None
+        self.output_variances = None
         self.subsampling_algorithm_name = None
         self.sampling_ratio = 1.0
         self.statistics_object = None
@@ -130,8 +133,11 @@ class Poly(object):
                 if 'correlations' in sampling_args:
                     self.corr = sampling_args.get('correlations')
                     sampling_args_flag = 1
-                elif sampling_args_flag == 0:
+                if sampling_args_flag == 0: #TODO - Not sure elif made sense here, changes to if for now. 
                     raise ValueError( 'An input value that you have specified is likely incorrect. Sampling arguments include: mesh, sampling-ratio, subsampling-algorithm, sample-points, sample-outputs and sample-gradients.')
+                if 'sample-outputs' in sampling_args: #TODO - Put this below if sampling_args_flag as sample-output-variance is an optional extra
+                    self.output_variances = sampling_args.get('sample-output-variances')
+
             self._set_solver()
             self._set_subsampling_algorithm()
             self._set_points_and_weights()
@@ -551,7 +557,7 @@ class Poly(object):
             **w**: A numpy.ndarray of the corresponding quadrature weights with shape (number_of_samples, 1).
         """
         return self._quadrature_points, self._quadrature_weights
-    def get_polyfit(self, stack_of_points):
+    def get_polyfit(self, stack_of_points, uq=False):
         """
         Evaluates the /polynomial approximation of a function (or model data) at prescribed points.
 
@@ -559,11 +565,16 @@ class Poly(object):
             An instance of the Poly class.
         :param numpy.ndarray stack_of_points:
             An ndarray with shape (number_of_observations, dimensions) at which the polynomial fit must be evaluated at.
+        :param bool uq:
+            If true, the estimated uncertainty (standard deviation) of the polynomial approximation is also returned.
         :return:
             **p**: A numpy.ndarray of shape (1, number_of_observations) corresponding to the polynomial approximation of the model.
         """
         N = len(self.coefficients)
-        return np.dot(self.get_poly(stack_of_points).T , self.coefficients.reshape(N, 1))
+        if uq:
+            return np.dot(self.get_poly(stack_of_points).T , self.coefficients.reshape(N, 1)), self._get_polystd(stack_of_points)
+        else:
+            return np.dot(self.get_poly(stack_of_points).T , self.coefficients.reshape(N, 1))
     def get_polyfit_grad(self, stack_of_points, dim_index = None):
         """
         Evaluates the gradient of the polynomial approximation of a function (or model data) at prescribed points.
@@ -829,7 +840,61 @@ class Poly(object):
             return train_score, test_score
         else:
             return train_score
-       
+
+    def _get_polystd(self, stack_of_points):
+        """
+        Private function to evaluate the uncertainty of the polynomial approximation at prescribed points, following the approach from [7].
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param numpy.ndarray stack_of_points:
+            An ndarray with shape (number_of_observations, dimensions) at which the polynomial variance must be evaluated at.
+        :return:
+            **y_std**: A numpy.ndarray of shape (number_of_observations,1) corresponding to the uncertainty (one standard deviation) of the polynomial approximation at each point.
+        """
+        # Training data
+        X_train = self.inputs
+        y_train = self.outputs
+
+        # Define covariance matrix - TODO: allow non-diagonal matrix?
+        # Empirical variance
+        if self.output_variances is None:
+            mse = ((y_train - self.get_polyfit(X_train))**2).mean()
+            data_variance = np.full(X_train.shape[0],mse)
+        # User defined variance
+        else:
+            data_variance = self.output_variances
+        Sigma = np.diag(data_variance)
+
+        # Construct Q, the pseudoinverse of the weighted orthogonal polynomial matrix P
+ 
+        P = self.get_poly(self._quadrature_points)
+        W = np.diag(np.sqrt(self._quadrature_weights))
+        A = np.dot(W, P.T)
+        Q = np.dot( _inv( np.dot(A.T, A) ), A.T)
+
+        # Construct A matrix for test points, but omit weights
+        X_test = stack_of_points
+        Po = self.get_poly(X_test)
+        Ao = Po.T
+
+        # Propagate the uncertainties
+        Sigma_X = np.dot( np.dot(Q, Sigma), Q.T)
+        Sigma_F = np.dot( np.dot(Ao, Sigma_X), Ao.T) 
+        std_F = 1.96 * np.sqrt( np.diag(Sigma_F) )
+        return std_F.reshape(-1,1)
+
+def _inv(M):
+    """
+    Private function to compute inverse of matrix M, where M is a numpy.ndarray.
+    """
+    ll, mm = M.shape
+    M2 = M + 1e-10 * np.eye(ll)
+    L = np.linalg.cholesky(M2)
+    inv_L = np.linalg.inv(L)
+    inv_M = inv_L.T @ inv_L
+    return inv_M
+
 def evaluate_model_gradients(points, fungrad, format):
     """
     Evaluates the model gradient at given values.

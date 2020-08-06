@@ -147,9 +147,9 @@ class TestC(TestCase):
         irrelevent_coeffs = np.sum(np.abs(coeffs[idx[ideal_coeffs:]]))/np.sum(np.abs(coeffs))
         self.assertTrue(irrelevent_coeffs < 1e-5,msg='irrelevent_coeffs = %.2e' %irrelevent_coeffs)
 
-    def test_polyvar_empirical(self):
+    def test_polyuq_empirical(self):
         """ 
-        Tests the get poly variance routine when no variance data is given, i.e. when estimating the 
+        Tests the get poly eq routine when no variance data is given, i.e. when estimating the 
         empirical variance from training data.
         """
         # Generate data
@@ -168,12 +168,12 @@ class TestC(TestCase):
         myBasis = Basis('tensor-grid')
         poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X_train, 'sample-outputs':y_train.reshape(-1,1)} )
         poly.set_model()
-        y_pred, y_std = poly.get_polyfit(X_test,variance=True)
+        y_pred, y_std = poly.get_polyfit(X_test,uq=True)
         np.testing.assert_array_almost_equal(y_std.mean(), 0.327769998, decimal=5, err_msg='Problem!')
 
-    def test_polyvar_prescribed(self):
+    def test_polyuq_prescribed(self):
         """
-        Tests the get poly variance routine when variance data is given in sampling_args. 
+        Tests the get poly uq routine when variance data is given in sampling_args. 
         """
         # Generate data
         dim = 1
@@ -199,7 +199,7 @@ class TestC(TestCase):
                                                                                   'sample-outputs':y_train.reshape(-1,1), 
                                                                                   'sample-output-variances':y_var} )
         poly.set_model()
-        y_pred, y_std = poly.get_polyfit(X_test,variance=True)
+        y_pred, y_std = poly.get_polyfit(X_test,uq=True)
 
         np.testing.assert_array_almost_equal(y_std.mean(), 0.682095574, decimal=5, err_msg='Problem!')
 

@@ -557,7 +557,7 @@ class Poly(object):
             **w**: A numpy.ndarray of the corresponding quadrature weights with shape (number_of_samples, 1).
         """
         return self._quadrature_points, self._quadrature_weights
-    def get_polyfit(self, stack_of_points, variance=False):
+    def get_polyfit(self, stack_of_points, uq=False):
         """
         Evaluates the /polynomial approximation of a function (or model data) at prescribed points.
 
@@ -565,14 +565,14 @@ class Poly(object):
             An instance of the Poly class.
         :param numpy.ndarray stack_of_points:
             An ndarray with shape (number_of_observations, dimensions) at which the polynomial fit must be evaluated at.
-        :param bool variance:
-            If true, the estimated variance of the polynomial approximation  is also returned.
+        :param bool uq:
+            If true, the estimated uncertainty (standard deviation) of the polynomial approximation is also returned.
         :return:
             **p**: A numpy.ndarray of shape (1, number_of_observations) corresponding to the polynomial approximation of the model.
         """
         N = len(self.coefficients)
-        if variance:
-            return np.dot(self.get_poly(stack_of_points).T , self.coefficients.reshape(N, 1)), self._get_polyvar(stack_of_points)
+        if uq:
+            return np.dot(self.get_poly(stack_of_points).T , self.coefficients.reshape(N, 1)), self._get_polystd(stack_of_points)
         else:
             return np.dot(self.get_poly(stack_of_points).T , self.coefficients.reshape(N, 1))
     def get_polyfit_grad(self, stack_of_points, dim_index = None):
@@ -841,16 +841,16 @@ class Poly(object):
         else:
             return train_score
 
-    def _get_polyvar(self, stack_of_points):
+    def _get_polystd(self, stack_of_points):
         """
-        Private function to evaluate the variance of the polynomial approximation at prescribed points, following the approach from [7].
+        Private function to evaluate the uncertainty of the polynomial approximation at prescribed points, following the approach from [7].
 
         :param Poly self:
             An instance of the Poly class.
         :param numpy.ndarray stack_of_points:
             An ndarray with shape (number_of_observations, dimensions) at which the polynomial variance must be evaluated at.
         :return:
-            **var**: A numpy.ndarray of shape (number_of_observations,1) corresponding to the variance of the polynomial approximation at each point.
+            **y_std**: A numpy.ndarray of shape (number_of_observations,1) corresponding to the uncertainty (one standard deviation) of the polynomial approximation at each point.
         """
         # Training data
         X_train = self.inputs

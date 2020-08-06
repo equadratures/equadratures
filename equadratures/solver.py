@@ -410,7 +410,7 @@ def least_absolute_residual(A, b, verbose, opt):
         # Define problem
         b = b.squeeze()
         x = cv.Variable(d)
-        objective = cv.sum(cv.abs(A*x - b)) 
+        objective = cv.sum(cv.abs(A@x - b)) 
         prob = cv.Problem(cv.Minimize(objective))
         # Solve with OSQP
         prob.solve(solver=cv.OSQP,verbose=verbose)
@@ -491,7 +491,7 @@ def elastic_net(A, b, verbose, lamda_val, alpha_val, opt):
         lamda1 = cv.Parameter(nonneg=True)
         lamda2 = cv.Parameter(nonneg=True)
         #objective = 0.5*cv.sum_squares(A*x - b) + lamda1*cv.norm1(x) #+ 0.5*lamda2*cv.pnorm(x, p=2)**2
-        objective = 0.5*cv.sum_squares(A*x - b) + lamda1*cv.norm1(x) + 0.5*lamda2*cv.sum_squares(x)
+        objective = 0.5*cv.sum_squares(A@x - b) + lamda1*cv.norm1(x) + 0.5*lamda2*cv.sum_squares(x)
         prob = cv.Problem(cv.Minimize(objective))
         # Solve with OSQP
         lamda1.value = lamda_val*alpha_val

@@ -96,7 +96,7 @@ class TestC(TestCase):
         poly_EN.set_model()
         _,r2_EN = poly_EN.get_polyscore(X_test=X_test,y_test=y_test)
     
-        np.testing.assert_array_almost_equal(r2_OLS,r2_EN, decimal=6, err_msg='Problem!')
+        np.testing.assert_array_almost_equal(r2_OLS,r2_EN, decimal=4, err_msg='Problem!')
 
         # Now fit Poly with LASSO (alpha/param2 = 1.0) and check r2 improved (it should because irrelevent features + noise)
         poly_LASSO = Poly(parameters=param, basis=basis, method='elastic-net', 
@@ -111,7 +111,7 @@ class TestC(TestCase):
         ideal_coeffs = 3 #As tensor-grid, order=1, relevent_dims=2
         idx = np.abs(coeffs).argsort()[::-1]
         irrelevent_coeffs = np.sum(np.abs(coeffs[idx[ideal_coeffs:]]))/np.sum(np.abs(coeffs))
-        self.assertTrue(irrelevent_coeffs < 1e-8)
+        self.assertTrue(irrelevent_coeffs < 1e-5,msg='irrelevent_coeffs = %.2e' %irrelevent_coeffs)
 
     def test_ElasticNet_friedman(self):
         """ 
@@ -145,7 +145,7 @@ class TestC(TestCase):
         ideal_coeffs = 126 #As tensor-grid, order=4, relevent_dims=5
         idx = np.abs(coeffs).argsort()[::-1]
         irrelevent_coeffs = np.sum(np.abs(coeffs[idx[ideal_coeffs:]]))/np.sum(np.abs(coeffs))
-        self.assertTrue(irrelevent_coeffs < 1e-8)
+        self.assertTrue(irrelevent_coeffs < 1e-5,msg='irrelevent_coeffs = %.2e' %irrelevent_coeffs)
 
 if __name__== '__main__':
     unittest.main()

@@ -35,8 +35,7 @@ class Solver(object):
             if 'max-iter' in self.solver_args: self.max_iter = solver_args.get('max-iter')
             if 'optimiser' in self.solver_args: self.opt = solver_args.get('optimiser')
         if self.opt=='osqp' and not cvxpy: 
-            #print('Warning: cvxpy not installed, falling back to scipy for regressor optimiser') # TODO - print this message once scipy huber and elastic net regression implemented
-            self.opt=='scipy'
+            self.opt='scipy'
         if self.method.lower() == 'compressed-sensing' or self.method.lower() == 'compressive-sensing':
             self.solver = lambda A, b: basis_pursuit_denoising(A, b, self.noise_level, self.verbose)
         elif self.method.lower() == 'least-squares':

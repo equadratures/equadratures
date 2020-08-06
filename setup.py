@@ -25,6 +25,9 @@ setup(name='equadratures',
           'scipy >= 0.15.0',
           'matplotlib'
       ],
+      extras_require={
+          "cvxpy":  ['cvxpy'],
+          },
       test_suite='nose.collector',
       tests_require=['nose'],
       include_package_data=True,

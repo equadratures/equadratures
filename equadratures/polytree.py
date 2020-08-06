@@ -126,13 +126,11 @@ class PolyTree(object):
 
 					for j_feature in range(d):
 
-						last_threshold = np.inf
-
 						if self.search == 'exhaustive':
 							threshold_search = X[:, j_feature]
 						elif self.search == 'uniform':
-							if self.samples > len(X[:,j_feature]):
-								samples = len(X[:,j_feature])
+							if self.samples > N:
+								samples = N
 							else:
 								samples = self.samples
 							threshold_search = np.linspace(np.min(X[:,j_feature]), np.max(X[:,j_feature]), num=samples)
@@ -141,10 +139,7 @@ class PolyTree(object):
 
 						
 						# Perform threshold split search on j_feature
-						for threshold in np.sort(threshold_search):
-
-							if last_threshold == threshold:
-								continue
+						for threshold in np.unique(np.sort(threshold_search)):
 
 							# Split data based on threshold
 							(X_left, y_left), (X_right, y_right) = _split_data(j_feature, threshold, X, y)
@@ -172,7 +167,6 @@ class PolyTree(object):
 	
 							elif self.logging: self.log.append({'event': 'try_split', 'data': {'j_feature':j_feature, 'threshold':threshold, 'loss': loss_split, 'poly_left': poly_left, 'poly_right': poly_right}})
 
-							last_threshold = threshold
 				# Return the best result
 				result = {"did_split": did_split,
 						  "loss": loss_best,
@@ -207,7 +201,6 @@ class PolyTree(object):
 					mse = np.linalg.norm(y - poly.get_polyfit(X).reshape(-1)) ** 2 / N
 				except Exception as e:
 					print("Warning fitting of Poly failed:", e)
-					print(d, values_min, values_max)
 					mse, poly = np.inf, None
 
 				return mse, poly
@@ -321,10 +314,7 @@ class PolyTree(object):
 			else:
 				threshold_str = "{} <= {:.1f}\\n".format(feature_names[node['j_feature']], node["threshold"])
 			
-			#indices = []
-			#for i in range(len(feature_names)):
-			#	indices.append("{} : {}\\n".format(feature_names[i], node["poly"].get_sobol_indices(1)[i,]))
-			label_str = "{} n_samples = {}\\n loss = {:.6f}".format(threshold_str, node["n_samples"], node["loss"])
+				label_str = "{} n_samples = {}\\n loss = {:.6f}".format(threshold_str, node["n_samples"], node["loss"])
 
 			# Create node
 			nodeshape = "rectangle"

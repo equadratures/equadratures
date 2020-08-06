@@ -147,6 +147,47 @@ class TestC(TestCase):
         irrelevent_coeffs = np.sum(np.abs(coeffs[idx[ideal_coeffs:]]))/np.sum(np.abs(coeffs))
         self.assertTrue(irrelevent_coeffs < 1e-5,msg='irrelevent_coeffs = %.2e' %irrelevent_coeffs)
 
+    def test_polyvar_empirical(self):
+        # Generate data
+        dim = 2
+        n = 1
+        noise_var = 0.1
+        X,y = datasets.gen_linear(n_observations=500,n_dim=dim,bias=0.5,n_relevent=dim,noise=noise_var,random_seed=1)
+        X_train, X_test, y_train, y_test = datasets.train_test_split(X,y,train=0.7,random_seed=42)
+        N_train = X_train.shape[0]
+        N_test  = X_test.shape[0]
+        
+        # Fit poly and approx its variance
+        param = Parameter(distribution='Uniform', lower=-1, upper=1, order=n)
+        myParameters = [param for i in range(dim)] # one-line for loop for parameters
+        myBasis = Basis('tensor-grid')
+        poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X_train, 'sample-outputs':y_train.reshape(-1,1)} )
+        poly.set_model()
+        y_pred, y_std = poly.get_polyfit(X_test,variance=True)
+        np.testing.assert_array_almost_equal(y_std.mean(), 0.413812, decimal=5, err_msg='Problem!')
+
+    def test_polyvar_prescribed(self):
+        # Generate data
+        dim = 1
+        n = 1
+        state = 42
+        noise_var = 0.0
+        X,y = datasets.gen_linear(n_observations=500,n_dim=dim,bias=0.5,n_relevent=dim,noise=noise_var,random_seed=1)
+        X_train, X_test, y_train, y_test = datasets.train_test_split(X,y,train=0.7,random_seed=42)
+        N_train = X_train.shape[0]
+        N_test  = X_test.shape[0]
+        y_var = np.random.RandomState(state).uniform(0.0,0.1,N_train)
+       
+        # Fit poly and approx its variance
+        param = Parameter(distribution='Uniform', lower=-1, upper=1, order=n)
+        myParameters = [param for i in range(dim)] # one-line for loop for parameters
+        myBasis = Basis('tensor-grid')
+        poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X_train, 
+            'sample-outputs':y_train.reshape(-1,1), 'sample-output-variances':y_var} )
+        poly.set_model()
+        y_pred, y_std = poly.get_polyfit(X_test,variance=True)
+        np.testing.assert_array_almost_equal(y_std.mean(), 0.5920391, decimal=5, err_msg='Problem!')
+
 if __name__== '__main__':
     unittest.main()
 

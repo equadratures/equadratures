@@ -111,7 +111,7 @@ class TestC(TestCase):
         ideal_coeffs = 3 #As tensor-grid, order=1, relevent_dims=2
         idx = np.abs(coeffs).argsort()[::-1]
         irrelevent_coeffs = np.sum(np.abs(coeffs[idx[ideal_coeffs:]]))/np.sum(np.abs(coeffs))
-        self.assertTrue(irrelevent_coeffs < 1e-5)
+        self.assertTrue(irrelevent_coeffs < 1e-5,msg='irrelevent_coeffs = %.2e' %irrelevent_coeffs)
 
     def test_ElasticNet_friedman(self):
         """ 
@@ -145,7 +145,7 @@ class TestC(TestCase):
         ideal_coeffs = 126 #As tensor-grid, order=4, relevent_dims=5
         idx = np.abs(coeffs).argsort()[::-1]
         irrelevent_coeffs = np.sum(np.abs(coeffs[idx[ideal_coeffs:]]))/np.sum(np.abs(coeffs))
-        self.assertTrue(irrelevent_coeffs < 1e-5)
+        self.assertTrue(irrelevent_coeffs < 1e-5,msg='irrelevent_coeffs = %.2e' %irrelevent_coeffs)
 
 if __name__== '__main__':
     unittest.main()

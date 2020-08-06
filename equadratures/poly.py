@@ -5,6 +5,7 @@ from equadratures.basis import Basis
 from equadratures.solver import Solver
 from equadratures.subsampling import Subsampling
 from equadratures.quadrature import Quadrature
+from equadratures.datasets import score
 import scipy.stats as st
 import numpy as np
 from copy import deepcopy
@@ -16,7 +17,7 @@ class Poly(object):
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     :param str method: The method used for computing the coefficients. Should be one of: ``compressive-sensing``,
-        ``numerical-integration``, ``least-squares``, ``least-squares-with-gradients``, ``minimum-norm``.
+        ``numerical-integration``, ``least-squares``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``minimum-norm``.
     :param dict sampling_args: Optional arguments centered around the specific sampling strategy.
 
             :string mesh: Avaliable options are: ``monte-carlo``, ``sparse-grid``, ``tensor-grid``, ``induced``, or ``user-defined``. Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1] is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
@@ -89,7 +90,7 @@ class Poly(object):
         if self.method is not None:
             if self.method == 'numerical-integration' or self.method == 'integration':
                 self.mesh = self.basis.basis_type
-            elif self.method == 'least-squares':
+            elif self.method == 'least-squares' or self.method == 'least-absolute-residual' or self.method=='huber' or self.method=='elastic-net':
                 self.mesh = 'tensor-grid'
             elif self.method == 'least-squares-with-gradients':
                 self.gradient_flag = 1
@@ -552,7 +553,7 @@ class Poly(object):
         return self._quadrature_points, self._quadrature_weights
     def get_polyfit(self, stack_of_points):
         """
-        Evaluates the the polynomial approximation of a function (or model data) at prescribed points.
+        Evaluates the /polynomial approximation of a function (or model data) at prescribed points.
 
         :param Poly self:
             An instance of the Poly class.
@@ -801,6 +802,34 @@ class Poly(object):
                 H.append(polynomialhessian)
 
         return H
+    def get_polyscore(self,X_test=None,y_test=None,metric='adjusted_r2'):
+        """
+        Evaluates the accuracy of the polynomial approximation using the selected accuracy metric. Training accuracy is evaluated on the data used for fitting the polynomial. Testing accuracy is evaluated on new data if it is provided by the ``X_test`` and ``y_test`` arguments (both must be provided together). 
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param numpy.ndarray X_test:
+            An ndarray with shape (number_of_observations, dimensions), containing new data ``X_test`` data (optional).
+        :param numpy.ndarray y_test:
+            An ndarray with shape (number_of_observations, 1) containing new ``y_test`` data (optional).
+        :param string metric:
+            An optional string containing the scoring metric to use. Avaliable options are: ``adjusted_r2``, ``r2``, ``mae``, ``rmse``, or ``normalised_mae`` (default: ``adjusted_r2``). 
+
+        :return:
+            **score_train**: The training score of the model, output as a float.
+            approximated mean of the polynomial fit; output as a float.
+        """
+
+        X = self.get_points()
+        y_pred = self.get_polyfit(X)
+        train_score = score(self.outputs,y_pred,metric,X=X)
+        if X_test is not None and y_test is not None:
+            y_pred_test = self.get_polyfit(X_test)
+            test_score = score(y_test,y_pred_test,metric,X=X_test)
+            return train_score, test_score
+        else:
+            return train_score
+       
 def evaluate_model_gradients(points, fungrad, format):
     """
     Evaluates the model gradient at given values.

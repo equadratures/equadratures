@@ -1,6 +1,7 @@
 from equadratures.parameter import Parameter
 from equadratures.poly import Poly
 from equadratures.basis import Basis
+from equadratures.datasets import standardise
 import numpy as np
 import scipy
 import scipy.io
@@ -41,7 +42,7 @@ class Subspaces(object):
         2. Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery Active Subspace Performance Maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__.
         3. Hokanson, J., Constantine, P., (2018) Data-driven Polynomial Ridge Approximation Using Variable Projection. SIAM Journal of Scientific Computing, 40(3), A1566-A1589. `Paper <https://epubs.siam.org/doi/abs/10.1137/17M1117690>`__.
     """
-    def __init__(self, method, full_space_poly=None, sample_points=None, sample_outputs=None, polynomial_degree=2, subspace_dimension=2, bootstrap=False, subspace_init=None, max_iter=1000, tol=None):
+    def __init__(self, method, full_space_poly=None, sample_points=None, sample_outputs=None, polynomial_degree=2, subspace_dimension=2, bootstrap=False, subspace_init=None, max_iter=1000, tol=None, poly_method='least-squares',solver_args=None):
         self.full_space_poly = full_space_poly
         self.sample_points = sample_points
         self.Y = None # for the zonotope vertices
@@ -52,6 +53,8 @@ class Subspaces(object):
         self.subspace_dimension = subspace_dimension
         self.polynomial_degree = polynomial_degree
         self.bootstrap = bootstrap
+        self.poly_method = poly_method
+        self.solver_args = solver_args
         if self.method.lower() == 'active-subspace' or self.method.lower() == 'active-subspaces':
             self.method = 'active-subspace'
             if self.full_space_poly is None:
@@ -59,8 +62,9 @@ class Subspaces(object):
                 param = Parameter(distribution='uniform', lower=-1, upper=1., order=self.polynomial_degree)
                 myparameters = [param for _ in range(d)]
                 mybasis = Basis("total-order")
-                mypoly = Poly(myparameters, mybasis, method='least-squares', sampling_args={'sample-points':self.sample_points, \
-                                                                    'sample-outputs':self.sample_outputs})
+                mypoly = Poly(myparameters, mybasis, method=self.poly_method, sampling_args={'sample-points':self.sample_points, \
+                                                                    'sample-outputs':self.sample_outputs},
+                                                                    solver_args=self.solver_args)
                 mypoly.set_model()
                 self.full_space_poly = mypoly
             self.sample_points = standardise(self.full_space_poly.get_points())
@@ -88,8 +92,9 @@ class Subspaces(object):
                 order=self.polynomial_degree)
             myparameters.append(param)
         mybasis = Basis("total-order")
-        subspacepoly = Poly(myparameters, mybasis, method='least-squares', sampling_args={'sample-points':projected_points, \
-                                                                    'sample-outputs':self.sample_outputs})
+        subspacepoly = Poly(myparameters, mybasis, method=self.poly_method, sampling_args={'sample-points':projected_points, \
+                                                                    'sample-outputs':self.sample_outputs},
+                                                                    solver_args=self.solver_args)
         subspacepoly.set_model()
         return subspacepoly
     def get_eigenvalues(self):
@@ -205,7 +210,7 @@ class Subspaces(object):
         eta = 2 * np.divide((y - minmax[0,:]), (minmax[1,:]-minmax[0,:])) - 1
 
         #Construct the _vandermonde matrix step 6
-        V,Polybasis=vandermonde(eta, self.polynomial_degree)
+        V,Polybasis=self._vandermonde(eta, self.polynomial_degree)
         V_plus=np.linalg.pinv(V)
         coeff=np.dot(V_plus, self.sample_outputs)
         res= self.sample_outputs - np.dot(V,coeff)
@@ -258,7 +263,7 @@ class Subspaces(object):
                 minmax[1,:] = np.amax(y, axis=0)
                 eta = 2 * np.divide((y - minmax[0,:]), (minmax[1,:]-minmax[0,:])) - 1
 
-                V_new,Polybasis=vandermonde(eta, self.polynomial_degree)
+                V_new,Polybasis=self._vandermonde(eta, self.polynomial_degree)
                 V_plus_new=np.linalg.pinv(V_new)
                 coeff_new=np.dot(V_plus_new, self.sample_outputs)
                 res_new= self.sample_outputs  -  np.dot(V_new,coeff_new)
@@ -283,6 +288,24 @@ class Subspaces(object):
         active_subspace = U
         inactive_subspace = scipy.linalg.null_space(active_subspace.T)
         self._subspace = np.hstack([active_subspace, inactive_subspace])
+
+    def _vandermonde(self,eta,p):
+        _,n=eta.shape
+        listing=[]
+        for i in range(0,n):
+            listing.append(p)
+        Object=Basis('total-order',listing)
+        #Establish n Parameter objects
+        params=[]
+        P=Parameter(order=p,lower=-1,upper=1,distribution='uniform')
+        for i in range(0,n):
+            params.append(P)
+        #Use the params list to establish the Poly object
+        Polybasis=Poly(params,Object, method=self.poly_method)
+        V=Polybasis.get_poly(eta)
+        V=V.T
+        return V,Polybasis
+
     def get_zonotope_vertices(self, num_samples=10000, max_count=100000):
         """
         Returns the vertices of the zonotope -- the projection of the high-dimensional space over the computed
@@ -516,22 +539,6 @@ def vector_AS(list_of_polys, R = None, alpha=None, k=None, samples=None, bootstr
         return eigs,eigVecs,eigs_bs_lower,eigs_bs_upper, all_bs_W
     else:
         return eigs,eigVecs
-def vandermonde(eta,p):
-    _,n=eta.shape
-    listing=[]
-    for i in range(0,n):
-        listing.append(p)
-    Object=Basis('total-order',listing)
-    #Establish n Parameter objects
-    params=[]
-    P=Parameter(order=p,lower=-1,upper=1,distribution='uniform')
-    for i in range(0,n):
-        params.append(P)
-    #Use the params list to establish the Poly object
-    Polybasis=Poly(params,Object, method='least-squares')
-    V=Polybasis.get_poly(eta)
-    V=V.T
-    return V,Polybasis
 def jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
     M,N=V.shape
     m,n=U.shape
@@ -572,23 +579,6 @@ def subspace_dist(U, V):
         return np.linalg.norm(np.outer(U, U) - np.outer(V, V), ord=2)
     else:
         return np.linalg.norm(np.dot(U, U.T) - np.dot(V, V.T), ord=2)
-def standardise(X):
-    M,d=X.shape
-    X_stnd=np.zeros((M,d))
-    for j in range(0,d):
-        max_value = np.max(X[:,j])
-        min_value = np.min(X[:,j])
-        for i in range(0,M):
-            X_stnd[i,j]=2.0 * ( (X[i,j]-min_value)/(max_value - min_value) ) -1
-    return X_stnd
-def unstandardise(X,X_orig):
-    d=X.shape[1]
-    X_unstnd=np.zeros_like(X)
-    for j in range(0,d):
-        max_value = np.max(X_orig[:,j])
-        min_value = np.min(X_orig[:,j])
-        X_unstnd[:,j] = 0.5*(X[:,j] +1)*(max_value - min_value) + min_value
-    return X_unstnd
 def linear_program_ineq(c, A, b):
     c = c.reshape((c.size,))
     b = b.reshape((b.size,))

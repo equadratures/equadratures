@@ -1,11 +1,19 @@
 """Solvers for computing of a linear system."""
 import numpy as np
 from scipy.linalg import qr
+from scipy.optimize import linprog, minimize
+from scipy.special import huber as huber_loss
 from copy import deepcopy
+try:
+    import cvxpy as cv
+    cvxpy = True
+except ImportError as e:
+    cvxpy = False
+
 class Solver(object):
     """
     Returns solver functions for solving Ax=b
-    :param string method: The method used for solving the linear system. Options include: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration`` and ``least-squares-with-gradients``.
+    :param string method: The method used for solving the linear system. Options include: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``huber`` and ``elastic-net``.
     :param dict solver_args: Optional arguments centered around the specific solver.
             :param numpy.ndarray noise-level: The noise-level to be used in the basis pursuit de-noising solver.
             :param bool verbose: Default value of this input is set to ``False``; when ``True`` a string is printed to the screen detailing the solver convergence and condition number of the matrix.
@@ -14,12 +22,21 @@ class Solver(object):
         self.method = method
         self.solver_args = solver_args
         self.noise_level = None
+        self.param1 = None
+        self.param2 = None
         self.verbose = False
         self.max_iter = None
+        self.opt = 'osqp'
         if self.solver_args is not None:
             if 'noise-level' in self.solver_args: self.noise_level = solver_args.get('noise-level')
+            if 'param1' in self.solver_args: self.param1 = solver_args.get('param1')
+            if 'param2' in self.solver_args: self.param2 = solver_args.get('param2')
             if 'verbose' in self.solver_args: self.verbose = solver_args.get('verbose')
             if 'max-iter' in self.solver_args: self.max_iter = solver_args.get('max-iter')
+            if 'optimiser' in self.solver_args: self.opt = solver_args.get('optimiser')
+        if self.opt=='osqp' and not cvxpy: 
+            #print('Warning: cvxpy not installed, falling back to scipy for regressor optimiser') # TODO - print this message once scipy huber and elastic net regression implemented
+            self.opt=='scipy'
         if self.method.lower() == 'compressed-sensing' or self.method.lower() == 'compressive-sensing':
             self.solver = lambda A, b: basis_pursuit_denoising(A, b, self.noise_level, self.verbose)
         elif self.method.lower() == 'least-squares':
@@ -30,10 +47,16 @@ class Solver(object):
             self.solver = lambda A, b: orthogonal_linear_system(A, b)
         elif self.method.lower() == 'least-squares-with-gradients':
             self.solver = lambda A, b, C, d: constrained_least_squares(A, b, C, d, self.verbose)
+        elif self.method.lower() == 'least-absolute-residual':
+            self.solver = lambda A, b: least_absolute_residual(A, b, self.verbose, self.opt)
+        elif self.method.lower() == 'huber':
+            self.solver = lambda A, b: huber(A, b, self.verbose, self.param1, self.opt)
+        elif self.method.lower() == 'elastic-net':
+            self.solver = lambda A, b: elastic_net(A, b, self.verbose, self.param1, self.param2, self.opt)
         elif self.method.lower() == 'relevance-vector-machine':
             self.solver = lambda A, b: rvm(A, b, self.max_iter)
         else:
-            raise ValueError('You have not selected a valid method for solving the coefficients of the polynomial. Choose from compressed-sensing, least-squares, least-squares-with-gradients, minimum-norm or numerical-integration.')
+            raise ValueError('You have not selected a valid method for solving the coefficients of the polynomial. Choose from compressed-sensing, least-squares, least-squares-with-gradients, least-absolute-residual, minimum-norm, numerical-integration, huber or elastic-net.')
     def get_solver(self):
         return self.solver
 def least_squares(A, b, verbose):
@@ -374,6 +397,113 @@ def _l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cg
           print('Newton iter = ' + str(niter) + ', Functional = ' + str(f) + ', Newton decrement = ' + str(lambda2/2) + ', Stepsize = ' + str(stepsize))
           print('                CG Res = ' + str(cgres) + ', CG Iter = ' + str(cgiter))
     return xp, up, niter
+
+def least_absolute_residual(A, b, verbose, opt):
+    '''
+    Solves Ax=b by minimising the L1 norm (absolute residuals).
+    '''
+    N, d = A.shape
+    if verbose: print('Solving for coefficients with least-absolute-residual')
+
+    # Use cvxpy with OSQP for optimising 
+    if opt=='osqp':
+        if verbose: print('Solving using cvxpy with OSQP solver')
+        # Define problem
+        b = b.squeeze()
+        x = cv.Variable(d)
+        objective = cv.sum(cv.abs(A*x - b)) 
+        prob = cv.Problem(cv.Minimize(objective))
+        # Solve with OSQP
+        prob.solve(solver=cv.OSQP,verbose=verbose)
+        return x.value 
+
+    # Use scipy linprog for optimising
+    elif opt=='scipy':
+        if verbose: print('Solving using scipy linprog')
+        c = np.hstack([np.zeros(d), np.ones(N)])
+        A1 = np.hstack([A, -np.eye(N)])
+        A2 = np.hstack([-A, -np.eye(N)])
+        AA = np.vstack([A1, A2])
+        bb = np.hstack([b.reshape(-1), -b.reshape(-1)])
+        res = linprog(c, A_ub=AA, b_ub=bb)
+        return res.x[:d]
+
+def huber(A, b, verbose, M, opt):
+    '''
+    Solves Ax=b by minimising the Huber loss function. 
+    Thi
+    function is identical to the least squares (L2) penalty for small residuals (i.e. ||Ax-b||**2<=M). 
+    But on large residuals (||Ax-b||**2>M), its penalty is lower (L1) and increases linearly rather than quadratically. 
+    It is thus more forgiving of outliers.
+    '''
+    if verbose: print('Huber regression with M=%.2f.' %M)
+
+    N,d = A.shape
+    if M == None: M = 1.0
+
+    # Use cvxpy with OSQP for optimising
+    if opt=='osqp':
+        if verbose: print('Solving using cvxpy with OSQP solver')
+#       # Define problem as a Quadratic problem
+        #       minimize    1/2 z.T * z + M * np.ones(m).T * (r + s)
+        #       subject to  Ax - b - z = r - s
+        #                   r >= 0
+        #                   s >= 0
+        # See eq. (24) from https://doi.org/10.1109/34.877518
+        b = b.squeeze()
+        x = cv.Variable(d)
+        z = cv.Variable(N)
+        r = cv.Variable(N)
+        s = cv.Variable(N)
+        objective = cv.Minimize(.5 * cv.sum_squares(z) + M*cv.sum(r + s))
+        constraints = [A@x - b - z == r - s,
+                       r >= 0, s >= 0]
+        prob = cv.Problem(objective, constraints)
+        prob.solve(solver=cv.OSQP,verbose=verbose,polish=True)
+        x = x.value 
+
+    # Use scipy linprog for optimising
+    elif opt=='scipy':
+        raise ValueError( 'At present cvxpy, must be installed for huber regression to be selected.')
+    return x
+
+def elastic_net(A, b, verbose, lamda_val, alpha_val, opt):
+    '''
+    Solves 0.5*||Ax-b||_2 + lamda*( alpha*||x||_1  + 0.5*(1-alpha)*||x||_2**2).
+    Elastic net regression: L2 cost function, with mix of L1 and L2 penalties (scaled by lamda1 and lamda2).
+    The penalties shrink the parameter estimates in the hopes of reducing variance, improving prediction accuracy, and aiding interpetation.
+    lamda controls amount of penalisation i.e. lamda=0 gives OLS. default is 1. 
+    alpha controls L1/L2 penalisation mix. alpha=0 gives ridge regression, alpha=1 gives LASSO. 
+    Note, to set lamda1 and lamda 2 directly:
+    lamda = lamda1 + lamda2
+    alpha = lamda1 / (lamda1 + lamda2)
+    '''
+    N,d = A.shape
+    if lamda_val == None: lamda_val = 1.0
+    if alpha_val == None: alpha_val = 0.5 
+    if verbose: print('Elastic net regression with lambda=%.2f and alpha=%.2f.' %(lamda_val,alpha_val))
+
+    # Use cvxpy with OSQP for optimising 
+    if opt=='osqp':
+        if verbose: print('Solving using cvxpy with OSQP solver')
+        # Define problem
+        b = b.squeeze()
+        x = cv.Variable(d)
+        lamda1 = cv.Parameter(nonneg=True)
+        lamda2 = cv.Parameter(nonneg=True)
+        #objective = 0.5*cv.sum_squares(A*x - b) + lamda1*cv.norm1(x) #+ 0.5*lamda2*cv.pnorm(x, p=2)**2
+        objective = 0.5*cv.sum_squares(A*x - b) + lamda1*cv.norm1(x) + 0.5*lamda2*cv.sum_squares(x)
+        prob = cv.Problem(cv.Minimize(objective))
+        # Solve with OSQP
+        lamda1.value = lamda_val*alpha_val
+        lamda2.value = lamda_val*(1.-alpha_val)
+        prob.solve(solver=cv.OSQP,verbose=verbose)
+        x = x.value.reshape(-1,1)
+
+    # Use scipy linprog for optimising
+    elif opt=='scipy':
+        raise ValueError( 'At present cvxpy, must be installed for elastic net regression to be selected.')
+    return x
 
 def rvm(A, b, max_iter):
     if max_iter is None:

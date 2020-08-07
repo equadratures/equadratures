@@ -37,7 +37,7 @@ class PolyTree(object):
         tree.fit(X,y)
 
     """
-	def __init__(self, tree_type='poly', max_depth=5, min_samples_leaf=20, k=15, order=3, basis='tensor-grid', search='exhaustive', samples=50, logging=False):
+	def __init__(self, tree_type='classic', max_depth=5, min_samples_leaf=20, k=15, order=3, basis='tensor-grid', search='exhaustive', samples=50, logging=False):
 		self.tree_type = tree_type
 		self.max_depth = max_depth
 		self.min_samples_leaf = min_samples_leaf
@@ -117,7 +117,7 @@ class PolyTree(object):
 
 				# Find feature splits that might improve loss
 				did_split = False
-				if self.tree_type == "poly":
+				if self.tree_type == "classic":
 					loss_best = node["loss"]
 				elif self.tree_type == "m5p":
 					loss_best = np.inf
@@ -163,7 +163,7 @@ class PolyTree(object):
 								continue
 
 							# Compute weight loss function
-							if self.tree_type == "poly":
+							if self.tree_type == "classic":
 								loss_left, poly_left = _fit_poly(X_left, y_left)
 								loss_right, poly_right = _fit_poly(X_right, y_right)
 								loss_split = (N_left*loss_left + N_right*loss_right) / N	
@@ -175,7 +175,7 @@ class PolyTree(object):
 								if self.logging: self.log.append({'event': 'best_split', 'data': {'j_feature':j_feature, 'threshold':threshold, 'loss': loss_split, 'poly_left': poly_left, 'poly_right': poly_right}})
 								did_split = True
 								loss_best = loss_split
-								if self.tree_type == "poly": polys_best = [poly_left, poly_right]
+								if self.tree_type == "classic": polys_best = [poly_left, poly_right]
 								data_best = [(X_left, y_left), (X_right, y_right)]
 								j_feature_best = j_feature
 								threshold_best = threshold

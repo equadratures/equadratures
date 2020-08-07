@@ -37,9 +37,11 @@ class PolyTree(object):
         tree.fit(X,y)
 
     """
-	def __init__(self, max_depth=5, min_samples_leaf=20, order=3, basis='tensor-grid', search='exhaustive', samples=10, logging=False):
+	def __init__(self, tree_type='poly', max_depth=5, min_samples_leaf=20, k=15, order=3, basis='tensor-grid', search='exhaustive', samples=50, logging=False):
+		self.tree_type = tree_type
 		self.max_depth = max_depth
 		self.min_samples_leaf = min_samples_leaf
+		self.k = k
 		self.order = order
 		self.basis = basis
 		self.tree = None
@@ -115,7 +117,12 @@ class PolyTree(object):
 
 				# Find feature splits that might improve loss
 				did_split = False
-				loss_best = node["loss"]
+				if self.tree_type == "poly":
+					loss_best = node["loss"]
+				elif self.tree_type == "m5p":
+					loss_best = np.inf
+				else:
+					raise Exception("invalid tree_type")
 				data_best = None
 				polys_best = None
 				j_feature_best = None
@@ -125,6 +132,8 @@ class PolyTree(object):
 				if (depth >= 0) and (depth < self.max_depth):
 
 					for j_feature in range(d):
+
+						last_threshold = np.inf
 
 						if self.search == 'exhaustive':
 							threshold_search = X[:, j_feature]
@@ -141,6 +150,9 @@ class PolyTree(object):
 						# Perform threshold split search on j_feature
 						for threshold in np.unique(np.sort(threshold_search)):
 
+							if last_threshold == threshold:
+								continue
+
 							# Split data based on threshold
 							(X_left, y_left), (X_right, y_right) = _split_data(j_feature, threshold, X, y)
 							#print(j_feature, threshold, X_left, X_right)
@@ -151,21 +163,34 @@ class PolyTree(object):
 								continue
 
 							# Compute weight loss function
-							loss_left, poly_left = _fit_poly(X_left, y_left)
-							loss_right, poly_right = _fit_poly(X_right, y_right)
-							loss_split = (N_left*loss_left + N_right*loss_right) / N	
-							
+							if self.tree_type == "poly":
+								loss_left, poly_left = _fit_poly(X_left, y_left)
+								loss_right, poly_right = _fit_poly(X_right, y_right)
+								loss_split = (N_left*loss_left + N_right*loss_right) / N	
+							elif self.tree_type == "m5p":
+								loss_split = np.std(y) - (N_left*np.std(y_left) + N_right*np.std(y_right)) / N	
+
 							# Update best parameters if loss is lower
 							if loss_split < loss_best:
 								if self.logging: self.log.append({'event': 'best_split', 'data': {'j_feature':j_feature, 'threshold':threshold, 'loss': loss_split, 'poly_left': poly_left, 'poly_right': poly_right}})
 								did_split = True
 								loss_best = loss_split
-								polys_best = [poly_left, poly_right]
+								if self.tree_type == "poly": polys_best = [poly_left, poly_right]
 								data_best = [(X_left, y_left), (X_right, y_right)]
 								j_feature_best = j_feature
 								threshold_best = threshold
 	
 							elif self.logging: self.log.append({'event': 'try_split', 'data': {'j_feature':j_feature, 'threshold':threshold, 'loss': loss_split, 'poly_left': poly_left, 'poly_right': poly_right}})
+
+							last_threshold = threshold
+				
+				if self.tree_type == "m5p" and did_split:
+					print(j_feature_best, threshold_best)
+					(X_left, y_left), (X_right, y_right) = _split_data(j_feature_best, threshold_best, X, y)
+					loss_left, poly_left = _fit_poly(X_left, y_left)
+					loss_right, poly_right = _fit_poly(X_right, y_right)
+					loss_best = (N_left*loss_left + N_right*loss_right) / N	
+					polys_best = [poly_left, poly_right]
 
 				# Return the best result
 				result = {"did_split": did_split,
@@ -185,9 +210,9 @@ class PolyTree(object):
 					myParameters = []
 
 					for dimension in range(d):
-						values = [X[i,dimension] for i in range(N)]
-						values_min = min(values)
-						values_max = max(values)
+						values = X[:,dimension]
+						values_min = np.amin(values)
+						values_max = np.amax(values)
 
 						if (values_min - values_max) ** 2 < 0.01:
 							myParameters.append(Parameter(distribution='Uniform', lower=values_min-0.01, upper=values_max+0.01, order=self.order))
@@ -201,6 +226,7 @@ class PolyTree(object):
 					mse = np.linalg.norm(y - poly.get_polyfit(X).reshape(-1)) ** 2 / N
 				except Exception as e:
 					print("Warning fitting of Poly failed:", e)
+					print(d, values_min, values_max)
 					mse, poly = np.inf, None
 
 				return mse, poly
@@ -261,11 +287,38 @@ class PolyTree(object):
 
 			return root
 
+		def _pruner():
+			def prune(node):
+				is_left = node["children"]["left"] != None
+				is_right = node["children"]["right"] != None
+
+				if is_left:
+					node["children"]["left"] = prune(node["children"]["left"])
+				
+				if is_right:
+					node["children"]["right"] = prune(node["children"]["right"])
+
+				if is_left and is_right:
+					lower_loss = ( node["children"]["left"]["loss"] * node["children"]["left"]["n_samples"] +
+								 node["children"]["right"]["loss"] * node["children"]["right"]["n_samples"] ) / (node["n_samples"])
+					if lower_loss > node["loss"]:
+						print("PRUNE!", lower_loss, node["loss"])
+						node["children"]["left"] = None
+						node["children"]["right"] = None
+
+				return node
+
+			return prune(self.tree)
+
 		N, d = X.shape
 		cardinality = Basis(self.basis, orders=[self.order for _ in range(d)]).get_cardinality()
 		if cardinality > self.min_samples_leaf:
 			print("WARNING: Basis cardinality ({}) greater than the minimum samples per leaf ({}). This may cause reduced performance.".format(cardinality, self.min_samples_leaf))
+
 		self.tree = _build_tree()
+		
+		if self.tree_type == "m5p":
+			self.tree = _pruner()
 	
 	def predict(self, X):
 		"""
@@ -280,14 +333,16 @@ class PolyTree(object):
 		def _predict(node, x):
 			no_children = node["children"]["left"] is None and \
 						  node["children"]["right"] is None
+
+			y_pred_x = node["poly"].get_polyfit(np.array(x))[0]
+
 			if no_children:
-				y_pred_x = node["poly"].get_polyfit(np.array(x))[0]
-				return y_pred_x
+				return y_pred_x 
 			else:
-				if x[node["j_feature"]] <= node["threshold"]:  # x[j] < threshold
-					return _predict(node["children"]["left"], x)
-				else:  # x[j] > threshold
-					return _predict(node["children"]["right"], x)
+				if x[node["j_feature"]] <= node["threshold"]:
+					return ( _predict(node["children"]["left"], x) * node["n_samples"] + y_pred_x * self.k ) / ( self.k + node["n_samples"] )
+				else:
+					return ( _predict(node["children"]["right"], x) * node["n_samples"] + y_pred_x * self.k ) / ( self.k + node["n_samples"] )
 		y_pred = np.array([_predict(self.tree, np.array(x)) for x in X])
 		return y_pred
 
@@ -312,9 +367,12 @@ class PolyTree(object):
 			if node["children"]["left"] is None and node["children"]["right"] is None:
 				threshold_str = ""
 			else:
-				threshold_str = "{} <= {:.1f}\\n".format(feature_names[node['j_feature']], node["threshold"])
+				threshold_str = "{} <= {:.3f}\\n".format(feature_names[node['j_feature']], node["threshold"])
 			
-				label_str = "{} n_samples = {}\\n loss = {:.6f}".format(threshold_str, node["n_samples"], node["loss"])
+			#indices = []
+			#for i in range(len(feature_names)):
+			#	indices.append("{} : {}\\n".format(feature_names[i], node["poly"].get_sobol_indices(1)[i,]))
+			label_str = "{} n_samples = {}\\n loss = {:.6f}".format(threshold_str, node["n_samples"], node["loss"])
 
 			# Create node
 			nodeshape = "rectangle"

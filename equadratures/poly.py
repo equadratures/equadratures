@@ -133,9 +133,10 @@ class Poly(object):
                 if 'correlations' in sampling_args:
                     self.corr = sampling_args.get('correlations')
                     sampling_args_flag = 1
-                if sampling_args_flag == 0: #TODO - Not sure elif made sense here, changes to if for now. 
+                if sampling_args_flag == 0:
                     raise ValueError( 'An input value that you have specified is likely incorrect. Sampling arguments include: mesh, sampling-ratio, subsampling-algorithm, sample-points, sample-outputs and sample-gradients.')
-                if 'sample-outputs' in sampling_args: #TODO - Put this below if sampling_args_flag as sample-output-variance is an optional extra
+                # Additional optional sampling_args
+                if 'sample-outputs' in sampling_args:
                     self.output_variances = sampling_args.get('sample-output-variances')
 
             self._set_solver()
@@ -861,7 +862,10 @@ class Poly(object):
         if self.output_variances is None:
             mse = ((y_train - self.get_polyfit(X_train))**2).mean()
             data_variance = np.full(X_train.shape[0],mse)
-        # User defined variance
+        # User defined variance (scalar)
+        elif np.isscalar(self.output_variances):
+            data_variance = np.full(X_train.shape[0],self.output_variances)
+        # User defined variance (array)
         else:
             data_variance = self.output_variances
         Sigma = np.diag(data_variance)

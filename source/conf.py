@@ -4,7 +4,7 @@
 #
 # This file does only contain a selection of the most common options. For a
 # full list see the documentation:
-import sphinx_bootstrap_theme
+#import sphinx_bootstrap_theme
 # http://www.sphinx-doc.org/en/stable/config
 
 # -- Path setup --------------------------------------------------------------
@@ -20,13 +20,13 @@ import sphinx_bootstrap_theme
 # -- Project information -----------------------------------------------------
 
 project = u' '
-copyright = u'2016-2019 by Effective Quadratures'
+copyright = u'2016-2020 by Effective Quadratures'
 author = u'Pranay Seshadri, Nicholas Wong, James Gross, Irene Vidris, Joe Zhou, Ashley Scillitoe'
 
 # The short X.Y version
-version = u'8.1'
+version = u'9.0'
 # The full version, including alpha/beta/rc tags
-release = u'v8.1'
+release = u'v9.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -64,8 +64,9 @@ master_doc = '_documentation/index'
 #html_theme = "sphinx_rtd_theme"
 #html_theme_path = ["_themes", ]
 
-html_theme = 'bootstrap'
-html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
+html_theme = 'press'
+html_logo = 'logo_white_font.png'
+html_favicon = 'logo.png'
 #html_theme_options = {
 #    'style_nav_header_background': 'grey',
 #}
@@ -100,8 +101,6 @@ exclude_patterns = [u'_docsbuild', 'Thumbs.db', '.DS_Store']
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['']
 
-html_logo = 'logo_white_font.png'
-html_favicon = 'logo.png'
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 #

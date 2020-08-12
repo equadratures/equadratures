@@ -5,11 +5,10 @@ def readme():
         return f.read()
 
 setup(name='equadratures',
-      version='8.1.1',
+      version='8.1.4',
       description='Machine learning with polynomials',
       long_description=readme(),
       classifiers=[
-        'Programming Language :: Python :: 2.7',
 	'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
@@ -26,6 +25,9 @@ setup(name='equadratures',
           'scipy >= 0.15.0',
           'matplotlib'
       ],
+      extras_require={
+          "cvxpy":  ['cvxpy>=1.1'],
+          },
       test_suite='nose.collector',
       tests_require=['nose'],
       include_package_data=True,

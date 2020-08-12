@@ -29,8 +29,11 @@ class TestC(TestCase):
         PolyApprox1 = np.reshape(PolyApprox1, (N, N))
         PolyApprox2 = myPoly2.get_polyfit( samples )
         PolyApprox2 = np.reshape(PolyApprox2, (N, N))
+        Poly_real = evaluate_model(samples, fun)
+        Poly_real = np.reshape(Poly_real, (N, N))
         np.testing.assert_array_almost_equal(PolyApprox1, PolyApprox2, decimal=7, err_msg='Problem!')
-    def test_newton_svd(self):
+        np.testing.assert_array_almost_equal(PolyApprox1, Poly_real, decimal=8, err_msg='Problem!')
+    def test_newton(self):
         zeta_1 = Parameter(distribution='uniform', order=4, lower= -2.0, upper=2.0)
         zeta_2 = Parameter(distribution='uniform', order=4, lower=-1.0, upper=3.0)
         myBasis3 = Basis('total-order')

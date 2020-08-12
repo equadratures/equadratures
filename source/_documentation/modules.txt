@@ -19,6 +19,7 @@ Then we have the **polynomial exploiting utilities** that leverage a polynomial 
    optimisation
    polynet
    correlated
+   polytree
 
 .. automodule:: equadratures
     :members:

@@ -293,10 +293,8 @@ class Test_Distributions(TestCase):
       np.testing.assert_almost_equal(mean, param.mean, decimal=2)
       np.testing.assert_almost_equal(variance, param.variance, decimal=2)
       myPoly.get_summary()
-    def test_custom(self):
-      paramtest = Parameter(order=1, distribution='gaussian', shape_parameter_A=3, shape_parameter_B=0.5)
-      stest_samples = paramtest.get_samples(6000)
-      param = Parameter(order=1, distribution='custom', data=stest_samples)
+    def test_uniform(self):
+      param = Parameter(order=5, distribution='uniform', lower=-1., upper=15.)
       s_values, pdf = param.get_pdf()
       s_values, cdf = param.get_cdf()
       s_samples = param.get_samples(6000)
@@ -306,7 +304,48 @@ class Test_Distributions(TestCase):
       myPoly = Poly(param, myBasis, method='numerical-integration')
       myPoly.set_model(blackbox)
       mean, variance = myPoly.get_mean_and_variance()
-      np.testing.assert_almost_equal(mean, paramtest.shape_parameter_A, decimal=1)
-      np.testing.assert_almost_equal(variance, paramtest.shape_parameter_B, decimal=1)
+      np.testing.assert_almost_equal(mean, param.mean, decimal=2)
+      np.testing.assert_almost_equal(variance, param.variance, decimal=2)
+      myPoly.get_summary()
+    def test_custom(self):
+      paramtest = Parameter(order=1, distribution='gaussian', shape_parameter_A=3, shape_parameter_B=0.5)
+      stest_samples = paramtest.get_samples(6000)
+      mu = 3.0
+      sigma_2 = 0.5
+      pdf_function = Weight(lambda x: 1./np.sqrt(2. * np.pi * sigma_2) * np.exp(-0.5 * (x - mu)**2/sigma_2 ), support=[-12., 12.] )
+      param = Parameter(order=10, distribution='analytical', weight_function=pdf_function)
+      s_values, pdf = param.get_pdf()
+      s_values, cdf = param.get_cdf()
+      s_samples = param.get_samples(6000)
+      param.get_description()
+      s_samples = param.get_icdf(np.linspace(0., 1., 30))
+      myBasis = Basis('univariate')
+      myPoly = Poly(param, myBasis, method='numerical-integration')
+      myPoly.set_model(blackbox)
+      mean, variance = myPoly.get_mean_and_variance()
+      np.testing.assert_almost_equal(mean, paramtest.shape_parameter_A, decimal=2)
+      np.testing.assert_almost_equal(variance, paramtest.shape_parameter_B, decimal=2)
+    def test_custom2(self):
+      a = 3.
+      b = 6.
+      c = 4.
+      mean = (a + b + c)/3.
+      var = (a**2 + b**2 + c**2 - a*b - a*c - b*c)/18.
+      pdf = Weight(lambda x : 2*(x-a)/((b-a)*(c-a)) if (a <= x < c) \
+                              else( 2/(b-a) if (x == c) \
+                              else( 2*(b-x)/((b-a)*(b-c)))), \
+                  support=[a, b], pdf=True)
+      np.testing.assert_almost_equal(mean, pdf.mean, decimal=5)
+      np.testing.assert_almost_equal(var, pdf.variance, decimal=5)
+      s = Parameter(distribution='analytical', weight_function=pdf, order=2)
+      s_samples = s.get_samples(50000)
+      basis = Basis('univariate')
+      poly = Poly(s, basis, method='numerical-integration')
+      def model(input):
+        return input**2
+      poly.set_model(model)
+      feval = evaluate_model(s_samples, model)
+      mean2, variance2 = poly.get_mean_and_variance()
+      np.testing.assert_almost_equal(mean2/100., np.mean(feval)/100., decimal=2)
 if __name__ == '__main__':
     unittest.main()

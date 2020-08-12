@@ -1,6 +1,7 @@
 from unittest import TestCase
 import unittest
 from equadratures import *
+from equadratures.datasets import standardise, unstandardise
 import numpy as np
 import scipy.stats as st
 import os
@@ -1124,29 +1125,6 @@ class TestG(TestCase):
         W = mysubspace2.get_subspace()
         poly = mysubspace2.get_subspace_polynomial()
 
-    def test_find_another_subspace(self):
-        X, Y = data()
-        N = X.shape[0]
-        num_obs = 500
-        params = []
-        basis_orders = []
-        for i in range(25):
-                params.append(Parameter(order=2, distribution = 'Custom', data = np.reshape(X[:,i], (N,))))
-                basis_orders.append(2)
-
-        basis = Basis("total-order", orders = basis_orders)
-        num_obs = 200
-        chosen_points = np.random.choice(range(N), size = num_obs, replace = False)
-        X_red = X[chosen_points,:]
-        Y_red = Y[chosen_points]
-        remaining_pts = np.delete(np.arange(N), chosen_points)
-        chosen_valid_pts = np.random.choice(remaining_pts, size = 30, replace = False)
-        x_eval = X[chosen_valid_pts]
-        poly = Poly(params, basis, method='compressive-sensing', sampling_args={'sample-points':X_red, 'sample-outputs':Y_red})
-        poly.set_model()
-        mysubspace = Subspaces(method='active-subspace', full_space_poly=poly)
-        W = mysubspace.get_subspace()
-        e = mysubspace.get_eigenvalues()
     def test_get_zonotope_vertices(self):
         X, Y = data()
         N = X.shape[0]
@@ -1163,8 +1141,8 @@ class TestG(TestCase):
         for j in range(d): #randomly scale each column of X
             scale = np.random.uniform()*10.0
             Xorig[:,j] *= scale
-        X = subspaces.standardise(Xorig)
-        np.testing.assert_array_almost_equal(Xorig,subspaces.unstandardise(X,Xorig),decimal=8)
+        X = standardise(Xorig)
+        np.testing.assert_array_almost_equal(Xorig,unstandardise(X,Xorig),decimal=8)
         num_obs = 500
         chosen_points = np.random.choice(range(N), size = num_obs, replace = False)
         X_red = X[chosen_points,:]
@@ -1181,7 +1159,7 @@ class TestG(TestCase):
         U_random_entry = U[np.random.randint(0, 99), :]
         np.testing.assert_array_almost_equal(U_random_entry, active_sample_coord, decimal=4)
         # Rescale samples (S) to original coordinates
-        Sorig = subspaces.unstandardise(S,Xorig)
+        Sorig = unstandardise(S,Xorig)
 
 if __name__== '__main__':
     unittest.main()

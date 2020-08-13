@@ -5,6 +5,7 @@ from equadratures.basis import Basis
 from equadratures.solver import Solver
 from equadratures.subsampling import Subsampling
 from equadratures.quadrature import Quadrature
+from equadratures.datasets import score
 import scipy.stats as st
 import numpy as np
 from copy import deepcopy
@@ -16,7 +17,7 @@ class Poly(object):
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     :param str method: The method used for computing the coefficients. Should be one of: ``compressive-sensing``,
-        ``numerical-integration``, ``least-squares``, ``least-squares-with-gradients``, ``minimum-norm``.
+        ``numerical-integration``, ``least-squares``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``minimum-norm``.
     :param dict sampling_args: Optional arguments centered around the specific sampling strategy.
 
             :string mesh: Avaliable options are: ``monte-carlo``, ``sparse-grid``, ``tensor-grid``, ``induced``, or ``user-defined``. Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1] is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
@@ -60,6 +61,8 @@ class Poly(object):
         4. Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations. SIAM/ASA Journal on Uncertainty Quantification, 5(1). `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
         5. Bos, L., De Marchi, S., Sommariva, A., Vianello, M., (2010) Computing Multivariate Fekete and Leja points by Numerical Linear Algebra. SIAM Journal on Numerical Analysis, 48(5). `Paper <https://epubs.siam.org/doi/abs/10.1137/090779024>`__
         6. Joshi, S., Boyd, S., (2009) Sensor Selection via Convex Optimization. IEEE Transactions on Signal Processing, 57(2). `Paper <https://ieeexplore.ieee.org/document/4663892>`__
+        7. Rogers, S., Girolami, M., (2016) Variability in predictions. In: A First Course in Machine Learning, Second Edition (2nd. ed.). Chapman & Hall/CRC. `Book <https://github.com/wwkenwong/book/blob/master/Simon%20Rogers%2C%20Mark%20Girolami%20A%20First%20Course%20in%20Machine%20Learning.pdf>`__
+
     """
     def __init__(self, parameters, basis, method=None, sampling_args=None, solver_args=None):
         try:
@@ -81,6 +84,7 @@ class Poly(object):
         # Initialize some default values!
         self.inputs = None
         self.outputs = None
+        self.output_variances = None
         self.subsampling_algorithm_name = None
         self.sampling_ratio = 1.0
         self.statistics_object = None
@@ -89,7 +93,7 @@ class Poly(object):
         if self.method is not None:
             if self.method == 'numerical-integration' or self.method == 'integration':
                 self.mesh = self.basis.basis_type
-            elif self.method == 'least-squares':
+            elif self.method == 'least-squares' or self.method == 'least-absolute-residual' or self.method=='huber' or self.method=='elastic-net':
                 self.mesh = 'tensor-grid'
             elif self.method == 'least-squares-with-gradients':
                 self.gradient_flag = 1
@@ -97,6 +101,8 @@ class Poly(object):
             elif self.method == 'compressed-sensing' or self.method == 'compressive-sensing':
                 self.mesh = 'monte-carlo'
             elif self.method == 'minimum-norm':
+                self.mesh = 'monte-carlo'
+            elif self.method == 'relevance-vector-machine':
                 self.mesh = 'monte-carlo'
             # Now depending on user inputs, override these default values!
             sampling_args_flag = 0
@@ -120,8 +126,19 @@ class Poly(object):
                 if 'sample-gradients' in sampling_args:
                     self.gradients = sampling_args.get('sample-gradients')
                     sampling_args_flag = 1
-                elif sampling_args_flag == 0:
+                if 'gram-schmidt-correction' in sampling_args:
+                    R_Psi = sampling_args.get('gram-schmidt-correction')
+                    self.inv_R_Psi = np.linalg.inv(R_Psi)
+                    sampling_args_flag = 1
+                if 'correlations' in sampling_args:
+                    self.corr = sampling_args.get('correlations')
+                    sampling_args_flag = 1
+                if sampling_args_flag == 0:
                     raise ValueError( 'An input value that you have specified is likely incorrect. Sampling arguments include: mesh, sampling-ratio, subsampling-algorithm, sample-points, sample-outputs and sample-gradients.')
+                # Additional optional sampling_args
+                if 'sample-outputs' in sampling_args:
+                    self.output_variances = sampling_args.get('sample-output-variances')
+
             self._set_solver()
             self._set_subsampling_algorithm()
             self._set_points_and_weights()
@@ -216,8 +233,12 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
+        if hasattr(self, 'corr'):
+            corr = self.corr
+        else:
+            corr = None
         self.quadrature = Quadrature(parameters=self.parameters, basis=self.basis, \
-                        points=self.inputs, mesh=self.mesh)
+                        points=self.inputs, mesh=self.mesh, corr=corr)
         quadrature_points, quadrature_weights = self.quadrature.get_points_and_weights()
         if self.subsampling_algorithm_name is not None:
             P = self.get_poly(quadrature_points)
@@ -229,7 +250,7 @@ class Poly(object):
             m_refined = int(np.round(self.sampling_ratio * nn))
             z = self.subsampling_algorithm_function(A, m_refined)
             self._quadrature_points = quadrature_points[z,:]
-            self._quadrature_weights =  quadrature_weights[z] / np.sum(quadrature_weights[z])
+            self._quadrature_weights = quadrature_weights[z] / np.sum(quadrature_weights[z])
         else:
             self._quadrature_points = quadrature_points
             self._quadrature_weights = quadrature_weights
@@ -278,14 +299,27 @@ class Poly(object):
         return self.statistics_object.get_skewness(), self.statistics_object.get_kurtosis()
     def _set_statistics(self):
         """
-        Private method that is used withn the statistics routines.
+        Private method that is used within the statistics routines.
 
         """
         if self.statistics_object is None:
-            if self.method != 'numerical-integration' and self.dimensions <= 6 and self.highest_order <= MAXIMUM_ORDER_FOR_STATS:
+            if hasattr(self, 'inv_R_Psi'):
+                # quad_pts, quad_wts = self.quadrature.get_points_and_weights()
+                N_quad = 20000
+                quad_pts = self.corr.get_correlated_samples(N=N_quad)
+                quad_wts = 1.0 / N_quad * np.ones(N_quad)
+                poly_vandermonde_matrix = self.get_poly(quad_pts)
+            elif self.method != 'numerical-integration' and self.dimensions <= 6 and self.highest_order <= MAXIMUM_ORDER_FOR_STATS:
                 quad = Quadrature(parameters=self.parameters, basis=Basis('tensor-grid', orders= np.array(self.parameters_order) + 1), \
                     mesh='tensor-grid', points=None)
                 quad_pts, quad_wts = quad.get_points_and_weights()
+                poly_vandermonde_matrix = self.get_poly(quad_pts)
+            elif self.mesh == 'monte-carlo':
+                quad = Quadrature(parameters=self.parameters,
+                                  basis=self.basis, mesh=self.mesh, points=None, oversampling=10.0)
+                quad_pts, quad_wts = quad.get_points_and_weights()
+                N_quad = len(quad_wts)
+                quad_wts = 1.0 / N_quad * np.ones(N_quad)
                 poly_vandermonde_matrix = self.get_poly(quad_pts)
             else:
                 poly_vandermonde_matrix = self.get_poly(self._quadrature_points)
@@ -370,6 +404,7 @@ class Poly(object):
                 y = evaluate_model(self._quadrature_points, model)
             else:
                 y = model
+                # TODO: This error gives messages that are usually not clear
                 assert(y.shape[0] == self._quadrature_points.shape[0])
             if y.shape[1] != 1:
                 raise ValueError( 'model values should be a column vector.')
@@ -523,19 +558,24 @@ class Poly(object):
             **w**: A numpy.ndarray of the corresponding quadrature weights with shape (number_of_samples, 1).
         """
         return self._quadrature_points, self._quadrature_weights
-    def get_polyfit(self, stack_of_points):
+    def get_polyfit(self, stack_of_points, uq=False):
         """
-        Evaluates the the polynomial approximation of a function (or model data) at prescribed points.
+        Evaluates the /polynomial approximation of a function (or model data) at prescribed points.
 
         :param Poly self:
             An instance of the Poly class.
         :param numpy.ndarray stack_of_points:
             An ndarray with shape (number_of_observations, dimensions) at which the polynomial fit must be evaluated at.
+        :param bool uq:
+            If true, the estimated uncertainty (standard deviation) of the polynomial approximation is also returned.
         :return:
             **p**: A numpy.ndarray of shape (1, number_of_observations) corresponding to the polynomial approximation of the model.
         """
         N = len(self.coefficients)
-        return np.dot(self.get_poly(stack_of_points).T , self.coefficients.reshape(N, 1))
+        if uq:
+            return np.dot(self.get_poly(stack_of_points).T , self.coefficients.reshape(N, 1)), self._get_polystd(stack_of_points)
+        else:
+            return np.dot(self.get_poly(stack_of_points).T , self.coefficients.reshape(N, 1))
     def get_polyfit_grad(self, stack_of_points, dim_index = None):
         """
         Evaluates the gradient of the polynomial approximation of a function (or model data) at prescribed points.
@@ -655,6 +695,8 @@ class Poly(object):
         for k in range(dimensions):
             basis_entries_this_dim = basis[:, k].astype(int)
             polynomial *= p[k][basis_entries_this_dim]
+        if hasattr(self, 'inv_R_Psi'):
+            polynomial = self.inv_R_Psi.T @ polynomial
         return polynomial
     def get_poly_grad(self, stack_of_points, dim_index = None):
         """
@@ -709,6 +751,8 @@ class Poly(object):
                         polynomialgradient *= dp[k][basis_entries_this_dim]
                     else:
                         polynomialgradient *= p[k][basis_entries_this_dim]
+                if hasattr(self, 'inv_R_Psi'):
+                    polynomialgradient = self.inv_R_Psi.T @ polynomialgradient
                 R.append(polynomialgradient)
         return R
     def get_poly_hess(self, stack_of_points):
@@ -765,9 +809,96 @@ class Poly(object):
                         else:
                             polynomialhessian[i, :] = p[k][int(basis[i, k])] * temp
                         temp = polynomialhessian[i, :]
+                if hasattr(self, 'inv_R_Psi'):
+                    polynomialhessian = self.inv_R_Psi.T @ polynomialhessian
                 H.append(polynomialhessian)
 
         return H
+    def get_polyscore(self,X_test=None,y_test=None,metric='adjusted_r2'):
+        """
+        Evaluates the accuracy of the polynomial approximation using the selected accuracy metric. Training accuracy is evaluated on the data used for fitting the polynomial. Testing accuracy is evaluated on new data if it is provided by the ``X_test`` and ``y_test`` arguments (both must be provided together). 
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param numpy.ndarray X_test:
+            An ndarray with shape (number_of_observations, dimensions), containing new data ``X_test`` data (optional).
+        :param numpy.ndarray y_test:
+            An ndarray with shape (number_of_observations, 1) containing new ``y_test`` data (optional).
+        :param string metric:
+            An optional string containing the scoring metric to use. Avaliable options are: ``adjusted_r2``, ``r2``, ``mae``, ``rmse``, or ``normalised_mae`` (default: ``adjusted_r2``). 
+
+        :return:
+            **score_train**: The training score of the model, output as a float.
+            approximated mean of the polynomial fit; output as a float.
+        """
+
+        X = self.get_points()
+        y_pred = self.get_polyfit(X)
+        train_score = score(self.outputs,y_pred,metric,X=X)
+        if X_test is not None and y_test is not None:
+            y_pred_test = self.get_polyfit(X_test)
+            test_score = score(y_test,y_pred_test,metric,X=X_test)
+            return train_score, test_score
+        else:
+            return train_score
+
+    def _get_polystd(self, stack_of_points):
+        """
+        Private function to evaluate the uncertainty of the polynomial approximation at prescribed points, following the approach from [7].
+
+        :param Poly self:
+            An instance of the Poly class.
+        :param numpy.ndarray stack_of_points:
+            An ndarray with shape (number_of_observations, dimensions) at which the polynomial variance must be evaluated at.
+        :return:
+            **y_std**: A numpy.ndarray of shape (number_of_observations,1) corresponding to the uncertainty (one standard deviation) of the polynomial approximation at each point.
+        """
+        # Training data
+        X_train = self.inputs
+        y_train = self.outputs
+
+        # Define covariance matrix - TODO: allow non-diagonal matrix?
+        # Empirical variance
+        if self.output_variances is None:
+            mse = ((y_train - self.get_polyfit(X_train))**2).mean()
+            data_variance = np.full(X_train.shape[0],mse)
+        # User defined variance (scalar)
+        elif np.isscalar(self.output_variances):
+            data_variance = np.full(X_train.shape[0],self.output_variances)
+        # User defined variance (array)
+        else:
+            data_variance = self.output_variances
+        Sigma = np.diag(data_variance)
+
+        # Construct Q, the pseudoinverse of the weighted orthogonal polynomial matrix P
+ 
+        P = self.get_poly(self._quadrature_points)
+        W = np.diag(np.sqrt(self._quadrature_weights))
+        A = np.dot(W, P.T)
+        Q = np.dot( _inv( np.dot(A.T, A) ), A.T)
+
+        # Construct A matrix for test points, but omit weights
+        X_test = stack_of_points
+        Po = self.get_poly(X_test)
+        Ao = Po.T
+
+        # Propagate the uncertainties
+        Sigma_X = np.dot( np.dot(Q, Sigma), Q.T)
+        Sigma_F = np.dot( np.dot(Ao, Sigma_X), Ao.T) 
+        std_F = 1.96 * np.sqrt( np.diag(Sigma_F) )
+        return std_F.reshape(-1,1)
+
+def _inv(M):
+    """
+    Private function to compute inverse of matrix M, where M is a numpy.ndarray.
+    """
+    ll, mm = M.shape
+    M2 = M + 1e-10 * np.eye(ll)
+    L = np.linalg.cholesky(M2)
+    inv_L = np.linalg.inv(L)
+    inv_M = inv_L.T @ inv_L
+    return inv_M
+
 def evaluate_model_gradients(points, fungrad, format):
     """
     Evaluates the model gradient at given values.

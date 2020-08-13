@@ -3,7 +3,6 @@ sudo: false
 
 language: python
 python:
-  - "2.7"
   - "3.5"
   - "3.6"
   - "3.7"
@@ -27,6 +26,7 @@ branches:
 branches:
   only:
   - master
+  - develop
 
 before_install:
  - travis_retry wget http://repo.continuum.io/miniconda/Miniconda-3.8.3-Linux-x86_64.sh -O miniconda.sh
@@ -39,6 +39,7 @@ install:
  - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
  - source activate test
  - conda install --yes numpy scipy matplotlib pip nose
+ - pip install cvxpy>=1.1 
  - pip install setuptools
  - python setup.py install
  - pip install coveralls

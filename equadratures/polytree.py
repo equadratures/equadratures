@@ -8,11 +8,15 @@ from urllib.parse import quote
 class PolyTree(object):
 	"""
     Definition of a polynomial tree object.
-
+	
+	:param str tree_type:
+		The type of tree algorithm to use in the fit function. Options include ``classic`` which includes a model- split criterion and ``m5p`` which uses a standard deviation based split criterion and offers a substantial runtime improvement [1]
     :param int max_depth:
     	The maximum depth to which the tree will search to.
     :param int min_samples_leaf:
     	The minimum number of samples per leaf node.
+    :param int k:
+    	Determines the amount of smoothing to be done by ``predict()``. A value of 0 will disable smoothing. 
     :param int order:
     	The order of the generated orthogonal polynomials.
     :param str basis:
@@ -23,7 +27,7 @@ class PolyTree(object):
     	The interval between splits if ``uniform`` search is chosen
     :param bool logging:
     	Actions saved to log
-
+	:
     **Sample constructor initialisations**::
 
         import numpy as np
@@ -37,7 +41,7 @@ class PolyTree(object):
         tree.fit(X,y)
 
     """
-	def __init__(self, tree_type='classic', max_depth=5, min_samples_leaf=20, k=15, order=3, basis='tensor-grid', search='exhaustive', samples=50, logging=False):
+	def __init__(self, tree_type='classic', max_depth=5, min_samples_leaf=20, k=15, order=3, basis='tensor-grid', search='exhaustive', samples=50, logging=False, alpha=1, poly_method="least-squares", poly_solver_args=None):
 		self.tree_type = tree_type
 		self.max_depth = max_depth
 		self.min_samples_leaf = min_samples_leaf
@@ -49,7 +53,10 @@ class PolyTree(object):
 		self.samples = samples
 		self.logging = logging
 		self.log = []
-	
+		self.alpha = alpha
+		self.cardinality = None
+		self.poly_method = poly_method
+		self.poly_solver_args = poly_solver_args
 	def get_splits(self):
 		"""
 		Returns the list of splits made 
@@ -107,8 +114,8 @@ class PolyTree(object):
 
 		def _build_tree():
 
-			global index_node_global			
-			
+			global index_node_global
+		
 			def _splitter(node):
 				# Extract data
 				X, y = node["data"]
@@ -150,9 +157,6 @@ class PolyTree(object):
 						# Perform threshold split search on j_feature
 						for threshold in np.unique(np.sort(threshold_search)):
 
-							if last_threshold == threshold:
-								continue
-
 							# Split data based on threshold
 							(X_left, y_left), (X_right, y_right) = _split_data(j_feature, threshold, X, y)
 							#print(j_feature, threshold, X_left, X_right)
@@ -166,9 +170,10 @@ class PolyTree(object):
 							if self.tree_type == "classic":
 								loss_left, poly_left = _fit_poly(X_left, y_left)
 								loss_right, poly_right = _fit_poly(X_right, y_right)
-								loss_split = (N_left*loss_left + N_right*loss_right) / N	
+
+								loss_split = (N_left*loss_left + N_right*loss_right) / N
 							elif self.tree_type == "m5p":
-								loss_split = np.std(y) - (N_left*np.std(y_left) + N_right*np.std(y_right)) / N	
+								loss_split = np.std(y) - (N_left*np.std(y_left) + N_right*np.std(y_right)) / N
 
 							# Update best parameters if loss is lower
 							if loss_split < loss_best:
@@ -181,15 +186,12 @@ class PolyTree(object):
 								threshold_best = threshold
 	
 							elif self.logging: self.log.append({'event': 'try_split', 'data': {'j_feature':j_feature, 'threshold':threshold, 'loss': loss_split, 'poly_left': poly_left, 'poly_right': poly_right}})
-
-							last_threshold = threshold
 				
 				if self.tree_type == "m5p" and did_split:
-					print(j_feature_best, threshold_best)
 					(X_left, y_left), (X_right, y_right) = _split_data(j_feature_best, threshold_best, X, y)
 					loss_left, poly_left = _fit_poly(X_left, y_left)
 					loss_right, poly_right = _fit_poly(X_right, y_right)
-					loss_best = (N_left*loss_left + N_right*loss_right) / N	
+					loss_best = (N_left*loss_left + N_right*loss_right) / N
 					polys_best = [poly_left, poly_right]
 
 				# Return the best result
@@ -220,7 +222,7 @@ class PolyTree(object):
 							myParameters.append(Parameter(distribution='Uniform', lower=values_min, upper=values_max, order=self.order))
 					myBasis = Basis(self.basis)
 					container["index_node_global"] += 1
-					poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X, 'sample-outputs':y})
+					poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X, 'sample-outputs':y}, solver_args=self.poly_solver_args, method=self.poly_method)
 					poly.set_model()
 					
 					mse = np.linalg.norm(y - poly.get_polyfit(X).reshape(-1)) ** 2 / N
@@ -299,8 +301,11 @@ class PolyTree(object):
 					node["children"]["right"] = prune(node["children"]["right"])
 
 				if is_left and is_right:
-					lower_loss = ( node["children"]["left"]["loss"] * node["children"]["left"]["n_samples"] +
-								 node["children"]["right"]["loss"] * node["children"]["right"]["n_samples"] ) / (node["n_samples"])
+					lower_loss = ( node["children"]["left"]["loss"] * node["children"]["left"]["n_samples"]  * (1 + self.alpha * ((node["children"]["left"]["n_samples"] + self.cardinality)/(node["children"]["left"]["n_samples"]-self.cardinality)))+
+								 node["children"]["right"]["loss"] * node["children"]["right"]["n_samples"] * (1 + self.alpha * ((node["children"]["right"]["n_samples"] + self.cardinality)/(node["children"]["right"]["n_samples"]-self.cardinality)))) / node["n_samples"]
+					
+					node["lower_loss"] = lower_loss
+
 					if lower_loss > node["loss"]:
 						print("PRUNE!", lower_loss, node["loss"])
 						node["children"]["left"] = None
@@ -308,12 +313,14 @@ class PolyTree(object):
 
 				return node
 
-			return prune(self.tree)
+			self.tree["children"]["left"] = prune(self.tree["children"]["left"])
+			self.tree["children"]["right"] = prune(self.tree["children"]["right"])
+			return self.tree
 
 		N, d = X.shape
-		cardinality = Basis(self.basis, orders=[self.order for _ in range(d)]).get_cardinality()
-		if cardinality > self.min_samples_leaf:
-			print("WARNING: Basis cardinality ({}) greater than the minimum samples per leaf ({}). This may cause reduced performance.".format(cardinality, self.min_samples_leaf))
+		self.cardinality = Basis(self.basis, orders=[self.order for _ in range(d)]).get_cardinality()
+		if self.cardinality > self.min_samples_leaf:
+			print("WARNING: Basis cardinality ({}) greater than the minimum samples per leaf ({}). This may cause reduced performance.".format(self.cardinality, self.min_samples_leaf))
 
 		self.tree = _build_tree()
 		
@@ -372,8 +379,10 @@ class PolyTree(object):
 			#indices = []
 			#for i in range(len(feature_names)):
 			#	indices.append("{} : {}\\n".format(feature_names[i], node["poly"].get_sobol_indices(1)[i,]))
-			label_str = "{} n_samples = {}\\n loss = {:.6f}".format(threshold_str, node["n_samples"], node["loss"])
-
+			try:
+				label_str = "{} n_samples = {}\\n loss = {:.6f}\\n lower_loss = {}".format(threshold_str, node["n_samples"], node["loss"], node["lower_loss"])
+			except:
+				label_str = "{} n_samples = {}\\n loss = {:.6f}".format(threshold_str, node["n_samples"], node["loss"])				
 			# Create node
 			nodeshape = "rectangle"
 			bordercolor = "black"

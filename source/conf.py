@@ -203,7 +203,7 @@ html_theme_options = {
     'custom_links': [
                             ('EQuadratures', '/equadratures/'),
                             ('EIntegrator', '/eintegrator/'),
-                            ('Documentation', '/effective-quadratures.github.io/_documentation/')
+                            ('Documentation', '/docs/_documentation/')
                         ],
 
     'external_links': [

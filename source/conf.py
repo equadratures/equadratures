@@ -203,10 +203,14 @@ html_theme_options = {
     'custom_links': [
                             ('EQuadratures', '/equadratures/'),
                             ('EIntegrator', '/eintegrator/'),
-                            ('Documentation', '/docs/_documentation/')
+                            ('Documentation', '/docs/_documentation/'),
+                            ('Workshops', '/workshops/'),
+                            ('Motivation', '/motivation/'),
+                            ('Team', '/team/'),
                         ],
 
     'external_links': [
+                            ('Discourse', 'https://discourse.effective-quadratures.org/'),
                             ('Github', 'https://github.com/Effective-Quadratures')
                         ],
 

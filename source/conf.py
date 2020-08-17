@@ -201,8 +201,8 @@ html_theme_options = {
     'landing_page': land_page,
 
     'custom_links': [
-                            ('EQuadratures', '/equadratures/'),
-                            ('EIntegrator', '/eintegrator/'),
+                            ('Equadratures', '/equadratures/'),
+                            ('Eintegrator', '/eintegrator/'),
                             ('Documentation', '/docs/_documentation/'),
                             ('Workshops', '/workshops/'),
                             ('Motivation', '/motivation/'),

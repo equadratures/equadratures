@@ -57,6 +57,7 @@ class PolyTree(object):
 		self.cardinality = None
 		self.poly_method = poly_method
 		self.poly_solver_args = poly_solver_args
+
 	def get_splits(self):
 		"""
 		Returns the list of splits made 
@@ -79,6 +80,13 @@ class PolyTree(object):
 			return splits
 		
 		return _search_tree(self.tree, [])
+
+	def _split_data(self, j_feature, threshold, X, y):
+		idx_left = np.where(X[:, j_feature] <= threshold)[0]
+		idx_right = np.delete(np.arange(0, len(X)), idx_left)
+		assert len(idx_left) + len(idx_right) == len(X)
+		return (X[idx_left], y[idx_left]), (X[idx_right], y[idx_right])
+
 
 	def get_polys(self):
 		"""
@@ -158,7 +166,7 @@ class PolyTree(object):
 						for threshold in np.unique(np.sort(threshold_search)):
 
 							# Split data based on threshold
-							(X_left, y_left), (X_right, y_right) = _split_data(j_feature, threshold, X, y)
+							(X_left, y_left), (X_right, y_right) = self._split_data(j_feature, threshold, X, y)
 							#print(j_feature, threshold, X_left, X_right)
 							N_left, N_right = len(X_left), len(X_right)
 
@@ -188,7 +196,7 @@ class PolyTree(object):
 							elif self.logging: self.log.append({'event': 'try_split', 'data': {'j_feature':j_feature, 'threshold':threshold, 'loss': loss_split, 'poly_left': poly_left, 'poly_right': poly_right}})
 				
 				if self.tree_type == "m5p" and did_split:
-					(X_left, y_left), (X_right, y_right) = _split_data(j_feature_best, threshold_best, X, y)
+					(X_left, y_left), (X_right, y_right) = self._split_data(j_feature_best, threshold_best, X, y)
 					loss_left, poly_left = _fit_poly(X_left, y_left)
 					loss_right, poly_right = _fit_poly(X_right, y_right)
 					loss_best = (N_left*loss_left + N_right*loss_right) / N
@@ -220,9 +228,12 @@ class PolyTree(object):
 							myParameters.append(Parameter(distribution='Uniform', lower=values_min-0.01, upper=values_max+0.01, order=self.order))
 						else: 
 							myParameters.append(Parameter(distribution='Uniform', lower=values_min, upper=values_max, order=self.order))
-					myBasis = Basis(self.basis)
+					if self.basis == "hyperbolic-basis":
+						myBasis = Basis(self.basis, orders=[self.order for _ in range(d)], q=0.5)
+					else:
+						myBasis = Basis(self.basis, orders=[self.order for _ in range(d)])
 					container["index_node_global"] += 1
-					poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X, 'sample-outputs':y}, solver_args=self.poly_solver_args, method=self.poly_method)
+					poly = Poly(myParameters, myBasis, method=self.poly_method, sampling_args={'sample-points':X, 'sample-outputs':y}, solver_args=self.poly_solver_args)
 					poly.set_model()
 					
 					mse = np.linalg.norm(y - poly.get_polyfit(X).reshape(-1)) ** 2 / N
@@ -232,12 +243,6 @@ class PolyTree(object):
 					mse, poly = np.inf, None
 
 				return mse, poly
-
-			def _split_data(j_feature, threshold, X, y):
-				idx_left = np.where(X[:, j_feature] <= threshold)[0]
-				idx_right = np.delete(np.arange(0, len(X)), idx_left)
-				assert len(idx_left) + len(idx_right) == len(X)
-				return (X[idx_left], y[idx_left]), (X[idx_right], y[idx_right])
 					
 			def _create_node(X, y, depth, container):
 				poly_loss, poly = _fit_poly(X, y)
@@ -289,44 +294,59 @@ class PolyTree(object):
 
 			return root
 
-		def _pruner():
-			def prune(node):
-				is_left = node["children"]["left"] != None
-				is_right = node["children"]["right"] != None
-
-				if is_left:
-					node["children"]["left"] = prune(node["children"]["left"])
-				
-				if is_right:
-					node["children"]["right"] = prune(node["children"]["right"])
-
-				if is_left and is_right:
-					lower_loss = ( node["children"]["left"]["loss"] * node["children"]["left"]["n_samples"]  * (1 + self.alpha * ((node["children"]["left"]["n_samples"] + self.cardinality)/(node["children"]["left"]["n_samples"]-self.cardinality)))+
-								 node["children"]["right"]["loss"] * node["children"]["right"]["n_samples"] * (1 + self.alpha * ((node["children"]["right"]["n_samples"] + self.cardinality)/(node["children"]["right"]["n_samples"]-self.cardinality)))) / node["n_samples"]
-					
-					node["lower_loss"] = lower_loss
-
-					if lower_loss > node["loss"]:
-						print("PRUNE!", lower_loss, node["loss"])
-						node["children"]["left"] = None
-						node["children"]["right"] = None
-
-				return node
-
-			self.tree["children"]["left"] = prune(self.tree["children"]["left"])
-			self.tree["children"]["right"] = prune(self.tree["children"]["right"])
-			return self.tree
-
 		N, d = X.shape
-		self.cardinality = Basis(self.basis, orders=[self.order for _ in range(d)]).get_cardinality()
-		if self.cardinality > self.min_samples_leaf:
+		if self.basis == "hyperbolic-basis":
+			self.cardinality = Basis(self.basis, orders=[self.order for _ in range(d)], q=0.5).get_cardinality()
+		else:
+			self.cardinality = Basis(self.basis, orders=[self.order for _ in range(d)]).get_cardinality()
+		if self.min_samples_leaf == None or self.min_samples_leaf == self.cardinality:
+			self.min_samples_leaf = int(np.ceil(self.cardinality * 1.25))
+		elif self.cardinality > self.min_samples_leaf:
 			print("WARNING: Basis cardinality ({}) greater than the minimum samples per leaf ({}). This may cause reduced performance.".format(self.cardinality, self.min_samples_leaf))
 
 		self.tree = _build_tree()
-		
-		if self.tree_type == "m5p":
-			self.tree = _pruner()
-	
+
+
+
+	def prune(self, X_test, y_test):
+		def pruner(node, X, y):
+
+			if X.shape[0] < 1:
+				node["test_loss"] = 0
+				node["n_samples"] = 0
+				return node
+
+			node["test_loss"] = np.linalg.norm(y - node["poly"].get_polyfit(X).reshape(-1)) ** 2 / X.shape[0]
+
+			is_left = node["children"]["left"] != None
+			is_right = node["children"]["right"] != None
+
+			if is_left and is_right:
+				(X_left, y_left), (X_right, y_right) = self._split_data(node["j_feature"], node["threshold"], X, y)
+				
+				node["children"]["left"] = pruner(node["children"]["left"], X_left, y_left)
+				node["children"]["right"] = pruner(node["children"]["right"], X_right, y_right)
+				
+				#lower_loss = ( node["children"]["left"]["test_loss"] * node["children"]["left"]["n_samples"]  * (1 + self.alpha * ((node["children"]["left"]["n_samples"] + self.cardinality)/(node["children"]["left"]["n_samples"]-self.cardinality)))+
+				#			   node["children"]["right"]["test_loss"] * node["children"]["right"]["n_samples"] * (1 + self.alpha * ((node["children"]["right"]["n_samples"] + self.cardinality)/(node["children"]["right"]["n_samples"]-self.cardinality)))) / node["n_samples"]
+				
+				lower_loss = ( node["children"]["left"]["test_loss"] * node["children"]["left"]["n_samples"] + node["children"]["right"]["test_loss"] * node["children"]["right"]["n_samples"] ) / ( node["children"]["left"]["n_samples"] + node["children"]["right"]["n_samples"] )
+
+				node["lower_loss"] = lower_loss
+
+				if lower_loss > node["test_loss"]:
+					#print(lower_loss > node["test_loss"], lower_loss, node["test_loss"])
+					print("PRUNE!", lower_loss, node["test_loss"])
+					node["children"]["left"] = None
+					node["children"]["right"] = None
+
+			return node
+
+		(X_left, y_left), (X_right, y_right) = self._split_data(self.tree["j_feature"], self.tree["threshold"], X_test, y_test)
+
+		self.tree["children"]["left"] = pruner(self.tree["children"]["left"], X_left, y_left)
+		self.tree["children"]["right"] = pruner(self.tree["children"]["right"], X_right, y_right)
+
 	def predict(self, X):
 		"""
 		Evaluates the the polynomial tree approximation of the data.
@@ -380,7 +400,7 @@ class PolyTree(object):
 			#for i in range(len(feature_names)):
 			#	indices.append("{} : {}\\n".format(feature_names[i], node["poly"].get_sobol_indices(1)[i,]))
 			try:
-				label_str = "{} n_samples = {}\\n loss = {:.6f}\\n lower_loss = {}".format(threshold_str, node["n_samples"], node["loss"], node["lower_loss"])
+				label_str = "{} n_samples = {}\\n loss = {:.6f}\\n lower_loss = {}".format(threshold_str, node["n_samples"], node["test_loss"], node["lower_loss"])
 			except:
 				label_str = "{} n_samples = {}\\n loss = {:.6f}".format(threshold_str, node["n_samples"], node["loss"])				
 			# Create node

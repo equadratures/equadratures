@@ -35,9 +35,9 @@ Our code is designed to require minimal dependencies; current package requiremen
 
 ## Documentation, tutorials and the blog
 
-Code documentation and details on the syntax can be found [here](https://effective-quadratures.github.io/_documentation/modules.html#).
+Code documentation and details on the syntax can be found [here](https://www.effective-quadratures.org/docs/_documentation/modules.html).
 
-Code tutorials can be found [here](https://effective-quadratures.github.io/_documentation/tutorials.html). 
+Code tutorials can be found [here](https://www.effective-quadratures.org/docs/_documentation/tutorials.html). 
 
 We've recently started an EQ-Blog! Check it out [here](https://www.effective-quadratures.org/eq-blog).
 

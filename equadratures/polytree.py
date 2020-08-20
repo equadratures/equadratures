@@ -41,7 +41,7 @@ class PolyTree(object):
         tree.fit(X,y)
 
     """
-	def __init__(self, tree_type='classic', max_depth=5, min_samples_leaf=20, k=15, order=3, basis='tensor-grid', search='exhaustive', samples=50, logging=False, alpha=1, poly_method="least-squares", poly_solver_args=None):
+	def __init__(self, tree_type='classic', max_depth=5, min_samples_leaf=None, k=15, order=3, basis='tensor-grid', search='exhaustive', samples=50, logging=False, poly_method="least-squares", poly_solver_args=None):
 		self.tree_type = tree_type
 		self.max_depth = max_depth
 		self.min_samples_leaf = min_samples_leaf
@@ -53,10 +53,15 @@ class PolyTree(object):
 		self.samples = samples
 		self.logging = logging
 		self.log = []
-		self.alpha = alpha
 		self.cardinality = None
 		self.poly_method = poly_method
 		self.poly_solver_args = poly_solver_args
+
+		assert max_depth > 0, "max_depth must be a postive integer"
+		assert k >= 0, "k must be a postive integer"
+		assert order > 0, "order must be a postive integer" 
+		assert samples > 0, "samples must be a postivie integer"
+
 
 	def get_splits(self):
 		"""
@@ -308,41 +313,46 @@ class PolyTree(object):
 
 
 
-	def prune(self, X_test, y_test):
-		def pruner(node, X, y):
+	def prune(self, X, y):
+		"""
+		Prunes the tree that you have fitted.
+		
+		:param numpy.ndarray X:
+			Training input data
+		:param numpy.ndarray y:
+			Training output data
+		"""
 
-			if X.shape[0] < 1:
+		def pruner(node, X_subset, y_subset):
+
+			if X_subset.shape[0] < 1:
 				node["test_loss"] = 0
 				node["n_samples"] = 0
 				return node
 
-			node["test_loss"] = np.linalg.norm(y - node["poly"].get_polyfit(X).reshape(-1)) ** 2 / X.shape[0]
+			node["test_loss"] = np.linalg.norm(y_subset - node["poly"].get_polyfit(X_subset).reshape(-1)) ** 2 / X_subset.shape[0]
 
 			is_left = node["children"]["left"] != None
 			is_right = node["children"]["right"] != None
 
 			if is_left and is_right:
-				(X_left, y_left), (X_right, y_right) = self._split_data(node["j_feature"], node["threshold"], X, y)
+				(X_left, y_left), (X_right, y_right) = self._split_data(node["j_feature"], node["threshold"], X_subset, y_subset)
 				
 				node["children"]["left"] = pruner(node["children"]["left"], X_left, y_left)
 				node["children"]["right"] = pruner(node["children"]["right"], X_right, y_right)
-				
-				#lower_loss = ( node["children"]["left"]["test_loss"] * node["children"]["left"]["n_samples"]  * (1 + self.alpha * ((node["children"]["left"]["n_samples"] + self.cardinality)/(node["children"]["left"]["n_samples"]-self.cardinality)))+
-				#			   node["children"]["right"]["test_loss"] * node["children"]["right"]["n_samples"] * (1 + self.alpha * ((node["children"]["right"]["n_samples"] + self.cardinality)/(node["children"]["right"]["n_samples"]-self.cardinality)))) / node["n_samples"]
 				
 				lower_loss = ( node["children"]["left"]["test_loss"] * node["children"]["left"]["n_samples"] + node["children"]["right"]["test_loss"] * node["children"]["right"]["n_samples"] ) / ( node["children"]["left"]["n_samples"] + node["children"]["right"]["n_samples"] )
 
 				node["lower_loss"] = lower_loss
 
 				if lower_loss > node["test_loss"]:
-					#print(lower_loss > node["test_loss"], lower_loss, node["test_loss"])
-					print("PRUNE!", lower_loss, node["test_loss"])
 					node["children"]["left"] = None
 					node["children"]["right"] = None
 
 			return node
 
-		(X_left, y_left), (X_right, y_right) = self._split_data(self.tree["j_feature"], self.tree["threshold"], X_test, y_test)
+		assert self.tree is not None, "Run fit() before prune()"
+		(X_left, y_left), (X_right, y_right) = self._split_data(self.tree["j_feature"], self.tree["threshold"], X, y)
 
 		self.tree["children"]["left"] = pruner(self.tree["children"]["left"], X_left, y_left)
 		self.tree["children"]["right"] = pruner(self.tree["children"]["right"], X_right, y_right)
@@ -396,9 +406,6 @@ class PolyTree(object):
 			else:
 				threshold_str = "{} <= {:.3f}\\n".format(feature_names[node['j_feature']], node["threshold"])
 			
-			#indices = []
-			#for i in range(len(feature_names)):
-			#	indices.append("{} : {}\\n".format(feature_names[i], node["poly"].get_sobol_indices(1)[i,]))
 			try:
 				label_str = "{} n_samples = {}\\n loss = {:.6f}\\n lower_loss = {}".format(threshold_str, node["n_samples"], node["test_loss"], node["lower_loss"])
 			except:

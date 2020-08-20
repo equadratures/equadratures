@@ -24,7 +24,7 @@ copyright = u'2016-2020 by Effective Quadratures'
 author = u'Pranay Seshadri, Nicholas Wong, James Gross, Irene Vidris, Joe Zhou, Ashley Scillitoe'
 
 # -- Bryn: Main Vuepress website location ------------------------------------
-land_page = "http://localhost:8080"
+land_page = "http://www.effective-quadratures.org/"
 outdir = sys.argv[-1]   #Bryn: Assuming last system argument is output directory
 #Compile command: "sphinx-build -b html source/ ../effective-quadratures.github.io/"
 

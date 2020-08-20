@@ -24,7 +24,7 @@ copyright = u'2016-2020 by Effective Quadratures'
 author = u'Pranay Seshadri, Nicholas Wong, James Gross, Irene Vidris, Joe Zhou, Ashley Scillitoe'
 
 # -- Bryn: Main Vuepress website location ------------------------------------
-land_page = "http://www.effective-quadratures.org/"
+land_page = "https://www.effective-quadratures.org/"
 outdir = sys.argv[-1]   #Bryn: Assuming last system argument is output directory
 #Compile command: "sphinx-build -b html source/ ../effective-quadratures.github.io/"
 
@@ -69,7 +69,7 @@ master_doc = '_documentation/index'
 #html_theme = "sphinx_rtd_theme"
 #html_theme_path = ["_themes", ]
 
-html_theme = 'eq_press'
+html_theme = 'press'
 html_logo = 'logo-5-black-text-lowres.png'
 html_favicon = 'eq-logo-favicon.png'
 
@@ -198,18 +198,20 @@ html_theme_options = {
     # Note the "1" or "True" value above as the third argument to indicate
     # an arbitrary url.
 
-    'landing_page': land_page,
-
-    'custom_links': [
-                            ('Equadratures', '/equadratures/'),
-                            ('Eintegrator', '/eintegrator/'),
-                            ('Documentation', '/docs/_documentation/'),
-                            ('Workshops', '/workshops/'),
-                            ('Motivation', '/motivation/'),
-                            ('Team', '/team/'),
-                        ],
+#Meant for my custom "eq_press" theme
+#    'landing_page': land_page,
+#
+#    'custom_links': [
+#                            ('Equadratures', '/equadratures/'),
+#                            ('Eintegrator', '/eintegrator/'),
+#                            ('Documentation', '/docs/_documentation/'),
+#                            ('Workshops', '/workshops/'),
+#                            ('Motivation', '/motivation/'),
+#                            ('Team', '/team/'),
+#                        ],
 
     'external_links': [
+                            ('Main Website', land_page),
                             ('Discourse', 'https://discourse.effective-quadratures.org/'),
                             ('Github', 'https://github.com/Effective-Quadratures')
                         ],

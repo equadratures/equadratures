@@ -1,11 +1,10 @@
-Sitemap
+Documentation
 ==========================
 
 .. toctree::
-   :maxdepth: 5 
+   :maxdepth: 1
 
-   introduction
-   team
+   research
    modules
    tutorials
 

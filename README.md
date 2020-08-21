@@ -33,13 +33,13 @@ Alternatively you can click either on the **Fork Code** button or **Clone**. For
 
 Our code is designed to require minimal dependencies; current package requirements include ``numpy``, ``scipy`` and ``matplotlib``.
 
-## Documentation, tutorials and the blog
+## Documentation, tutorials, Discourse
 
-Code documentation and details on the syntax can be found [here](https://effective-quadratures.github.io/_documentation/modules.html#).
+Code documentation and details on the syntax can be found [here](https://effective-quadratures.github.io/_documentation/modules.html).
 
 Code tutorials can be found [here](https://effective-quadratures.github.io/_documentation/tutorials.html). 
 
-We've recently started an EQ-Blog! Check it out [here](https://www.effective-quadratures.org/eq-blog).
+We've recently started a Discourse forum! Check it out [here](https://discourse.effective-quadratures.org/).
 
 ## Code objectives
 

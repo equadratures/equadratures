@@ -69,7 +69,7 @@ master_doc = '_documentation/index'
 #html_theme = "sphinx_rtd_theme"
 #html_theme_path = ["_themes", ]
 
-html_theme = 'press'
+html_theme = 'eq_press'
 html_logo = 'logo-5-black-text-lowres.png'
 html_favicon = 'eq-logo-favicon.png'
 
@@ -199,19 +199,17 @@ html_theme_options = {
     # an arbitrary url.
 
 #Meant for my custom "eq_press" theme
-#    'landing_page': land_page,
-#
-#    'custom_links': [
-#                            ('Equadratures', '/equadratures/'),
-#                            ('Eintegrator', '/eintegrator/'),
-#                            ('Documentation', '/docs/_documentation/'),
-#                            ('Workshops', '/workshops/'),
-#                            ('Motivation', '/motivation/'),
-#                            ('Team', '/team/'),
-#                        ],
+    'landing_page': land_page,
+
+    'custom_links': [
+                            ('Equadratures', '/equadratures/'),
+                            ('Eintegrator', '/eintegrator/'),
+                            ('Documentation', '/docs/_documentation/'),
+                            ('Workshops', '/workshops/'),
+                            ('About Us', '/about-us/'),
+                        ],
 
     'external_links': [
-                            ('Main Website', land_page),
                             ('Discourse', 'https://discourse.effective-quadratures.org/'),
                             ('Github', 'https://github.com/Effective-Quadratures')
                         ],

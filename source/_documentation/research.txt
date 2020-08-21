@@ -1,6 +1,6 @@
 Research: theory and practice
 *************************
-Till date, :code:``equadratures`` has seen utility in a variety of fields, ranging from aerodynamics and mechanics to atmospheric and ocean sciences. Feel free to check out the publications below to learn more. If you are using the code in your own research and would like to have your publications featured here, do get in touch with us.
+Till date, ``equadratures`` has seen utility in a variety of fields, ranging from aerodynamics and mechanics to atmospheric and ocean sciences. Feel free to check out the publications below to learn more. If you are using the code in your own research and would like to have your publications featured here, do get in touch with us.
 
 **Theory and methodology**
 

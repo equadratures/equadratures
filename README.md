@@ -12,7 +12,7 @@ The latest version of the code is v9.0 *Narwhal* and was released in August 2020
 [![](https://coveralls.io/repos/github/Effective-Quadratures/Effective-Quadratures/badge.svg?branch=master)](https://coveralls.io/github/Effective-Quadratures/Effective-Quadratures)
 [![](https://badge.fury.io/py/equadratures.svg)](https://pypi.org/project/equadratures/)
 [![](https://joss.theoj.org/papers/10.21105/joss.00166/status.svg)](https://joss.theoj.org/papers/10.21105/joss.00166)
-![](https://img.shields.io/pypi/pyversions/ansicolortags.svg)
+[![](https://img.shields.io/pypi/pyversions/equadratures.svg)](https://pypi.python.org/pypi/equadratures)
 ![](https://img.shields.io/github/stars/Effective-Quadratures/Effective-Quadratures.svg?style=flat-square&logo=github&label=Stars&logoColor=white)
 ![](https://static.pepy.tech/badge/equadratures/week)
 [![](https://img.shields.io/discourse/status?server=https%3A%2F%2Fdiscourse.effective-quadratures.org)](https://discourse.effective-quadratures.org)

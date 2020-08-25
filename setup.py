@@ -5,8 +5,8 @@ def readme():
         return f.read()
 
 setup(name='equadratures',
-      version='8.1.4',
-      description='Machine learning with polynomials',
+      version='9.0.0',
+      description='Polynomial approximations',
       long_description=readme(),
       classifiers=[
 	'Programming Language :: Python :: 3.5',

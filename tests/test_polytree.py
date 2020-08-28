@@ -79,14 +79,9 @@ class Test_polytree(TestCase):
         tree = polytree.PolyTree(tree_type="m5p")
         tree.fit(X_train, y_train)
         tree.prune(X_test,y_test)
-        _, _, exhaustive_r_value, _, _ = st.linregress(y_test, tree.predict(X_test).reshape(-1))
+        _, _, pruned_r_value, _, _ = st.linregress(y_test, tree.predict(X_test).reshape(-1))
 
-        tree = polytree.PolyTree(search='uniform')
-        tree.fit(X_train, y_train)
-        _, _, uniform_r_value, _, _ = st.linregress(y_test, tree.predict(X_test).reshape(-1))
-
-        self.assertTrue(uniform_r_value ** 2 > 0.9)
-        self.assertTrue(exhaustive_r_value ** 2 > 0.9)
+        self.assertTrue(pruned_r_value ** 2 > 0.9)
 
 if __name__== '__main__':
     unittest.main()

@@ -8,22 +8,26 @@ from urllib.parse import quote
 class PolyTree(object):
 	"""
     Definition of a polynomial tree object.
-
+	
+	:param str splitting_criterion:
+		The type of splitting_criterion to use in the fit function. Options include ``model_aware`` which includes a model-aware split criterion and ``model_agnostic`` which uses a standard deviation based model-agnostic split criterion and offers a substantial runtime improvement [1]
     :param int max_depth:
-    	The maximum depth to which the tree will search to.
+    	The maximum depth which the tree will grow to.
     :param int min_samples_leaf:
     	The minimum number of samples per leaf node.
+    :param int k:
+    	Determines the amount of smoothing to be done by ``predict()``. Can be in the range of [0, inf), a value of 0 disabling smoothing.
     :param int order:
     	The order of the generated orthogonal polynomials.
     :param str basis:
-    	The type of index set used for the basis. Options include: ``univariate``, ``total-order``, ``tensor-grid``, ``sparse-grid``, ``hyperbolic-basis`` and ``euclidean-degree``; all basis are isotropic. 
+    	The type of index set used for the basis. Options include: ``univariate``, ``total-order``, ``tensor-grid``, ``sparse-grid`` and ``hyperbolic-basis``
     :param str search:
-    	The method of search to be used. Options include ``uniform`` and ``exhaustive``
+    	The method of search to be used. Options include ``grid`` and ``exhaustive``
     :param int samples:
-    	The interval between splits if ``uniform`` search is chosen
+    	The interval between splits if ``grid`` search is chosen
     :param bool logging:
     	Actions saved to log
-
+	
     **Sample constructor initialisations**::
 
         import numpy as np
@@ -37,9 +41,11 @@ class PolyTree(object):
         tree.fit(X,y)
 
     """
-	def __init__(self, max_depth=5, min_samples_leaf=20, order=3, basis='tensor-grid', search='exhaustive', samples=10, logging=False):
+	def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, k=0.5, order=3, basis='total-order', search='exhaustive', samples=50, logging=False, poly_method="least-squares", poly_solver_args=None):
+		self.splitting_criterion = splitting_criterion
 		self.max_depth = max_depth
 		self.min_samples_leaf = min_samples_leaf
+		self.k = k
 		self.order = order
 		self.basis = basis
 		self.tree = None
@@ -47,7 +53,15 @@ class PolyTree(object):
 		self.samples = samples
 		self.logging = logging
 		self.log = []
-	
+		self.cardinality = None
+		self.poly_method = poly_method
+		self.poly_solver_args = poly_solver_args
+
+		assert max_depth > 0, "max_depth must be a postive integer"
+		assert 0 <= k, "k must be more than 0"
+		assert order > 0, "order must be a postive integer" 
+		assert samples > 0, "samples must be a postive integer"
+
 	def get_splits(self):
 		"""
 		Returns the list of splits made 
@@ -70,6 +84,12 @@ class PolyTree(object):
 			return splits
 		
 		return _search_tree(self.tree, [])
+
+	def _split_data(self, j_feature, threshold, X, y):
+		idx_left = np.where(X[:, j_feature] <= threshold)[0]
+		idx_right = np.delete(np.arange(0, len(X)), idx_left)
+		assert len(idx_left) + len(idx_right) == len(X)
+		return (X[idx_left], y[idx_left]), (X[idx_right], y[idx_right])
 
 	def get_polys(self):
 		"""
@@ -105,8 +125,8 @@ class PolyTree(object):
 
 		def _build_tree():
 
-			global index_node_global			
-			
+			global index_node_global
+		
 			def _splitter(node):
 				# Extract data
 				X, y = node["data"]
@@ -115,7 +135,12 @@ class PolyTree(object):
 
 				# Find feature splits that might improve loss
 				did_split = False
-				loss_best = node["loss"]
+				if self.splitting_criterion == "model_aware":
+					loss_best = node["loss"]
+				elif self.splitting_criterion == "model_agnostic":
+					loss_best = np.inf
+				else:
+					raise Exception("invalid splitting_criterion")
 				data_best = None
 				polys_best = None
 				j_feature_best = None
@@ -126,23 +151,25 @@ class PolyTree(object):
 
 					for j_feature in range(d):
 
+						last_threshold = np.inf
+
 						if self.search == 'exhaustive':
 							threshold_search = X[:, j_feature]
-						elif self.search == 'uniform':
+						elif self.search == 'grid':
 							if self.samples > N:
 								samples = N
 							else:
 								samples = self.samples
 							threshold_search = np.linspace(np.min(X[:,j_feature]), np.max(X[:,j_feature]), num=samples)
 						else:
-							raise Exception('Incorrect search type! Must be \'exhaustive\' or \'uniform\'')
+							raise Exception('Incorrect search type! Must be \'exhaustive\' or \'grid\'')
 
 						
 						# Perform threshold split search on j_feature
 						for threshold in np.unique(np.sort(threshold_search)):
 
 							# Split data based on threshold
-							(X_left, y_left), (X_right, y_right) = _split_data(j_feature, threshold, X, y)
+							(X_left, y_left), (X_right, y_right) = self._split_data(j_feature, threshold, X, y)
 							#print(j_feature, threshold, X_left, X_right)
 							N_left, N_right = len(X_left), len(X_right)
 
@@ -151,21 +178,32 @@ class PolyTree(object):
 								continue
 
 							# Compute weight loss function
-							loss_left, poly_left = _fit_poly(X_left, y_left)
-							loss_right, poly_right = _fit_poly(X_right, y_right)
-							loss_split = (N_left*loss_left + N_right*loss_right) / N	
-							
+							if self.splitting_criterion == "model_aware":
+								loss_left, poly_left = _fit_poly(X_left, y_left)
+								loss_right, poly_right = _fit_poly(X_right, y_right)
+
+								loss_split = (N_left*loss_left + N_right*loss_right) / N
+							elif self.splitting_criterion == "model_agnostic":
+								loss_split = np.std(y) - (N_left*np.std(y_left) + N_right*np.std(y_right)) / N
+
 							# Update best parameters if loss is lower
 							if loss_split < loss_best:
 								if self.logging: self.log.append({'event': 'best_split', 'data': {'j_feature':j_feature, 'threshold':threshold, 'loss': loss_split, 'poly_left': poly_left, 'poly_right': poly_right}})
 								did_split = True
 								loss_best = loss_split
-								polys_best = [poly_left, poly_right]
+								if self.splitting_criterion == "model_aware": polys_best = [poly_left, poly_right]
 								data_best = [(X_left, y_left), (X_right, y_right)]
 								j_feature_best = j_feature
 								threshold_best = threshold
 	
 							elif self.logging: self.log.append({'event': 'try_split', 'data': {'j_feature':j_feature, 'threshold':threshold, 'loss': loss_split, 'poly_left': poly_left, 'poly_right': poly_right}})
+				
+				if self.splitting_criterion == "model_agnostic" and did_split:
+					(X_left, y_left), (X_right, y_right) = self._split_data(j_feature_best, threshold_best, X, y)
+					loss_left, poly_left = _fit_poly(X_left, y_left)
+					loss_right, poly_right = _fit_poly(X_right, y_right)
+					loss_best = (N_left*loss_left + N_right*loss_right) / N
+					polys_best = [poly_left, poly_right]
 
 				# Return the best result
 				result = {"did_split": did_split,
@@ -185,31 +223,29 @@ class PolyTree(object):
 					myParameters = []
 
 					for dimension in range(d):
-						values = [X[i,dimension] for i in range(N)]
-						values_min = min(values)
-						values_max = max(values)
+						values = X[:,dimension]
+						values_min = np.amin(values)
+						values_max = np.amax(values)
 
 						if (values_min - values_max) ** 2 < 0.01:
 							myParameters.append(Parameter(distribution='Uniform', lower=values_min-0.01, upper=values_max+0.01, order=self.order))
 						else: 
 							myParameters.append(Parameter(distribution='Uniform', lower=values_min, upper=values_max, order=self.order))
-					myBasis = Basis(self.basis)
+					if self.basis == "hyperbolic-basis":
+						myBasis = Basis(self.basis, orders=[self.order for _ in range(d)], q=0.5)
+					else:
+						myBasis = Basis(self.basis, orders=[self.order for _ in range(d)])
 					container["index_node_global"] += 1
-					poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X, 'sample-outputs':y})
+					poly = Poly(myParameters, myBasis, method=self.poly_method, sampling_args={'sample-points':X, 'sample-outputs':y}, solver_args=self.poly_solver_args)
 					poly.set_model()
 					
 					mse = np.linalg.norm(y - poly.get_polyfit(X).reshape(-1)) ** 2 / N
 				except Exception as e:
 					print("Warning fitting of Poly failed:", e)
+					print(d, values_min, values_max)
 					mse, poly = np.inf, None
 
 				return mse, poly
-
-			def _split_data(j_feature, threshold, X, y):
-				idx_left = np.where(X[:, j_feature] <= threshold)[0]
-				idx_right = np.delete(np.arange(0, len(X)), idx_left)
-				assert len(idx_left) + len(idx_right) == len(X)
-				return (X[idx_left], y[idx_left]), (X[idx_right], y[idx_right])
 					
 			def _create_node(X, y, depth, container):
 				poly_loss, poly = _fit_poly(X, y)
@@ -232,7 +268,7 @@ class PolyTree(object):
 
 				result = _splitter(node)
 				if not result["did_split"]:
-					self.log.append({"event": "UP"})
+					if self.logging:self.log.append({"event": "UP"})
 					return
 
 				node["j_feature"] = result["j_feature"]
@@ -249,12 +285,13 @@ class PolyTree(object):
 				node["children"]["right"]["poly"] = poly_right
 
 				# Split nodes	
-				self.log.append({"event": "DOWN", "data": {"direction": "LEFT", "j_feature": result["j_feature"], "threshold": result["threshold"]}})
+				if self.logging:self.log.append({"event": "DOWN", "data": {"direction": "LEFT", "j_feature": result["j_feature"], "threshold": result["threshold"]}})
 				_split_traverse_node(node["children"]["left"], container)
-				self.log.append({"event": "DOWN", "data": {"direction": "RIGHT", "j_feature": result["j_feature"], "threshold": result["threshold"]}})
+				if self.logging:self.log.append({"event": "DOWN", "data": {"direction": "RIGHT", "j_feature": result["j_feature"], "threshold": result["threshold"]}})
 				_split_traverse_node(node["children"]["right"], container)	
 				
-				self.log.append({"event": "UP"})
+				if self.logging:self.log.append({"event": "UP"})
+				
 			container = {"index_node_global": 0}
 			root = _create_node(X, y, 0, container)
 			_split_traverse_node(root, container)
@@ -262,11 +299,63 @@ class PolyTree(object):
 			return root
 
 		N, d = X.shape
-		cardinality = Basis(self.basis, orders=[self.order for _ in range(d)]).get_cardinality()
-		if cardinality > self.min_samples_leaf:
-			print("WARNING: Basis cardinality ({}) greater than the minimum samples per leaf ({}). This may cause reduced performance.".format(cardinality, self.min_samples_leaf))
+		if self.basis == "hyperbolic-basis":
+			self.cardinality = Basis(self.basis, orders=[self.order for _ in range(d)], q=0.5).get_cardinality()
+		else:
+			self.cardinality = Basis(self.basis, orders=[self.order for _ in range(d)]).get_cardinality()
+		if self.min_samples_leaf == None or self.min_samples_leaf == self.cardinality:
+			self.min_samples_leaf = int(np.ceil(self.cardinality * 1.25))
+		elif self.cardinality > self.min_samples_leaf:
+			print("WARNING: Basis cardinality ({}) greater than the minimum samples per leaf ({}). This may cause reduced performance.".format(self.cardinality, self.min_samples_leaf))
+
+		self.k *= self.min_samples_leaf 
 		self.tree = _build_tree()
-	
+
+	def prune(self, X, y):
+		"""
+		Prunes the tree that you have fitted.
+		
+		:param numpy.ndarray X:
+			Training input data
+		:param numpy.ndarray y:
+			Training output data
+		"""
+
+		def pruner(node, X_subset, y_subset):
+
+			if X_subset.shape[0] < 1:
+				node["test_loss"] = 0
+				node["n_samples"] = 0
+				return node
+
+			node["test_loss"] = np.linalg.norm(y_subset - node["poly"].get_polyfit(X_subset).reshape(-1)) ** 2 / X_subset.shape[0]
+
+			is_left = node["children"]["left"] != None
+			is_right = node["children"]["right"] != None
+
+			if is_left and is_right:
+				(X_left, y_left), (X_right, y_right) = self._split_data(node["j_feature"], node["threshold"], X_subset, y_subset)
+				
+				node["children"]["left"] = pruner(node["children"]["left"], X_left, y_left)
+				node["children"]["right"] = pruner(node["children"]["right"], X_right, y_right)
+				
+				lower_loss = ( node["children"]["left"]["test_loss"] * node["children"]["left"]["n_samples"] + node["children"]["right"]["test_loss"] * node["children"]["right"]["n_samples"] ) / ( node["children"]["left"]["n_samples"] + node["children"]["right"]["n_samples"] )
+
+				node["lower_loss"] = lower_loss
+
+				if lower_loss > node["test_loss"]:
+					print("prune",lower_loss, node["test_loss"], node["children"]["left"]["test_loss"], node["children"]["left"]["n_samples"], node["children"]["right"]["test_loss"], node["children"]["right"]["n_samples"])
+					node["children"]["left"] = None
+					node["children"]["right"] = None
+
+			return node
+
+		assert self.tree is not None, "Run fit() before prune()"
+		(X_left, y_left), (X_right, y_right) = self._split_data(self.tree["j_feature"], self.tree["threshold"], X, y)
+
+		self.tree["children"]["left"] = pruner(self.tree["children"]["left"], X_left, y_left)
+		self.tree["children"]["right"] = pruner(self.tree["children"]["right"], X_right, y_right)
+
 	def predict(self, X):
 		"""
 		Evaluates the the polynomial tree approximation of the data.
@@ -276,18 +365,22 @@ class PolyTree(object):
 		:return: **y**:
 			A numpy.ndarray of shape (1, number_of_observations) corresponding to the polynomial approximation of the tree.
 		"""
-		assert self.tree is not None
+
 		def _predict(node, x):
 			no_children = node["children"]["left"] is None and \
 						  node["children"]["right"] is None
+
+			y_pred_x = node["poly"].get_polyfit(np.array(x))[0]
+
 			if no_children:
-				y_pred_x = node["poly"].get_polyfit(np.array(x))[0]
-				return y_pred_x
-			else:
-				if x[node["j_feature"]] <= node["threshold"]:  # x[j] < threshold
-					return _predict(node["children"]["left"], x)
-				else:  # x[j] > threshold
-					return _predict(node["children"]["right"], x)
+				return y_pred_x 
+			else:			
+				if x[node["j_feature"]] <= node["threshold"]:
+					return ( _predict(node["children"]["left"], x) * node["n_samples"] + y_pred_x * self.k ) / ( self.k + node["n_samples"] )
+				else:
+					return ( _predict(node["children"]["right"], x) * node["n_samples"] + y_pred_x * self.k ) / ( self.k + node["n_samples"] )
+
+		assert self.tree is not None
 		y_pred = np.array([_predict(self.tree, np.array(x)) for x in X])
 		return y_pred
 
@@ -312,10 +405,13 @@ class PolyTree(object):
 			if node["children"]["left"] is None and node["children"]["right"] is None:
 				threshold_str = ""
 			else:
-				threshold_str = "{} <= {:.1f}\\n".format(feature_names[node['j_feature']], node["threshold"])
+				threshold_str = "{} <= {:.3f}\\n".format(feature_names[node['j_feature']], node["threshold"])
 			
-				label_str = "{} n_samples = {}\\n loss = {:.6f}".format(threshold_str, node["n_samples"], node["loss"])
-
+			try:
+				label_str = "{} n_samples = {}\\n loss = {:.6f}\\n lower_loss = {}".format(threshold_str, node["n_samples"], node["test_loss"], node["lower_loss"])
+			except:
+				label_str = "{} n_samples = {}\\n loss = {:.6f}".format(threshold_str, node["n_samples"], node["loss"])				
+			
 			# Create node
 			nodeshape = "rectangle"
 			bordercolor = "black"

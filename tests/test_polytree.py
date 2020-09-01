@@ -31,7 +31,7 @@ class Test_polytree(TestCase):
         tree.fit(X_train, y_train)
         _, _, exhaustive_r_value, _, _ = st.linregress(y_test, tree.predict(X_test).reshape(-1))
 
-        tree = polytree.PolyTree(search='uniform')
+        tree = polytree.PolyTree(search='grid')
         tree.fit(X_train, y_train)
         _, _, uniform_r_value, _, _ = st.linregress(y_test, tree.predict(X_test).reshape(-1))
         self.assertTrue(uniform_r_value ** 2 > 0.9)
@@ -55,7 +55,7 @@ class Test_polytree(TestCase):
         tree.fit(X_train, y_train)
         _, _, exhaustive_r_value, _, _ = st.linregress(y_test, tree.predict(X_test).reshape(-1))
 
-        tree = polytree.PolyTree(search='uniform')
+        tree = polytree.PolyTree(search='grid')
         tree.fit(X_train, y_train)
         _, _, uniform_r_value, _, _ = st.linregress(y_test, tree.predict(X_test).reshape(-1))
 
@@ -76,7 +76,7 @@ class Test_polytree(TestCase):
         X_train, X_test = X[:80], X[80:]
         y_train, y_test = y[:80], y[80:]        
 
-        tree = polytree.PolyTree(tree_type="m5p")
+        tree = polytree.PolyTree(splitting_criterion="model_agnostic")
         tree.fit(X_train, y_train)
         tree.prune(X_test,y_test)
         _, _, pruned_r_value, _, _ = st.linregress(y_test, tree.predict(X_test).reshape(-1))

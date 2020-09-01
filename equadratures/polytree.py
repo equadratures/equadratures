@@ -9,8 +9,8 @@ class PolyTree(object):
 	"""
     Definition of a polynomial tree object.
 	
-	:param str splitting_criterion:
-		The type of splitting_criterion to use in the fit function. Options include ``model_aware`` which includes a model-aware split criterion and ``model_agnostic`` which uses a standard deviation based model-agnostic split criterion and offers a substantial runtime improvement [1]
+    :param str splitting_criterion:
+	The type of splitting_criterion to use in the fit function. Options include ``model_aware`` which includes a model-aware split criterion and ``model_agnostic`` which uses a standard deviation based model-agnostic split criterion [1] and offers a substantial runtime improvement.
     :param int max_depth:
     	The maximum depth which the tree will grow to.
     :param int min_samples_leaf:
@@ -22,11 +22,11 @@ class PolyTree(object):
     :param str basis:
     	The type of index set used for the basis. Options include: ``univariate``, ``total-order``, ``tensor-grid``, ``sparse-grid`` and ``hyperbolic-basis``
     :param str search:
-    	The method of search to be used. Options include ``grid`` and ``exhaustive``
+    	The method of search to be used. Options are ``grid`` or ``exhaustive``.
     :param int samples:
-    	The interval between splits if ``grid`` search is chosen
+    	The interval between splits if ``grid`` search is chosen.
     :param bool logging:
-    	Actions saved to log
+    	Actions saved to log.
 	
     **Sample constructor initialisations**::
 
@@ -39,6 +39,9 @@ class PolyTree(object):
         y = np.loadtxt('outputs.txt')
         
         tree.fit(X,y)
+
+    **References**
+        1. Wang, Y., Witten, I. H., (1997) Inducing Model Trees for Continuous Classes. In Proc. of the 9th European Conf. on Machine Learning Poster Papers. 128-137. `Paper <https://researchcommons.waikato.ac.nz/handle/10289/1183>`__
 
     """
 	def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, k=0.5, order=3, basis='total-order', search='exhaustive', samples=50, logging=False, poly_method="least-squares", poly_solver_args=None):

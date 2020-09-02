@@ -25,8 +25,8 @@ class PolyTree(object):
     	The method of search to be used. Options include ``grid`` and ``exhaustive``
     :param int samples:
     	The interval between splits if ``grid`` search is chosen
-    :param bool logging:
-    	Actions saved to log
+    :param bool verbose:
+    	For debugging
 	
     **Sample constructor initialisations**::
 
@@ -41,7 +41,7 @@ class PolyTree(object):
         tree.fit(X,y)
 
     """
-	def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, k=0.5, order=3, basis='total-order', search='exhaustive', samples=50, logging=False, poly_method="least-squares", poly_solver_args=None):
+	def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, k=0.5, order=3, basis='total-order', search='exhaustive', samples=50, verbose=False, poly_method="least-squares", poly_solver_args=None):
 		self.splitting_criterion = splitting_criterion
 		self.max_depth = max_depth
 		self.min_samples_leaf = min_samples_leaf
@@ -51,8 +51,7 @@ class PolyTree(object):
 		self.tree = None
 		self.search = search
 		self.samples = samples
-		self.logging = logging
-		self.log = []
+		self.verbose = verbose
 		self.cardinality = None
 		self.poly_method = poly_method
 		self.poly_solver_args = poly_solver_args
@@ -146,6 +145,9 @@ class PolyTree(object):
 				j_feature_best = None
 				threshold_best = None
 
+				if self.verbose:
+					polys_fit = 0
+
 				# Perform threshold split search only if node has not hit max depth
 				if (depth >= 0) and (depth < self.max_depth):
 
@@ -183,12 +185,14 @@ class PolyTree(object):
 								loss_right, poly_right = _fit_poly(X_right, y_right)
 
 								loss_split = (N_left*loss_left + N_right*loss_right) / N
+
+								if self.verbose: polys_fit += 2
+
 							elif self.splitting_criterion == "model_agnostic":
 								loss_split = np.std(y) - (N_left*np.std(y_left) + N_right*np.std(y_right)) / N
 
 							# Update best parameters if loss is lower
 							if loss_split < loss_best:
-								if self.logging: self.log.append({'event': 'best_split', 'data': {'j_feature':j_feature, 'threshold':threshold, 'loss': loss_split, 'poly_left': poly_left, 'poly_right': poly_right}})
 								did_split = True
 								loss_best = loss_split
 								if self.splitting_criterion == "model_aware": polys_best = [poly_left, poly_right]
@@ -196,8 +200,7 @@ class PolyTree(object):
 								j_feature_best = j_feature
 								threshold_best = threshold
 	
-							elif self.logging: self.log.append({'event': 'try_split', 'data': {'j_feature':j_feature, 'threshold':threshold, 'loss': loss_split, 'poly_left': poly_left, 'poly_right': poly_right}})
-				
+						
 				if self.splitting_criterion == "model_agnostic" and did_split:
 					(X_left, y_left), (X_right, y_right) = self._split_data(j_feature_best, threshold_best, X, y)
 					loss_left, poly_left = _fit_poly(X_left, y_left)
@@ -205,6 +208,11 @@ class PolyTree(object):
 					loss_best = (N_left*loss_left + N_right*loss_right) / N
 					polys_best = [poly_left, poly_right]
 
+					if self.verbose: polys_fit += 2
+
+				if self.verbose and did_split: print("Node (X.shape = {}) fitted with {} polynomials generated".format(X.shape, polys_fit))
+				elif self.verbose: print("Node (X.shape = {}) failed to fit after {} polynomials generated".format(X.shape, polys_fit))
+				
 				# Return the best result
 				result = {"did_split": did_split,
 						  "loss": loss_best,
@@ -268,7 +276,6 @@ class PolyTree(object):
 
 				result = _splitter(node)
 				if not result["did_split"]:
-					if self.logging:self.log.append({"event": "UP"})
 					return
 
 				node["j_feature"] = result["j_feature"]
@@ -285,12 +292,8 @@ class PolyTree(object):
 				node["children"]["right"]["poly"] = poly_right
 
 				# Split nodes	
-				if self.logging:self.log.append({"event": "DOWN", "data": {"direction": "LEFT", "j_feature": result["j_feature"], "threshold": result["threshold"]}})
 				_split_traverse_node(node["children"]["left"], container)
-				if self.logging:self.log.append({"event": "DOWN", "data": {"direction": "RIGHT", "j_feature": result["j_feature"], "threshold": result["threshold"]}})
 				_split_traverse_node(node["children"]["right"], container)	
-				
-				if self.logging:self.log.append({"event": "UP"})
 				
 			container = {"index_node_global": 0}
 			root = _create_node(X, y, 0, container)
@@ -370,10 +373,11 @@ class PolyTree(object):
 			no_children = node["children"]["left"] is None and \
 						  node["children"]["right"] is None
 
-			y_pred_x = node["poly"].get_polyfit(np.array(x))[0]
+			if self.k > 0: y_pred_x = node["poly"].get_polyfit(np.array(x))[0]
+			else: y_pred_x = 0
 
 			if no_children:
-				return y_pred_x 
+				return node["poly"].get_polyfit(np.array(x))[0]
 			else:			
 				if x[node["j_feature"]] <= node["threshold"]:
 					return ( _predict(node["children"]["left"], x) * node["n_samples"] + y_pred_x * self.k ) / ( self.k + node["n_samples"] )

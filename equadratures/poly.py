@@ -409,23 +409,23 @@ class Poly(object):
             if y.shape[1] != 1:
                 raise ValueError( 'model values should be a column vector.')
             self._model_evaluations = y
-            if self.gradient_flag == 1:
-                if (model_grads is None) and (self.gradients is not None):
-                    grad_values = self.gradients
+        if self.gradient_flag == 1:
+            if (model_grads is None) and (self.gradients is not None):
+                grad_values = self.gradients
+            else:
+                if callable(model_grads):
+                    grad_values = evaluate_model_gradients(self._quadrature_points, model_grads, 'matrix')
                 else:
-                    if callable(model_grads):
-                        grad_values = evaluate_model_gradients(self._quadrature_points, model_grads, 'matrix')
-                    else:
-                        grad_values = model_grads
-                p, q = grad_values.shape
-                self._gradient_evaluations = np.zeros((p*q,1))
-                W = np.diag(np.sqrt(self._quadrature_weights))
-                counter = 0
-                for j in range(0,q):
-                    for i in range(0,p):
-                        self._gradient_evaluations[counter] = W[i,i] * grad_values[i,j]
-                        counter = counter + 1
-                del grad_values
+                    grad_values = model_grads
+            p, q = grad_values.shape
+            self._gradient_evaluations = np.zeros((p*q,1))
+            W = np.diag(np.sqrt(self._quadrature_weights))
+            counter = 0
+            for j in range(0,q):
+                for i in range(0,p):
+                    self._gradient_evaluations[counter] = W[i,i] * grad_values[i,j]
+                    counter = counter + 1
+            del grad_values
         self.statistics_object = None
         self._set_coefficients()
     def _set_coefficients(self, user_defined_coefficients=None):
@@ -816,7 +816,7 @@ class Poly(object):
         return H
     def get_polyscore(self,X_test=None,y_test=None,metric='adjusted_r2'):
         """
-        Evaluates the accuracy of the polynomial approximation using the selected accuracy metric. Training accuracy is evaluated on the data used for fitting the polynomial. Testing accuracy is evaluated on new data if it is provided by the ``X_test`` and ``y_test`` arguments (both must be provided together). 
+        Evaluates the accuracy of the polynomial approximation using the selected accuracy metric. Training accuracy is evaluated on the data used for fitting the polynomial. Testing accuracy is evaluated on new data if it is provided by the ``X_test`` and ``y_test`` arguments (both must be provided together).
 
         :param Poly self:
             An instance of the Poly class.
@@ -825,7 +825,7 @@ class Poly(object):
         :param numpy.ndarray y_test:
             An ndarray with shape (number_of_observations, 1) containing new ``y_test`` data (optional).
         :param string metric:
-            An optional string containing the scoring metric to use. Avaliable options are: ``adjusted_r2``, ``r2``, ``mae``, ``rmse``, or ``normalised_mae`` (default: ``adjusted_r2``). 
+            An optional string containing the scoring metric to use. Avaliable options are: ``adjusted_r2``, ``r2``, ``mae``, ``rmse``, or ``normalised_mae`` (default: ``adjusted_r2``).
 
         :return:
             **score_train**: The training score of the model, output as a float.
@@ -871,7 +871,7 @@ class Poly(object):
         Sigma = np.diag(data_variance)
 
         # Construct Q, the pseudoinverse of the weighted orthogonal polynomial matrix P
- 
+
         P = self.get_poly(self._quadrature_points)
         W = np.diag(np.sqrt(self._quadrature_weights))
         A = np.dot(W, P.T)
@@ -884,7 +884,7 @@ class Poly(object):
 
         # Propagate the uncertainties
         Sigma_X = np.dot( np.dot(Q, Sigma), Q.T)
-        Sigma_F = np.dot( np.dot(Ao, Sigma_X), Ao.T) 
+        Sigma_F = np.dot( np.dot(Ao, Sigma_X), Ao.T)
         std_F = 1.96 * np.sqrt( np.diag(Sigma_F) )
         return std_F.reshape(-1,1)
 

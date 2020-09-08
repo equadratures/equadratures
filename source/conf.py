@@ -31,7 +31,7 @@ outdir = sys.argv[-1]   #Bryn: Assuming last system argument is output directory
 # The short X.Y version
 version = u'9.0'
 # The full version, including alpha/beta/rc tags
-release = u'v9.0'
+release = u'v9.0.1'
 
 
 # -- General configuration ---------------------------------------------------

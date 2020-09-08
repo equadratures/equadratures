@@ -25,8 +25,8 @@ class PolyTree(object):
     	The method of search to be used. Options are ``grid`` or ``exhaustive``.
     :param int samples:
     	The interval between splits if ``grid`` search is chosen.
-    :param bool logging:
-    	Actions saved to log.
+    :param bool verbose:
+    	For debugging
 	
     **Sample constructor initialisations**::
 
@@ -44,7 +44,7 @@ class PolyTree(object):
         1. Wang, Y., Witten, I. H., (1997) Inducing Model Trees for Continuous Classes. In Proc. of the 9th European Conf. on Machine Learning Poster Papers. 128-137. `Paper <https://researchcommons.waikato.ac.nz/handle/10289/1183>`__
 
     """
-	def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, k=0.5, order=3, basis='total-order', search='exhaustive', samples=50, logging=False, poly_method="least-squares", poly_solver_args=None):
+	def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, k=0.5, order=3, basis='total-order', search='exhaustive', samples=50, verbose=False, poly_method="least-squares", poly_solver_args=None):
 		self.splitting_criterion = splitting_criterion
 		self.max_depth = max_depth
 		self.min_samples_leaf = min_samples_leaf
@@ -54,11 +54,11 @@ class PolyTree(object):
 		self.tree = None
 		self.search = search
 		self.samples = samples
-		self.logging = logging
-		self.log = []
+		self.verbose = verbose
 		self.cardinality = None
 		self.poly_method = poly_method
 		self.poly_solver_args = poly_solver_args
+		self.actual_max_depth = 0
 
 		assert max_depth > 0, "max_depth must be a postive integer"
 		assert 0 <= k, "k must be more than 0"
@@ -149,6 +149,9 @@ class PolyTree(object):
 				j_feature_best = None
 				threshold_best = None
 
+				if self.verbose:
+					polys_fit = 0
+
 				# Perform threshold split search only if node has not hit max depth
 				if (depth >= 0) and (depth < self.max_depth):
 
@@ -167,7 +170,6 @@ class PolyTree(object):
 						else:
 							raise Exception('Incorrect search type! Must be \'exhaustive\' or \'grid\'')
 
-						
 						# Perform threshold split search on j_feature
 						for threshold in np.unique(np.sort(threshold_search)):
 
@@ -186,12 +188,14 @@ class PolyTree(object):
 								loss_right, poly_right = _fit_poly(X_right, y_right)
 
 								loss_split = (N_left*loss_left + N_right*loss_right) / N
+
+								if self.verbose: polys_fit += 2
+
 							elif self.splitting_criterion == "model_agnostic":
 								loss_split = np.std(y) - (N_left*np.std(y_left) + N_right*np.std(y_right)) / N
 
 							# Update best parameters if loss is lower
 							if loss_split < loss_best:
-								if self.logging: self.log.append({'event': 'best_split', 'data': {'j_feature':j_feature, 'threshold':threshold, 'loss': loss_split, 'poly_left': poly_left, 'poly_right': poly_right}})
 								did_split = True
 								loss_best = loss_split
 								if self.splitting_criterion == "model_aware": polys_best = [poly_left, poly_right]
@@ -199,14 +203,21 @@ class PolyTree(object):
 								j_feature_best = j_feature
 								threshold_best = threshold
 	
-							elif self.logging: self.log.append({'event': 'try_split', 'data': {'j_feature':j_feature, 'threshold':threshold, 'loss': loss_split, 'poly_left': poly_left, 'poly_right': poly_right}})
-				
+						
 				if self.splitting_criterion == "model_agnostic" and did_split:
 					(X_left, y_left), (X_right, y_right) = self._split_data(j_feature_best, threshold_best, X, y)
 					loss_left, poly_left = _fit_poly(X_left, y_left)
 					loss_right, poly_right = _fit_poly(X_right, y_right)
 					loss_best = (N_left*loss_left + N_right*loss_right) / N
 					polys_best = [poly_left, poly_right]
+
+					if self.verbose: polys_fit += 2
+
+				if self.verbose and did_split: print("Node (X.shape = {}) fitted with {} polynomials generated".format(X.shape, polys_fit))
+				elif self.verbose: print("Node (X.shape = {}) failed to fit after {} polynomials generated".format(X.shape, polys_fit))
+				
+				if did_split and depth > self.actual_max_depth:
+					self.actual_max_depth = depth
 
 				# Return the best result
 				result = {"did_split": did_split,
@@ -271,7 +282,6 @@ class PolyTree(object):
 
 				result = _splitter(node)
 				if not result["did_split"]:
-					if self.logging:self.log.append({"event": "UP"})
 					return
 
 				node["j_feature"] = result["j_feature"]
@@ -288,12 +298,8 @@ class PolyTree(object):
 				node["children"]["right"]["poly"] = poly_right
 
 				# Split nodes	
-				if self.logging:self.log.append({"event": "DOWN", "data": {"direction": "LEFT", "j_feature": result["j_feature"], "threshold": result["threshold"]}})
 				_split_traverse_node(node["children"]["left"], container)
-				if self.logging:self.log.append({"event": "DOWN", "data": {"direction": "RIGHT", "j_feature": result["j_feature"], "threshold": result["threshold"]}})
 				_split_traverse_node(node["children"]["right"], container)	
-				
-				if self.logging:self.log.append({"event": "UP"})
 				
 			container = {"index_node_global": 0}
 			root = _create_node(X, y, 0, container)
@@ -369,23 +375,63 @@ class PolyTree(object):
 			A numpy.ndarray of shape (1, number_of_observations) corresponding to the polynomial approximation of the tree.
 		"""
 
-		def _predict(node, x):
+		def _predict(node, indexes):
+
+			y_pred[indexes, node["depth"], 0] = node["poly"].get_polyfit(X[indexes]).reshape(-1)
+			y_pred[indexes, node["depth"], 1] = np.full(fill_value=node["n_samples"], shape=len(indexes))
+			
 			no_children = node["children"]["left"] is None and \
 						  node["children"]["right"] is None
+			if no_children: return
 
-			y_pred_x = node["poly"].get_polyfit(np.array(x))[0]
+			idx_left = np.where(X[indexes, node["j_feature"]] <= node["threshold"])[0]
+			idx_right = np.where(X[indexes, node["j_feature"]] > node["threshold"])[0]
 
-			if no_children:
-				return y_pred_x 
-			else:			
-				if x[node["j_feature"]] <= node["threshold"]:
-					return ( _predict(node["children"]["left"], x) * node["n_samples"] + y_pred_x * self.k ) / ( self.k + node["n_samples"] )
-				else:
-					return ( _predict(node["children"]["right"], x) * node["n_samples"] + y_pred_x * self.k ) / ( self.k + node["n_samples"] )
+			_predict(node["children"]["left"], indexes[idx_left])
+			_predict(node["children"]["right"], indexes[idx_right])
 
 		assert self.tree is not None
-		y_pred = np.array([_predict(self.tree, np.array(x)) for x in X])
-		return y_pred
+		y_pred = np.zeros(shape=(X.shape[0], self.actual_max_depth + 2, 3))
+		_predict(self.tree, np.arange(0, X.shape[0]))
+
+		unseen_idx = np.full(fill_value=True, shape=X.shape[0])
+
+		for i in reversed(range(self.actual_max_depth + 2)):
+
+			idx1 = np.where(unseen_idx)[0]
+			idx2 = np.where(y_pred[:,i,1] != 0)[0]
+
+			p1, p2 = 0, 0
+			idx = []
+			while p1 < idx1.shape[0] and p2 < idx2.shape[0]:
+				if idx1[p1] == idx2[p2]:
+					idx.append(idx1[p1])
+					p1 += 1
+					p2 += 1
+				elif idx1[p1] > idx2[p2]:
+					p2 += 1
+				else:
+					p1 += 1
+
+			if idx == []:
+				break
+			idx = np.array(idx)
+
+			y_pred[idx,i,2] = y_pred[idx,i,0]
+
+			for j in reversed(range(i)):
+				y_pred[idx,j,2] = ( y_pred[idx,j,0] * self.k + y_pred[idx,j+1,2] * y_pred[idx,j,1]) / (self.k + y_pred[idx,j,1])
+
+			unseen_idx[idx] = False
+			print(unseen_idx)
+
+		#y_pred[:,-1,2] = y_pred[:,-1,0]
+		
+		#for i in reversed(range(self.actual_max_depth -1)):
+		#	n = y_pred[:,i,1]
+		#	y_pred[:,i,2] = ( self.k * y_pred[:,i,0] + n * y_pred[:,i+1,2] ) / (self.k + n)
+
+		return y_pred[:,0,2]
 
 	def get_graphviz(self, feature_names, file_name):
 		"""

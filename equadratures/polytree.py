@@ -55,6 +55,7 @@ class PolyTree(object):
 		self.cardinality = None
 		self.poly_method = poly_method
 		self.poly_solver_args = poly_solver_args
+		self.actual_max_depth = 0
 
 		assert max_depth > 0, "max_depth must be a postive integer"
 		assert 0 <= k, "k must be more than 0"
@@ -166,7 +167,6 @@ class PolyTree(object):
 						else:
 							raise Exception('Incorrect search type! Must be \'exhaustive\' or \'grid\'')
 
-						
 						# Perform threshold split search on j_feature
 						for threshold in np.unique(np.sort(threshold_search)):
 
@@ -213,6 +213,9 @@ class PolyTree(object):
 				if self.verbose and did_split: print("Node (X.shape = {}) fitted with {} polynomials generated".format(X.shape, polys_fit))
 				elif self.verbose: print("Node (X.shape = {}) failed to fit after {} polynomials generated".format(X.shape, polys_fit))
 				
+				if did_split and depth > self.actual_max_depth:
+					self.actual_max_depth = depth
+
 				# Return the best result
 				result = {"did_split": did_split,
 						  "loss": loss_best,
@@ -369,24 +372,63 @@ class PolyTree(object):
 			A numpy.ndarray of shape (1, number_of_observations) corresponding to the polynomial approximation of the tree.
 		"""
 
-		def _predict(node, x):
+		def _predict(node, indexes):
+
+			y_pred[indexes, node["depth"], 0] = node["poly"].get_polyfit(X[indexes]).reshape(-1)
+			y_pred[indexes, node["depth"], 1] = np.full(fill_value=node["n_samples"], shape=len(indexes))
+			
 			no_children = node["children"]["left"] is None and \
 						  node["children"]["right"] is None
+			if no_children: return
 
-			if self.k > 0: y_pred_x = node["poly"].get_polyfit(np.array(x))[0]
-			else: y_pred_x = 0
+			idx_left = np.where(X[indexes, node["j_feature"]] <= node["threshold"])[0]
+			idx_right = np.where(X[indexes, node["j_feature"]] > node["threshold"])[0]
 
-			if no_children:
-				return node["poly"].get_polyfit(np.array(x))[0]
-			else:			
-				if x[node["j_feature"]] <= node["threshold"]:
-					return ( _predict(node["children"]["left"], x) * node["n_samples"] + y_pred_x * self.k ) / ( self.k + node["n_samples"] )
-				else:
-					return ( _predict(node["children"]["right"], x) * node["n_samples"] + y_pred_x * self.k ) / ( self.k + node["n_samples"] )
+			_predict(node["children"]["left"], indexes[idx_left])
+			_predict(node["children"]["right"], indexes[idx_right])
 
 		assert self.tree is not None
-		y_pred = np.array([_predict(self.tree, np.array(x)) for x in X])
-		return y_pred
+		y_pred = np.zeros(shape=(X.shape[0], self.actual_max_depth + 2, 3))
+		_predict(self.tree, np.arange(0, X.shape[0]))
+
+		unseen_idx = np.full(fill_value=True, shape=X.shape[0])
+
+		for i in reversed(range(self.actual_max_depth + 2)):
+
+			idx1 = np.where(unseen_idx)[0]
+			idx2 = np.where(y_pred[:,i,1] != 0)[0]
+
+			p1, p2 = 0, 0
+			idx = []
+			while p1 < idx1.shape[0] and p2 < idx2.shape[0]:
+				if idx1[p1] == idx2[p2]:
+					idx.append(idx1[p1])
+					p1 += 1
+					p2 += 1
+				elif idx1[p1] > idx2[p2]:
+					p2 += 1
+				else:
+					p1 += 1
+
+			if idx == []:
+				break
+			idx = np.array(idx)
+
+			y_pred[idx,i,2] = y_pred[idx,i,0]
+
+			for j in reversed(range(i)):
+				y_pred[idx,j,2] = ( y_pred[idx,j,0] * self.k + y_pred[idx,j+1,2] * y_pred[idx,j,1]) / (self.k + y_pred[idx,j,1])
+
+			unseen_idx[idx] = False
+			print(unseen_idx)
+
+		#y_pred[:,-1,2] = y_pred[:,-1,0]
+		
+		#for i in reversed(range(self.actual_max_depth -1)):
+		#	n = y_pred[:,i,1]
+		#	y_pred[:,i,2] = ( self.k * y_pred[:,i,0] + n * y_pred[:,i+1,2] ) / (self.k + n)
+
+		return y_pred[:,0,2]
 
 	def get_graphviz(self, feature_names, file_name):
 		"""

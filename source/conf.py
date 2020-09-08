@@ -13,8 +13,8 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
+import os
+import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
 # -- Project information -----------------------------------------------------
@@ -23,10 +23,15 @@ project = u' '
 copyright = u'2016-2020 by Effective Quadratures'
 author = u'Pranay Seshadri, Nicholas Wong, James Gross, Irene Vidris, Joe Zhou, Ashley Scillitoe'
 
+# -- Bryn: Main Vuepress website location ------------------------------------
+land_page = "https://www.effective-quadratures.org/"
+outdir = sys.argv[-1]   #Bryn: Assuming last system argument is output directory
+#Compile command: "sphinx-build -b html source/ ../effective-quadratures.github.io/"
+
 # The short X.Y version
 version = u'9.0'
 # The full version, including alpha/beta/rc tags
-release = u'v9.0'
+release = u'v9.0.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -64,9 +69,12 @@ master_doc = '_documentation/index'
 #html_theme = "sphinx_rtd_theme"
 #html_theme_path = ["_themes", ]
 
-html_theme = 'press'
-html_logo = 'logo_white_font.png'
-html_favicon = 'logo.png'
+html_theme = 'eq_press'
+html_logo = 'logo-5-black-text-lowres.png'
+html_favicon = 'eq-logo-favicon.png'
+
+def setup(app):
+    app.add_stylesheet('styles.css')
 #html_theme_options = {
 #    'style_nav_header_background': 'grey',
 #}
@@ -99,7 +107,7 @@ exclude_patterns = [u'_docsbuild', 'Thumbs.db', '.DS_Store']
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['']
+html_static_path = ['_static']
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -182,13 +190,6 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 #todo_include_todos = True
 
 html_theme_options = {
-    # Navigation bar title. (Default: ``project`` value)
-    'navbar_title': "",
-
-    # Tab name for entire site. (Default: "Site")
-    'navbar_site_name': "Explore",
-    "rightsidebar": "true",
-    "relbarbgcolor": "black",
     # A list of tuples containing pages or urls to link to.
     # Valid tuples should be in the following forms:
     #    (name, page)                 # a link to a page
@@ -196,59 +197,29 @@ html_theme_options = {
     #    (name, "http://example.com", True) # arbitrary absolute url
     # Note the "1" or "True" value above as the third argument to indicate
     # an arbitrary url.
-    'navbar_links': [
-                     #("Examples", "examples"),
-                     ],
 
-                     # Render the next and previous page links in navbar. (Default: true)
-                     'navbar_sidebarrel': False,
+#Meant for my custom "eq_press" theme
+    'landing_page': land_page,
 
-                     # Render the current pages TOC in the navbar. (Default: true)
-                     'navbar_pagenav': False,
+    'custom_links': [
+                            ('Equadratures', '/equadratures/'),
+                            ('Eintegrator', '/eintegrator/'),
+                            ('Documentation', '/docs/_documentation/'),
+                            ('Workshops', '/workshops/'),
+                            ('About Us', '/about-us/'),
+                        ],
 
-                     # Tab name for the current pages TOC. (Default: "Page")
-                     #'navbar_pagenav_name': "Page",
+    'external_links': [
+                            ('Discourse', 'https://discourse.effective-quadratures.org/'),
+                            ('Github', 'https://github.com/Effective-Quadratures')
+                        ],
 
-                     # Global TOC depth for "site" navbar tab. (Default: 1)
-                     # Switching to -1 shows all levels.
-                     'globaltoc_depth': -1,
-
-                     # Include hidden TOCs in Site navbar?
-                     #
-                     # Note: If this is "false", you cannot have mixed ``:hidden:`` and
-                     # non-hidden ``toctree`` directives in the same page, or else the build
-                     # will break.
-                     #
-                     # Values: "true" (default) or "false"
-                     'globaltoc_includehidden': "true",
-
-                     # HTML navbar class (Default: "navbar") to attach to <div> element.
-                     # For black navbar, do "navbar navbar-inverse"
-                     'navbar_class': "navbar",
-
-                     # Fix navigation bar to top of page?
-                     # Values: "true" (default) or "false"
-                     'navbar_fixed_top': "true",
-
-                     # Location of link to source.
-                     # Options are "nav" (default), "footer" or anything else to exclude.
-                     'source_link_position': "none",
-
-                     # Bootswatch (http://bootswatch.com/) theme.
-                     #
-                     # Options are nothing (default) or the name of a valid theme
-                     # such as "cosmo" or "sandstone".
-                     #
-                     # The set of valid themes depend on the version of Bootstrap
-                     # that's used (the next config option).
-                     #
-                     # Currently, the supported themes are:
-                     # - Bootstrap 2: https://bootswatch.com/2
-                     # - Bootstrap 3: https://bootswatch.com/3
-                     'bootswatch_theme': "united",
-                     'page_toc_position': 'sidebar-left',
-
-                     # Choose Bootstrap version.
-                     # Values: "3" (default) or "2" (in quotes)
-    'bootstrap_version': "3",
+    # Include hidden TOCs in Site navbar?
+    #
+    # Note: If this is "false", you cannot have mixed ``:hidden:`` and
+    # non-hidden ``toctree`` directives in the same page, or else the build
+    # will break.
+    #
+    # Values: "true" (default) or "false"
+    'globaltoc_includehidden': "true",
 }

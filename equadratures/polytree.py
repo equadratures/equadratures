@@ -208,6 +208,9 @@ class PolyTree(object):
 					(X_left, y_left), (X_right, y_right) = self._split_data(j_feature_best, threshold_best, X, y)
 					loss_left, poly_left = _fit_poly(X_left, y_left)
 					loss_right, poly_right = _fit_poly(X_right, y_right)
+
+					N_left, N_right = len(X_left), len(X_right)
+					
 					loss_best = (N_left*loss_left + N_right*loss_right) / N
 					polys_best = [poly_left, poly_right]
 
@@ -353,7 +356,7 @@ class PolyTree(object):
 				node["lower_loss"] = lower_loss
 
 				if lower_loss > node["test_loss"]:
-					print("prune",lower_loss, node["test_loss"], node["children"]["left"]["test_loss"], node["children"]["left"]["n_samples"], node["children"]["right"]["test_loss"], node["children"]["right"]["n_samples"])
+					if self.verbose: print("prune",lower_loss, node["test_loss"], node["children"]["left"]["test_loss"], node["children"]["left"]["n_samples"], node["children"]["right"]["test_loss"], node["children"]["right"]["n_samples"])
 					node["children"]["left"] = None
 					node["children"]["right"] = None
 
@@ -377,12 +380,11 @@ class PolyTree(object):
 
 		def _predict(node, indexes):
 
-			y_pred[indexes, node["depth"], 0] = node["poly"].get_polyfit(X[indexes]).reshape(-1)
-			y_pred[indexes, node["depth"], 1] = np.full(fill_value=node["n_samples"], shape=len(indexes))
-			
 			no_children = node["children"]["left"] is None and \
 						  node["children"]["right"] is None
-			if no_children: return
+			if no_children:
+				y_pred[indexes] = node["poly"].get_polyfit(X[indexes]).reshape(-1)
+				return
 
 			idx_left = np.where(X[indexes, node["j_feature"]] <= node["threshold"])[0]
 			idx_right = np.where(X[indexes, node["j_feature"]] > node["threshold"])[0]
@@ -391,47 +393,10 @@ class PolyTree(object):
 			_predict(node["children"]["right"], indexes[idx_right])
 
 		assert self.tree is not None
-		y_pred = np.zeros(shape=(X.shape[0], self.actual_max_depth + 2, 3))
+		y_pred = np.zeros(shape=X.shape[0])
 		_predict(self.tree, np.arange(0, X.shape[0]))
 
-		unseen_idx = np.full(fill_value=True, shape=X.shape[0])
-
-		for i in reversed(range(self.actual_max_depth + 2)):
-
-			idx1 = np.where(unseen_idx)[0]
-			idx2 = np.where(y_pred[:,i,1] != 0)[0]
-
-			p1, p2 = 0, 0
-			idx = []
-			while p1 < idx1.shape[0] and p2 < idx2.shape[0]:
-				if idx1[p1] == idx2[p2]:
-					idx.append(idx1[p1])
-					p1 += 1
-					p2 += 1
-				elif idx1[p1] > idx2[p2]:
-					p2 += 1
-				else:
-					p1 += 1
-
-			if idx == []:
-				break
-			idx = np.array(idx)
-
-			y_pred[idx,i,2] = y_pred[idx,i,0]
-
-			for j in reversed(range(i)):
-				y_pred[idx,j,2] = ( y_pred[idx,j,0] * self.k + y_pred[idx,j+1,2] * y_pred[idx,j,1]) / (self.k + y_pred[idx,j,1])
-
-			unseen_idx[idx] = False
-			print(unseen_idx)
-
-		#y_pred[:,-1,2] = y_pred[:,-1,0]
-		
-		#for i in reversed(range(self.actual_max_depth -1)):
-		#	n = y_pred[:,i,1]
-		#	y_pred[:,i,2] = ( self.k * y_pred[:,i,0] + n * y_pred[:,i+1,2] ) / (self.k + n)
-
-		return y_pred[:,0,2]
+		return y_pred.reshape(-1)
 
 	def get_graphviz(self, feature_names, file_name):
 		"""

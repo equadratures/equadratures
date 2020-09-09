@@ -10,13 +10,11 @@ class PolyTree(object):
     Definition of a polynomial tree object.
         
     :param str splitting_criterion:
-        The type of splitting_criterion to use in the fit function. Options include ``model_aware`` which includes a model-aware split criterion and ``model_agnostic`` which uses a standard deviation based model-agnostic split criterion [1] and offers a substantial runtime improvement.
+                The type of splitting_criterion to use in the fit function. Options include ``model_aware`` which fits polynomials for each candidate split, ``model_agnostic`` which uses a standard deviation based model-agnostic split criterion [1], and ``loss_gradient`` which uses a gradient based splitting criterion similar to that in [2]. 
     :param int max_depth:
         The maximum depth which the tree will grow to.
     :param int min_samples_leaf:
         The minimum number of samples per leaf node.
-    :param int k:
-        Determines the amount of smoothing to be done by ``predict()``. Can be in the range of [0, inf), a value of 0 disabling smoothing.
     :param int order:
         The order of the generated orthogonal polynomials.
     :param str basis:
@@ -42,13 +40,13 @@ class PolyTree(object):
 
     **References**
         1. Wang, Y., Witten, I. H., (1997) Inducing Model Trees for Continuous Classes. In Proc. of the 9th European Conf. on Machine Learning Poster Papers. 128-137. `Paper <https://researchcommons.waikato.ac.nz/handle/10289/1183>`__
-
+        2. Broelemann, K., Kasneci, G., (2019) A Gradient-Based Split Criterion for Highly Accurate and Transparent Model Trees. In Int. Joint Conf. on Artificial Intelligence (IJCAI). 2030-2037. `Paper <https://www.ijcai.org/Proceedings/2019/0281.pdf>`__
+        3. Chan, T. F., Golub, G. H., LeVeque, R. J., (1983) Algorithms for computing the sample variance: Analysis and recommendations. The American Statistician. 37(3): 242–247. `Paper <https://www.tandfonline.com/doi/abs/10.1080/00031305.1983.10483115>`__
     """
-        def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, k=0.5, order=3, basis='total-order', search='exhaustive', samples=50, verbose=False, poly_method="least-squares", poly_solver_args=None):
+        def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, order=1, basis='total-order', search='exhaustive', samples=50, verbose=False, poly_method="least-squares", poly_solver_args=None):
                 self.splitting_criterion = splitting_criterion
                 self.max_depth = max_depth
                 self.min_samples_leaf = min_samples_leaf
-                self.k = k
                 self.order = order
                 self.basis = basis
                 self.tree = None
@@ -61,7 +59,6 @@ class PolyTree(object):
                 self.actual_max_depth = 0
 
                 assert max_depth > 0, "max_depth must be a postive integer"
-                assert 0 <= k, "k must be more than 0"
                 assert order > 0, "order must be a postive integer" 
                 assert samples > 0, "samples must be a postive integer"
 
@@ -140,7 +137,7 @@ class PolyTree(object):
                                 did_split = False
                                 if self.splitting_criterion == "model_aware":
                                         loss_best = node["loss"]
-                                elif self.splitting_criterion == "model_agnostic":
+                                elif self.splitting_criterion == "model_agnostic" or self.splitting_criterion=="loss_gradient":
                                         loss_best = np.inf
                                 else:
                                         raise Exception("invalid splitting_criterion")
@@ -154,65 +151,73 @@ class PolyTree(object):
 
                                 # Perform threshold split search only if node has not hit max depth
                                 if (depth >= 0) and (depth < self.max_depth):
+                                        if self.splitting_criterion != "loss_gradient":
 
-                                        for j_feature in range(d):
+                                                for j_feature in range(d):
 
-                                                last_threshold = np.inf
+                                                        last_threshold = np.inf
 
-                                                if self.search == 'exhaustive':
-                                                        threshold_search = X[:, j_feature]
-                                                elif self.search == 'grid':
-                                                        if self.samples > N:
-                                                                samples = N
+                                                        if self.search == 'exhaustive':
+                                                                threshold_search = X[:, j_feature]
+                                                        elif self.search == 'grid':
+                                                                if self.samples > N:
+                                                                        samples = N
+                                                                else:
+                                                                        samples = self.samples
+                                                                threshold_search = np.linspace(np.min(X[:,j_feature]), np.max(X[:,j_feature]), num=samples)
                                                         else:
-                                                                samples = self.samples
-                                                        threshold_search = np.linspace(np.min(X[:,j_feature]), np.max(X[:,j_feature]), num=samples)
-                                                else:
-                                                        raise Exception('Incorrect search type! Must be \'exhaustive\' or \'grid\'')
+                                                                raise Exception('Incorrect search type! Must be \'exhaustive\' or \'grid\'')
 
-                                                # Perform threshold split search on j_feature
-                                                for threshold in np.unique(np.sort(threshold_search)):
+                                                        # Perform threshold split search on j_feature
+                                                        for threshold in np.unique(np.sort(threshold_search)):
 
-                                                        # Split data based on threshold
-                                                        (X_left, y_left), (X_right, y_right) = self._split_data(j_feature, threshold, X, y)
-                                                        #print(j_feature, threshold, X_left, X_right)
-                                                        N_left, N_right = len(X_left), len(X_right)
+                                                                # Split data based on threshold
+                                                                (X_left, y_left), (X_right, y_right) = self._split_data(j_feature, threshold, X, y)
+                                                                #print(j_feature, threshold, X_left, X_right)
+                                                                N_left, N_right = len(X_left), len(X_right)
 
-                                                        # Do not attempt to split if split conditions not satisfied
-                                                        if not (N_left >= self.min_samples_leaf and N_right >= self.min_samples_leaf):
-                                                                continue
+                                                                # Do not attempt to split if split conditions not satisfied
+                                                                if not (N_left >= self.min_samples_leaf and N_right >= self.min_samples_leaf):
+                                                                        continue
 
-                                                        # Compute weight loss function
-                                                        if self.splitting_criterion == "model_aware":
-                                                                loss_left, poly_left = _fit_poly(X_left, y_left)
-                                                                loss_right, poly_right = _fit_poly(X_right, y_right)
+                                                                # Compute weight loss function
+                                                                if self.splitting_criterion == "model_aware":
+                                                                        loss_left, poly_left = _fit_poly(X_left, y_left)
+                                                                        loss_right, poly_right = _fit_poly(X_right, y_right)
 
-                                                                loss_split = (N_left*loss_left + N_right*loss_right) / N
+                                                                        loss_split = (N_left*loss_left + N_right*loss_right) / N
 
-                                                                if self.verbose: polys_fit += 2
+                                                                        if self.verbose: polys_fit += 2
 
-                                                        elif self.splitting_criterion == "model_agnostic":
-                                                                loss_split = np.std(y) - (N_left*np.std(y_left) + N_right*np.std(y_right)) / N
+                                                                elif self.splitting_criterion == "model_agnostic":
+                                                                        loss_split = np.std(y) - (N_left*np.std(y_left) + N_right*np.std(y_right)) / N
 
-                                                        # Update best parameters if loss is lower
-                                                        if loss_split < loss_best:
-                                                                did_split = True
-                                                                loss_best = loss_split
-                                                                if self.splitting_criterion == "model_aware": polys_best = [poly_left, poly_right]
-                                                                data_best = [(X_left, y_left), (X_right, y_right)]
-                                                                j_feature_best = j_feature
-                                                                threshold_best = threshold
+                                                                # Update best parameters if loss is lower
+                                                                if loss_split < loss_best:
+                                                                        did_split = True
+                                                                        loss_best = loss_split
+                                                                        if self.splitting_criterion == "model_aware": polys_best = [poly_left, poly_right]
+                                                                        data_best = [(X_left, y_left), (X_right, y_right)]
+                                                                        j_feature_best = j_feature
+                                                                        threshold_best = threshold
+
+                                        # Gradient based splitting criterion from ref. [2]
+                                        else:
+                                                # Fit a single poly to parent node
+                                                loss, poly = _fit_poly(X, y)
+
+                                                # Now run the splitting algo using gradients from this poly
+                                                did_split, j_feature_best, threshold_best = self._find_split_from_grad(poly, X, y.reshape(-1,1)) 
         
-                                                
-                                if self.splitting_criterion == "model_agnostic" and did_split:
+                                # If model_agnostic or gradient based, fit poly's to children now we have split
+                                if self.splitting_criterion != "model_aware" and did_split:
                                         (X_left, y_left), (X_right, y_right) = self._split_data(j_feature_best, threshold_best, X, y)
                                         loss_left, poly_left = _fit_poly(X_left, y_left)
                                         loss_right, poly_right = _fit_poly(X_right, y_right)
-
-                                        N_left, N_right = len(X_left), len(X_right)
-                                        
+                                        N_left, N_right = len(X_left), len(X_right)                                       
                                         loss_best = (N_left*loss_left + N_right*loss_right) / N
                                         polys_best = [poly_left, poly_right]
+                                        if self.splitting_criterion == "loss_gradient": data_best = [(X_left, y_left), (X_right, y_right)]
 
                                         if self.verbose: polys_fit += 2
 
@@ -320,7 +325,6 @@ class PolyTree(object):
                 elif self.cardinality > self.min_samples_leaf:
                         print("WARNING: Basis cardinality ({}) greater than the minimum samples per leaf ({}). This may cause reduced performance.".format(self.cardinality, self.min_samples_leaf))
 
-                self.k *= self.min_samples_leaf 
                 self.tree = _build_tree()
 
         def prune(self, X, y):
@@ -465,3 +469,135 @@ class PolyTree(object):
                                 file.write(str(g.source))
                                 print("GraphViz source file written to " + file_name + " and can be viewed using an online renderer. Alternatively you can install graphviz on your system to render locally")
 
+        def _find_split_from_grad(self,model, X, y):
+                """
+                Finds the optimal split point for a tree node based on the training data in that node.
+                        Parameters
+                ----------
+                model
+                    X : array-like, shape = [n_samples, n_features]
+                    y : array-like, shape = [n_samples,1] 
+                Returns
+                split: New split
+                gain: Gain using the split
+                """
+                renorm = True
+                N,D = np.shape(X)
+        
+                # Gradient of loss wrt model coefficients
+                P = model.get_poly(X).T
+                r = y-model.get_polyfit(X)
+                g = r*P
+                    
+                # Sum of gradients
+                gsum = g.sum(axis=0)
+        
+                # Loop through all dimensions in X
+                split_dim = None
+                split_val = None
+                gain_max  = -np.inf
+                for d in range(D):
+                    # Sort along feature i
+                    sort = np.argsort(X[:,d])
+                    Xd   = X[sort,d]
+        
+                    # Find unique values along one column. #TODO - grid search option
+                    _,splits = np.unique(Xd,return_index=True)
+                    splits = splits[1:]
+       
+                    # Number of samples on left and right split
+                    N_l = splits
+                    N_r = N - N_l
+
+                    # Only take splits where both children have more than `min_samples_leaf` samples 
+                    idx = np.minimum(N_l, N_r) >= self.min_samples_leaf
+                    splits = splits[idx]
+                    N_l    = N_l[idx].reshape(-1,1)
+                    N_r    = N_r[idx].reshape(-1,1)
+
+                    # If we've run out of candidate spilts, skip
+                    if len(splits) <= 1: 
+                        continue
+        
+                    # Sums of gradients for left and right
+                    gsum_left  = g[sort,:].cumsum(axis=0)
+                    gsum_left  = gsum_left[splits-1,:]
+                    gsum_right = gsum - gsum_left
+        
+                    # Renorm. gradients to zero mean and unit std
+                    if renorm:              
+                        mu_l, mu_r, sigma_l, sigma_r = _get_mean_and_sigma(P[:,1:],splits,N_l,N_r,sort)
+                        gsum_left  = renormalise( gsum_left, 1/sigma_l, -mu_l/sigma_l)
+                        gsum_right = renormalise(gsum_right, 1/sigma_r, -mu_r/sigma_r)
+                            
+                    # Compute the Gain (see Eq. (6) in [1])
+                    gain = (gsum_left**2).sum(axis=1)/N_l.reshape(-1) + (gsum_right**2).sum(axis=1)/N_r.reshape(-1)
+
+                    # Find best gain and compare with previous best
+                    best_idx = np.argmax(gain)
+                    gain     = gain[best_idx]
+                    if gain > gain_max:
+                        gain_max  = gain
+                        split_dim = d
+                        split_val = 0.5*(Xd[splits[best_idx] - 1] + Xd[splits[best_idx]])
+        
+                # If gain_max stilll == -np.inf, we must have passed through all features w/o finding a split
+                # so return False. Otherwise return True and the spilt details.
+                if gain_max == -np.inf:
+                    return False, None, None
+                else:
+                    return True, split_dim, split_val
+
+
+# Code below is to calculate graident based split criterion. This can probably be integrated more elegantly i.e. as private methods rather than nested local functions etc TODO
+def _get_mean_and_sigma(X,splits,N_l,N_r,sort): 
+    """
+    Computes mean and standard deviation of the data in array X, when it is 
+    split in two by the threshold values in the splits array. The data is offset by 
+    its mean to avoid catastrophic cancellation when computing the variance (see ref. [3]).
+    X - [N,ndim] array of data.
+    splits  - [Nsplit] array of split locations.
+    sort   - [N] array reordering X.
+    """   
+    # Min value of sigma (for stability later)
+    epsilon = 0.001
+    
+    # Reorder, and shift X by mean
+    mu     = np.reshape(np.mean(X, axis=0), (1, -1))
+    Xshift = X[sort] - mu
+
+    # Cumulative sums (and sums of squares) for left and right splits
+    Xsum_l  = Xshift.cumsum(axis=0)
+    Xsum_r  = Xsum_l[-1:,:] - Xsum_l
+    X2sum_l = (Xshift**2).cumsum(axis=0)
+    X2sum_r = X2sum_l[-1:,:] - X2sum_l
+
+    # Compute mean of left and right side for all splits
+    mu_l = Xsum_l[splits-1,:] / N_l
+    mu_r = Xsum_r[splits-1,:] / N_r
+
+    # Compute standard deviation of left and right side for all splits
+    sigma_l = np.sqrt(np.maximum(X2sum_l[splits-1,:]/(N_l-1)-mu_l**2, epsilon**2))
+    sigma_r = np.sqrt(np.maximum(X2sum_r[splits-1,:]/(N_r-1)-mu_r**2, epsilon**2))
+    
+    # Correct for previous shift
+    mu_l = mu_l + mu
+    mu_r = mu_r + mu
+                    
+    return mu_l, mu_r, sigma_l, sigma_r
+
+def renormalise(gradients, a, c):
+    """
+    Renormalises gradients according to according to eq. (14) of [1].
+    Inputs
+    ------
+    gradients: array [n_samples, n_params] of gradients
+    a: array [n_samples, n_params-1]: The normalisation factor
+    c: array [n_samples, n_params-1]: The normalisation offset
+    Returns
+    -------
+    gradients: array [n_samples, n_params]: Renormalised gradients
+    """   
+    c = c*gradients[:,0].reshape(-1,1)
+    gradients[:,1:] = gradients[:,1:] * a + c
+    return gradients

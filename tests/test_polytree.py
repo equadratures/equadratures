@@ -92,5 +92,25 @@ class Test_polytree(TestCase):
 
         self.assertTrue(pruned_r_value ** 2 > 0.9)
 
+    def test_gradient_criterion(self):
+        X = []
+        y = []
+        for x1 in range(0, 10):
+            for x2 in range(0, 10):
+                X.append(np.array([x1/10,x2/10]))
+                y.append(np.exp(-(x1/10)**2 + (x2/10)**2))
+        X = np.array([X])[0]
+        y = np.array(y)
+        X, y = unison_shuffled_copies(X,y)
+        
+        X_train, X_test = X[:80], X[80:]
+        y_train, y_test = y[:80], y[80:]        
+    
+        tree = polytree.PolyTree(splitting_criterion="loss_gradient",order=1)
+        tree.fit(X_train, y_train)
+        _, _, r_value, _, _ = st.linregress(y_test, tree.predict(X_test).reshape(-1))
+
+        self.assertTrue(r_value ** 2 > 0.95)
+
 if __name__== '__main__':
     unittest.main()

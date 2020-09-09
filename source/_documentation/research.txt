@@ -1,0 +1,27 @@
+Research: theory and practice
+*************************
+Till date, ``equadratures`` has seen utility in a variety of fields, ranging from aerodynamics and mechanics to atmospheric and ocean sciences. Feel free to check out the publications below to learn more. If you are using the code in your own research and would like to have your publications featured here, do get in touch with us.
+
+**Theory and methodology**
+
+- Wong, C. Y., Seshadri, P., Parks, G. T., Girolami, M., (2020) Embedded Ridge Approximations. `Preprint <https://arxiv.org/abs/1907.07037>`__.
+
+- Wong, C. Y., Seshadri, P., Parks, G. T., (2019) Extremum Global Sensitivity Analysis with Least Squares Polynomials and their Ridges. `Preprint <https://arxiv.org/abs/1907.08113>`__.
+
+- Seshadri, P., Iaccarino, G., Ghisu, T., (2019) Quadrature Strategies for Constructing Polynomial Approximations. *Uncertainty Modeling for Engineering Applications*. Springer, Cham, 2019. 1-25. `Paper <https://link.springer.com/chapter/10.1007/978-3-030-04870-9_1>`__. `Preprint <https://arxiv.org/pdf/1805.07296.pdf>`__.
+
+- Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations." *SIAM/ASA Journal on Uncertainty Quantification* 5.1 : 1003-1023. `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__.
+
+- Seshadri, P., Parks, G. T., (2017) Effective-Quadratures (EQ): Polynomials for Computational Engineering Studies, *Journal of Open Source Software*, 2(11), 166, `Paper <http://joss.theoj.org/papers/ba651f2b3608a5d2b085af06b1108747>`__.
+
+**Applications**
+
+*Hydrodynamic vegetation*
+
+- Kalra, T. S., Aretxabaleta, A., Seshadri, P., Ganju, N. K., Beudin, A. (2017). Sensitivity Analysis of a Coupled Hydrodynamic-Vegetation Model Using the Effectively Subsampled Quadratures Method (ESQM v5. 2). *Geoscientific Model Development*, 10(12), 4511. `Paper <https://www.repository.cam.ac.uk/bitstream/handle/1810/270655/Kalra_et_al-2017-Geoscientific_Model_Development_Discussions-VoR.pdf?sequence=4>`__.
+
+*Turbomachinery aerodynamics*
+
+- Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery active subspace performance maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__
+
+- Seshadri, P., Yuchi, S., Parks, G., Shahpar, S. (2020) Supporting multi-point fan design with dimension reduction. The Aeronautical Journal, 124(1279). `Paper <https://www.cambridge.org/core/journals/aeronautical-journal/article/supporting-multipoint-fan-design-with-dimension-reduction/3614035892B7EAC41DC8C486BA008A03>`__

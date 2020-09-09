@@ -208,6 +208,9 @@ class PolyTree(object):
 					(X_left, y_left), (X_right, y_right) = self._split_data(j_feature_best, threshold_best, X, y)
 					loss_left, poly_left = _fit_poly(X_left, y_left)
 					loss_right, poly_right = _fit_poly(X_right, y_right)
+
+					N_left, N_right = len(X_left), len(X_right)
+					
 					loss_best = (N_left*loss_left + N_right*loss_right) / N
 					polys_best = [poly_left, poly_right]
 

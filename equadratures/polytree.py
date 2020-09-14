@@ -66,6 +66,8 @@ class PolyTree(object):
                 """
                 Returns the list of splits made 
 
+                :param PolyTree self:
+                    An instance of the PolyTree class.
                 :return:
                         **splits**: A list of Splits made in the format of a nested list: [[split, dimension], ...]
                 """
@@ -95,6 +97,8 @@ class PolyTree(object):
                 """
                 Returns the list of polynomials used in the tree
 
+                :param PolyTree self:
+                    An instance of the PolyTree class.
                 :return:
                         **polys**: A list of Poly objects
                 """
@@ -117,6 +121,8 @@ class PolyTree(object):
                 """
                 Fits the tree to the provided data
 
+                :param PolyTree self:
+                    An instance of the PolyTree class.
                 :param numpy.ndarray X:
                         Training input data
                 :param numpy.ndarray y:
@@ -281,7 +287,8 @@ class PolyTree(object):
                                                 "j_feature": None,
                                                 "threshold": None,
                                                 "children": {"left": None, "right": None},
-                                                "depth": depth}
+                                                "depth": depth,
+                                                "flag": False}
                                 container["index_node_global"] += 1
 
                                 return node
@@ -331,6 +338,8 @@ class PolyTree(object):
                 """
                 Prunes the tree that you have fitted.
                 
+                :param PolyTree self:
+                    An instance of the PolyTree class.
                 :param numpy.ndarray X:
                         Training input data
                 :param numpy.ndarray y:
@@ -376,10 +385,12 @@ class PolyTree(object):
                 """
                 Evaluates the the polynomial tree approximation of the data.
 
+                :param PolyTree self:
+                    An instance of the PolyTree class.
                 :param numpy.ndarray X:
                         An ndarray with shape (number_of_observations, dimensions) at which the tree fit must be evaluated at.
                 :return: **y**:
-                        A numpy.ndarray of shape (1, number_of_observations) corresponding to the polynomial approximation of the tree.
+                        A numpy.ndarray of shape (number_of_observations,1) corresponding to the polynomial approximation of the tree.
                 """
 
                 def _predict(node, indexes):
@@ -402,17 +413,27 @@ class PolyTree(object):
 
                 return y_pred.reshape(-1)
 
-        def get_graphviz(self, feature_names, file_name):
+        def get_graphviz(self, X=None, feature_names=None, file_name=None):
                 """
                 Returns a url to the rendered graphviz representation of the tree.
 
+                :param PolyTree self:
+                    An instance of the PolyTree class.
+                :param numpy.ndarray X:
+                        An ndarray with shape (dimensions) containing an input vector for a given sample, to highlight in the tree (optional).
                 :param list feature_names:
-                        A list of the names of the features used in the training data
+                        A list of the names of the features used in the training data (optional).
+                :param string filename:
+                        Filename to write graphviz data to (optional). If None (default) then rendered in-place.  
                 """
                 from graphviz import Digraph
                 g = Digraph('g', node_attr={'shape': 'record', 'height': '.1'})
 
-                def build_graphviz_recurse(node, parent_node_index=0, parent_depth=0, edge_label=""):
+                if feature_names is None:
+                    dim = self.tree["poly"].dimensions
+                    feature_names = ['x_%d'%i for i in range(dim)]
+
+                def _build_graphviz_recurse(node, parent_node_index=0, parent_depth=0, edge_label=""):
 
                         # Empty node
                         if node is None:
@@ -422,64 +443,141 @@ class PolyTree(object):
                         node_index = node["index"]
                         if node["children"]["left"] is None and node["children"]["right"] is None:
                                 threshold_str = ""
+                                leaf = True
                         else:
                                 threshold_str = "{} <= {:.3f}\\n".format(feature_names[node['j_feature']], node["threshold"])
+                                leaf = False
                         
                         try:
-                                label_str = "{} n_samples = {}\\n loss = {:.6f}\\n lower_loss = {}".format(threshold_str, node["n_samples"], node["test_loss"], node["lower_loss"])
+                                label_str = "node {} \\n {} n_samples = {}\\n loss = {:.6f}\\n lower_loss = {}".format(node_index,threshold_str, node["n_samples"], node["test_loss"], node["lower_loss"])
                         except:
-                                label_str = "{} n_samples = {}\\n loss = {:.6f}".format(threshold_str, node["n_samples"], node["loss"])                         
+                                label_str = "node {} \\n {} n_samples = {}\\n loss = {:.6f}".format(node_index,threshold_str, node["n_samples"], node["loss"])                         
                         
                         # Create node
-                        nodeshape = "rectangle"
+                        if leaf:
+                            nodeshape = "rectangle"
+                            style     = ["rounded"]
+                            fillcolor = "#E4fEE4"
+                        else:
+                            nodeshape = "rectangle"
+                            style     = ["filled"]
+                            fillcolor = "#EBFAFF"
+                        if node["flag"]:
+                            style.append('bold')
                         bordercolor = "black"
-                        fillcolor = "white"
                         fontcolor = "black"
                         g.attr('node', label=label_str, shape=nodeshape)
                         g.node('node{}'.format(node_index),
-                                   color=bordercolor, style="filled",
+                                   color=bordercolor, style=', '.join(style),
                                    fillcolor=fillcolor, fontcolor=fontcolor)
 
                         # Create edge
                         if parent_depth > 0:
+                                if node["flag"]:
+                                    edgecolor = 'orange'
+                                    style     = 'bold'
+                                else:
+                                    edgecolor = 'black'
+                                    style     = 'solid'
                                 g.edge('node{}'.format(parent_node_index),
-                                           'node{}'.format(node_index), label=edge_label)
+                                           'node{}'.format(node_index), label=edge_label, color=edgecolor,style=style)
 
                         # Traverse child or append leaf value
-                        build_graphviz_recurse(node["children"]["left"],
+                        _build_graphviz_recurse(node["children"]["left"],
                                                                    parent_node_index=node_index,
                                                                    parent_depth=parent_depth + 1,
                                                                    edge_label="")
-                        build_graphviz_recurse(node["children"]["right"],
+                        _build_graphviz_recurse(node["children"]["right"],
                                                                    parent_node_index=node_index,
                                                                    parent_depth=parent_depth + 1,
                                                                    edge_label="")
 
+                def _flag_tree_walk(node,X):
+                        node["flag"] = True
+                        if node["children"]["left"] is None and \
+		        			  node["children"]["right"] is None:
+                                return
+                        if X[node["j_feature"]] <= node["threshold"]:
+                                return _flag_tree_walk(node["children"]["left"],X)
+                        if X[node["j_feature"]] > node["threshold"]:
+                                return _flag_tree_walk(node["children"]["right"],X)
+
+                # Flag the node path to highlight later
+                if X is not None: 
+                        _flag_tree_walk(self.tree,X)
+
                 # Build graph
-                build_graphviz_recurse(self.tree,
+                _build_graphviz_recurse(self.tree,
                                                            parent_node_index=0,
                                                            parent_depth=0,
                                                            edge_label="")
 
-                try:
-                        g.render(view=True)
-                except:
-                        file_name = file_name + ".txt"
+                if file_name is None:
+                        try:
+                                g.render(view=True)
+                        except:
+                                file_name = 'tree.dot'    
+                                print("GraphViz source file written to " + file_name + " and can be viewed using an online renderer. Alternatively you can install graphviz on your system to render locally")
+    
+                if file_name is not None: # not elif here as file_name might be updated in try-except above
                         with open(file_name, "w") as file:
                                 file.write(str(g.source))
-                                print("GraphViz source file written to " + file_name + " and can be viewed using an online renderer. Alternatively you can install graphviz on your system to render locally")
+
+        def get_node(self, X):
+                """
+                Returns the node corresponding to a given input vector X (1D float), or node number X (int).
+
+                :param PolyTree self:
+                    An instance of the PolyTree class.
+                :param numpy.ndarray or int X:
+                        An ndarray with shape (dimensions) containing the input vector for a given sample, or an int containing the node index.
+                :return: 
+                **node**: The data for the node X belongs to; output as a dict.
+                """
+                # Find node with given index X. Traverse all children until correct node found.
+                if isinstance(X,int):
+                        def _get_node_from_n(node):
+                                if node is not None: # Need to check if node is None here as below _get_node_from_n() calls on children will result in None if leaf node
+                                        if node["index"] == X:
+                                                return node
+                                        else:
+                                                result = _get_node_from_n(node["children"]["right"])
+                                                if result is None:
+                                                        result = _get_node_from_n(node["children"]["left"])
+                                                return result
+                                else:
+                                        return None
+                        return _get_node_from_n(self.tree)
+
+                # Walk through tree for a given X input vector. Return the final leaf node.
+                else:
+                        assert len(X.shape)==1 , "X should be an int, or a 1D float array"
+                        def _get_node_from_X(node):
+                                if node["children"]["left"] is None and \
+		        				  node["children"]["right"] is None:
+                                        return node
+                                if X[node["j_feature"]] <= node["threshold"]:
+                                        return _get_node_from_X(node["children"]["left"])
+                                if X[node["j_feature"]] > node["threshold"]:
+                                        return _get_node_from_X(node["children"]["right"])
+                        return _get_node_from_X(self.tree)
 
         def _find_split_from_grad(self,model, X, y):
                 """
-                Finds the optimal split point for a tree node based on the training data in that node.
-                        Parameters
-                ----------
-                model
-                    X : array-like, shape = [n_samples, n_features]
-                    y : array-like, shape = [n_samples,1] 
-                Returns
-                split: New split
-                gain: Gain using the split
+                Private method to find the optimal split point for a tree node based on the training data in that node.
+
+                :param PolyTree self:
+                    An instance of the PolyTree class.
+                :param Poly model:
+                    An instance of the Poly class, corresponding to the Poly belonging to the tree node.
+                :param numpy.ndarray X:
+                        An ndarray with shape (number_of_observations, dimensions) containing the input data belonging to the tree node.
+                :param numpy.ndarray y:
+                        An ndarray with shape (number_of_observations, 1) containing the response data belonging to the tree node.
+                :return: 
+                **did_split**: True if a split was found, otherwise False; output as a bool.
+                **split_dim**: The dimension in X within which the best split was found; output as an int.
+                **split_val**: The location of the best split; output as a float.
                 """
                 renorm = True
                 N,D = np.shape(X)

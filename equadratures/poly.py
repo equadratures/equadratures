@@ -16,10 +16,8 @@ class Poly(object):
 
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
-    :param str method: The method used for computing the coefficients. Should be one of: ``compressive-sensing``,
-        ``numerical-integration``, ``least-squares``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``minimum-norm``.
+    :param str method: The method used for computing the coefficients. Should be one of: ``compressive-sensing``, ``numerical-integration``, ``least-squares``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``minimum-norm``, ``huber``, ``elastic-net``.
     :param dict sampling_args: Optional arguments centered around the specific sampling strategy.
-
             :string mesh: Avaliable options are: ``monte-carlo``, ``sparse-grid``, ``tensor-grid``, ``induced``, or ``user-defined``. Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1] is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
             :string subsampling-algorithm: The ``subsampling-algorithm`` input refers to the optimisation technique for subsampling. In the aforementioned four sampling strategies, we generate a logarithm factor of samples above the required amount and prune down the samples using an optimisation technique (see [1]). Existing optimisation strategies include: ``qr``, ``lu``, ``svd``, ``newton``. These refer to QR with column pivoting [2], LU with row pivoting [3], singular value decomposition with subset selection [2] and a convex relaxation via Newton's method for determinant maximization [4]. Note that if the ``tensor-grid`` option is selected, then subsampling will depend on whether the Basis argument is a total order index set, hyperbolic basis or a tensor order index set.
             :float sampling-ratio: Denotes the extent of undersampling or oversampling required. For values equal to unity (default), the number of rows and columns of the associated Vandermonde-type matrix are equal.

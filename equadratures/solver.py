@@ -563,14 +563,17 @@ def rvm(A, b, max_iter):
 
     return mean_coeffs, None 
 
-def lasso(A, b, verbose, max_iter, IC):
+def lasso(Afull, b, verbose, max_iter, IC):
     """
-    Performs LASSO using least angle regression. The full regularisation path is computed, with the entire sequence of LARS steps requiring only O(m3 + nm2) computations (the cost of a single least squares regression!), as long as m < n [1]. The set of coefficients with the lowest model selection criteria Cp is then selected according to [2].
+    Performs LASSO using least angle regression. The full regularisation path is computed, with the entire sequence of LARS steps requiring only O(m3 + nm2) computations (the cost of a single least squares regression!), as long as m < n [2]. The set of coefficients with the lowest model selection criteria Cp is then selected according to [3].
 
     **References**
-        1. Hesterberg, T., Choi, N. H., Meier, L., Fraley, C., (2008) Least angle and l1 penalized regression: A review. Statistics Surveys, 2(0), 61–93. `Paper <https://projecteuclid.org/download/pdfview_1/euclid.ssu/1211317636>`__
-        2. Zou, H., Hastie, T., Tibshirani, R., (2007) On the “degrees of freedom” of the lasso. The Annals of Statistics, 35(5), 2173–2192. `Paper <https://projecteuclid.org/download/pdfview_1/euclid.aos/1194461726>`__
+        1. Efron B., Hastie T., Johnstone I., Tibshirani R., (2004) Least angle regression. The Annals of Statistics, 32(2), 407-499. `Paper <https://projecteuclid.org/download/pdfview_1/euclid.aos/1083178935>`__
+        2. Hesterberg, T., Choi, N. H., Meier, L., Fraley, C., (2008) Least angle and l1 penalized regression: A review. Statistics Surveys, 2(0), 61–93. `Paper <https://projecteuclid.org/download/pdfview_1/euclid.ssu/1211317636>`__
+        3. Zou, H., Hastie, T., Tibshirani, R., (2007) On the “degrees of freedom” of the lasso. The Annals of Statistics, 35(5), 2173–2192. `Paper <https://projecteuclid.org/download/pdfview_1/euclid.aos/1194461726>`__
     """
+#    A = Afull[:,:-1]
+    A = Afull
     n,m = A.shape
     b = b.reshape(-1)
     if max_iter is None: 
@@ -597,30 +600,51 @@ def lasso(A, b, verbose, max_iter, IC):
         residual = b - cur_pred
         rss[it] = np.sum(residual * residual)
         pred_from_beta = A.dot(beta)
-        cur_corr = A.transpose().dot(residual)
 
+        # Compute the Gram matrix X'X for the active set (eq. 2.5 in [1])
         X_a = A[:, list(active_set)]
         X_a *= sign[list(active_set)]
         G_a = X_a.transpose().dot(X_a)
-        G_a_inv = np.linalg.inv(G_a)
+
+        print(np.linalg.cond(G_a))
+
+        # Invert the gram matrix and scale A_a (eq 2.5 in [1] again)
+        try: # if inversion fails i.e. G_a singular then early stop
+            G_a_inv = np.linalg.inv(G_a)
+        except np.linalg.LinAlgError as err:
+            if 'Singular matrix' in str(err): 
+                early_stop = True
+                break
+            else:
+                raise
         G_a_inv_red_cols = np.sum(G_a_inv, 1)
         A_a = 1 / np.sqrt(np.sum(G_a_inv_red_cols))
+
+        # Compute equianglular vector (eq. 2.6 in [1])
         omega = A_a * G_a_inv_red_cols
         equiangular = X_a.dot(omega)
 
         # Check G_a has been inverted ok. i.e. G_a^(-1)@G_a = I. If not then stop early.
         test = G_a_inv@G_a 
         off_diag = np.sum(test)-np.trace(test)
-        if abs(off_diag) > 1e-7: early_stop = True
+        if abs(off_diag) > 1e-7: 
+            early_stop = True
+            break
 
+        # Current correlation vector and cos_angle vector (eqs. 2.8 and 2.11 in [1])
         cos_angle = A.transpose().dot(equiangular)
-        gamma = None
+        cur_corr = A.transpose().dot(residual)
+
+        # Largest correlation (eq 2.9 in [1])
         largest_abs_correlation = np.abs(cur_corr).max()
+
         if verbose:
             print('\nIteration %d/%d' %(it+1,max_iter))
             print('RSS', rss[it])
             print('largest_abs_correlation', largest_abs_correlation)
 
+        # Find gamma to use in update (eq. 2.13 in [1])
+        gamma = None
         if it < m - 1:
             next_j = None
             next_sign = 0
@@ -629,7 +653,7 @@ def lasso(A, b, verbose, max_iter, IC):
                     continue
                 v0 = (largest_abs_correlation - cur_corr[j]) / (A_a - cos_angle[j]).item()
                 v1 = (largest_abs_correlation + cur_corr[j]) / (A_a + cos_angle[j]).item()
-                if v0 > 0 and (gamma is None or v0 < gamma):
+                if v0 > 0 and (gamma is None or v0 < gamma):  # This "or" (and below one) makes it LASSO instead of normal LARS, i.e. see eq 3.6 in [1]
                     next_j = j
                     gamma = v0
                     next_sign = 1
@@ -637,18 +661,11 @@ def lasso(A, b, verbose, max_iter, IC):
                     gamma = v1
                     next_j = j
                     next_sign = -1
+        # Final iteration (i.e. OLS)
         else:
-            gamma = largest_abs_correlation / A_a
- 
-        # Get the residial variance of the saturated model (i.e. the model at the final LAR step).
-        # This is an approximation if max_iter<m, however is useful/necessary in cases where LAR diverges
-        # before reaching m iterations (i.e. if we're stopping early).
-        if it==max_iter-1 or early_stop:
-#            sigma2 = np.var(residual)
-            if early_stop: 
-                if verbose: print('LASSO-LARS stopped early at iteration %d out of %d.' %(it+1,max_iter))
-                break
+            gamma = largest_abs_correlation / A_a 
 
+        # Solving sa*sx = sb to get coefficients for current active set. This is probably optimal speed wise. Should be able to do LASSO-LARS in cost O(m3 + nm2) i.e. cost of single lstsq solve (if m<n, see [2]). Maybe look at the scikit-learn approaches involving Cholesky factorisation and updates/downdates? TODO
         sa = X_a
         sb = equiangular * gamma
         if np.__version__ < '1.14':
@@ -656,9 +673,13 @@ def lasso(A, b, verbose, max_iter, IC):
         else:
             sx = np.linalg.lstsq(sa, sb, rcond=None)
 
+        # Get coefficients
         for i, j in enumerate(active_set):
             beta[j] += sx[0][i] * sign[j]
 
+        # Calc equivalent regularisation coefficient lamda i.e. lamda*||x||_1. (This isn't strictly nescesary since penalty term is quantified by sum_j(x_j) for LARS LASSO, but useful for comparision with elastic net etc) 
+
+        # Update prediction and active set
         cur_pred = A@beta
         active_set.add(next_j)
         sign[next_j] = next_sign
@@ -670,6 +691,7 @@ def lasso(A, b, verbose, max_iter, IC):
 
     # Cut off end of arrays if early stop
     if early_stop:
+        if verbose: print('LASSO-LARS stopped early at iteration %d out of %d.' %(it+1,max_iter))
         beta_path = beta_path[:it]
         rss       = rss[:it]
         max_iter  = it
@@ -677,20 +699,23 @@ def lasso(A, b, verbose, max_iter, IC):
     sum_abs_coeff = np.sum(np.abs(beta_path), 1)
 
     # Calc information statistic (AIC or BIC)
-    df = np.arange(max_iter)+1  #degrees of freedom can be approximated to be the number of LARS steps i.e. the number of non-zero coefficients [2]
-    sigma2 = np.var(b)
+    df = np.arange(max_iter)+1  #degrees of freedom can be approximated to be the number of LARS steps i.e. the number of non-zero coefficients [3]
+#    sigma2 = np.var(b) # sklearn uses this for sigma2 i.e. var(b) instead of var(residuals). Why? TODO 
+    sigma2 = np.var(b-cur_pred) 
+
     if IC=='AIC':
-#        ic = rss/(n*sigma2) + (2/n)*df
         ic = rss/(n*sigma2) + (2/n)*df
-#    elif IC=='AICc':
-#        aic = rss/(n*sigma2) + (2/n)*df
-#        ic  = aic + (2*(df+1)*(df+2))/(n-df-2)  #(2*df**2 + 2*df)/(n-df-1)
     elif IC=='BIC':
         ic = rss/(n*sigma2) + (np.log(n)/n)*df
    
     # Select the set of coefficients which minimise IC
-    idx = np.argmin(ic)
-    beta_opt = beta_path[idx]
-    if verbose: print('\nLASSO-LARS found optimum betas with DoF: %d' %(idx+1))
+    if IC is not None:
+        idx = np.argmin(ic) 
+        beta_opt = beta_path[idx]
+        if verbose: print('\nLASSO-LARS found optimum betas with DoF: %d' %(idx+1))
+    else:
+        beta_opt = beta_path[-1]
+        idx = max_iter-1
+        ic = np.zeros(max_iter)
 
     return beta_opt, {'sum_beta':sum_abs_coeff, 'beta':beta_path, 'IC':ic,'opt_idx':idx}

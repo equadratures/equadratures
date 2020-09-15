@@ -13,7 +13,7 @@ except ImportError as e:
 class Solver(object):
     """
     Returns solver functions for solving Ax=b
-    :param string method: The method used for solving the linear system. Options include: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``huber`` and ``elastic-net``.
+    :param string method: The method used for solving the linear system. Options include: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``huber``, ``elastic-net``, ``lasso-lars`` and ``relevance-vector-machine``.
     :param dict solver_args: Optional arguments centered around the specific solver.
             :param numpy.ndarray noise-level: The noise-level to be used in the basis pursuit de-noising solver.
             :param bool verbose: Default value of this input is set to ``False``; when ``True`` a string is printed to the screen detailing the solver convergence and condition number of the matrix.
@@ -26,6 +26,7 @@ class Solver(object):
         self.param2 = None
         self.verbose = False
         self.max_iter = None
+        self.ic = 'AIC'
         self.opt = 'osqp'
         if self.solver_args is not None:
             if 'noise-level' in self.solver_args: self.noise_level = solver_args.get('noise-level')
@@ -34,6 +35,7 @@ class Solver(object):
             if 'verbose' in self.solver_args: self.verbose = solver_args.get('verbose')
             if 'max-iter' in self.solver_args: self.max_iter = solver_args.get('max-iter')
             if 'optimiser' in self.solver_args: self.opt = solver_args.get('optimiser')
+            if 'IC' in self.solver_args: self.ic = solver_args.get('IC')
         if self.opt=='osqp' and not cvxpy: 
             self.opt='scipy'
         if self.method.lower() == 'compressed-sensing' or self.method.lower() == 'compressive-sensing':
@@ -52,12 +54,15 @@ class Solver(object):
             self.solver = lambda A, b: huber(A, b, self.verbose, self.param1, self.opt)
         elif self.method.lower() == 'elastic-net':
             self.solver = lambda A, b: elastic_net(A, b, self.verbose, self.param1, self.param2, self.opt)
+        elif self.method.lower() == 'lasso-lars':
+            self.solver = lambda A, b: lasso(A, b, self.verbose, self.max_iter, self.ic)
         elif self.method.lower() == 'relevance-vector-machine':
             self.solver = lambda A, b: rvm(A, b, self.max_iter)
         else:
             raise ValueError('You have not selected a valid method for solving the coefficients of the polynomial. Choose from compressed-sensing, least-squares, least-squares-with-gradients, least-absolute-residual, minimum-norm, numerical-integration, huber or elastic-net.')
     def get_solver(self):
         return self.solver
+
 def least_squares(A, b, verbose):
     if np.__version__ < '1.14':
         alpha = np.linalg.lstsq(A, b)
@@ -65,7 +70,7 @@ def least_squares(A, b, verbose):
       alpha = np.linalg.lstsq(A, b, rcond=None)
     if verbose is True:
         print('The condition number of the matrix is '+str(np.linalg.cond(A))+'.')
-    return alpha[0]
+    return alpha[0], None
 def minimum_norm(A, b):
     Q, R, pvec = qr(A, pivoting=True)
     m, n = A.shape
@@ -78,10 +83,10 @@ def minimum_norm(A, b):
     P1 = temp[0:n, 0:r]
     x = np.dot(P1 ,  np.dot( np.linalg.inv(R1)  , np.dot( Q1.T , b ) ) )
     x = x.reshape(n, 1)
-    return x
+    return x, None
 def orthogonal_linear_system(A, b):
     coefficients = np.dot(A.T, b)
-    return coefficients
+    return coefficients, None
 def constrained_least_squares(A, b, C, d, verbose):
     # Size of matrices!
     m, n = A.shape
@@ -110,15 +115,15 @@ def null_space_method(Ao, bo, Co, do, verbose):
     # Lower triangular matrix!
     L = R.T
     L = L[0:p, 0:p]
-    y1 = least_squares(L, d, verbose)
+    y1,_ = least_squares(L, d, verbose)
     c = b - np.dot( np.dot(A , Q1) , y1)
     AQ2 = np.dot(A , Q2)
-    y2 = least_squares(AQ2 , c, verbose)
+    y2,_ = least_squares(AQ2 , c, verbose)
     x = np.dot(Q1 , y1) + np.dot(Q2 , y2)
     cond = np.linalg.cond(AQ2)
     if verbose is True:
         print('The condition number of the matrix is '+str(cond)+'.')
-    return x
+    return x, None
 def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
     A = deepcopy(Ao)
     y = deepcopy(bo)
@@ -171,7 +176,7 @@ def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
             ind += 1
     if verbose:
         print('The noise level used is '+str(eta[sorted_ind[ind]])+'.')
-    return np.reshape(x, (len(x),1))
+    return np.reshape(x, (len(x),1)), None
 def _CG_solve(A, b, max_iters, tol):
     """
     Solves Ax = b iteratively using conjugate gradient, assuming A is a symmetric positive definite matrix.
@@ -414,7 +419,7 @@ def least_absolute_residual(A, b, verbose, opt):
         prob = cv.Problem(cv.Minimize(objective))
         # Solve with OSQP
         prob.solve(solver=cv.OSQP,verbose=verbose)
-        return x.value 
+        return x.value, None
 
     # Use scipy linprog for optimising
     elif opt=='scipy':
@@ -425,7 +430,7 @@ def least_absolute_residual(A, b, verbose, opt):
         AA = np.vstack([A1, A2])
         bb = np.hstack([b.reshape(-1), -b.reshape(-1)])
         res = linprog(c, A_ub=AA, b_ub=bb)
-        return res.x[:d]
+        return res.x[:d], None
 
 def huber(A, b, verbose, M, opt):
     '''
@@ -464,7 +469,7 @@ def huber(A, b, verbose, M, opt):
     # Use scipy linprog for optimising
     elif opt=='scipy':
         raise ValueError( 'At present cvxpy, must be installed for huber regression to be selected.')
-    return x
+    return x, None
 
 def elastic_net(A, b, verbose, lamda_val, alpha_val, opt):
     '''
@@ -502,7 +507,7 @@ def elastic_net(A, b, verbose, lamda_val, alpha_val, opt):
     # Use scipy linprog for optimising
     elif opt=='scipy':
         raise ValueError( 'At present cvxpy, must be installed for elastic net regression to be selected.')
-    return x
+    return x, None
 
 def rvm(A, b, max_iter):
     if max_iter is None:
@@ -556,4 +561,136 @@ def rvm(A, b, max_iter):
     mean_coeffs = np.zeros(card)
     mean_coeffs[remaining_coeff_ind] = mu.copy()
 
-    return mean_coeffs
+    return mean_coeffs, None 
+
+def lasso(A, b, verbose, max_iter, IC):
+    """
+    Performs LASSO using least angle regression. The full regularisation path is computed, with the entire sequence of LARS steps requiring only O(m3 + nm2) computations (the cost of a single least squares regression!), as long as m < n [1]. The set of coefficients with the lowest model selection criteria Cp is then selected according to [2].
+
+    **References**
+        1. Hesterberg, T., Choi, N. H., Meier, L., Fraley, C., (2008) Least angle and l1 penalized regression: A review. Statistics Surveys, 2(0), 61–93. `Paper <https://projecteuclid.org/download/pdfview_1/euclid.ssu/1211317636>`__
+        2. Zou, H., Hastie, T., Tibshirani, R., (2007) On the “degrees of freedom” of the lasso. The Annals of Statistics, 35(5), 2173–2192. `Paper <https://projecteuclid.org/download/pdfview_1/euclid.aos/1194461726>`__
+    """
+    n,m = A.shape
+    b = b.reshape(-1)
+    if max_iter is None: 
+        max_iter = min(m,n-1)
+    else:
+        max_iter = min(m,n-1,max_iter)
+    if verbose: print('n = %d, m = %d, max_iter = %d' %(n,m,max_iter))
+
+    cur_pred = np.zeros((n,))
+    beta = np.zeros((m,))
+    sign = np.zeros((m,))
+    beta_path = np.zeros((max_iter, m))
+    rss = np.zeros(max_iter)
+
+    active_set = set()
+    residual = b - cur_pred
+    cur_corr = A.transpose().dot(residual)
+    j = np.argmax(np.abs(cur_corr), 0)
+    active_set.add(j)
+    sign[j] = 1
+    early_stop = False
+    for it in range(max_iter):
+        # Residual and its sum of squares
+        residual = b - cur_pred
+        rss[it] = np.sum(residual * residual)
+        pred_from_beta = A.dot(beta)
+        cur_corr = A.transpose().dot(residual)
+
+        X_a = A[:, list(active_set)]
+        X_a *= sign[list(active_set)]
+        G_a = X_a.transpose().dot(X_a)
+        G_a_inv = np.linalg.inv(G_a)
+        G_a_inv_red_cols = np.sum(G_a_inv, 1)
+        A_a = 1 / np.sqrt(np.sum(G_a_inv_red_cols))
+        omega = A_a * G_a_inv_red_cols
+        equiangular = X_a.dot(omega)
+
+        # Check G_a has been inverted ok. i.e. G_a^(-1)@G_a = I. If not then stop early.
+        test = G_a_inv@G_a 
+        off_diag = np.sum(test)-np.trace(test)
+        if abs(off_diag) > 1e-7: early_stop = True
+
+        cos_angle = A.transpose().dot(equiangular)
+        gamma = None
+        largest_abs_correlation = np.abs(cur_corr).max()
+        if verbose:
+            print('\nIteration %d/%d' %(it+1,max_iter))
+            print('RSS', rss[it])
+            print('largest_abs_correlation', largest_abs_correlation)
+
+        if it < m - 1:
+            next_j = None
+            next_sign = 0
+            for j in range(m):
+                if j in active_set:
+                    continue
+                v0 = (largest_abs_correlation - cur_corr[j]) / (A_a - cos_angle[j]).item()
+                v1 = (largest_abs_correlation + cur_corr[j]) / (A_a + cos_angle[j]).item()
+                if v0 > 0 and (gamma is None or v0 < gamma):
+                    next_j = j
+                    gamma = v0
+                    next_sign = 1
+                if v1 > 0 and (gamma is None or v1 < gamma):
+                    gamma = v1
+                    next_j = j
+                    next_sign = -1
+        else:
+            gamma = largest_abs_correlation / A_a
+ 
+        # Get the residial variance of the saturated model (i.e. the model at the final LAR step).
+        # This is an approximation if max_iter<m, however is useful/necessary in cases where LAR diverges
+        # before reaching m iterations (i.e. if we're stopping early).
+        if it==max_iter-1 or early_stop:
+#            sigma2 = np.var(residual)
+            if early_stop: 
+                if verbose: print('LASSO-LARS stopped early at iteration %d out of %d.' %(it+1,max_iter))
+                break
+
+        sa = X_a
+        sb = equiangular * gamma
+        if np.__version__ < '1.14':
+            sx = np.linalg.lstsq(sa, sb)
+        else:
+            sx = np.linalg.lstsq(sa, sb, rcond=None)
+
+        for i, j in enumerate(active_set):
+            beta[j] += sx[0][i] * sign[j]
+
+        cur_pred = A@beta
+        active_set.add(next_j)
+        sign[next_j] = next_sign
+
+        beta_path[it, :] = beta
+        if verbose:
+            print('beta', beta)
+            print('max correlation: %s' % (largest_abs_correlation - gamma * A_a))
+
+    # Cut off end of arrays if early stop
+    if early_stop:
+        beta_path = beta_path[:it]
+        rss       = rss[:it]
+        max_iter  = it
+
+    sum_abs_coeff = np.sum(np.abs(beta_path), 1)
+
+    # Calc information statistic (AIC or BIC)
+    df = np.arange(max_iter)+1  #degrees of freedom can be approximated to be the number of LARS steps i.e. the number of non-zero coefficients [2]
+    sigma2 = np.var(b)
+    if IC=='AIC':
+#        ic = rss/(n*sigma2) + (2/n)*df
+        ic = rss/(n*sigma2) + (2/n)*df
+#    elif IC=='AICc':
+#        aic = rss/(n*sigma2) + (2/n)*df
+#        ic  = aic + (2*(df+1)*(df+2))/(n-df-2)  #(2*df**2 + 2*df)/(n-df-1)
+    elif IC=='BIC':
+        ic = rss/(n*sigma2) + (np.log(n)/n)*df
+   
+    # Select the set of coefficients which minimise IC
+    idx = np.argmin(ic)
+    beta_opt = beta_path[idx]
+    if verbose: print('\nLASSO-LARS found optimum betas with DoF: %d' %(idx+1))
+
+    return beta_opt, {'sum_beta':sum_abs_coeff, 'beta':beta_path, 'IC':ic,'opt_idx':idx}

@@ -246,32 +246,33 @@ class PolyTree(object):
 
                         def _fit_poly(X, y):
 
-                                try:
-                                        N, d = X.shape
-                                        myParameters = []
+#                                try:
+                                
+                                N, d = X.shape
+                                myParameters = []
 
-                                        for dimension in range(d):
-                                                values = X[:,dimension]
-                                                values_min = np.amin(values)
-                                                values_max = np.amax(values)
+                                for dimension in range(d):
+                                        values = X[:,dimension]
+                                        values_min = np.amin(values)
+                                        values_max = np.amax(values)
 
-                                                if (values_min - values_max) ** 2 < 0.01:
-                                                        myParameters.append(Parameter(distribution='Uniform', lower=values_min-0.01, upper=values_max+0.01, order=self.order))
-                                                else: 
-                                                        myParameters.append(Parameter(distribution='Uniform', lower=values_min, upper=values_max, order=self.order))
-                                        if self.basis == "hyperbolic-basis":
-                                                myBasis = Basis(self.basis, orders=[self.order for _ in range(d)], q=0.5)
-                                        else:
-                                                myBasis = Basis(self.basis, orders=[self.order for _ in range(d)])
-                                        container["index_node_global"] += 1
-                                        poly = Poly(myParameters, myBasis, method=self.poly_method, sampling_args={'sample-points':X, 'sample-outputs':y}, solver_args=self.poly_solver_args)
-                                        poly.set_model()
-                                        
-                                        mse = np.linalg.norm(y - poly.get_polyfit(X).reshape(-1)) ** 2 / N
-                                except Exception as e:
-                                        print("Warning fitting of Poly failed:", e)
-                                        print(d, values_min, values_max)
-                                        mse, poly = np.inf, None
+                                        if (values_min - values_max) ** 2 < 0.01:
+                                                myParameters.append(Parameter(distribution='Uniform', lower=values_min-0.01, upper=values_max+0.01, order=self.order))
+                                        else: 
+                                                myParameters.append(Parameter(distribution='Uniform', lower=values_min, upper=values_max, order=self.order))
+                                if self.basis == "hyperbolic-basis":
+                                        myBasis = Basis(self.basis, orders=[self.order for _ in range(d)], q=0.5)
+                                else:
+                                        myBasis = Basis(self.basis, orders=[self.order for _ in range(d)])
+                                container["index_node_global"] += 1
+                                poly = Poly(myParameters, myBasis, method=self.poly_method, sampling_args={'sample-points':X, 'sample-outputs':y}, solver_args=self.poly_solver_args)
+                                poly.set_model()
+                                
+                                mse = np.linalg.norm(y - poly.get_polyfit(X).reshape(-1)) ** 2 / N
+#                                except Exception as e:
+#                                        print("Warning fitting of Poly failed:", e)
+#                                        print(d, values_min, values_max)
+#                                        mse, poly = np.inf, None
 
                                 return mse, poly
                                         

@@ -13,19 +13,25 @@ except ImportError as e:
 class Solver(object):
     """
     Returns solver functions for solving Ax=b
-    :param string method: The method used for solving the linear system. Options include: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``huber``, ``elastic-net``, ``lasso-lars`` and ``relevance-vector-machine``.
+    :param string method: The method used for solving the linear system. Options include: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``huber``, ``elastic-net``, ``elastic-path`` and ``relevance-vector-machine``. 
     :param dict solver_args: Optional arguments centered around the specific solver.
             :param numpy.ndarray noise-level: The noise-level to be used in the basis pursuit de-noising solver.
             :param bool verbose: Default value of this input is set to ``False``; when ``True`` a string is printed to the screen detailing the solver convergence and condition number of the matrix.
     """
+    # TODO - update poly solver descriptions
     def __init__(self, method, solver_args):
         self.method = method
         self.solver_args = solver_args
         self.noise_level = None
-        self.param1 = None
+        self.param1 = None #rename param1 and param2 TODO
         self.param2 = None
         self.verbose = False
-        self.max_iter = None
+        self.max_iter = 100
+        self.alpha = 1.0
+        self.n_lambdas = 100
+        self.lambda_eps = 1e-3
+        self.lambda_max = None
+        self.tol        = 1e-6
         self.ic = 'AIC'
         self.opt = 'osqp'
         if self.solver_args is not None:
@@ -34,8 +40,13 @@ class Solver(object):
             if 'param2' in self.solver_args: self.param2 = solver_args.get('param2')
             if 'verbose' in self.solver_args: self.verbose = solver_args.get('verbose')
             if 'max-iter' in self.solver_args: self.max_iter = solver_args.get('max-iter')
+            if 'alpha' in self.solver_args: self.alpha = solver_args.get('alpha')
+            if 'n-lambdas' in self.solver_args: self.n_lambdas = solver_args.get('n-lambdas')
+            if 'lambda-eps' in self.solver_args: self.lambda_eps = solver_args.get('lambda-eps')
+            if 'lambda-max' in self.solver_args: self.lambda_max = solver_args.get('lambda-max')
+            if 'tol' in self.solver_args: self.tol = solver_args.get('tol')
+            if 'select-crit' in self.solver_args: self.ic = solver_args.get('select-crit')
             if 'optimiser' in self.solver_args: self.opt = solver_args.get('optimiser')
-            if 'IC' in self.solver_args: self.ic = solver_args.get('IC')
         if self.opt=='osqp' and not cvxpy: 
             self.opt='scipy'
         if self.method.lower() == 'compressed-sensing' or self.method.lower() == 'compressive-sensing':
@@ -52,10 +63,11 @@ class Solver(object):
             self.solver = lambda A, b: least_absolute_residual(A, b, self.verbose, self.opt)
         elif self.method.lower() == 'huber':
             self.solver = lambda A, b: huber(A, b, self.verbose, self.param1, self.opt)
-        elif self.method.lower() == 'elastic-net':
+        elif self.method.lower() == 'elastic-net': #MERGE elastic-net and elastic-path? or get rid of elastic-net? TODO
             self.solver = lambda A, b: elastic_net(A, b, self.verbose, self.param1, self.param2, self.opt)
-        elif self.method.lower() == 'lasso-lars':
-            self.solver = lambda A, b: lasso(A, b, self.verbose, self.max_iter, self.ic)
+        elif self.method.lower() == 'elastic-path':
+            self.solver = lambda A, b: elastic_path(A, b, self.verbose, self.max_iter, self.alpha, self.n_lambdas, 
+                    self.lambda_eps, self.lambda_max, self.tol, self.ic)
         elif self.method.lower() == 'relevance-vector-machine':
             self.solver = lambda A, b: rvm(A, b, self.max_iter)
         else:
@@ -563,159 +575,128 @@ def rvm(A, b, max_iter):
 
     return mean_coeffs, None 
 
-def lasso(Afull, b, verbose, max_iter, IC):
+def elastic_path(A, b, verbose, max_iter, alpha, n_lamdas, lamda_eps, lamda_max, tol, IC):
     """
-    Performs LASSO using least angle regression. The full regularisation path is computed, with the entire sequence of LARS steps requiring only O(m3 + nm2) computations (the cost of a single least squares regression!), as long as m < n [2]. The set of coefficients with the lowest model selection criteria Cp is then selected according to [3].
+    Performs elastic net regression via cordinate descent. The full regularisation path is computed (for a given l1 vs l2 blending parameter alpha), and the set of coefficients with the lowest model selection criteria is then selected according to [2]. 
+    Choosing alpha=1 gives LASSO regression, whilst alpha=0 gives ridge regression (however alpha<0.01 is unreliable). 
 
     **References**
-        1. Efron B., Hastie T., Johnstone I., Tibshirani R., (2004) Least angle regression. The Annals of Statistics, 32(2), 407-499. `Paper <https://projecteuclid.org/download/pdfview_1/euclid.aos/1083178935>`__
-        2. Hesterberg, T., Choi, N. H., Meier, L., Fraley, C., (2008) Least angle and l1 penalized regression: A review. Statistics Surveys, 2(0), 61–93. `Paper <https://projecteuclid.org/download/pdfview_1/euclid.ssu/1211317636>`__
-        3. Zou, H., Hastie, T., Tibshirani, R., (2007) On the “degrees of freedom” of the lasso. The Annals of Statistics, 35(5), 2173–2192. `Paper <https://projecteuclid.org/download/pdfview_1/euclid.aos/1194461726>`__
+        1. Friedman J., Hastie T., Tibshirani R., (2010) Regularization Paths for Generalized Linear Models via Coordinate Descent. Journal of Statistical Software, 33(1), 1-22. `Paper <https://www.jstatsoft.org/article/view/v033i01>`__
+        2. Zou, H., Hastie, T., Tibshirani, R., (2007) On the “degrees of freedom” of the lasso. The Annals of Statistics, 35(5), 2173–2192. `Paper <https://projecteuclid.org/download/pdfview_1/euclid.aos/1194461726>`__
     """
-#    A = Afull[:,:-1]
-    A = Afull
-    n,m = A.shape
+    n,p = A.shape
     b = b.reshape(-1)
-    if max_iter is None: 
-        max_iter = min(m,n-1)
-    else:
-        max_iter = min(m,n-1,max_iter)
-    if verbose: print('n = %d, m = %d, max_iter = %d' %(n,m,max_iter))
+    assert alpha >= 0.01, 'elastic-path does not work reliably for alpha<0.01, choose 0>alpha<=1.'
 
-    cur_pred = np.zeros((n,))
-    beta = np.zeros((m,))
-    sign = np.zeros((m,))
-    beta_path = np.zeros((max_iter, m))
-    rss = np.zeros(max_iter)
+    # Get grid of lambda values to cycle through (in descending order)
+    lamdas = _get_lamdas(A,b,n_lamdas,lamda_eps,lamda_max,alpha)
 
-    active_set = set()
-    residual = b - cur_pred
-    cur_corr = A.transpose().dot(residual)
-    j = np.argmax(np.abs(cur_corr), 0)
-    active_set.add(j)
-    sign[j] = 1
-    early_stop = False
-    for it in range(max_iter):
-        # Residual and its sum of squares
-        residual = b - cur_pred
-        rss[it] = np.sum(residual * residual)
-        pred_from_beta = A.dot(beta)
+    #Run lasso regression for each lambda (theta passed back in for warm-start)
+    x  = np.zeros(p) # Init coeff vector as zeroes
+    x_path = np.empty([len(lamdas),p])
+    for l, lamda in enumerate(lamdas):
+        x_path[l,:] = _elastic_net_cd(x,A,b,lamda,alpha,max_iter,tol,verbose)
 
-        # Compute the Gram matrix X'X for the active set (eq. 2.5 in [1])
-        X_a = A[:, list(active_set)]
-        X_a *= sign[list(active_set)]
-        G_a = X_a.transpose().dot(X_a)
-
-        print(np.linalg.cond(G_a))
-
-        # Invert the gram matrix and scale A_a (eq 2.5 in [1] again)
-        try: # if inversion fails i.e. G_a singular then early stop
-            G_a_inv = np.linalg.inv(G_a)
-        except np.linalg.LinAlgError as err:
-            if 'Singular matrix' in str(err): 
-                early_stop = True
-                break
-            else:
-                raise
-        G_a_inv_red_cols = np.sum(G_a_inv, 1)
-        A_a = 1 / np.sqrt(np.sum(G_a_inv_red_cols))
-
-        # Compute equianglular vector (eq. 2.6 in [1])
-        omega = A_a * G_a_inv_red_cols
-        equiangular = X_a.dot(omega)
-
-        # Check G_a has been inverted ok. i.e. G_a^(-1)@G_a = I. If not then stop early.
-        test = G_a_inv@G_a 
-        off_diag = np.sum(test)-np.trace(test)
-        if abs(off_diag) > 1e-7: 
-            early_stop = True
-            break
-
-        # Current correlation vector and cos_angle vector (eqs. 2.8 and 2.11 in [1])
-        cos_angle = A.transpose().dot(equiangular)
-        cur_corr = A.transpose().dot(residual)
-
-        # Largest correlation (eq 2.9 in [1])
-        largest_abs_correlation = np.abs(cur_corr).max()
-
-        if verbose:
-            print('\nIteration %d/%d' %(it+1,max_iter))
-            print('RSS', rss[it])
-            print('largest_abs_correlation', largest_abs_correlation)
-
-        # Find gamma to use in update (eq. 2.13 in [1])
-        gamma = None
-        if it < m - 1:
-            next_j = None
-            next_sign = 0
-            for j in range(m):
-                if j in active_set:
-                    continue
-                v0 = (largest_abs_correlation - cur_corr[j]) / (A_a - cos_angle[j]).item()
-                v1 = (largest_abs_correlation + cur_corr[j]) / (A_a + cos_angle[j]).item()
-                if v0 > 0 and (gamma is None or v0 < gamma):  # This "or" (and below one) makes it LASSO instead of normal LARS, i.e. see eq 3.6 in [1]
-                    next_j = j
-                    gamma = v0
-                    next_sign = 1
-                if v1 > 0 and (gamma is None or v1 < gamma):
-                    gamma = v1
-                    next_j = j
-                    next_sign = -1
-        # Final iteration (i.e. OLS)
-        else:
-            gamma = largest_abs_correlation / A_a 
-
-        # Solving sa*sx = sb to get coefficients for current active set. This is probably optimal speed wise. Should be able to do LASSO-LARS in cost O(m3 + nm2) i.e. cost of single lstsq solve (if m<n, see [2]). Maybe look at the scikit-learn approaches involving Cholesky factorisation and updates/downdates? TODO
-        sa = X_a
-        sb = equiangular * gamma
-        if np.__version__ < '1.14':
-            sx = np.linalg.lstsq(sa, sb)
-        else:
-            sx = np.linalg.lstsq(sa, sb, rcond=None)
-
-        # Get coefficients
-        for i, j in enumerate(active_set):
-            beta[j] += sx[0][i] * sign[j]
-
-        # Calc equivalent regularisation coefficient lamda i.e. lamda*||x||_1. (This isn't strictly nescesary since penalty term is quantified by sum_j(x_j) for LARS LASSO, but useful for comparision with elastic net etc) 
-
-        # Update prediction and active set
-        cur_pred = A@beta
-        active_set.add(next_j)
-        sign[next_j] = next_sign
-
-        beta_path[it, :] = beta
-        if verbose:
-            print('beta', beta)
-            print('max correlation: %s' % (largest_abs_correlation - gamma * A_a))
-
-    # Cut off end of arrays if early stop
-    if early_stop:
-        if verbose: print('LASSO-LARS stopped early at iteration %d out of %d.' %(it+1,max_iter))
-        beta_path = beta_path[:it]
-        rss       = rss[:it]
-        max_iter  = it
-
-    sum_abs_coeff = np.sum(np.abs(beta_path), 1)
-
-    # Calc information statistic (AIC or BIC)
-    df = np.arange(max_iter)+1  #degrees of freedom can be approximated to be the number of LARS steps i.e. the number of non-zero coefficients [3]
-#    sigma2 = np.var(b) # sklearn uses this for sigma2 i.e. var(b) instead of var(residuals). Why? TODO 
-    sigma2 = np.var(b-cur_pred) 
-
+#   # Calc information statistic (AIC or BIC)
+    # RSS for each lambda. A@x_path.T is the predicted b at each point, for each set of coeffs i.e. dimensions (n_samples,n_lambdas)
+    rss = np.sum((A@x_path.T - b.reshape(-1,1))**2,axis=0)
+    df  = np.count_nonzero(x_path, axis=1) #degrees of freedom can be approximated to be the number of non-zero coefficients [2]
+    # Approx sigma2 using residual from saturated model
+    residual = b - A@x_path[-1,:]
+    sigma2  = np.var(residual) 
+    
     if IC=='AIC':
         ic = rss/(n*sigma2) + (2/n)*df
     elif IC=='BIC':
         ic = rss/(n*sigma2) + (np.log(n)/n)*df
-   
-    # Select the set of coefficients which minimise IC
-    if IC is not None:
-        idx = np.argmin(ic) 
-        beta_opt = beta_path[idx]
-        if verbose: print('\nLASSO-LARS found optimum betas with DoF: %d' %(idx+1))
-    else:
-        beta_opt = beta_path[-1]
-        idx = max_iter-1
-        ic = np.zeros(max_iter)
+    elif IC=='RSS':
+        ic = rss
+    # TODO - add KFOLD search with RSS
 
-    return beta_opt, {'sum_beta':sum_abs_coeff, 'beta':beta_path, 'IC':ic,'opt_idx':idx}
+    # Select the set of coefficients which minimise IC
+    idx = np.argmin(ic) 
+    x_best = x_path[idx,:]
+    if verbose: print('\nUsing %a criterion, optimum LASSO lambda = %.2e' %(IC,lamdas[idx]))
+
+    return x_best, {'lambdas':lamdas, 'x_path':x_path, 'IC':ic,'opt_idx':idx}
+
+def _soft_threshold(rho,lamda):
+    '''Soft thresholding operator for 1D LASSO in elastic net coordinate descent algoritm'''
+    if rho < -lamda:
+        return (rho + lamda)
+    elif rho > lamda:
+        return (rho - lamda)
+    else:
+        return 0.0
+
+def _elastic_net_cd(x,A,b,lamda,alpha, max_iter,tol,verbose):
+    # Preliminaries
+    b = b.reshape(-1)
+    A2 = np.sum(A**2, axis=0)
+    dx_tol = tol
+    n,p = A.shape
+
+    # TODO - see sec 2.6 of Friedman 2010. After one complete cycle through variables, only 
+    # do following iterations on active set of features (i.e. non-zero ones.)
+    # TODO - don't apply soft_threshold for intercept. Neccesary for EQ p0?
+    # Different lamda's for different features (see 2.6)
+    # TODO - covariance updates (see 2.2)
+    for n_iter in range(max_iter):
+        x_max = 0.0
+        dx_max = 0.0
+    
+        r = b - A@x
+        for j in range(p): 
+            r = r + A[:,j]*x[j]
+            rho = A[:,j]@r/(A2[j] + lamda*(1-alpha))
+            x_prev = x[j]
+            if j == 0: # TODO - check p0 is still at index 0 when more than parameter
+                x[j] = rho
+            else:
+                x[j] = _soft_threshold(rho,lamda*alpha)
+            r = r - A[:,j]*x[j]
+            
+            # Update changes in coeffs
+            if j != 0: # TODO - as above
+                d_x    = abs(x[j] - x_prev)
+                dx_max = max(dx_max,d_x)
+                x_max  = max(x_max,abs(x[j]))
+            
+        # Convergence check - early stop if converged
+        if x_max == 0.0:  # if all coeff's zero
+            if verbose: print('convergence after %d iterations, x_max=0' %n_iter)
+            break
+        elif dx_max/x_max < dx_tol: # biggest coord update of this iteration smaller than tolerance
+            if verbose: print('convergence after %d iterations, d_w: %.2e, tol: %.2e' %(n_iter, dx_max/x_max,dx_tol) )
+            break
+        # TODO - add further duality gap check from 
+        #http://proceedings.mlr.press/v37/fercoq15-supp.pdf
+        #l1_reg = lamda * alpha * n # For use w/ duality gap calc.
+        #l2_reg = lamda * (1.0 - alpha) * n
+        #gap = tol + 1
+
+    # If else (from for loop) reached, max_iter reached without break. 
+    else:
+        print('Max iterations reached without convergence')
+ 
+    return x
+
+def _get_lamdas(A,b,n_lamdas,lamda_eps,lamda_maxmax,alpha):
+    n,p = A.shape
+      
+    # Get list of lambda's
+    Ab = (A.T@b*n).reshape(-1) #*n as sum over n
+        
+    # From sec 2.5 (with normalisation factor added)
+    Ab /= np.sum(A**2, axis=0)
+    lamda_max = np.max(np.abs(Ab[1:]))/(n*alpha) #1: in here as not applying regularisation to intercept - TODO - check po at 0 for multiple parameters
+    if lamda_maxmax is not None:
+        lamda_max = min(lamda_max,lamda_maxmax)
+    
+    if lamda_max <= np.finfo(float).resolution:
+        lamdas = np.empty(n_lamdas)
+        lamdas.fill(np.finfo(float).resolution)
+        return lamdas
+    return np.logspace(np.log10(lamda_max * lamda_eps), np.log10(lamda_max),
+                           num=n_lamdas)[::-1]
+

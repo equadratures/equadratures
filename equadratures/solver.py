@@ -595,6 +595,7 @@ def elastic_path(A, b, verbose, max_iter, alpha, n_lamdas, lamda_eps, lamda_max,
     x  = np.zeros(p) # Init coeff vector as zeroes
     x_path = np.empty([len(lamdas),p])
     for l, lamda in enumerate(lamdas):
+        if verbose: print('Running coord. descent for lambda = %.2e (%d/%d)' %(lamda,l,n_lamdas))
         x_path[l,:] = _elastic_net_cd(x,A,b,lamda,alpha,max_iter,tol,verbose)
 
 #   # Calc information statistic (AIC or BIC)
@@ -620,65 +621,82 @@ def elastic_path(A, b, verbose, max_iter, alpha, n_lamdas, lamda_eps, lamda_max,
 
     return x_best, {'lambdas':lamdas, 'x_path':x_path, 'IC':ic,'opt_idx':idx}
 
-def _soft_threshold(rho,lamda):
-    '''Soft thresholding operator for 1D LASSO in elastic net coordinate descent algoritm'''
-    if rho < -lamda:
-        return (rho + lamda)
-    elif rho > lamda:
-        return (rho - lamda)
-    else:
-        return 0.0
-
 def _elastic_net_cd(x,A,b,lamda,alpha, max_iter,tol,verbose):
+    """
+    Private method to perform coordinate descent (with elastic net soft  thresholding) for a given lambda and alpha value.
+    Following section 2.6 of [1], the algo does one complete pass over the features, and then for following iterations it only loops over the active set (non-zero coefficients). See commit 2b0af9f58fa5ff1876f76f7aedeaf2a0d7d252c8 for a more simple (but considerably slower for large p) algo. 
+    """
+    # TODO - covariance updates (see 2.2 of [1]) could provide further speed up...
+
     # Preliminaries
     b = b.reshape(-1)
     A2 = np.sum(A**2, axis=0)
     dx_tol = tol
     n,p = A.shape
 
-    # TODO - see sec 2.6 of Friedman 2010. After one complete cycle through variables, only 
-    # do following iterations on active set of features (i.e. non-zero ones.)
-    # TODO - don't apply soft_threshold for intercept. Neccesary for EQ p0?
-    # Different lamda's for different features (see 2.6)
-    # TODO - covariance updates (see 2.2)
-    for n_iter in range(max_iter):
-        x_max = 0.0
-        dx_max = 0.0
-    
-        r = b - A@x
-        for j in range(p): 
-            r = r + A[:,j]*x[j]
-            rho = A[:,j]@r/(A2[j] + lamda*(1-alpha))
-            x_prev = x[j]
-            if j == 0: # TODO - check p0 is still at index 0 when more than parameter
-                x[j] = rho
-            else:
-                x[j] = _soft_threshold(rho,lamda*alpha)
-            r = r - A[:,j]*x[j]
-            
-            # Update changes in coeffs
-            if j != 0: # TODO - as above
-                d_x    = abs(x[j] - x_prev)
-                dx_max = max(dx_max,d_x)
-                x_max  = max(x_max,abs(x[j]))
-            
-        # Convergence check - early stop if converged
-        if x_max == 0.0:  # if all coeff's zero
-            if verbose: print('convergence after %d iterations, x_max=0' %n_iter)
+    finish  = False
+    success = False
+    attempt = 0
+    while not success:
+        attempt += 1
+        if (attempt > 2): 
+            print('Non-zero coefficients still changing after two cycles, breaking...')
             break
-        elif dx_max/x_max < dx_tol: # biggest coord update of this iteration smaller than tolerance
-            if verbose: print('convergence after %d iterations, d_w: %.2e, tol: %.2e' %(n_iter, dx_max/x_max,dx_tol) )
-            break
-        # TODO - add further duality gap check from 
-        #http://proceedings.mlr.press/v37/fercoq15-supp.pdf
-        #l1_reg = lamda * alpha * n # For use w/ duality gap calc.
-        #l2_reg = lamda * (1.0 - alpha) * n
-        #gap = tol + 1
 
-    # If else (from for loop) reached, max_iter reached without break. 
-    else:
-        print('Max iterations reached without convergence')
- 
+        for n_iter in range(max_iter):
+            x_max = 0.0
+            dx_max = 0.0
+        
+            # Residual
+            r = b - A@x
+
+            active_set = set(np.argwhere(x).flatten())
+            if n_iter == 0 or finish: #First iter or after convergence, loop through entire set 
+                loop_set = set(range(p))
+            elif n_iter == 1: # Now only loop through active set (i.e. non-zero coeffs)
+                loop_set = active_set
+
+            for j in loop_set:
+                r = r + A[:,j]*x[j]
+                rho = A[:,j]@r/(A2[j] + lamda*(1-alpha))
+                x_prev = x[j]
+                if j == 0: # TODO - check p0 is still at index 0 when more than parameter
+                    x[j] = rho
+                else:
+                    x[j] = _soft_threshold(rho,lamda*alpha)
+                r = r - A[:,j]*x[j]
+                
+                # Update changes in coeffs
+                if j != 0: # TODO - as above
+                    d_x    = abs(x[j] - x_prev)
+                    dx_max = max(dx_max,d_x)
+                    x_max  = max(x_max,abs(x[j]))
+                
+            # Convergence check - early stop if converged
+            if n_iter == max_iter-1:
+                conv_msg = 'Max iterations reached without convergence'
+                finish = True
+            if x_max == 0.0:  # if all coeff's zero
+                conv_msg = 'Convergence after %d iterations, x_max=0' %n_iter
+                finish = True
+            elif dx_max/x_max < dx_tol: # biggest coord update of this iteration smaller than tolerance
+                conv_msg = 'Convergence after %d iterations, d_x: %.2e, tol: %.2e' %(n_iter, dx_max/x_max,dx_tol) 
+                finish = True
+            # TODO - add further duality gap check from 
+            #http://proceedings.mlr.press/v37/fercoq15-supp.pdf
+            #l1_reg = lamda * alpha * n # For use w/ duality gap calc.
+            #l2_reg = lamda * (1.0 - alpha) * n
+            #gap = tol + 1
+
+            # Check final complete cycle doesn't add to active set, if it does complete entire process (this is rare!)
+            if finish:
+                final_active_set = set(np.argwhere(x).flatten())
+                if len(final_active_set-active_set) == 0:
+                    if verbose: print(conv_msg)
+                    success = True
+                else:
+                    if verbose: print('Final cycle added non-zero coefficients, restarting coordinate descent')
+                break
     return x
 
 def _get_lamdas(A,b,n_lamdas,lamda_eps,lamda_maxmax,alpha):
@@ -700,3 +718,11 @@ def _get_lamdas(A,b,n_lamdas,lamda_eps,lamda_maxmax,alpha):
     return np.logspace(np.log10(lamda_max * lamda_eps), np.log10(lamda_max),
                            num=n_lamdas)[::-1]
 
+def _soft_threshold(rho,lamda):
+    '''Soft thresholding operator for 1D LASSO in elastic net coordinate descent algoritm'''
+    if rho < -lamda:
+        return (rho + lamda)
+    elif rho > lamda:
+        return (rho - lamda)
+    else:
+        return 0.0

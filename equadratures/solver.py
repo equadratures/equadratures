@@ -23,8 +23,7 @@ class Solver(object):
         self.method = method
         self.solver_args = solver_args
         self.noise_level = None
-        self.param1 = None #rename param1 and param2 TODO
-        self.param2 = None
+        self.param1 = None # TODO - rename to something huber specific
         self.verbose = False
         self.max_iter = 100
         self.alpha = 1.0
@@ -32,12 +31,11 @@ class Solver(object):
         self.lambda_eps = 1e-3
         self.lambda_max = None
         self.tol        = 1e-6
-        self.ic = 'AIC'
+        self.crit = 'AIC'
         self.opt = 'osqp'
         if self.solver_args is not None:
             if 'noise-level' in self.solver_args: self.noise_level = solver_args.get('noise-level')
             if 'param1' in self.solver_args: self.param1 = solver_args.get('param1')
-            if 'param2' in self.solver_args: self.param2 = solver_args.get('param2')
             if 'verbose' in self.solver_args: self.verbose = solver_args.get('verbose')
             if 'max-iter' in self.solver_args: self.max_iter = solver_args.get('max-iter')
             if 'alpha' in self.solver_args: self.alpha = solver_args.get('alpha')
@@ -45,7 +43,7 @@ class Solver(object):
             if 'lambda-eps' in self.solver_args: self.lambda_eps = solver_args.get('lambda-eps')
             if 'lambda-max' in self.solver_args: self.lambda_max = solver_args.get('lambda-max')
             if 'tol' in self.solver_args: self.tol = solver_args.get('tol')
-            if 'select-crit' in self.solver_args: self.ic = solver_args.get('select-crit')
+            if 'select-crit' in self.solver_args: self.crit = solver_args.get('select-crit')
             if 'optimiser' in self.solver_args: self.opt = solver_args.get('optimiser')
         if self.opt=='osqp' and not cvxpy: 
             self.opt='scipy'
@@ -64,10 +62,10 @@ class Solver(object):
         elif self.method.lower() == 'huber':
             self.solver = lambda A, b: huber(A, b, self.verbose, self.param1, self.opt)
         elif self.method.lower() == 'elastic-net': #MERGE elastic-net and elastic-path? or get rid of elastic-net? TODO
-            self.solver = lambda A, b: elastic_net(A, b, self.verbose, self.param1, self.param2, self.opt)
+            self.solver = lambda A, b: elastic_net(A, b, self.verbose, self.lambda_max, self.alpha, self.opt)
         elif self.method.lower() == 'elastic-path':
             self.solver = lambda A, b: elastic_path(A, b, self.verbose, self.max_iter, self.alpha, self.n_lambdas, 
-                    self.lambda_eps, self.lambda_max, self.tol, self.ic)
+                    self.lambda_eps, self.lambda_max, self.tol, self.crit)
         elif self.method.lower() == 'relevance-vector-machine':
             self.solver = lambda A, b: rvm(A, b, self.max_iter)
         else:
@@ -495,8 +493,8 @@ def elastic_net(A, b, verbose, lamda_val, alpha_val, opt):
     alpha = lamda1 / (lamda1 + lamda2)
     '''
     N,d = A.shape
-    if lamda_val == None: lamda_val = 1.0
-    if alpha_val == None: alpha_val = 0.5 
+    if lamda_val == None: lamda_val = 0.1
+    if alpha_val == None: alpha_val = 1.0 
     if verbose: print('Elastic net regression with lambda=%.2f and alpha=%.2f.' %(lamda_val,alpha_val))
 
     # Use cvxpy with OSQP for optimising 
@@ -575,9 +573,9 @@ def rvm(A, b, max_iter):
 
     return mean_coeffs, None 
 
-def elastic_path(A, b, verbose, max_iter, alpha, n_lamdas, lamda_eps, lamda_max, tol, IC):
+def elastic_path(A, b, verbose, max_iter, alpha, n_lamdas, lamda_eps, lamda_max, tol, crit):
     """
-    Performs elastic net regression via cordinate descent. The full regularisation path is computed (for a given l1 vs l2 blending parameter alpha), and the set of coefficients with the lowest model selection criteria is then selected according to [2]. 
+    Performs elastic net regression via coordinate descent. The full regularisation path is computed (for a given l1 vs l2 blending parameter alpha), and the set of coefficients with the lowest model selection criteria is then selected according to [2]. 
     Choosing alpha=1 gives LASSO regression, whilst alpha=0 gives ridge regression (however alpha<0.01 is unreliable). 
 
     **References**
@@ -588,38 +586,59 @@ def elastic_path(A, b, verbose, max_iter, alpha, n_lamdas, lamda_eps, lamda_max,
     b = b.reshape(-1)
     assert alpha >= 0.01, 'elastic-path does not work reliably for alpha<0.01, choose 0>alpha<=1.'
 
+    if crit=='CV':
+        nfold = 5
+    else:
+        nfold = 1
+
     # Get grid of lambda values to cycle through (in descending order)
     lamdas = _get_lamdas(A,b,n_lamdas,lamda_eps,lamda_max,alpha)
 
-    #Run lasso regression for each lambda (theta passed back in for warm-start)
-    x  = np.zeros(p) # Init coeff vector as zeroes
-    x_path = np.empty([len(lamdas),p])
-    for l, lamda in enumerate(lamdas):
-        if verbose: print('Running coord. descent for lambda = %.2e (%d/%d)' %(lamda,l,n_lamdas))
-        x_path[l,:] = _elastic_net_cd(x,A,b,lamda,alpha,max_iter,tol,verbose)
+    #Run lasso regression for each lambda (w/ warm start i.e. x is passed back in)
+    # Loop through nfolds (nfold=1 unless crit=='CV')
+    x_path = np.empty([n_lamdas,p,nfold])
+    rss    = np.empty([n_lamdas,nfold])*np.nan
+    for fold in range(nfold):
+        if verbose: print('Fold %d/%d' %(fold,nfold))
+        indices = [int(k) for k in fold*np.ceil(n/5.0) + range(int(np.ceil(n/5.0))) if k<n]
+        A_val   = A[indices]
+        b_val   = b[indices] 
+        A_train = np.delete(A, indices, 0)
+        b_train = np.delete(b, indices, 0)
+        if len(A_val) == 0:
+            continue
 
-#   # Calc information statistic (AIC or BIC)
-    # RSS for each lambda. A@x_path.T is the predicted b at each point, for each set of coeffs i.e. dimensions (n_samples,n_lambdas)
-    rss = np.sum((A@x_path.T - b.reshape(-1,1))**2,axis=0)
-    df  = np.count_nonzero(x_path, axis=1) #degrees of freedom can be approximated to be the number of non-zero coefficients [2]
-    # Approx sigma2 using residual from saturated model
-    residual = b - A@x_path[-1,:]
-    sigma2  = np.var(residual) 
+        x  = np.zeros(p) # Init coeff vector as zeroes
+        for l, lamda in enumerate(lamdas):
+            if verbose: print('Running coord. descent for lambda = %.2e (%d/%d)' %(lamda,l,n_lamdas))
+            x_path[l,:,fold] = _elastic_net_cd(x,A_train,b_train,lamda,alpha,max_iter,tol,verbose)
     
-    if IC=='AIC':
-        ic = rss/(n*sigma2) + (2/n)*df
-    elif IC=='BIC':
-        ic = rss/(n*sigma2) + (np.log(n)/n)*df
-    elif IC=='RSS':
-        ic = rss
-    # TODO - add KFOLD search with RSS
+        # RSS for each lambda. A@x_path.T is the predicted b at each point, for each set of coeffs i.e. dimensions (n_samples,n_lambdas)
+        rss[:,fold] = np.sum((A_val@x_path[:,:,fold].T - b_val.reshape(-1,1))**2,axis=0)
+
+    # Calc information statistic (AIC or BIC, or RSS if cross validation)
+    if crit!='CV':
+        df  = np.count_nonzero(x_path[:,:,fold], axis=1) #degrees of freedom can be approximated to be the number of non-zero coefficients [2]
+        # Approx sigma2 using residual from saturated model
+        residual = b - A@x_path[-1,:,fold]
+        sigma2  = np.var(residual) 
+        if crit=='AIC':
+            ic = rss[:,fold]/(n*sigma2) + (2/n)*df
+        elif crit=='BIC':
+            ic = rss[:,fold]/(n*sigma2) + (np.log(n)/n)*df
+        ic_std = None
+
+    # "information criterion" is mean rss over nfold's for cross validation approach
+    else:
+        ic = np.nanmean(rss,axis=1) #nanmean in case last fold had len(A_val) therefore that rss not defined
+        ic_std = np.nanstd(rss,axis=1)
 
     # Select the set of coefficients which minimise IC
     idx = np.argmin(ic) 
-    x_best = x_path[idx,:]
+    x_best = x_path[idx,:,0]
     if verbose: print('\nUsing %a criterion, optimum LASSO lambda = %.2e' %(IC,lamdas[idx]))
 
-    return x_best, {'lambdas':lamdas, 'x_path':x_path, 'IC':ic,'opt_idx':idx}
+    return x_best, {'lambdas':lamdas, 'x_path':x_path[:,:,0], 'IC':ic,'IC_std':ic_std,'opt_idx':idx}
 
 def _elastic_net_cd(x,A,b,lamda,alpha, max_iter,tol,verbose):
     """
@@ -700,13 +719,14 @@ def _elastic_net_cd(x,A,b,lamda,alpha, max_iter,tol,verbose):
     return x
 
 def _get_lamdas(A,b,n_lamdas,lamda_eps,lamda_maxmax,alpha):
+    eps = np.finfo(np.float64).eps 
     n,p = A.shape
       
     # Get list of lambda's
     Ab = (A.T@b*n).reshape(-1) #*n as sum over n
-        
+
     # From sec 2.5 (with normalisation factor added)
-    Ab /= np.sum(A**2, axis=0)
+    Ab /= (np.sum(A**2, axis=0) + eps)
     lamda_max = np.max(np.abs(Ab[1:]))/(n*alpha) #1: in here as not applying regularisation to intercept - TODO - check po at 0 for multiple parameters
     if lamda_maxmax is not None:
         lamda_max = min(lamda_max,lamda_maxmax)

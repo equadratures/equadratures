@@ -870,7 +870,6 @@ class Poly(object):
         Sigma = np.diag(data_variance)
 
         # Construct Q, the pseudoinverse of the weighted orthogonal polynomial matrix P
- 
         P = self.get_poly(self._quadrature_points)
         W = np.diag(np.sqrt(self._quadrature_weights))
         A = np.dot(W, P.T)
@@ -884,7 +883,7 @@ class Poly(object):
         # Propagate the uncertainties
         Sigma_X = np.dot( np.dot(Q, Sigma), Q.T)
         Sigma_F = np.dot( np.dot(Ao, Sigma_X), Ao.T) 
-        std_F = 1.96 * np.sqrt( np.diag(Sigma_F) )
+        std_F = np.sqrt( np.diag(Sigma_F) )
         return std_F.reshape(-1,1)
 
 def _inv(M):

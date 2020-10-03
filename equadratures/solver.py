@@ -636,7 +636,7 @@ def elastic_path(A, b, verbose, max_iter, alpha, n_lamdas, lamda_eps, lamda_max,
     # Select the set of coefficients which minimise IC
     idx = np.argmin(ic) 
     x_best = x_path[idx,:,0]
-    if verbose: print('\nUsing %a criterion, optimum LASSO lambda = %.2e' %(IC,lamdas[idx]))
+    if verbose: print('\nUsing %a criterion, optimum LASSO lambda = %.2e' %(crit,lamdas[idx]))
 
     return x_best, {'lambdas':lamdas, 'x_path':x_path[:,:,0], 'IC':ic,'IC_std':ic_std,'opt_idx':idx}
 

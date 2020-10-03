@@ -25,7 +25,11 @@ class PolyTree(object):
         The interval between splits if ``grid`` search is chosen.
     :param bool verbose:
         For debugging
-        
+    :param bool all_data:
+        Save data at all nodes (instead of only leaf nodes).
+     :param list split_dims:
+        List of dimensions along which to make splits.
+      
     **Sample constructor initialisations**::
 
         import numpy as np
@@ -43,7 +47,7 @@ class PolyTree(object):
         2. Broelemann, K., Kasneci, G., (2019) A Gradient-Based Split Criterion for Highly Accurate and Transparent Model Trees. In Int. Joint Conf. on Artificial Intelligence (IJCAI). 2030-2037. `Paper <https://www.ijcai.org/Proceedings/2019/0281.pdf>`__
         3. Chan, T. F., Golub, G. H., LeVeque, R. J., (1983) Algorithms for computing the sample variance: Analysis and recommendations. The American Statistician. 37(3): 242–247. `Paper <https://www.tandfonline.com/doi/abs/10.1080/00031305.1983.10483115>`__
     """
-        def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, order=1, basis='total-order', search='exhaustive', samples=50, verbose=False, poly_method="least-squares", poly_solver_args=None):
+        def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, order=1, basis='total-order', search='exhaustive', samples=50, verbose=False, poly_method="least-squares", poly_solver_args=None,all_data=False,split_dims=None):
                 self.splitting_criterion = splitting_criterion
                 self.max_depth = max_depth
                 self.min_samples_leaf = min_samples_leaf
@@ -57,6 +61,11 @@ class PolyTree(object):
                 self.poly_method = poly_method
                 self.poly_solver_args = poly_solver_args
                 self.actual_max_depth = 0
+                self.all_data = all_data
+                if split_dims is not None:
+                        split_dims = [split_dims] if not isinstance(split_dims, list) else split_dims
+                        assert all(isinstance(dim, int) for dim in split_dims), "split_dims should be a list if ints"
+                self.split_dims = split_dims
 
                 assert max_depth > 0, "max_depth must be a postive integer"
                 assert order > 0, "order must be a postive integer" 
@@ -138,6 +147,10 @@ class PolyTree(object):
                                 X, y = node["data"]
                                 depth = node["depth"]
                                 N, d = X.shape
+                                
+                                # Dimensions to split along
+                                if self.split_dims is None:
+                                    self.split_dims = range(d)
 
                                 # Find feature splits that might improve loss
                                 did_split = False
@@ -303,7 +316,8 @@ class PolyTree(object):
                                 node["j_feature"] = result["j_feature"]
                                 node["threshold"] = result["threshold"]
 
-                                del node["data"]
+                                if not self.all_data:
+                                    del node["data"]
 
                                 (X_left, y_left), (X_right, y_right) = result["data"]
                                 poly_left, poly_right = result["polys"]
@@ -335,7 +349,7 @@ class PolyTree(object):
 
                 self.tree = _build_tree()
 
-        def prune(self, X, y):
+        def prune(self, X, y, tol=0.0):
                 """
                 Prunes the tree that you have fitted.
                 
@@ -345,8 +359,10 @@ class PolyTree(object):
                         Training input data
                 :param numpy.ndarray y:
                         Training output data
+                :param float tol:
+                        Pruning tolerance (%). Prune nodes if they only improve loss by less than this tolerance (optional).
                 """
-
+                tol /= 100.0
                 def pruner(node, X_subset, y_subset):
 
                         if X_subset.shape[0] < 1:
@@ -369,7 +385,7 @@ class PolyTree(object):
 
                                 node["lower_loss"] = lower_loss
 
-                                if lower_loss > node["test_loss"]:
+                                if lower_loss + (tol* node["test_loss"]) > node["test_loss"]:
                                         if self.verbose: print("prune",lower_loss, node["test_loss"], node["children"]["left"]["test_loss"], node["children"]["left"]["n_samples"], node["children"]["right"]["test_loss"], node["children"]["right"]["n_samples"])
                                         node["children"]["left"] = None
                                         node["children"]["right"] = None
@@ -382,25 +398,34 @@ class PolyTree(object):
                 self.tree["children"]["left"] = pruner(self.tree["children"]["left"], X_left, y_left)
                 self.tree["children"]["right"] = pruner(self.tree["children"]["right"], X_right, y_right)
 
-        def predict(self, X):
+
+        def predict(self, X, uq=False):
                 """
                 Evaluates the the polynomial tree approximation of the data.
 
                 :param PolyTree self:
                     An instance of the PolyTree class.
                 :param numpy.ndarray X:
-                        An ndarray with shape (number_of_observations, dimensions) at which the tree fit must be evaluated at.
-                :return: **y**:
-                        A numpy.ndarray of shape (number_of_observations,1) corresponding to the polynomial approximation of the tree.
-                """
+                    An ndarray with shape (number_of_observations, dimensions) at which the tree fit must be evaluated at.
+                :param bool uq:
+                    If true, the estimated uncertainty (standard deviation) of the polynomial approximation at each node is also returned.
 
+                :return: 
+                **y**: A numpy.ndarray of shape (number_of_observations,1) corresponding to the polynomial approximations of the tree.
+                **y_std**: A numpy.ndarray of shape (number_of_observations,1) corresponding to the predictive uncertainty (sigma) of the polynomial approximations of the tree.
+                """
                 def _predict(node, indexes):
 
                         no_children = node["children"]["left"] is None and \
                                                   node["children"]["right"] is None
                         if no_children:
+                            if not uq:
                                 y_pred[indexes] = node["poly"].get_polyfit(X[indexes]).reshape(-1)
-                                return
+                            else:
+                                pred, std = node["poly"].get_polyfit(X[indexes])
+                                y_pred[indexes] = pred.reshape(-1)
+                                y_std[indexes]  = std.reshape(-1)
+                            return
 
                         idx_left = np.where(X[indexes, node["j_feature"]] <= node["threshold"])[0]
                         idx_right = np.where(X[indexes, node["j_feature"]] > node["threshold"])[0]
@@ -410,9 +435,42 @@ class PolyTree(object):
 
                 assert self.tree is not None
                 y_pred = np.zeros(shape=X.shape[0])
+                if uq: y_std = np.zeros(shape=X.shape[0])
                 _predict(self.tree, np.arange(0, X.shape[0]))
 
-                return y_pred.reshape(-1)
+                if uq:
+                    return y_pred, y_std
+                else:
+                    return y_pred
+
+        def apply(self,X):   
+                """
+                Returns the node index for each observation in the data.
+
+                :param PolyTree self:
+                    An instance of the PolyTree class.
+                :param numpy.ndarray X:
+                    An ndarray with shape (number_of_observations, dimensions) at which the tree fit must be evaluated at.
+
+                :return: 
+                **inode**: A numpy.ndarray of shape (number_of_observations,1) corresponding to the node indexs for each observation in X.
+                """
+                def _apply(node, indexes):
+                        no_children = node["children"]["left"] is None and \
+                        node["children"]["right"] is None
+                        if no_children:
+                                inode[indexes] = node["index"]
+                                return
+
+                        idx_left = np.where(X[indexes, node["j_feature"]] <= node["threshold"])[0]
+                        idx_right = np.where(X[indexes, node["j_feature"]] > node["threshold"])[0]
+                        _apply(node["children"]["left"], indexes[idx_left])
+                        _apply(node["children"]["right"], indexes[idx_right])
+            
+                if X.ndim == 1: X = X.reshape(1,-1)
+                inode = np.zeros(shape=X.shape[0],dtype=int)
+                _apply(self.tree, np.arange(0, X.shape[0]))
+                return inode
 
         def get_graphviz(self, X=None, feature_names=None, file_name=None):
                 """
@@ -449,11 +507,12 @@ class PolyTree(object):
                                 threshold_str = "{} <= {:.3f}\\n".format(feature_names[node['j_feature']], node["threshold"])
                                 leaf = False
                         
-                        try:
+                        if "lower_loss" in node:
                                 label_str = "node {} \\n {} n_samples = {}\\n loss = {:.6f}\\n lower_loss = {}".format(node_index,threshold_str, node["n_samples"], node["test_loss"], node["lower_loss"])
-                        except:
+                        elif "test_loss" in node:
+                                label_str = "node {} \\n {} n_samples = {}\\n loss = {:.6f}".format(node_index,threshold_str, node["n_samples"], node["test_loss"])
+                        else:
                                 label_str = "node {} \\n {} n_samples = {}\\n loss = {:.6f}".format(node_index,threshold_str, node["n_samples"], node["loss"])                         
-                        
                         # Create node
                         if leaf:
                             nodeshape = "rectangle"
@@ -563,6 +622,147 @@ class PolyTree(object):
                                         return _get_node_from_X(node["children"]["right"])
                         return _get_node_from_X(self.tree)
 
+        def get_paths(self,X=None):
+                """
+                Returns the tree paths for the leaf nodes in the tree.
+
+                :param PolyTree self:
+                    An instance of the PolyTree class.
+                :param numpy.ndarray X:
+                    An ndarray with shape (number_of_observations, dimensions) to apply the tree to (optional). If given, paths will only be returned for leaves which contain observations. 
+
+                :return: 
+                **paths**: A dict containing a dict for each leaf node. Indexed by the node indexes for the leaf nodes.
+                """
+
+                def _find_path(node, path, i):
+                        """
+                        Private recursive function to find path through a tree for a given leaf node. 
+                        """
+                        node_index = node["index"]
+                        info = {'node':node_index,'j':node["j_feature"],'thresh':node["threshold"]}
+                        path.append(info)
+                        if node_index == i: 
+                                return True
+                        left = False
+                        right = False
+                        if node["children"]["left"] is not None:
+                                left = _find_path(node["children"]["left"], path, i)
+                        if node["children"]["right"] is not None:
+                                right = _find_path(node["children"]["right"], path, i)
+                        if left or right :
+                                return True
+                        path.remove(info)
+                        return False
+
+                # Get training data if needed
+                if X is None:
+                    X = self.tree["data"][0]
+
+                # Get leaf nodes
+                leave_id = self.apply(X)
+
+                # Loop through leaves and find path for each.
+                paths ={}
+                for leaf in np.unique(leave_id):
+                        path_leaf = []
+                        _find_path(self.tree, path_leaf, leaf)
+
+                        # Set split info to None for leaf node
+                        path_leaf[-1]["j"]      = None
+                        path_leaf[-1]["thresh"] = None
+
+                        # Save in dict
+                        paths[leaf] = path_leaf
+
+                return paths
+
+        def get_decision_surface(self,ax,ij,X=None,y=None,max_depth=None,label=True,
+                                 predict=False,error=False,**kwargs):
+                if X is None:
+                        X = self.tree["data"][0]
+                if y is None:
+                        y = self.tree["data"][1]
+                Xij = X[:,ij]
+                self.tree["Xmin"] = np.min(Xij,axis=0)
+                self.tree["Xmax"] = np.max(Xij,axis=0)
+        
+                assert (not predict or not error), "predict and error can't both be true at once"
+                if error:
+                        error = y - self.predict(X)
+                        plot = ax.scatter(X[:,ij[0]],X[:,ij[1]],c=error,alpha=0.8,**kwargs)
+                elif predict:
+                        plot = ax.scatter(X[:,ij[0]],X[:,ij[1]],c=self.predict(X),alpha=0.8,**kwargs)
+                else:
+                        plot = ax.scatter(X[:,ij[0]],X[:,ij[1]],c=y,alpha=0.8,**kwargs)
+        
+                def _get_boundaries(nodes,final):
+                        # Find leaf nodes
+                        left_children = [node["children"]["left"] for node in nodes]
+                        leaf_nodes = np.array([True if node is None else False for node in left_children])
+        
+                        # Get splitting info from non-leaf nodes (i.e. split nodes)
+                        split_nodes = nodes[~leaf_nodes]
+                        split_dims = [node["j_feature"] for node in split_nodes]
+                        split_vals = [node["threshold"] for node in split_nodes]
+                        indices    = [node["index"]     for node in split_nodes]
+        
+                        # Labelling done before splits, as we only label up to max_depth and then return
+                        if label:
+                                # If final, label all nodes, else only leaf nodes
+                                if final:
+                                        for node in nodes:
+                                                ax.annotate('Node %d'%node["index"],(node["Xmax"][0],node["Xmax"][1]),
+                                                            ha='right',va='top',textcoords='offset points',
+                                                            xytext=(-5, -5))
+                                        return
+                                else:
+                                        for node in nodes[leaf_nodes]:
+                                                ax.annotate('Node %d'%node["index"],(node["Xmax"][0],node["Xmax"][1]),
+                                                            ha='right',va='top',textcoords='offset points',
+                                                            xytext=(-5, -5))
+        
+                        # Plot split lines
+                        for n, node in enumerate(split_nodes):
+                                if split_dims[n]==ij[0]:
+                                        ax.vlines(split_vals[n],node["Xmin"][1],
+                                                   node["Xmax"][1],'k')
+                                else:
+                                        ax.hlines(split_vals[n],node["Xmin"][0],
+                                                   node["Xmax"][0],'k')
+        
+                        # Update bounding boxes of child nodes before returning them
+                        for node in split_nodes:
+                                if node["j_feature"]==ij[0]:
+                                        node["children"]["left"]["Xmax"]  = [node["threshold"],node["Xmax"][1]]
+                                        node["children"]["right"]["Xmin"] = [node["threshold"],node["Xmin"][1]]
+                                        node["children"]["left"]["Xmin"]  = node["Xmin"]
+                                        node["children"]["right"]["Xmax"] = node["Xmax"]
+                                else:
+                                        node["children"]["left"]["Xmax"]  = [node["Xmax"][0],node["threshold"]]
+                                        node["children"]["right"]["Xmin"] = [node["Xmin"][0],node["threshold"]]
+                                        node["children"]["left"]["Xmin"]  = node["Xmin"]
+                                        node["children"]["right"]["Xmax"] = node["Xmax"]
+        
+                        # Extract child node info for next level down
+                        left_nodes  = [node["children"]["left"]  for node in split_nodes]
+                        right_nodes = [node["children"]["right"] for node in split_nodes]
+        
+                        child_nodes = np.array(left_nodes + right_nodes)
+        
+                        return child_nodes
+        
+                nodes = np.array([self.tree])
+                depth = 0
+                final = False
+                while len(nodes)>0:
+                        if depth==max_depth: final = True
+                        nodes = _get_boundaries(nodes,final)
+                        if final: break
+                        depth += 1
+        
+                return plot
+
         def _find_split_from_grad(self,model, X, y):
                 """
                 Private method to find the optimal split point for a tree node based on the training data in that node.
@@ -595,7 +795,7 @@ class PolyTree(object):
                 split_dim = None
                 split_val = None
                 gain_max  = -np.inf
-                for d in range(D):
+                for d in self.split_dims:
                     # Sort along feature i
                     sort = np.argsort(X[:,d])
                     Xd   = X[sort,d]
@@ -637,15 +837,15 @@ class PolyTree(object):
                     gain     = gain[best_idx]
                     if gain > gain_max:
                         gain_max  = gain
-                        split_dim = d
-                        split_val = 0.5*(Xd[splits[best_idx] - 1] + Xd[splits[best_idx]])
+                        best_split_dim = d
+                        best_split_val = 0.5*(Xd[splits[best_idx] - 1] + Xd[splits[best_idx]])
         
                 # If gain_max stilll == -np.inf, we must have passed through all features w/o finding a split
                 # so return False. Otherwise return True and the spilt details.
                 if gain_max == -np.inf:
                     return False, None, None
                 else:
-                    return True, split_dim, split_val
+                    return True, best_split_dim, best_split_val
 
 
 # Code below is to calculate graident based split criterion. This can probably be integrated more elegantly i.e. as private methods rather than nested local functions etc TODO

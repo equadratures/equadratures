@@ -67,7 +67,7 @@ def gen_friedman(n_observations=100, n_dim=5, noise=0.0, random_seed=None,normal
     return X,y
 
 def train_test_split(X,y,train=0.7,random_seed=None,shuffle=True):
-    """Split arrays or matrices into random train and test subsets.i Inspired by scikit-learn's datasets.train_test_split.
+    """Split arrays or matrices into random train and test subsets. Inspired by scikit-learn's datasets.train_test_split.
     :param numpy.ndarray X: An numpy.ndarray of shape (n_observations,n_dim) containing the inputs.
     :param numpy.ndarray y: A numpy.ndarray of shape (n_observations,1) containing the outputs/targets.
     :param float train: Fraction between 0.0 and 1.0, representing the proportion of the dataset to include in the train split. 
@@ -128,24 +128,3 @@ def score(y_true,y_pred,metric,X=None):
     else:
         raise ValueError('Only r2, adjusted_r2, mae, normalised_mae, rmse scoring metrics currently supported')
     return score
-
-def standardise(X):
-    if X.ndim == 1: X = X.reshape(-1,1)
-    d=X.shape[1]
-    X_stnd=np.zeros_like(X)
-    for j in range(0,d):
-        max_value = np.max(X[:,j])
-        min_value = np.min(X[:,j])
-        X_stnd[:,j]=2.0 * ( (X[:,j]-min_value)/(max_value - min_value) ) -1
-    return X_stnd
-
-def unstandardise(X,X_orig):
-    if X.ndim == 1: X = X.reshape(-1,1)
-    d=X.shape[1]
-    X_unstnd=np.zeros_like(X)
-    for j in range(0,d):
-        max_value = np.max(X_orig[:,j])
-        min_value = np.min(X_orig[:,j])
-        X_unstnd[:,j] = 0.5*(X[:,j] +1)*(max_value - min_value) + min_value
-    return X_unstnd
-

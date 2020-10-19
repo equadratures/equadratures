@@ -16,10 +16,8 @@ class Poly(object):
 
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
-    :param str method: The method used for computing the coefficients. Should be one of: ``compressive-sensing``,
-        ``numerical-integration``, ``least-squares``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``minimum-norm``.
+    :param str method: The method used for computing the coefficients. Should be one of: ``compressive-sensing``, ``numerical-integration``, ``least-squares``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``minimum-norm``, ``huber``, ``elastic-net``, ``lasso-lars``, ``relevance-vector-machine``.
     :param dict sampling_args: Optional arguments centered around the specific sampling strategy.
-
             :string mesh: Avaliable options are: ``monte-carlo``, ``sparse-grid``, ``tensor-grid``, ``induced``, or ``user-defined``. Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1] is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
             :string subsampling-algorithm: The ``subsampling-algorithm`` input refers to the optimisation technique for subsampling. In the aforementioned four sampling strategies, we generate a logarithm factor of samples above the required amount and prune down the samples using an optimisation technique (see [1]). Existing optimisation strategies include: ``qr``, ``lu``, ``svd``, ``newton``. These refer to QR with column pivoting [2], LU with row pivoting [3], singular value decomposition with subset selection [2] and a convex relaxation via Newton's method for determinant maximization [4]. Note that if the ``tensor-grid`` option is selected, then subsampling will depend on whether the Basis argument is a total order index set, hyperbolic basis or a tensor order index set.
             :float sampling-ratio: Denotes the extent of undersampling or oversampling required. For values equal to unity (default), the number of rows and columns of the associated Vandermonde-type matrix are equal.
@@ -471,7 +469,7 @@ class Poly(object):
                 indices = [i for i in range(0, len(counts)) if  counts[i] == 2]
                 b = np.dot(W , self._model_evaluations[indices])
                 del counts, indices
-                coefficients_i = self.solver(A, b)  * self.quadrature.sparse_weights[counter]
+                coefficients_i = self.solver(A, b)[0] * self.quadrature.sparse_weights[counter]
                 multindices_i =  tensor.basis.elements
                 coefficients = np.vstack([coefficients_i, coefficients])
                 multindices = np.vstack([multindices_i, multindices])
@@ -502,9 +500,10 @@ class Poly(object):
                 print('The number of unknown basis terms is '+str(n))
                 if n > r:
                     print('WARNING: Please increase the number of samples; one way to do this would be to increase the sampling-ratio.')
-                self.coefficients = self.solver(A, b, C, self._gradient_evaluations)
+                self.coefficients, self_solver_dict = self.solver(A, b, C, self._gradient_evaluations)
             else:
-                self.coefficients = self.solver(A, b)
+                self.coefficients, self.solver_dict = self.solver(A, b)
+
     def get_multi_index(self):
         """
         Returns the multi-index set of the basis.
@@ -871,7 +870,6 @@ class Poly(object):
         Sigma = np.diag(data_variance)
 
         # Construct Q, the pseudoinverse of the weighted orthogonal polynomial matrix P
- 
         P = self.get_poly(self._quadrature_points)
         W = np.diag(np.sqrt(self._quadrature_weights))
         A = np.dot(W, P.T)
@@ -885,7 +883,7 @@ class Poly(object):
         # Propagate the uncertainties
         Sigma_X = np.dot( np.dot(Q, Sigma), Q.T)
         Sigma_F = np.dot( np.dot(Ao, Sigma_X), Ao.T) 
-        std_F = 1.96 * np.sqrt( np.diag(Sigma_F) )
+        std_F = np.sqrt( np.diag(Sigma_F) )
         return std_F.reshape(-1,1)
 
 def _inv(M):

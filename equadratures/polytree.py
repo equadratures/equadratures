@@ -404,7 +404,7 @@ class PolyTree(object):
                 self.tree["children"]["right"] = pruner(self.tree["children"]["right"], X_right, y_right)
 
 
-        def predict(self, X, uq=False):
+        def predict(self, X):
             """
             Evaluates the the polynomial tree approximation of the data.
             :param numpy.ndarray X:
@@ -429,6 +429,7 @@ class PolyTree(object):
                 _predict(node["children"]["right"], indexes[idx_right])
 
             assert self.tree is not None
+            if uq: y_std = np.empty(shape=X.shape[0])
             y_pred = np.empty(shape=(X.shape[0], self.actual_max_depth + 2, 2))
             
             _predict(self.tree, np.arange(0, X.shape[0]))
@@ -449,7 +450,8 @@ class PolyTree(object):
                 smoothed_y_pred[y] = smoothed_y
 
 
-            return smoothed_y_pred
+            if uq: return smoothed_y_pred, y_std
+            else: return smoothed_y_pred
 
         def apply(self,X):   
                 """

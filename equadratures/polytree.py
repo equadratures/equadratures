@@ -429,8 +429,7 @@ class PolyTree(object):
                 _predict(node["children"]["right"], indexes[idx_right])
 
             assert self.tree is not None
-            if uq: y_std = np.empty(shape=X.shape[0])
-            y_pred = np.empty(shape=(X.shape[0], self.actual_max_depth + 2, 2))
+            y_pred = np.empty(shape=(X.shape[0], self.actual_max_depth + 2, 2)) * np.nan
             
             _predict(self.tree, np.arange(0, X.shape[0]))
 
@@ -438,20 +437,24 @@ class PolyTree(object):
 
             for y in range(0,X.shape[0]):
                 i = self.actual_max_depth + 1
-                while y_pred[y][i][0] == 0 and i >= 0:
+                
+                while np.isnan(y_pred[y][i][0]) and i > 0:
                     i-=1
 
                 smoothed_y = y_pred[y][i][0]
-                while i > 0:
-                    i-=1
-                    n_i = y_pred[y][i][1]
-                    smoothed_y = (smoothed_y * n_i + y_pred[y][i][0] * self.k) / (self.k + n_i)
 
+                print(y_pred[i])
+                while i > 0:
+                    n_i = y_pred[y][i][1]
+                    if n_i == 0: break
+                    print(smoothed_y)
+                    smoothed_y = (smoothed_y * n_i + y_pred[y][i][0] * self.k) / (self.k + n_i)
+                    i-=1
+
+                print("\n")
                 smoothed_y_pred[y] = smoothed_y
 
-
-            if uq: return smoothed_y_pred, y_std
-            else: return smoothed_y_pred
+            return smoothed_y_pred
 
         def apply(self,X):   
                 """

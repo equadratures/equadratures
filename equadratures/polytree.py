@@ -27,7 +27,7 @@ class PolyTree(object):
         For debugging
     :param bool all_data:
         Save data at all nodes (instead of only leaf nodes).
-     :param list split_dims:
+    :param list split_dims:
         List of dimensions along which to make splits.
       
     **Sample constructor initialisations**::
@@ -47,7 +47,7 @@ class PolyTree(object):
         2. Broelemann, K., Kasneci, G., (2019) A Gradient-Based Split Criterion for Highly Accurate and Transparent Model Trees. In Int. Joint Conf. on Artificial Intelligence (IJCAI). 2030-2037. `Paper <https://www.ijcai.org/Proceedings/2019/0281.pdf>`__
         3. Chan, T. F., Golub, G. H., LeVeque, R. J., (1983) Algorithms for computing the sample variance: Analysis and recommendations. The American Statistician. 37(3): 242–247. `Paper <https://www.tandfonline.com/doi/abs/10.1080/00031305.1983.10483115>`__
     """
-        def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, order=1, basis='total-order', search='exhaustive', samples=50, verbose=False, poly_method="least-squares", poly_solver_args=None,all_data=False,split_dims=None):
+        def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, order=1, basis='total-order', search='exhaustive', samples=50, verbose=False, poly_method="least-squares", poly_solver_args=None,all_data=False,split_dims=None,k=0.05):
                 self.splitting_criterion = splitting_criterion
                 self.max_depth = max_depth
                 self.min_samples_leaf = min_samples_leaf
@@ -62,6 +62,7 @@ class PolyTree(object):
                 self.poly_solver_args = poly_solver_args
                 self.actual_max_depth = 0
                 self.all_data = all_data
+                self.k = k
                 if split_dims is not None:
                         split_dims = [split_dims] if not isinstance(split_dims, list) else split_dims
                         assert all(isinstance(dim, int) for dim in split_dims), "split_dims should be a list if ints"
@@ -70,6 +71,7 @@ class PolyTree(object):
                 assert max_depth > 0, "max_depth must be a postive integer"
                 assert order > 0, "order must be a postive integer" 
                 assert samples > 0, "samples must be a postive integer"
+                assert k > 0, "k must be a positive number"
 
         def get_splits(self):
                 """
@@ -277,6 +279,7 @@ class PolyTree(object):
                                         myBasis = Basis(self.basis, orders=[self.order for _ in range(d)], q=0.5)
                                 else:
                                         myBasis = Basis(self.basis, orders=[self.order for _ in range(d)])
+
                                 container["index_node_global"] += 1
                                 poly = Poly(myParameters, myBasis, method=self.poly_method, sampling_args={'sample-points':X, 'sample-outputs':y}, solver_args=self.poly_solver_args)
                                 poly.set_model()
@@ -347,6 +350,8 @@ class PolyTree(object):
                 elif self.cardinality > self.min_samples_leaf:
                         print("WARNING: Basis cardinality ({}) greater than the minimum samples per leaf ({}). This may cause reduced performance.".format(self.cardinality, self.min_samples_leaf))
 
+                self.k *= self.min_samples_leaf 
+
                 self.tree = _build_tree()
 
         def prune(self, X, y, tol=0.0):
@@ -399,49 +404,57 @@ class PolyTree(object):
                 self.tree["children"]["right"] = pruner(self.tree["children"]["right"], X_right, y_right)
 
 
-        def predict(self, X, uq=False):
-                """
-                Evaluates the the polynomial tree approximation of the data.
+        def predict(self, X):
+            """
+            Evaluates the the polynomial tree approximation of the data.
+            :param numpy.ndarray X:
+                An ndarray with shape (number_of_observations, dimensions) at which the tree fit must be evaluated at.
+            :return: **y**:
+                A numpy.ndarray of shape (1, number_of_observations) corresponding to the polynomial approximation of the tree.
+            """
 
-                :param PolyTree self:
-                    An instance of the PolyTree class.
-                :param numpy.ndarray X:
-                    An ndarray with shape (number_of_observations, dimensions) at which the tree fit must be evaluated at.
-                :param bool uq:
-                    If true, the estimated uncertainty (standard deviation) of the polynomial approximation at each node is also returned.
+            def _predict(node, indexes):
 
-                :return: 
-                **y**: A numpy.ndarray of shape (number_of_observations,1) corresponding to the polynomial approximations of the tree.
-                **y_std**: A numpy.ndarray of shape (number_of_observations,1) corresponding to the predictive uncertainty (sigma) of the polynomial approximations of the tree.
-                """
-                def _predict(node, indexes):
+                y_pred[indexes, node["depth"], 0] = node["poly"].get_polyfit(X[indexes]).reshape(-1)
+                y_pred[indexes, node["depth"], 1] = np.full(fill_value=node["n_samples"], shape=len(indexes))
+                
+                no_children = node["children"]["left"] is None and \
+                              node["children"]["right"] is None
+                if no_children: return
 
-                        no_children = node["children"]["left"] is None and \
-                                                  node["children"]["right"] is None
-                        if no_children:
-                            if not uq:
-                                y_pred[indexes] = node["poly"].get_polyfit(X[indexes]).reshape(-1)
-                            else:
-                                pred, std = node["poly"].get_polyfit(X[indexes])
-                                y_pred[indexes] = pred.reshape(-1)
-                                y_std[indexes]  = std.reshape(-1)
-                            return
+                idx_left = np.where(X[indexes, node["j_feature"]] <= node["threshold"])[0]
+                idx_right = np.where(X[indexes, node["j_feature"]] > node["threshold"])[0]
 
-                        idx_left = np.where(X[indexes, node["j_feature"]] <= node["threshold"])[0]
-                        idx_right = np.where(X[indexes, node["j_feature"]] > node["threshold"])[0]
+                _predict(node["children"]["left"], indexes[idx_left])
+                _predict(node["children"]["right"], indexes[idx_right])
 
-                        _predict(node["children"]["left"], indexes[idx_left])
-                        _predict(node["children"]["right"], indexes[idx_right])
+            assert self.tree is not None
+            y_pred = np.empty(shape=(X.shape[0], self.actual_max_depth + 2, 2)) * np.nan
+            
+            _predict(self.tree, np.arange(0, X.shape[0]))
 
-                assert self.tree is not None
-                y_pred = np.zeros(shape=X.shape[0])
-                if uq: y_std = np.zeros(shape=X.shape[0])
-                _predict(self.tree, np.arange(0, X.shape[0]))
+            smoothed_y_pred = np.zeros(shape=(X.shape[0]))
 
-                if uq:
-                    return y_pred, y_std
-                else:
-                    return y_pred
+            for y in range(0,X.shape[0]):
+                i = self.actual_max_depth + 1
+                
+                while np.isnan(y_pred[y][i][0]) and i > 0:
+                    i-=1
+
+                smoothed_y = y_pred[y][i][0]
+
+                print(y_pred[i])
+                while i > 0:
+                    n_i = y_pred[y][i][1]
+                    if n_i == 0: break
+                    print(smoothed_y)
+                    smoothed_y = (smoothed_y * n_i + y_pred[y][i][0] * self.k) / (self.k + n_i)
+                    i-=1
+
+                print("\n")
+                smoothed_y_pred[y] = smoothed_y
+
+            return smoothed_y_pred
 
         def apply(self,X):   
                 """
@@ -555,7 +568,7 @@ class PolyTree(object):
                 def _flag_tree_walk(node,X):
                         node["flag"] = True
                         if node["children"]["left"] is None and \
-		        			  node["children"]["right"] is None:
+                              node["children"]["right"] is None:
                                 return
                         if X[node["j_feature"]] <= node["threshold"]:
                                 return _flag_tree_walk(node["children"]["left"],X)
@@ -614,7 +627,7 @@ class PolyTree(object):
                         assert len(X.shape)==1 , "X should be an int, or a 1D float array"
                         def _get_node_from_X(node):
                                 if node["children"]["left"] is None and \
-		        				  node["children"]["right"] is None:
+                                  node["children"]["right"] is None:
                                         return node
                                 if X[node["j_feature"]] <= node["threshold"]:
                                         return _get_node_from_X(node["children"]["left"])

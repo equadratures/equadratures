@@ -39,7 +39,7 @@ class Distribution(object):
                 An instance of the distribution class.
         """
         pass
-    def get_cdf(self, N=None, points=None):
+    def get_cdf(self, points=None):
         """
         Returns the CDF of the distribution.
 

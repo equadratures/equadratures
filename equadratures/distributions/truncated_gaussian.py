@@ -91,3 +91,20 @@ class TruncatedGaussian(Distribution):
         else:
            number = 500000
         return self.parents.rvs(size=number)
+    def get_cdf(self, points=None):
+        """
+        A truncated Gaussian cumulative density function.
+
+        :param Exponential self:
+            An instance of the TruncatedGaussian class.
+        :param matrix points:
+            Matrix of points for defining the cumulative density function.
+        :return:
+            An array of N values over the support of the distribution.
+        :return:
+            Cumulative density values along the support of the truncated Gaussian distribution.
+        """
+        if points is not None:
+            return self.parents.cdf(points)
+        else:
+            raise ValueError( 'Please digit an input for getCDF method')

@@ -507,6 +507,9 @@ def elastic_net(A, b, verbose, lamda_val, alpha_val, opt):
 def rvm(A, b, max_iter):
     if max_iter is None:
         max_iter = 1000
+    if len(b.shape) == 2:
+        assert b.shape[1] == 1
+        b = b.reshape(-1)
     K, card = A.shape
     alpha = np.ones(card)
     alpha_0 = 1.0

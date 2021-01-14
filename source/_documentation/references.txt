@@ -1,0 +1,111 @@
+=============
+Research
+=============
+
+Below you will find a list of publications, along with their supporting code, and in some cases a related blog post. Publications are classified by their domain area.
+
+Data-driven dimension reduction
+--------------------------------
+
+:Title:
+  Embedded ridge approximations
+
+:Authors:
+  Chun Yui Wong, Pranay Seshadri, Geoffrey Parks, Mark Girolami
+
+:Essence:
+  Constructing ridge approximations for vector-valued quantities, and scalar-valued functions that are integrals of vector-valued fields. For example, the lift, drag and pressure coefficients of an airfoil.
+
+:Journal:
+  Computer Methods in Applied Mechanics
+
+:Year:
+  2020
+
+:Resources:
+  `Paper <https://www.sciencedirect.com/science/article/abs/pii/S0045782520305685?dgcid=rss_sd_all>`__ | `Preprint <https://arxiv.org/abs/1907.07037>`__ | `Blog <https://discourse.effective-quadratures.org/t/embedded-ridge-approximations/73>`__
+
+|
+
+:Title:
+  Blade envelopes I: concept and methodology
+
+:Authors:
+  Chun Yui Wong, Pranay Seshadri, Ashley Scillitoe, Andrew Duncan, Geoffrey Parks
+
+:Essence:
+  Constructing ridge approximations for vector-valued quantities, and scalar-valued functions that are integrals of vector-valued fields. For example, the lift, drag and pressure coefficients of an airfoil.
+
+:Journal:
+  ASME Journal of Turbomachinery (under review)
+
+:Year:
+  2020
+
+:Resources:
+  `Preprint <https://arxiv.org/abs/1907.07037>`__ | `Blog <https://discourse.effective-quadratures.org/t/embedded-ridge-approximations/73>`__
+
+Numerical integration
+-------------------------------
+
+:Title:
+  Effectively subsampled quadratures
+
+:Authors:
+  Pranay Seshadri, Akil Narayan, Sankaran Mahadevan
+
+:Essence:
+  Subsampling quadrature points from a tensorial grid via QR with column pivoting on a weighted Vandermonde-type matrix.
+
+:Journal:
+  SIAM/ASA Journal on Uncertainty Quantification
+
+:Year:
+  2017
+
+:Resources:
+  `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__ | `Preprint <https://arxiv.org/abs/1601.05470>`__
+
+|
+
+:Title:
+  Quadrature strategies for constructing polynomial approximations
+
+:Authors:
+  Pranay Seshadri, Gianluca Iaccarino, Tiziano Ghisu
+
+:Essence:
+  A review of recent approaches for identifying quadrature rules in hypercubes, followed by a template-type characterisation of how one arrive at new quadrature rules.
+
+:Journal:
+  Uncertainty Modeling for Engineering Applications, Springer.
+
+:Year:
+  2018
+
+:Resources:
+  `Paper <https://link.springer.com/chapter/10.1007/978-3-030-04870-9_1>`__ | `Preprint <https://arxiv.org/abs/1805.07296>`__
+
+Sensitivity analysis
+--------------------------------
+
+:Title:
+  Extremum sensitivity analysis with polynomial Monte Carlo filtering
+
+:Authors:
+  Chun Yui Wong, Pranay Seshadri, Geoffrey Parks
+
+:Essence:
+  Deriving Sobol' indices for polynomial ridge approximations, and developing methods for extremeum sensitivity analysis using Monte Carlo filtering and correlated polynomial approximations.
+
+:Journal:
+  Reliability Engineering and System Safety (under review)
+
+:Year:
+  2019
+
+:Resources:
+  `Preprint <https://arxiv.org/abs/1907.08113>`__
+
+
+**Adjoint / gradient computations**

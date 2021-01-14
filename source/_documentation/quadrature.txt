@@ -1,0 +1,6 @@
+Quadrature
+===========
+
+.. automodule:: equadratures.quadrature
+    :members:
+ 

@@ -1,16 +1,59 @@
-Documentation
-==========================
+=============
+equadratures
+=============
+
+:code:`equadratures` is an open-source python code developed by Effective Quadratures. It is tailored for tackling problems in **uncertainty quantification**, **surrogate-based optimisation**, **numerical integration**, and **data-driven dimension reduction**.
+
+It does this by constructing orthogonal polynomials. It is particularly useful for problems where output quantities of interest are smooth and continuous and to this extent it has found widespread applications in computational engineering models.
+
+To download and install the code please use the python package index command:
+
+.. code::
+
+	pip3 install equadratures
+
+For a quick start into the code, try the following:
+
+.. code::
+
+	import equadratures as eq
+	import numpy as np
+	import matplotlib.pyplot as plt
+	import seaborn as sns
+	sns.set(font_scale=1.5)
+	sns.set_style("white")
+
+	# A sample univariate function we wish to approximate
+	def fun(x):
+  		return np.sin(30 * x) + (x+2)**2
+	xo = np.linspace(-1, 1, 500).reshape(500, 1)
+
+	# A parameter, basis and polynomial.
+	param = eq.Parameter(lower=-1, upper=1, order=50)
+	basis = eq.Basis('univariate')
+	poly = eq.Poly(param, basis, method='numerical-integration')
+
+	pts = poly.get_points()
+	f_pts = eq.evaluate_model(pts, fun)
+
+	# Plot!
+	fig = plt.figure(figsize=(8,6))
+	plt.plot(pts, f_pts, 'o', label='Data')
+	plt.plot(xo, y_approx, lw=2, label='Fit')
+	sns.despine(offset=10, trim=True)
+	plt.xlabel('x')
+	plt.ylabel('y')
+	plt.legend()
+	plt.show()
+
+.. figure:: Figures/index.png
+   :scale: 100 %
+
+To learn more about the code's capabilities, do check out the documentation links below.
 
 .. toctree::
    :maxdepth: 1
 
-   research
-   modules
    tutorials
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   modules
+   references

@@ -12,11 +12,16 @@ except ImportError as e:
 
 class Solver(object):
     """
-    Returns solver functions for solving Ax=b
-    :param string method: The method used for solving the linear system. Options include: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``huber``, ``elastic-net``, ``elastic-path`` and ``relevance-vector-machine``. 
-    :param dict solver_args: Optional arguments centered around the specific solver.
-            :param numpy.ndarray noise-level: The noise-level to be used in the basis pursuit de-noising solver.
-            :param bool verbose: Default value of this input is set to ``False``; when ``True`` a string is printed to the screen detailing the solver convergence and condition number of the matrix.
+    Returns solver functions for solving Ax=b.
+    
+    :param string method:
+        The method used for solving the linear system. Options include: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``huber``, ``elastic-net``, ``elastic-path`` and ``relevance-vector-machine``.
+    :param dict solver_args:
+        Optional arguments centered around the specific solver.
+    :param numpy.ndarray noise-level:
+        The noise-level to be used in the basis pursuit de-noising solver.
+    :param bool verbose:
+        Default value of this input is set to ``False``; when ``True`` a string is printed to the screen detailing the solver convergence and condition number of the matrix.
     """
     # TODO - update poly solver descriptions
     def __init__(self, method, solver_args):
@@ -45,7 +50,7 @@ class Solver(object):
             if 'tol' in self.solver_args: self.tol = solver_args.get('tol')
             if 'select-crit' in self.solver_args: self.crit = solver_args.get('select-crit')
             if 'optimiser' in self.solver_args: self.opt = solver_args.get('optimiser')
-        if self.opt=='osqp' and not cvxpy: 
+        if self.opt=='osqp' and not cvxpy:
             self.opt='scipy'
         if self.method.lower() == 'compressed-sensing' or self.method.lower() == 'compressive-sensing':
             self.solver = lambda A, b: basis_pursuit_denoising(A, b, self.noise_level, self.verbose)
@@ -64,7 +69,7 @@ class Solver(object):
         elif self.method.lower() == 'elastic-net': #MERGE elastic-net and elastic-path? or get rid of elastic-net? TODO
             self.solver = lambda A, b: elastic_net(A, b, self.verbose, self.lambda_max, self.alpha, self.opt)
         elif self.method.lower() == 'elastic-path':
-            self.solver = lambda A, b: elastic_path(A, b, self.verbose, self.max_iter, self.alpha, self.n_lambdas, 
+            self.solver = lambda A, b: elastic_path(A, b, self.verbose, self.max_iter, self.alpha, self.n_lambdas,
                     self.lambda_eps, self.lambda_max, self.tol, self.crit)
         elif self.method.lower() == 'relevance-vector-machine':
             self.solver = lambda A, b: rvm(A, b, self.max_iter)
@@ -419,13 +424,13 @@ def least_absolute_residual(A, b, verbose, opt):
     N, d = A.shape
     if verbose: print('Solving for coefficients with least-absolute-residual')
 
-    # Use cvxpy with OSQP for optimising 
+    # Use cvxpy with OSQP for optimising
     if opt=='osqp':
         if verbose: print('Solving using cvxpy with OSQP solver')
         # Define problem
         b = b.squeeze()
         x = cv.Variable(d)
-        objective = cv.sum(cv.abs(A@x - b)) 
+        objective = cv.sum(cv.abs(A@x - b))
         prob = cv.Problem(cv.Minimize(objective))
         # Solve with OSQP
         prob.solve(solver=cv.OSQP,verbose=verbose)
@@ -444,10 +449,10 @@ def least_absolute_residual(A, b, verbose, opt):
 
 def huber(A, b, verbose, M, opt):
     '''
-    Solves Ax=b by minimising the Huber loss function. 
+    Solves Ax=b by minimising the Huber loss function.
     Thi
-    function is identical to the least squares (L2) penalty for small residuals (i.e. ||Ax-b||**2<=M). 
-    But on large residuals (||Ax-b||**2>M), its penalty is lower (L1) and increases linearly rather than quadratically. 
+    function is identical to the least squares (L2) penalty for small residuals (i.e. ||Ax-b||**2<=M).
+    But on large residuals (||Ax-b||**2>M), its penalty is lower (L1) and increases linearly rather than quadratically.
     It is thus more forgiving of outliers.
     '''
     if verbose: print('Huber regression with M=%.2f.' %M)
@@ -474,7 +479,7 @@ def huber(A, b, verbose, M, opt):
                        r >= 0, s >= 0]
         prob = cv.Problem(objective, constraints)
         prob.solve(solver=cv.OSQP,verbose=verbose,polish=True)
-        x = x.value 
+        x = x.value
 
     # Use scipy linprog for optimising
     elif opt=='scipy':
@@ -486,18 +491,18 @@ def elastic_net(A, b, verbose, lamda_val, alpha_val, opt):
     Solves 0.5*||Ax-b||_2 + lamda*( alpha*||x||_1  + 0.5*(1-alpha)*||x||_2**2).
     Elastic net regression: L2 cost function, with mix of L1 and L2 penalties (scaled by lamda1 and lamda2).
     The penalties shrink the parameter estimates in the hopes of reducing variance, improving prediction accuracy, and aiding interpetation.
-    lamda controls amount of penalisation i.e. lamda=0 gives OLS. default is 1. 
-    alpha controls L1/L2 penalisation mix. alpha=0 gives ridge regression, alpha=1 gives LASSO. 
+    lamda controls amount of penalisation i.e. lamda=0 gives OLS. default is 1.
+    alpha controls L1/L2 penalisation mix. alpha=0 gives ridge regression, alpha=1 gives LASSO.
     Note, to set lamda1 and lamda 2 directly:
     lamda = lamda1 + lamda2
     alpha = lamda1 / (lamda1 + lamda2)
     '''
     N,d = A.shape
     if lamda_val == None: lamda_val = 0.1
-    if alpha_val == None: alpha_val = 1.0 
+    if alpha_val == None: alpha_val = 1.0
     if verbose: print('Elastic net regression with lambda=%.2f and alpha=%.2f.' %(lamda_val,alpha_val))
 
-    # Use cvxpy with OSQP for optimising 
+    # Use cvxpy with OSQP for optimising
     if opt=='osqp':
         if verbose: print('Solving using cvxpy with OSQP solver')
         # Define problem
@@ -571,12 +576,12 @@ def rvm(A, b, max_iter):
     mean_coeffs = np.zeros(card)
     mean_coeffs[remaining_coeff_ind] = mu.copy()
 
-    return mean_coeffs, None 
+    return mean_coeffs, None
 
 def elastic_path(A, b, verbose, max_iter, alpha, n_lamdas, lamda_eps, lamda_max, tol, crit):
     """
-    Performs elastic net regression via coordinate descent. The full regularisation path is computed (for a given l1 vs l2 blending parameter alpha), and the set of coefficients with the lowest model selection criteria is then selected according to [2]. 
-    Choosing alpha=1 gives LASSO regression, whilst alpha=0 gives ridge regression (however alpha<0.01 is unreliable). 
+    Performs elastic net regression via coordinate descent. The full regularisation path is computed (for a given l1 vs l2 blending parameter alpha), and the set of coefficients with the lowest model selection criteria is then selected according to [2].
+    Choosing alpha=1 gives LASSO regression, whilst alpha=0 gives ridge regression (however alpha<0.01 is unreliable).
 
     **References**
         1. Friedman J., Hastie T., Tibshirani R., (2010) Regularization Paths for Generalized Linear Models via Coordinate Descent. Journal of Statistical Software, 33(1), 1-22. `Paper <https://www.jstatsoft.org/article/view/v033i01>`__
@@ -602,7 +607,7 @@ def elastic_path(A, b, verbose, max_iter, alpha, n_lamdas, lamda_eps, lamda_max,
         if verbose: print('Fold %d/%d' %(fold,nfold))
         indices = [int(k) for k in fold*np.ceil(n/5.0) + range(int(np.ceil(n/5.0))) if k<n]
         A_val   = A[indices]
-        b_val   = b[indices] 
+        b_val   = b[indices]
         A_train = np.delete(A, indices, 0)
         b_train = np.delete(b, indices, 0)
         if len(A_val) == 0:
@@ -612,7 +617,7 @@ def elastic_path(A, b, verbose, max_iter, alpha, n_lamdas, lamda_eps, lamda_max,
         for l, lamda in enumerate(lamdas):
             if verbose: print('Running coord. descent for lambda = %.2e (%d/%d)' %(lamda,l,n_lamdas))
             x_path[l,:,fold] = _elastic_net_cd(x,A_train,b_train,lamda,alpha,max_iter,tol,verbose)
-    
+
         # RSS for each lambda. A@x_path.T is the predicted b at each point, for each set of coeffs i.e. dimensions (n_samples,n_lambdas)
         rss[:,fold] = np.sum((A_val@x_path[:,:,fold].T - b_val.reshape(-1,1))**2,axis=0)
 
@@ -621,7 +626,7 @@ def elastic_path(A, b, verbose, max_iter, alpha, n_lamdas, lamda_eps, lamda_max,
         df  = np.count_nonzero(x_path[:,:,fold], axis=1) #degrees of freedom can be approximated to be the number of non-zero coefficients [2]
         # Approx sigma2 using residual from saturated model
         residual = b - A@x_path[-1,:,fold]
-        sigma2  = np.var(residual) 
+        sigma2  = np.var(residual)
         if crit=='AIC':
             ic = rss[:,fold]/(n*sigma2) + (2/n)*df
         elif crit=='BIC':
@@ -634,7 +639,7 @@ def elastic_path(A, b, verbose, max_iter, alpha, n_lamdas, lamda_eps, lamda_max,
         ic_std = np.nanstd(rss,axis=1)
 
     # Select the set of coefficients which minimise IC
-    idx = np.argmin(ic) 
+    idx = np.argmin(ic)
     x_best = x_path[idx,:,0]
     if verbose: print('\nUsing %a criterion, optimum LASSO lambda = %.2e' %(crit,lamdas[idx]))
 
@@ -643,7 +648,7 @@ def elastic_path(A, b, verbose, max_iter, alpha, n_lamdas, lamda_eps, lamda_max,
 def _elastic_net_cd(x,A,b,lamda,alpha, max_iter,tol,verbose):
     """
     Private method to perform coordinate descent (with elastic net soft  thresholding) for a given lambda and alpha value.
-    Following section 2.6 of [1], the algo does one complete pass over the features, and then for following iterations it only loops over the active set (non-zero coefficients). See commit 2b0af9f58fa5ff1876f76f7aedeaf2a0d7d252c8 for a more simple (but considerably slower for large p) algo. 
+    Following section 2.6 of [1], the algo does one complete pass over the features, and then for following iterations it only loops over the active set (non-zero coefficients). See commit 2b0af9f58fa5ff1876f76f7aedeaf2a0d7d252c8 for a more simple (but considerably slower for large p) algo.
     """
     # TODO - covariance updates (see 2.2 of [1]) could provide further speed up...
 
@@ -658,19 +663,19 @@ def _elastic_net_cd(x,A,b,lamda,alpha, max_iter,tol,verbose):
     attempt = 0
     while not success:
         attempt += 1
-        if (attempt > 2): 
+        if (attempt > 2):
             print('Non-zero coefficients still changing after two cycles, breaking...')
             break
 
         for n_iter in range(max_iter):
             x_max = 0.0
             dx_max = 0.0
-        
+
             # Residual
             r = b - A@x
 
             active_set = set(np.argwhere(x).flatten())
-            if n_iter == 0 or finish: #First iter or after convergence, loop through entire set 
+            if n_iter == 0 or finish: #First iter or after convergence, loop through entire set
                 loop_set = set(range(p))
             elif n_iter == 1: # Now only loop through active set (i.e. non-zero coeffs)
                 loop_set = active_set
@@ -684,13 +689,13 @@ def _elastic_net_cd(x,A,b,lamda,alpha, max_iter,tol,verbose):
                 else:
                     x[j] = _soft_threshold(rho,lamda*alpha)
                 r = r - A[:,j]*x[j]
-                
+
                 # Update changes in coeffs
                 if j != 0: # TODO - as above
                     d_x    = abs(x[j] - x_prev)
                     dx_max = max(dx_max,d_x)
                     x_max  = max(x_max,abs(x[j]))
-                
+
             # Convergence check - early stop if converged
             if n_iter == max_iter-1:
                 conv_msg = 'Max iterations reached without convergence'
@@ -699,9 +704,9 @@ def _elastic_net_cd(x,A,b,lamda,alpha, max_iter,tol,verbose):
                 conv_msg = 'Convergence after %d iterations, x_max=0' %n_iter
                 finish = True
             elif dx_max/x_max < dx_tol: # biggest coord update of this iteration smaller than tolerance
-                conv_msg = 'Convergence after %d iterations, d_x: %.2e, tol: %.2e' %(n_iter, dx_max/x_max,dx_tol) 
+                conv_msg = 'Convergence after %d iterations, d_x: %.2e, tol: %.2e' %(n_iter, dx_max/x_max,dx_tol)
                 finish = True
-            # TODO - add further duality gap check from 
+            # TODO - add further duality gap check from
             #http://proceedings.mlr.press/v37/fercoq15-supp.pdf
             #l1_reg = lamda * alpha * n # For use w/ duality gap calc.
             #l2_reg = lamda * (1.0 - alpha) * n
@@ -719,9 +724,9 @@ def _elastic_net_cd(x,A,b,lamda,alpha, max_iter,tol,verbose):
     return x
 
 def _get_lamdas(A,b,n_lamdas,lamda_eps,lamda_maxmax,alpha):
-    eps = np.finfo(np.float64).eps 
+    eps = np.finfo(np.float64).eps
     n,p = A.shape
-      
+
     # Get list of lambda's
     Ab = (A.T@b*n).reshape(-1) #*n as sum over n
 
@@ -730,7 +735,7 @@ def _get_lamdas(A,b,n_lamdas,lamda_eps,lamda_maxmax,alpha):
     lamda_max = np.max(np.abs(Ab[1:]))/(n*alpha) #1: in here as not applying regularisation to intercept - TODO - check po at 0 for multiple parameters
     if lamda_maxmax is not None:
         lamda_max = min(lamda_max,lamda_maxmax)
-    
+
     if lamda_max <= np.finfo(float).resolution:
         lamdas = np.empty(n_lamdas)
         lamdas.fill(np.finfo(float).resolution)

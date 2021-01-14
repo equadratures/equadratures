@@ -3,3 +3,192 @@
 body {
   font-family: "Raleway";
 }
+
+h1 {
+  font-family: "Raleway";
+  color: #3A5169
+}
+
+h2 {
+  font-family: "Raleway";
+  color: #3A5169
+}
+
+h3 {
+  font-family: "Raleway";
+  color: #3A5169
+}
+
+
+/* THE SECTION BELOW CHANGES CODE FONTS FOR BETTER 80-CHARS READABILITY */
+/* Code will be displayed as Roboto, or Inconsolata if screen is small */
+code, pre {
+    font-family: 'RobotoMonoRegular', 'Roboto Mono', 'Inconsolata', monospace;
+}
+
+@media (max-width: 1200px) {
+    code, pre {
+        font-family: 'InconsolataRegular', 'Inconsolata', 'RobotoMonoRegular', 'Roboto Mono', monospace;
+    }
+    pre {
+        font-size: 0.95em;
+    }
+}
+
+blockquote {
+    font-size: inherit;
+}
+
+blockquote h2 {
+    margin-left: 1em;
+}
+
+
+pre {
+    overflow: auto;
+    overflow-y: hidden;  /* fixes display issues on Chrome browsers */
+}
+
+pre, div[class*="highlight-"] {
+    clear: both;
+}
+
+span.pre {
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    -webkit-hyphens: none;
+    hyphens: none;
+}
+
+div[class*="highlight-"] {
+    margin: 1em 0;
+}
+
+td.linenos pre {
+    border: 0;
+    background-color: transparent;
+    color: #aaa;
+}
+
+table.highlighttable {
+    display: block;
+}
+
+table.highlighttable tbody {
+    display: block;
+}
+
+table.highlighttable tr {
+    display: flex;
+}
+
+table.highlighttable td {
+    margin: 0;
+    padding: 0;
+}
+
+table.highlighttable td.linenos {
+    padding-right: 0.5em;
+}
+
+table.highlighttable td.code {
+    flex: 1;
+    overflow: hidden;
+}
+
+.highlight .hll {
+    display: block;
+}
+
+div.highlight pre,
+table.highlighttable pre {
+    margin: 0;
+}
+
+div.code-block-caption + div {
+    margin-top: 0;
+}
+
+div.code-block-caption {
+    margin-top: 1em;
+    padding: 2px 5px;
+    font-size: small;
+}
+
+div.code-block-caption code {
+    background-color: transparent;
+}
+
+table.highlighttable td.linenos,
+span.linenos,
+div.doctest > div.highlight span.gp {  /* gp: Generic.Prompt */
+    user-select: none;
+}
+
+div.code-block-caption span.caption-number {
+    padding: 0.1em 0.3em;
+    font-style: italic;
+}
+
+div.code-block-caption span.caption-text {
+}
+
+div.literal-block-wrapper {
+    margin: 1em 0;
+}
+
+code.descname {
+    background-color: transparent;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+code.descclassname {
+    background-color: transparent;
+}
+
+code.xref, a code {
+    background-color: transparent;
+    font-weight: bold;
+}
+
+h1 code, h2 code, h3 code, h4 code, h5 code, h6 code {
+    background-color: transparent;
+}
+
+.viewcode-link {
+    float: right;
+}
+
+.viewcode-back {
+    float: right;
+    font-family: sans-serif;
+}
+
+div.viewcode-block:target {
+    margin: -1px -10px;
+    padding: 0 10px;
+}
+
+/* -- math display ---------------------------------------------------------- */
+
+img.math {
+    vertical-align: middle;
+}
+
+div.body div.math p {
+    text-align: center;
+}
+
+span.eqno {
+    float: right;
+}
+
+span.eqno a.headerlink {
+    position: absolute;
+    z-index: 1;
+}
+
+div.math:hover a.headerlink {
+    visibility: visible;
+}

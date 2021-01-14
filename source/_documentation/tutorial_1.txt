@@ -1,4 +1,4 @@
-Defining a parameter
+Foundations I
 ====================
 A **parameter** is one of the main building blocks in Effective Quadratures. Let :math:`s` be a parameter defined on a domain :math:`\mathcal{D} \in \mathbb{R}`. The support of the domain :math:`\mathcal{D}` may be:
 

@@ -352,7 +352,7 @@ class Poly(object):
             An instance of the Poly class.
 
         :return:
-            **total_sobol_indices**: Sobol
+            **total_sobol_indices**: A list of length d (number of input parameters) of total Sobol' indices.
         """
         self._set_statistics()
         return self.statistics_object.get_sobol_total()

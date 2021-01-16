@@ -93,7 +93,9 @@ class Subspaces(object):
             self._get_active_subspace()
         elif self.method == 'variable-projection':
             if dr_args is not None:
-                self._get_variable_projection(**dr_args)
+                vp_args = {'gamma':0.1, 'beta':1e-4, 'tol':1e-7, 'maxiter':1000, 'U0':None, 'verbose':0}
+                vp_args.update(dr_args)
+                self._get_variable_projection(**vp_args)
             else:
                 self._get_variable_projection()
 

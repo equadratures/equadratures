@@ -339,8 +339,8 @@ class Optimisation:
             U0 = np.hstack((U0, U1[:, index].reshape(-1,1)))
             U1 = np.delete(U1, index, 1)
         if self.subspace_method == 'variable-projection':
-            Subs = Subspaces(method='variable-projection', sample_points=S, sample_outputs=f, \
-                    subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2, tol=1.0e-5, max_iter=2*self.d*self.n)
+            vp_args = {'U0': U0, 'maxiter': 2*self.d*self.n}
+            Subs = Subspaces(method='variable-projection', sample_points=S, sample_outputs=f, dr_args=vp_args)
             self.U = Subs.get_subspace()[:, :self.d]
         elif self.subspace_method == 'active-subspaces':
             self.U = U0

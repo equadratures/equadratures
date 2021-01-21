@@ -1,8 +1,8 @@
 import os
 import sys
 project = u' '
-copyright = u'2016-2021 by Effective Quadratures'
-author = u'Effective Quadratures'
+copyright = u'2016-2021 by equadratures.org'
+author = u'equadratures'
 # -- Bryn: Main Vuepress website location ------------------------------------
 land_page = "equadratures.org"
 outdir = sys.argv[-1]   #Bryn: Assuming last system argument is output directory

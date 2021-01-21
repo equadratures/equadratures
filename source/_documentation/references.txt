@@ -2,7 +2,9 @@
 Research
 =============
 
-Below you will find a list of publications, along with their supporting code, and in some cases a related blog post. Publications are classified by their domain area. 
+Below you will find a list of publications, along with their supporting code, and in some cases a related blog post. Publications are classified by their domain area. For an overview do check out the slides below:
+
+* `Scope and capability <https://drive.google.com/file/d/1L970YCnN4B-SnbKnXyB9jgbb4qCncDAx/view?usp=sharing>`__
 
 Data-driven dimension reduction
 --------------------------------
@@ -43,7 +45,7 @@ Data-driven dimension reduction
   2020
 
 :Resources:
-  `Preprint <https://arxiv.org/abs/2011.11636>`__ | `Blog <https://discourse.equadratures.org/t/blade-envelopes-computational-methods/96>`__
+  `Preprint <https://arxiv.org/abs/2011.11636>`__ | `Blog <https://discourse.equadratures.org/t/blade-envelopes-computational-methods/96>`__ | `Slides <https://drive.google.com/file/d/1iO_CBAdAhIHvTXVPLSFauevcC7luKTED/view?usp=sharing>`__ 
 
 ..  youtube:: M4N2eBaarpc
     :width: 100%
@@ -150,6 +152,17 @@ Numerical integration
 
 :Resources:
   `Paper <https://link.springer.com/chapter/10.1007/978-3-030-04870-9_1>`__ | `Preprint <https://arxiv.org/abs/1805.07296>`__
+
+
+Multi-fidelity parameter studies
+--------------------------------------------------------------
+Coming soon! But in the interim check out the slides below:
+
+:Title:
+  Bayesian polynomial chaos
+
+:Resources:
+  `Slides <https://drive.google.com/file/d/14mu6sRZ6Gz77a2GOHHtZYORO9eiCyL_A/view?usp=sharing>`__
 
 Uncertainty quantification and sensitivity analysis
 --------------------------------------------------------------

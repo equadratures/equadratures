@@ -2,7 +2,7 @@
 equadratures
 =============
 
-:code:`equadratures` is an open-source python code developed by Effective Quadratures. It is tailored for tackling problems in **uncertainty quantification**, **surrogate-based optimisation**, **numerical integration**, and **data-driven dimension reduction**.
+:code:`equadratures` is an open-source python code tailored for tackling problems in **uncertainty quantification**, **surrogate-based optimisation**, **numerical integration**, and **data-driven dimension reduction**.
 
 It does this by constructing orthogonal polynomials. It is particularly useful for problems where output quantities of interest are smooth and continuous and to this extent it has found widespread applications in computational engineering models.
 
@@ -12,37 +12,11 @@ To download and install the code please use the python package index command:
 
 	pip3 install equadratures
 
-For a quick start into the code, try the following:
 
-.. code::
+.. figure:: /_documentation/Figures/intro.png
+   :scale: 40 %
 
-	import equadratures as eq
-	import numpy as np
-	import matplotlib.pyplot as plt
-
-	# A sample univariate function we wish to approximate
-	def fun(x):
-  		return np.sin(30 * x) + (x+2)**2
-	xo = np.linspace(-1, 1, 500).reshape(500, 1) # domain discretisation
-
-	# A parameter, basis and polynomial.
-	param = eq.Parameter(lower=-1, upper=1, order=50)
-	basis = eq.Basis('univariate')
-	poly = eq.Poly(param, basis, method='numerical-integration')
-
-	pts = poly.get_points()
-	f_pts = eq.evaluate_model(pts, fun)
-
-	# Plot!
-	fig = plt.figure(figsize=(8,6))
-	plt.plot(pts, f_pts, 'o', label='Data')
-	plt.plot(xo, y_approx, lw=2, label='Fit')
-	plt.xlabel('x'); plt.ylabel('y'); plt.legend(); plt.show()
-
-.. figure:: /_documentation/Figures/index.png
-   :scale: 100 %
-
-To learn more about the code's capabilities, do check out the documentation links below.
+To learn more about the code's capabilities, do check out the documentation links below or `get in touch <mailto:contact@equadratures.org?subject=query>`__.
 
 .. toctree::
    :maxdepth: 1
@@ -50,3 +24,4 @@ To learn more about the code's capabilities, do check out the documentation link
    /_documentation/tutorials
    /_documentation/documentation
    /_documentation/references
+

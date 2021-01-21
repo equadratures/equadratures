@@ -2,7 +2,7 @@
 Research
 =============
 
-Below you will find a list of publications, along with their supporting code, and in some cases a related blog post. Publications are classified by their domain area.
+Below you will find a list of publications, along with their supporting code, and in some cases a related blog post. Publications are classified by their domain area. 
 
 Data-driven dimension reduction
 --------------------------------
@@ -28,13 +28,13 @@ Data-driven dimension reduction
 |
 
 :Title:
-  Blade envelopes I: concept and methodology
+  Blade envelopes part I: concept and methodology
 
 :Authors:
   Chun Yui Wong, Pranay Seshadri, Ashley Scillitoe, Andrew Duncan, Geoffrey Parks
 
 :Essence:
-  Constructing ridge approximations for vector-valued quantities, and scalar-valued functions that are integrals of vector-valued fields. For example, the lift, drag and pressure coefficients of an airfoil.
+  Interpreting the design of a blade (airfoil) as a Gaussian distribution with known mean (nominal) but unknown covariance. Estimating this covariance matrix by generating samples from the inactive subspace for loss.
 
 :Journal:
   ASME Journal of Turbomachinery (under review)
@@ -43,7 +43,72 @@ Data-driven dimension reduction
   2020
 
 :Resources:
-  `Preprint <https://arxiv.org/abs/1907.07037>`__ | `Blog <https://discourse.effective-quadratures.org/t/embedded-ridge-approximations/73>`__
+  `Preprint <https://arxiv.org/abs/2011.11636>`__ | `Blog <https://discourse.equadratures.org/t/blade-envelopes-computational-methods/96>`__
+
+..  youtube:: M4N2eBaarpc
+    :width: 100%
+
+
+|
+
+:Title:
+  Blade envelopes part II: multiple objectives and inverse design
+
+:Authors:
+  Chun Yui Wong, Pranay Seshadri, Ashley Scillitoe, Bryn N Ubald, Andrew Duncan, Geoffrey Parks
+
+:Essence:
+  Extending the approach in part I to multiple objectives (flow capacity, loss and peak Isentropic Mach number) and demonstrating how this approach can be used for inverse design.
+
+:Journal:
+  ASME Journal of Turbomachinery (under review)
+
+:Year:
+  2020
+
+:Resources:
+  `Preprint <https://arxiv.org/abs/2012.15579>`__ | `Blog <https://discourse.equadratures.org/t/blade-envelopes-3d-visualisation/100>`__
+
+|
+
+:Title:
+  Turbomachinery active subspace performance maps
+
+:Authors:
+  Pranay Seshadri, Shahrokh Shahpar, Paul Constantine, Geoffrey Parks, Mike Adams
+
+:Essence:
+  On generating 2D contour plots of the entire 25D design space of a modern fan blade from a jet-engine.
+
+:Journal:
+  ASME Journal of Turbomachinery
+
+:Year:
+  2018
+
+:Resources:
+  `Preprint <https://www.researchgate.net/publication/322146034_Turbomachinery_Active_Subspace_Performance_Maps>`__ | `Paper <https://asmedigitalcollection.asme.org/turbomachinery/article/140/4/041003/378904/Turbomachinery-Active-Subspace-Performance-Maps?casa_token=zybjMJIy6YYAAAAA:AD6vxW8kq_dCOgYdaQ7nNmqaCWFO6bGN4gSPVUOOIUIb3s7UqzNouCcHCOXouvUcBoit>`__
+
+
+|
+
+:Title:
+  Supporting multi-point fan design with dimension reduction
+
+:Authors:
+  Pranay Seshadri, Shaowu Yuchi, Shahrokh Shahpar, Geoffrey Parks
+
+:Essence:
+  Polynomial variable projection applied to three distinct fan blades at different operating conditions.
+
+:Journal:
+  The Aeronautical Journal
+
+:Year:
+  2018
+
+:Resources:
+  `Preprint <https://arxiv.org/abs/1910.09030>`__ | `Paper <https://www.cambridge.org/core/journals/aeronautical-journal/article/abs/supporting-multipoint-fan-design-with-dimension-reduction/3614035892B7EAC41DC8C486BA008A03>`__
 
 Numerical integration
 -------------------------------
@@ -86,8 +151,8 @@ Numerical integration
 :Resources:
   `Paper <https://link.springer.com/chapter/10.1007/978-3-030-04870-9_1>`__ | `Preprint <https://arxiv.org/abs/1805.07296>`__
 
-Sensitivity analysis
---------------------------------
+Uncertainty quantification and sensitivity analysis
+--------------------------------------------------------------
 
 :Title:
   Extremum sensitivity analysis with polynomial Monte Carlo filtering
@@ -105,7 +170,37 @@ Sensitivity analysis
   2019
 
 :Resources:
-  `Preprint <https://arxiv.org/abs/1907.08113>`__
+  `Preprint <https://arxiv.org/abs/1907.08113>`__ | `Blog <https://discourse.equadratures.org/t/new-methods-for-polynomial-approximations-with-correlated-inputs/64>`__
+
+|
 
 
-**Adjoint / gradient computations**
+:Title:
+  Sensitivity analysis of a coupled hydrodynamic-vegetation model using the effectively subsampled quadratures method
+
+:Authors:
+  Tarandeep Kalra, 
+
+:Essence:
+  The application of effectively subsampled quadratures for computing Sobol' indices for a coupled hydrodynamic-vegetation model.
+
+:Journal:
+  Geoscientific Model Development Discussions
+
+:Year:
+  2019
+
+:Resources:
+  `Paper <https://gmd.copernicus.org/articles/10/4511/2017/gmd-10-4511-2017-discussion.html>`__ | `Blog <https://discourse.equadratures.org/t/eq-methodology-for-coastal-models/95>`__
+
+
+Adjoint / gradient enhancement
+--------------------------------
+
+Coming soon!
+
+
+Flow-field estimation
+--------------------------------
+
+Coming soon!

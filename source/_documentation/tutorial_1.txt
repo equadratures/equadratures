@@ -1,6 +1,6 @@
-Foundations I
-====================
-A **parameter** is one of the main building blocks in Effective Quadratures. Let :math:`s` be a parameter defined on a domain :math:`\mathcal{D} \in \mathbb{R}`. The support of the domain :math:`\mathcal{D}` may be:
+Foundations I: a parameter
+===========================
+A **parameter** is one of the main building blocks in equadratures. Let :math:`s` be a parameter defined on a domain :math:`\mathcal{D} \in \mathbb{R}`. The support of the domain :math:`\mathcal{D}` may be:
 
 * closed :math:`[a,b]`;
 * semi-infinite :math:`(-\infty, b)` or :math:`[a, \infty)`;
@@ -18,7 +18,7 @@ We now demonstrate some basic functionality of this parameter. First consider th
 
 	from equadratures import *
 	import numpy as np
-    import matplotlib.pyplot as plt
+      import matplotlib.pyplot as plt
 
 	s = Parameter(distribution='normal', shape_parameter_A = 0.0, shape_parameter_B = 1.0, order=3)
 

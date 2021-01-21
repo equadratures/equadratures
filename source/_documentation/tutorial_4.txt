@@ -1,6 +1,9 @@
-Computing moments
-========================================
+Uncertainty quantification in computational fluid dynamics
+============================================================
+In this tutorial we will learn
 
+Polynomial chaos and Monte Carlo
+---------------------------------
 This tutorial raises a very important question. Why bother using polynomials for estimating moments? What exactly is the advantage? Moreover, are we guaranteed that we will converge to the Monte Carlo solution? The answer is a resounding yes! Infact this is precisely what Dongbin Xiu and George Karniandakis showed in their seminal paper [1]. As always we begin with some definitions: Parameter, Poly and Basis.
 
 .. code::
@@ -74,6 +77,9 @@ But what order should we use? This is a tough question to answer without any apr
 	    :scale: 30 %
 
 		Figure. Comparative convergence of the variance.
+
+CFD with two aleatory uncertainties
+---------------------------------
 
 The full source code for this tutorial can be found `here. <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/source/_documentation/codes/tutorial_4.py>`__
 

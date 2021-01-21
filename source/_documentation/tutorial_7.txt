@@ -1,5 +1,8 @@
-Bayesian polynomial regression
+Data-driven dimension reduction in turbomachinery
 ==============================================
+
+Random projections
+--------------------
 
 In this tutorial we present a Bayesian analogue to polynomial regression; the material presented here is heavily derived  from Chapter 3.8 in Rogers and Girolami. We will aim to fit a Bayesian polynomial regression model to the data we considered in the prior tutorial. Bayesian approaches are characterized by four key elements: the model, the prior, the likelihood and the posterior.
 
@@ -115,6 +118,12 @@ respectively.
 
 The full source code for this tutorial can be found `here. <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/source/_documentation/codes/tutorial_7.py>`__
 
+
+Active subspaces
+--------------------
+
+Polynomial variable projection
+---------------------------------
 
 **References**
 

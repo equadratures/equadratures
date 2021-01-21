@@ -1,5 +1,5 @@
 ==========
-Modules
+Documentation
 ==========
 
 This page covers some of the key modules in Effective Quadratures; they are split into two parts. First we have the **core building blocks** to assist users in creating bespoke polynomial approximations for their data.

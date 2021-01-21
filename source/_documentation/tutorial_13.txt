@@ -1,0 +1,6 @@
+Multi-fidelity Bayesian polynomials on turbine cascade experiments
+================================================================================================
+
+Coming soon!
+
+.. slide:: https://slides.com/equadratures/polynomial-chaos

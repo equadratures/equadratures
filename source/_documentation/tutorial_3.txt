@@ -1,5 +1,5 @@
-Constructing orthogonal polynomials
-========================================
+Foundations III: Solving linear systems for polynomials & numerical quadrature
+=================================================================================
 In this tutorial we describe how one can construct orthogonal polynomials in Effective Quadratures. For starters, we consider Legendre polynomials---orthogonal with respect to the uniform weight function. We define a Parameter :math:`s` with :math:`\rho(s) \sim \mathcal{U}[-1,1]`.
 
 

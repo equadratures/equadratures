@@ -19,14 +19,11 @@ For a quick start into the code, try the following:
 	import equadratures as eq
 	import numpy as np
 	import matplotlib.pyplot as plt
-	import seaborn as sns
-	sns.set(font_scale=1.5)
-	sns.set_style("white")
 
 	# A sample univariate function we wish to approximate
 	def fun(x):
   		return np.sin(30 * x) + (x+2)**2
-	xo = np.linspace(-1, 1, 500).reshape(500, 1)
+	xo = np.linspace(-1, 1, 500).reshape(500, 1) # domain discretisation
 
 	# A parameter, basis and polynomial.
 	param = eq.Parameter(lower=-1, upper=1, order=50)
@@ -40,13 +37,9 @@ For a quick start into the code, try the following:
 	fig = plt.figure(figsize=(8,6))
 	plt.plot(pts, f_pts, 'o', label='Data')
 	plt.plot(xo, y_approx, lw=2, label='Fit')
-	sns.despine(offset=10, trim=True)
-	plt.xlabel('x')
-	plt.ylabel('y')
-	plt.legend()
-	plt.show()
+	plt.xlabel('x'); plt.ylabel('y'); plt.legend(); plt.show()
 
-.. figure:: Figures/index.png
+.. figure:: /_documentation/Figures/index.png
    :scale: 100 %
 
 To learn more about the code's capabilities, do check out the documentation links below.
@@ -54,6 +47,6 @@ To learn more about the code's capabilities, do check out the documentation link
 .. toctree::
    :maxdepth: 1
 
-   tutorials
-   modules
-   references
+   /_documentation/tutorials
+   /_documentation/documentation
+   /_documentation/references

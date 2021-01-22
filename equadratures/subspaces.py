@@ -9,22 +9,25 @@ from scipy.linalg import orth, sqrtm
 from scipy.spatial import ConvexHull
 from scipy.special import comb
 from scipy.optimize import linprog
-from time import time
+
 
 class Subspaces(object):
     """
     This class defines a subspaces object. It can be used for polynomial-based subspace dimension reduction.
 
-    :param string method: The method to be used for subspace-based dimension reduction. One option is ``active-subspace``, which uses
-        ideas in [1] and [2] to compute a dimension-reducing subspace with a global polynomial approximant. Gradients evaluations of the polynomial
-        approximation are used to compute the averaged outer product of the gradient covariance matrix. Another option is ``variable-projection`` [3],
-        where a Gauss-Newton optimisation problem is solved to compute both the polynomial coefficients and its subspace.
-    :param numpy.ndarray sample_points: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
-    :param numpy.ndarray sample_outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points.
-    :param int polynomial_degree: The degree of the polynomial used in the subspace-based approximation.
+    :param string method: The method to be used for subspace-based dimension reduction. One option is
+    ``active-subspace``, which uses ideas in [1] and [2] to compute a dimension-reducing subspace with a global
+     polynomial approximant. Gradients evaluations of the polynomial approximation are used to compute the averaged
+      outer product of the gradient covariance matrix. Another option is ``variable-projection`` [3], where a
+      Gauss-Newton optimisation problem is solved to compute both the polynomial coefficients and its subspace.
+    :param numpy.ndarray sample_points: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds
+     to a set of sample points over the parameter space.
+    :param numpy.ndarray sample_outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to
+    model evaluations at the sample points.
     :param int subspace_dimension: The dimension of the *active* subspace.
-    :param bool bootstrap: Bootstrap trials for computing the dimension reducing subspace.
-
+    :param dict param_args: Arguments passed to parameters of the AS polynomial. (see `parameter.py`)
+    :param dict poly_args: Arguments passed to constructing polynomial used for AS computation. (see `poly.py`)
+    :param dict dr_args: Arguments passed to customise the VP optimiser. See documentation for _get_variable_projection.
 
     **Sample constructor initialisations**::
 
@@ -38,11 +41,17 @@ class Subspaces(object):
         e = mysubspace.get_eigenvalues()
 
     **References**
-        1. Constantine, P., (2015) Active Subspaces: Emerging Ideas for Dimension Reduction in Parameter Studies. SIAM Spotlights.
-        2. Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery Active Subspace Performance Maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__.
-        3. Hokanson, J., Constantine, P., (2018) Data-driven Polynomial Ridge Approximation Using Variable Projection. SIAM Journal of Scientific Computing, 40(3), A1566-A1589. `Paper <https://epubs.siam.org/doi/abs/10.1137/17M1117690>`__.
+        1. Constantine, P., (2015) Active Subspaces: Emerging Ideas for Dimension Reduction in Parameter Studies.
+        SIAM Spotlights.
+        2. Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery Active Subspace
+         Performance Maps. Journal of Turbomachinery, 140(4), 041003.
+         `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__.
+        3. Hokanson, J., Constantine, P., (2018) Data-driven Polynomial Ridge Approximation Using Variable Projection.
+         SIAM Journal of Scientific Computing, 40(3), A1566-A1589.
+          `Paper <https://epubs.siam.org/doi/abs/10.1137/17M1117690>`__.
     """
-    def __init__(self, method, full_space_poly=None, sample_points=None, sample_outputs=None, polynomial_degree=2, subspace_dimension=2, bootstrap=False, subspace_init=None, max_iter=1000, tol=None, poly_method='least-squares',solver_args=None):
+    def __init__(self, method, full_space_poly=None, sample_points=None, sample_outputs=None,
+                 subspace_dimension=2, param_args=None, poly_args=None, dr_args=None):
         self.full_space_poly = full_space_poly
         self.sample_points = sample_points
         self.Y = None # for the zonotope vertices
@@ -51,27 +60,45 @@ class Subspaces(object):
         self.sample_outputs = sample_outputs
         self.method = method
         self.subspace_dimension = subspace_dimension
-        self.polynomial_degree = polynomial_degree
-        self.bootstrap = bootstrap
-        self.poly_method = poly_method
-        self.solver_args = solver_args
+        self.dr_args = dr_args
+        if dr_args is not None:
+            if hasattr(dr_args, 'order'):
+                self.polynomial_degree = dr_args['order']
+        if not(hasattr(self, 'polynomial_degree')):
+            self.polynomial_degree = 2
+
+        my_poly_args = {'method': 'least-squares', 'solver_args': None}
+        if poly_args is not None:
+            my_poly_args.update(poly_args)
+        self.poly_args = my_poly_args
+
+        my_param_args = {'distribution': 'uniform', 'order': self.polynomial_degree, 'lower': -1, 'upper': 1}
+        if param_args is not None:
+            my_param_args.update(param_args)
+
         if self.method.lower() == 'active-subspace' or self.method.lower() == 'active-subspaces':
             self.method = 'active-subspace'
             if self.full_space_poly is None:
                 N, d = self.sample_points.shape
-                param = Parameter(distribution='uniform', lower=-1, upper=1., order=self.polynomial_degree)
+                param = Parameter(**my_param_args)
                 myparameters = [param for _ in range(d)]
                 mybasis = Basis("total-order")
-                mypoly = Poly(myparameters, mybasis, method=self.poly_method, sampling_args={'sample-points':self.sample_points, \
-                                                                    'sample-outputs':self.sample_outputs},
-                                                                    solver_args=self.solver_args)
+                mypoly = Poly(myparameters, mybasis, sampling_args={'sample-points': self.sample_points,
+                                                                    'sample-outputs': self.sample_outputs},
+                              **my_poly_args)
                 mypoly.set_model()
                 self.full_space_poly = mypoly
 #TODO            self.sample_points = standardise(self.full_space_poly.get_points())
             self.sample_outputs = self.full_space_poly.get_model_evaluations()
             self._get_active_subspace()
         elif self.method == 'variable-projection':
-            self._get_variable_projection(None,None,tol,max_iter,subspace_init,False)
+            if dr_args is not None:
+                vp_args = {'gamma':0.1, 'beta':1e-4, 'tol':1e-7, 'maxiter':1000, 'U0':None, 'verbose':0}
+                vp_args.update(dr_args)
+                self._get_variable_projection(**vp_args)
+            else:
+                self._get_variable_projection()
+
     def get_subspace_polynomial(self):
         """
         Returns a polynomial defined over the dimension reducing subspace.
@@ -80,23 +107,25 @@ class Subspaces(object):
             An instance of the Subspaces object.
 
         :return:
-            **subspacepoly**: A Poly object that defines a polynomial over the subspace. The distribution of parameters is
-            assumed to be uniform and the maximum and minimum bounds for each parameter are defined by the maximum and minimum values
-            of the project samples.
+            **subspacepoly**: A Poly object that defines a polynomial over the subspace. The distribution of parameters
+             is assumed to be uniform and the maximum and minimum bounds for each parameter are defined by the maximum
+              and minimum values of the project samples.
         """
+        # TODO: Try correlated poly here
         active_subspace = self._subspace[:, 0:self.subspace_dimension]
         projected_points = np.dot(self.sample_points, active_subspace)
         myparameters = []
         for i in range(0, self.subspace_dimension):
-            param = Parameter(distribution='uniform', lower=np.min(projected_points[:,i]), upper=np.max(projected_points[:,i]), \
-                order=self.polynomial_degree)
+            param = Parameter(distribution='uniform', lower=np.min(projected_points[:, i]),
+                              upper=np.max(projected_points[:, i]), order=self.polynomial_degree)
             myparameters.append(param)
         mybasis = Basis("total-order")
-        subspacepoly = Poly(myparameters, mybasis, method=self.poly_method, sampling_args={'sample-points':projected_points, \
-                                                                    'sample-outputs':self.sample_outputs},
-                                                                    solver_args=self.solver_args)
+        subspacepoly = Poly(myparameters, mybasis, sampling_args={'sample-points': projected_points,
+                                                                  'sample-outputs': self.sample_outputs},
+                            **self.poly_args)
         subspacepoly.set_model()
         return subspacepoly
+
     def get_eigenvalues(self):
         """
         Returns the eigenvalues of the dimension reducing subspace. Note: this option is
@@ -112,6 +141,7 @@ class Subspaces(object):
             return self._eigenvalues
         else:
             print('Only the active-subspace method yields eigenvalues.')
+
     def get_subspace(self):
         """
         Returns the dimension reducing subspace.
@@ -124,26 +154,13 @@ class Subspaces(object):
             contain the dimension reducing subspace, while the remaining columns contain its orthogonal complement.
         """
         return self._subspace
+
     def _get_active_subspace(self):
         """
         Active subspaces.
         """
-        bs_trials=50
-        if self.full_space_poly.get_points() is None:
-            # This should never happen because set_model has been called in __init__...
-            pass
-            # d = poly.dimensions
-            # if alpha is None:
-            #     alpha = 4
-            # if k is None or k > d:
-            #     k = d
-            # M = int(alpha * k * np.log(d))
-            # X = np.zeros((M, d))
-            # for j in range(0, d):
-            #     X[:, j] =  np.reshape(self.full_space_poly.parameters[j].get_samples(M), M)
-        else:
-            X = self.full_space_poly.get_points()
-            M, d = X.shape
+        X = self.full_space_poly.get_points()
+        M, d = X.shape
         polygrad = self.full_space_poly.get_polyfit_grad(X)
         weights = np.ones((M, 1)) / M
         R = polygrad.transpose() * weights
@@ -154,157 +171,114 @@ class Subspaces(object):
         idx = e.argsort()[::-1]
         eigs = e[idx]
         eigVecs = W[:, idx]
-        if self.bootstrap:
-            all_bs_eigs = np.zeros((bs_trials, d))
-            # all_bs_W = np.zeros((bs_trials, d, d))
-            for t in range(bs_trials):
-                bs_samples = X[np.random.randint(0, M, size=M), :]
-                polygrad_bs = self.full_space_poly.get_polyfit_grad(bs_samples)
-                weights_bs = np.ones((M, 1)) / M
-                R_bs = polygrad_bs.transpose() * weights_bs
-                C_bs = np.dot(polygrad_bs, R_bs)
-                e_bs, W_bs = np.linalg.eigh(C_bs)
-                all_bs_eigs[t,:] = np.flipud(e_bs)
-            eigs_bs_lower = np.min(all_bs_eigs, axis = 0)
-            eigs_bs_upper = np.max(all_bs_eigs, axis = 0)
-            self._subspace = eigVecs
-            self._eigenvalues = eigs
-            self._eigenvalues_lower = eigs_bs_lower
-            self._eigenvalues_upper = eigs_bs_upper
-        else:
-            self._subspace = eigVecs
-            self._eigenvalues = eigs
-    def _get_variable_projection(self, gamma,beta,tol,maxiter,U0, verbose):
+        self._subspace = eigVecs
+        self._eigenvalues = eigs
+
+    def _get_variable_projection(self, gamma=0.1, beta=1e-4, tol=1e-7, maxiter=1000, U0=None, verbose=0):
         """
         Variable Projection function to obtain an active subspace in inputs design space
         Note: It may help to standardize outputs to zero mean and unit variance
-        :param X: ndarray, the input
-        :param f: array, the output
-        :param n: int, number of active subspace directions to calculate
-        :param p: int, degree of polynomials
         :param gamma: double, step length reduction factor (0,1)
         :param beta: double, Armijo tolerance for backtracking line search (0,1)
         :param tol: double, tolerance for convergence, measured in the norm of residual over norm of f
-        :return:
-            * **U (ndarray)**: The active subspace found
-            * **R (double)**: Cost of deviation in fitting
+        :param maxiter: int, maximum number of optimisation iterations
+        :param U0: numpy.ndarray, initial guess for active subspace
+        :param verbose: int, set to 1 for debug messages
         """
         # NOTE: How do we know these are the best values of gamma and beta?
-        if gamma is None:
-            gamma=0.1
-        if beta is None:
-            beta=1e-4
-        M,m=self.sample_points.shape
+        M, m = self.sample_points.shape
         if U0 is None:
-            Z=np.random.randn(m, self.subspace_dimension)
-            U,_=np.linalg.qr(Z)
+            Z = np.random.randn(m, self.subspace_dimension)
+            U, _ = np.linalg.qr(Z)
         else:
             U = orth(U0)
-        if tol is None:
-            tol = 1e-7
-        y=np.dot(self.sample_points,U)
-        minmax=np.zeros((2, self.subspace_dimension))
-        minmax[0,:] = np.amin(y, axis=0)
-        minmax[1,:] = np.amax(y, axis=0)
-        #Construct the affine transformation
+        y = np.dot(self.sample_points,U)
+        minmax = np.zeros((2, self.subspace_dimension))
+        minmax[0, :] = np.amin(y, axis=0)
+        minmax[1, :] = np.amax(y, axis=0)
+        # Construct the affine transformation
         eta = 2 * np.divide((y - minmax[0,:]), (minmax[1,:]-minmax[0,:])) - 1
 
-        #Construct the _vandermonde matrix step 6
-        V,Polybasis=self._vandermonde(eta, self.polynomial_degree)
-        V_plus=np.linalg.pinv(V)
-        coeff=np.dot(V_plus, self.sample_outputs)
-        res= self.sample_outputs - np.dot(V,coeff)
-        R=np.linalg.norm(res)
-        #TODO: convergence criterion??
+        # Construct the Vandermonde matrix step 6
+
+        V, poly_obj = vandermonde(eta, self.polynomial_degree)
+        V_plus = np.linalg.pinv(V)
+        coeff = np.dot(V_plus, self.sample_outputs)
+        res = self.sample_outputs - np.dot(V,coeff)
+        # R = np.linalg.norm(res)
+        # TODO: convergence criterion??
 
         for iteration in range(0,maxiter):
-            #Construct the Jacobian step 9
-            J=jacobian_vp(V,V_plus,U,y, self.sample_outputs,Polybasis,eta,minmax, self.sample_points)
-            #Calculate the gradient of Jacobian #step 10
-            G=np.zeros((m, self.subspace_dimension))
+            # Construct the Jacobian step 9
+            J = jacobian_vp(V, V_plus, U, self.sample_outputs, poly_obj, eta, minmax, self.sample_points)
+            # Calculate the gradient of Jacobian (step 10)
+            G = np.zeros((m, self.subspace_dimension))
             # NOTE: Can be vectorised
-            for i in range(0,M):
-                G += res[i]*J[i,:,:]
+            for i in range(0, M):
+                G += res[i]*J[i, :, :]
 
-            #conduct the SVD for J_vec
-            vec_J = np.reshape(J,(M,m*self.subspace_dimension))
-            Y,S,Z=np.linalg.svd(vec_J,full_matrices=False)#step 11
+            # conduct the SVD for J_vec
+            vec_J = np.reshape(J, (M, m*self.subspace_dimension))
+            Y, S, Z = np.linalg.svd(vec_J,full_matrices=False)  # step 11
 
-            #obtain delta
+            # obtain delta
             delta = np.dot(Y[:,:-self.subspace_dimension**2].T, res)
             delta = np.dot(np.diag(1/S[:-self.subspace_dimension**2]), delta)
             delta = -np.dot(Z[:-self.subspace_dimension**2,:].T, delta).reshape(U.shape)
 
-            #carry out Gauss-Newton step
-            vec_delta=delta.flatten()# step 12
+            # carry out Gauss-Newton step
+            vec_delta=delta.flatten()  # step 12
 
-            #vectorize G step 13
-            vec_G=G.flatten()
-            alpha=np.dot(vec_G.T,vec_delta)
-            norm_G=np.dot(vec_G.T,vec_G)
+            # vectorize G step 13
+            vec_G = G.flatten()
+            alpha = np.dot(vec_G.T, vec_delta)
+            norm_G = np.dot(vec_G.T, vec_G)
 
-            #check alpha step 14
-            if alpha>=0:
-                delta=-G
-                alpha=-norm_G
+            # check alpha step 14
+            if alpha >= 0:
+                delta = -G
+                alpha = -norm_G
 
-            #SVD on delta step 17
+            # SVD on delta step 17
             
-            Y,S,Z=np.linalg.svd(delta,full_matrices=False)
+            Y, S, Z = np.linalg.svd(delta, full_matrices=False)
 
-            UZ=np.dot(U,Z.T)
+            UZ = np.dot(U,Z.T)
             t = 1
             for iter2 in range(0,20):
-                U_new=np.dot(UZ, np.diag(np.cos(S*t))) + np.dot(Y, np.diag(np.sin(S*t)))#step 19
-                U_new=orth(U_new)
-                #Update the values with the new U matrix
-                y=np.dot(self.sample_points, U_new)
+                U_new = np.dot(UZ, np.diag(np.cos(S*t))) + np.dot(Y, np.diag(np.sin(S*t)))#step 19
+                U_new = orth(U_new)
+                # Update the values with the new U matrix
+                y = np.dot(self.sample_points, U_new)
                 minmax[0,:] = np.amin(y, axis=0)
                 minmax[1,:] = np.amax(y, axis=0)
                 eta = 2 * np.divide((y - minmax[0,:]), (minmax[1,:]-minmax[0,:])) - 1
 
-                V_new,Polybasis=self._vandermonde(eta, self.polynomial_degree)
-                V_plus_new=np.linalg.pinv(V_new)
-                coeff_new=np.dot(V_plus_new, self.sample_outputs)
-                res_new= self.sample_outputs  -  np.dot(V_new,coeff_new)
-                R_new=np.linalg.norm(res_new)
+                V_new, poly_obj = vandermonde(eta, self.polynomial_degree)
+                V_plus_new = np.linalg.pinv(V_new)
+                coeff_new = np.dot(V_plus_new, self.sample_outputs)
+                res_new = self.sample_outputs - np.dot(V_new,coeff_new)
+                R_new = np.linalg.norm(res_new)
 
-                if np.linalg.norm(res_new)<=np.linalg.norm(res)+alpha*beta*t or t<1e-10:#step 21
+                if np.linalg.norm(res_new) <= np.linalg.norm(res)+alpha*beta*t or t < 1e-10:  # step 21
                     break
-                t=t*gamma
+                t = t * gamma
             dist_change = subspace_dist(U, U_new)
             U = U_new
             V = V_new
-            coeff = coeff_new
+            # coeff = coeff_new
             V_plus = V_plus_new
             res = res_new
-            R = R_new
+            # R = R_new
             if dist_change < tol:
                 if verbose:
                     print("VP finished with %d iterations" % iteration)
                 break
-        if iteration == maxiter-1 and verbose:
+        if iteration == maxiter - 1 and verbose:
             print("VP finished with %d iterations" % iteration)
         active_subspace = U
         inactive_subspace = scipy.linalg.null_space(active_subspace.T)
         self._subspace = np.hstack([active_subspace, inactive_subspace])
-
-    def _vandermonde(self,eta,p):
-        _,n=eta.shape
-        listing=[]
-        for i in range(0,n):
-            listing.append(p)
-        Object=Basis('total-order',listing)
-        #Establish n Parameter objects
-        params=[]
-        P=Parameter(order=p,lower=-1,upper=1,distribution='uniform')
-        for i in range(0,n):
-            params.append(P)
-        #Use the params list to establish the Poly object
-        Polybasis=Poly(params,Object, method=self.poly_method)
-        V=Polybasis.get_poly(eta)
-        V=V.T
-        return V,Polybasis
 
     def get_zonotope_vertices(self, num_samples=10000, max_count=100000):
         """
@@ -366,6 +340,7 @@ class Subspaces(object):
             Y = np.dot(X, W)
             self.Y = Y.reshape((num_vertices, n))
             return self.Y
+
     def get_linear_inequalities(self):
         """
         Returns the linear inequalities defining the zontope vertices, i.e., Ax<=b.
@@ -390,6 +365,7 @@ class Subspaces(object):
             A = convexHull.equations[:,:n]
             b = -convexHull.equations[:,n]
             return A, b
+
     def get_samples_constraining_active_coordinates(self, inactive_samples, active_coordinates):
         """
 
@@ -476,6 +452,27 @@ class Subspaces(object):
 
         yz = np.vstack([np.repeat(y[:, np.newaxis], N, axis=1), Z.T])
         return np.dot(self._subspace, yz).T
+
+
+def vandermonde(eta, p):
+    # TODO: Try using a "correlated" basis here?
+    _, n = eta.shape
+    listing = []
+    for i in range(0, n):
+        listing.append(p)
+    Object=Basis('total-order',listing)
+    # Establish n Parameter objects
+    params = []
+    P = Parameter(order=p, lower=-1, upper=1, distribution='uniform')
+    for i in range(0, n):
+        params.append(P)
+    # Use the params list to establish the Poly object
+    poly_obj = Poly(params, Object, method='least-squares')
+    V = poly_obj.get_poly(eta)
+    V = V.T
+    return V, poly_obj
+
+
 def vector_AS(list_of_polys, R = None, alpha=None, k=None, samples=None, bootstrap=False, bs_trials = 50
                 , J = None, save_path = None):
     # Find AS directions to vector val func
@@ -539,46 +536,54 @@ def vector_AS(list_of_polys, R = None, alpha=None, k=None, samples=None, bootstr
         return eigs,eigVecs,eigs_bs_lower,eigs_bs_upper, all_bs_W
     else:
         return eigs,eigVecs
-def jacobian_vp(V,V_plus,U,y,f,Polybasis,eta,minmax,X):
-    M,N=V.shape
-    m,n=U.shape
-    Gradient=Polybasis.get_poly_grad(eta)
-    sub=(minmax[1,:]-minmax[0,:]).T# n*1 array
-    vectord=np.reshape(2.0/sub,(n,1))
-    #Initialize the tensor
-    J=np.zeros((M,m,n))
-    #Obtain the derivative of this tensor
-    dV=np.zeros((m,n,M,N))
-    for l in range(0,n):
-        for j in range(0,N):
-            current=Gradient[l].T
-            if n==1:
-                current=Gradient.T
-            dV[:,l,:,j]=np.asscalar(vectord[l])*(X.T*current[:,j])#Eqn 16 17
 
-    #Get the P matrix
-    P=np.identity(M)-np.matmul(V,V_plus)
-    V_minus=scipy.linalg.pinv(V)
 
-    #Calculate entries for the tensor
+def jacobian_vp(V, V_plus, U, f, Polybasis, eta, minmax, X):
+    M, N = V.shape
+    m, n = U.shape
+    Gradient = Polybasis.get_poly_grad(eta)
+    sub = (minmax[1,:]-minmax[0,:]).T
+    vectord = np.reshape(2.0/sub,(n,1))
+    # Initialize the tensor
+    J = np.zeros((M, m, n))
+    # Obtain the derivative of this tensor
+    dV = np.zeros((m, n, M, N))
+    for l in range(0, n):
+        for j in range(0, N):
+            current = Gradient[l].T
+            if n == 1:
+                current = Gradient.T
+            dV[:,l,:,j] = np.asscalar(vectord[l])*(X.T*current[:,j])
+
+    # Get the P matrix
+    P = np.identity(M)-np.matmul(V,V_plus)
+    V_minus = scipy.linalg.pinv(V)
+
+    # Calculate entries for the tensor
     for j in range(0,m):
         for k in range(0,n):
-            temp1=np.linalg.multi_dot([P,dV[j,k,:,:],V_minus])
-            J[:,j,k]=(-np.matmul((temp1+temp1.T),f)).reshape((M,))# Eqn 15
+            temp1 = np.linalg.multi_dot([P,dV[j,k,:,:],V_minus])
+            J[:, j, k]=(-np.matmul((temp1+temp1.T),f)).reshape((M,))  # Eqn 15
 
     return J
+
+
 def jacobian_vec(list_of_poly, X):
     m = len(list_of_poly)
-    [N,d] = X.shape
-    J = np.zeros((m,d,N))
+    [N, d] = X.shape
+    J = np.zeros((m, d, N))
     for p in range(len(list_of_poly)):
-        J[p,:,:] = list_of_poly[p].get_polyfit_grad(X)
+        J[p, :, :] = list_of_poly[p].get_polyfit_grad(X)
     return J
+
+
 def subspace_dist(U, V):
     if len(U.shape) == 1:
         return np.linalg.norm(np.outer(U, U) - np.outer(V, V), ord=2)
     else:
         return np.linalg.norm(np.dot(U, U.T) - np.dot(V, V.T), ord=2)
+
+
 def linear_program_ineq(c, A, b):
     c = c.reshape((c.size,))
     b = b.reshape((b.size,))
@@ -596,6 +601,8 @@ def linear_program_ineq(c, A, b):
         np.savez('bad_scipy_lp_ineq_{:010d}'.format(np.random.randint(int(1e9))),
                  c=c, A=A, b=b, res=res)
         raise Exception('Scipy did not solve the LP. Blame Scipy.')
+
+
 def get_unique_rows(X0):
     X1 = X0.view(np.dtype((np.void, X0.dtype.itemsize * X0.shape[1])))
     return np.unique(X1).view(X0.dtype).reshape(-1, X0.shape[1])

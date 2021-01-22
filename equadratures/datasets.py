@@ -1,6 +1,8 @@
 import os
 import numpy as np
 import scipy.stats as st
+import requests
+from io import BytesIO
 from equadratures.scalers import scaler_minmax 
 
 def gen_linear(n_observations=100, n_dim=5, n_relevent=5,bias=0.0, noise=0.0, random_seed=None):
@@ -28,7 +30,6 @@ def gen_linear(n_observations=100, n_dim=5, n_relevent=5,bias=0.0, noise=0.0, ra
 #    truth_model[:n_relevent, :] = generator.standard_normal((n_relevent,1))
     truth_model[:n_relevent, :] = generator.uniform(-1,1,n_relevent).reshape(-1,1)
     y = scaler_minmax().transform(np.dot(X, truth_model)) + bias
-
 
     # Add noise
     if noise > 0.0:
@@ -69,41 +70,42 @@ def gen_friedman(n_observations=100, n_dim=5, noise=0.0, random_seed=None,normal
     
     return X,y
 
-#def load_eq_dataset(dataset,data_dir=None,keep=False):
-#    # Check if valid dataset
-#    datasets = ['naca0012','blade_envelopes']
-#    if dataset not in datasets:
-#        raise ValueError('dataset specified in load_eq_dataset not recognised, avaiable datasets: ' + datasets)
-#
-#    # Download from github
-#    if data_dir == None:
-#        print('Downloading the ' + dataset + ' dataset from github...') 
-#        git_url = os.path.join("https://github.com/ascillitoe/data-sets/tree/main/",dataset)
-#        
-#        # Check if svn installed, if not recommend user to manually clone github repo and specify data_dir
-#        try:
-#            subprocess.call(['svn'])
-#        except FileNotFoundError:
-#            print('svn not installed...')
-#
-#        # Parse given repo
-#        try:
-#            head, branch = git_url.split('/tree/')
-#            dir_url = '/'.join(branch.split('/')[1:])
-#            git_url = '/'.join([head, 'trunk', dir_url])
-#        except:
-#            print('err:\tnot a valid folder url!')
-#        else:
-#            print('fetching from %a...' %git_url)
-#        # Download with svn         
-#        try:
-#            subprocess.call(['svn', 'checkout', '/'.join([head, 'trunk', git_url])])
-#        except Exception as e:
-#            print("Something went wrong:", e)
-#        else:
-#            print('Downloaded...')
+def load_eq_dataset(dataset,data_dir=None):
+    # Check if valid dataset
+    datasets = ['naca0012','blade_envelopes']
+    if dataset not in datasets:
+        raise ValueError('dataset specified in load_eq_dataset not recognised, avaiable datasets: ', datasets)
 
-    
+    # Download from github
+    if data_dir is None:
+        print('Downloading the ' + dataset + ' dataset from github...') 
+        # .npz file
+        git_url = os.path.join('https://github.com/ascillitoe/data-sets/raw/main/',dataset,dataset+'.npz')
+        try:
+            r = requests.get(git_url,stream=True)
+            r.raise_for_status()
+            data = np.load(BytesIO(r.raw.read()))
+        except requests.exceptions.RequestException as e:  
+            raise SystemExit(e)
+        # .md file
+        git_url = os.path.join('https://raw.githubusercontent.com/ascillitoe/data-sets/main',dataset,'README.md')
+        try:
+            r = requests.get(git_url)
+            r.raise_for_status()
+            print('\n',r.text)
+        except requests.exceptions.RequestException as e:  
+            raise SystemExit(e)
+
+    # If the user has cloned the data-sets repo and provided its location in data_dir
+    else:
+        print('Loading the dataset from ', data_dir)
+        data = np.load(os.path.join(data_dir,dataset,dataset+'.npz'))
+        f = open(os.path.join(data_dir,dataset,'README.md'))
+        print(f.read())
+
+    return data
+
+
 def train_test_split(X,y,train=0.7,random_seed=None,shuffle=True):
     """Split arrays or matrices into random train and test subsets. Inspired by scikit-learn's datasets.train_test_split.
     :param numpy.ndarray X: An numpy.ndarray of shape (n_observations,n_dim) containing the inputs.

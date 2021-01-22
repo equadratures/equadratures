@@ -1,7 +1,7 @@
 from equadratures.parameter import Parameter
 from equadratures.poly import Poly
 from equadratures.basis import Basis
-from equadratures.datasets import standardise
+#from equadratures.datasets import standardise
 import numpy as np
 import scipy
 import scipy.io
@@ -46,8 +46,8 @@ class Subspaces(object):
         self.full_space_poly = full_space_poly
         self.sample_points = sample_points
         self.Y = None # for the zonotope vertices
-        if self.sample_points is not None:
-            self.sample_points = standardise(sample_points)
+#TODO        if self.sample_points is not None:
+#            self.sample_points = standardise(sample_points)
         self.sample_outputs = sample_outputs
         self.method = method
         self.subspace_dimension = subspace_dimension
@@ -67,7 +67,7 @@ class Subspaces(object):
                                                                     solver_args=self.solver_args)
                 mypoly.set_model()
                 self.full_space_poly = mypoly
-            self.sample_points = standardise(self.full_space_poly.get_points())
+#TODO            self.sample_points = standardise(self.full_space_poly.get_points())
             self.sample_outputs = self.full_space_poly.get_model_evaluations()
             self._get_active_subspace()
         elif self.method == 'variable-projection':

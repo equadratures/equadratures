@@ -1,5 +1,7 @@
+import os
 import numpy as np
 import scipy.stats as st
+from equadratures.scalers import scaler_minmax 
 
 def gen_linear(n_observations=100, n_dim=5, n_relevent=5,bias=0.0, noise=0.0, random_seed=None):
     """Generate a synthetic linear dataset for regression. Data is generated using a random linear regression model with ``n_relevent`` input dimensions. Gaussian noise with standard deviation ``noise`` is added. 
@@ -19,13 +21,14 @@ def gen_linear(n_observations=100, n_dim=5, n_relevent=5,bias=0.0, noise=0.0, ra
     n_relevent = min(n_dim, n_relevent)
     generator = np.random.default_rng(random_seed)
     X = generator.standard_normal((n_observations,n_dim))
-    X = standardise(X)
+    X = scaler_minmax().transform(X)
 
     # Generate the truth model with n_relevent input dimensions
     truth_model = np.zeros((n_dim, 1))
 #    truth_model[:n_relevent, :] = generator.standard_normal((n_relevent,1))
     truth_model[:n_relevent, :] = generator.uniform(-1,1,n_relevent).reshape(-1,1)
-    y = standardise(np.dot(X, truth_model)) + bias
+    y = scaler_minmax().transform(np.dot(X, truth_model)) + bias
+
 
     # Add noise
     if noise > 0.0:
@@ -56,18 +59,53 @@ def gen_friedman(n_observations=100, n_dim=5, noise=0.0, random_seed=None,normal
 
     generator = np.random.default_rng(random_seed)
     X = generator.standard_normal((n_observations,n_dim))
-    X = standardise(X)
+    X = scaler_minmax().transform(X)
 
     y = 10 * np.sin(np.pi * X[:, 0] * X[:, 1]) + 20 * (X[:, 2] - 0.5) ** 2 \
         + 10 * X[:, 3] + 5 * X[:, 4] 
     y+= noise*np.std(y)*generator.standard_normal(n_observations)
     if normalise:
-        y = standardise(y.reshape(-1,1))
+        y = scaler_minmax().transform(y.reshape(-1,1))
     
     return X,y
 
+#def load_eq_dataset(dataset,data_dir=None,keep=False):
+#    # Check if valid dataset
+#    datasets = ['naca0012','blade_envelopes']
+#    if dataset not in datasets:
+#        raise ValueError('dataset specified in load_eq_dataset not recognised, avaiable datasets: ' + datasets)
+#
+#    # Download from github
+#    if data_dir == None:
+#        print('Downloading the ' + dataset + ' dataset from github...') 
+#        git_url = os.path.join("https://github.com/ascillitoe/data-sets/tree/main/",dataset)
+#        
+#        # Check if svn installed, if not recommend user to manually clone github repo and specify data_dir
+#        try:
+#            subprocess.call(['svn'])
+#        except FileNotFoundError:
+#            print('svn not installed...')
+#
+#        # Parse given repo
+#        try:
+#            head, branch = git_url.split('/tree/')
+#            dir_url = '/'.join(branch.split('/')[1:])
+#            git_url = '/'.join([head, 'trunk', dir_url])
+#        except:
+#            print('err:\tnot a valid folder url!')
+#        else:
+#            print('fetching from %a...' %git_url)
+#        # Download with svn         
+#        try:
+#            subprocess.call(['svn', 'checkout', '/'.join([head, 'trunk', git_url])])
+#        except Exception as e:
+#            print("Something went wrong:", e)
+#        else:
+#            print('Downloaded...')
+
+    
 def train_test_split(X,y,train=0.7,random_seed=None,shuffle=True):
-    """Split arrays or matrices into random train and test subsets.i Inspired by scikit-learn's datasets.train_test_split.
+    """Split arrays or matrices into random train and test subsets. Inspired by scikit-learn's datasets.train_test_split.
     :param numpy.ndarray X: An numpy.ndarray of shape (n_observations,n_dim) containing the inputs.
     :param numpy.ndarray y: A numpy.ndarray of shape (n_observations,1) containing the outputs/targets.
     :param float train: Fraction between 0.0 and 1.0, representing the proportion of the dataset to include in the train split. 
@@ -128,24 +166,3 @@ def score(y_true,y_pred,metric,X=None):
     else:
         raise ValueError('Only r2, adjusted_r2, mae, normalised_mae, rmse scoring metrics currently supported')
     return score
-
-def standardise(X):
-    if X.ndim == 1: X = X.reshape(-1,1)
-    d=X.shape[1]
-    X_stnd=np.zeros_like(X)
-    for j in range(0,d):
-        max_value = np.max(X[:,j])
-        min_value = np.min(X[:,j])
-        X_stnd[:,j]=2.0 * ( (X[:,j]-min_value)/(max_value - min_value) ) -1
-    return X_stnd
-
-def unstandardise(X,X_orig):
-    if X.ndim == 1: X = X.reshape(-1,1)
-    d=X.shape[1]
-    X_unstnd=np.zeros_like(X)
-    for j in range(0,d):
-        max_value = np.max(X_orig[:,j])
-        min_value = np.min(X_orig[:,j])
-        X_unstnd[:,j] = 0.5*(X[:,j] +1)*(max_value - min_value) + min_value
-    return X_unstnd
-

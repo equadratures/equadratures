@@ -80,7 +80,7 @@ def load_eq_dataset(dataset,data_dir=None):
     if data_dir is None:
         print('Downloading the ' + dataset + ' dataset from github...') 
         # .npz file
-        git_url = os.path.join('https://github.com/ascillitoe/data-sets/raw/main/',dataset,dataset+'.npz')
+        git_url = os.path.join('https://github.com/Effective-Quadratures/data-sets/raw/main/',dataset,dataset+'.npz')
         try:
             r = requests.get(git_url,stream=True)
             r.raise_for_status()
@@ -88,7 +88,7 @@ def load_eq_dataset(dataset,data_dir=None):
         except requests.exceptions.RequestException as e:  
             raise SystemExit(e)
         # .md file
-        git_url = os.path.join('https://raw.githubusercontent.com/ascillitoe/data-sets/main',dataset,'README.md')
+        git_url = os.path.join('https://raw.githubusercontent.com/Effective-Quadratures/data-sets/main',dataset,'README.md')
         try:
             r = requests.get(git_url)
             r.raise_for_status()

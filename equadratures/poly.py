@@ -444,7 +444,7 @@ class Poly(object):
             self.coefficients = user_defined_coefficients
             return
         indices_with_nans = np.argwhere(np.isnan(self._model_evaluations))[:,0]
-        if len(indices_with_nans) is not 0:
+        if len(indices_with_nans) != 0:
             print('WARNING: One or more of your model evaluations have resulted in an NaN. We found '+str(len(indices_with_nans))+' NaNs out of '+str(len(self._model_evaluations))+'.')
             print('The code will now use a least-squares technique that will ignore input-output pairs of your model that have NaNs. This will likely compromise computed statistics.')
             self.inputs = np.delete(self._quadrature_points, indices_with_nans, axis=0)
@@ -917,7 +917,7 @@ def evaluate_model_gradients(points, fungrad, format):
 
     """
     dimensions = len(points[0,:])
-    if format is 'matrix':
+    if format == 'matrix':
         grad_values = np.zeros((len(points), dimensions))
         # For loop through all the points
         for i in range(0, len(points)):
@@ -925,7 +925,7 @@ def evaluate_model_gradients(points, fungrad, format):
             for j in range(0, dimensions):
                 grad_values[i,j] = output_from_gradient_call[j]
         return grad_values
-    elif format is 'vector':
+    elif format == 'vector':
         grad_values = np.zeros((len(points) * dimensions, 1))
         # For loop through all the points
         counter = 0

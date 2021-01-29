@@ -304,9 +304,9 @@ def sparse_grid_basis(level, growth_rule, dimensions):
             r = n_new[i]
             if(r[j] - 1 == 0):
                 sparse_index[i,j] = int(1)
-            elif(growth_rule is 'exponential' and  r[j] - 1 != 0 ):
+            elif(growth_rule == 'exponential' and  r[j] - 1 != 0 ):
                 sparse_index[i,j] = int(2**(r[j] - 1)  )
-            elif(growth_rule is 'linear'):
+            elif(growth_rule == 'linear'):
                 sparse_index[i,j] = int(r[j])
             else:
                 raise KeyboardInterrupt

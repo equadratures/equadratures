@@ -6,11 +6,13 @@ from equadratures.solver import Solver
 from equadratures.subsampling import Subsampling
 from equadratures.quadrature import Quadrature
 from equadratures.datasets import score
+from equadratures.plot import Plot
 import scipy.stats as st
 import numpy as np
 from copy import deepcopy
 MAXIMUM_ORDER_FOR_STATS = 8
-class Poly(object):
+
+class Poly(Plot):
     """
     Definition of a polynomial object.
 
@@ -815,7 +817,7 @@ class Poly(object):
         return H
     def get_polyscore(self,X_test=None,y_test=None,metric='adjusted_r2'):
         """
-        Evaluates the accuracy of the polynomial approximation using the selected accuracy metric. Training accuracy is evaluated on the data used for fitting the polynomial. Testing accuracy is evaluated on new data if it is provided by the ``X_test`` and ``y_test`` arguments (both must be provided together). 
+        Evaluates the accuracy of the polynomial approximation using the selected accuracy metric. Training accuracy is evaluated on the data used for fitting the polynomial. Testing accuracy is evaluated on new data if it is provided by the ``X_test`` and ``y_test`` arguments (both must be provided together).
 
         :param Poly self:
             An instance of the Poly class.
@@ -824,7 +826,7 @@ class Poly(object):
         :param numpy.ndarray y_test:
             An ndarray with shape (number_of_observations, 1) containing new ``y_test`` data (optional).
         :param string metric:
-            An optional string containing the scoring metric to use. Avaliable options are: ``adjusted_r2``, ``r2``, ``mae``, ``rmse``, or ``normalised_mae`` (default: ``adjusted_r2``). 
+            An optional string containing the scoring metric to use. Avaliable options are: ``adjusted_r2``, ``r2``, ``mae``, ``rmse``, or ``normalised_mae`` (default: ``adjusted_r2``).
 
         :return:
             **score_train**: The training score of the model, output as a float.
@@ -840,7 +842,6 @@ class Poly(object):
             return train_score, test_score
         else:
             return train_score
-
     def _get_polystd(self, stack_of_points):
         """
         Private function to evaluate the uncertainty of the polynomial approximation at prescribed points, following the approach from [7].
@@ -853,8 +854,8 @@ class Poly(object):
             **y_std**: A numpy.ndarray of shape (number_of_observations,1) corresponding to the uncertainty (one standard deviation) of the polynomial approximation at each point.
         """
         # Training data
-        X_train = self.inputs
-        y_train = self.outputs
+        X_train = self._quadrature_points
+        y_train = self._model_evaluations
 
         # Define covariance matrix - TODO: allow non-diagonal matrix?
         # Empirical variance
@@ -882,7 +883,7 @@ class Poly(object):
 
         # Propagate the uncertainties
         Sigma_X = np.dot( np.dot(Q, Sigma), Q.T)
-        Sigma_F = np.dot( np.dot(Ao, Sigma_X), Ao.T) 
+        Sigma_F = np.dot( np.dot(Ao, Sigma_X), Ao.T)
         std_F = np.sqrt( np.diag(Sigma_F) )
         return std_F.reshape(-1,1)
 

@@ -17,10 +17,11 @@ from equadratures.distributions.logistic import Logistic
 from equadratures.distributions.gumbel import Gumbel
 from equadratures.distributions.chi import Chi
 from equadratures.distributions.analytical import Analytical
+from equadratures.plot import Plot
 import numpy as np
 import scipy as sc
 
-class Parameter(object):
+class Parameter(Plot):
     """
     This class defines a univariate parameter. Below are details of its constructor.
 

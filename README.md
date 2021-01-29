@@ -15,7 +15,7 @@ The latest version of the code is v9.0.1 *Narwhal* and was released in September
 [![](https://img.shields.io/pypi/pyversions/equadratures.svg)](https://pypi.python.org/pypi/equadratures)
 ![](https://img.shields.io/github/stars/Effective-Quadratures/Effective-Quadratures.svg?style=flat-square&logo=github&label=Stars&logoColor=white)
 ![](https://static.pepy.tech/badge/equadratures/week)
-[![](https://img.shields.io/discourse/status?server=https%3A%2F%2Fdiscourse.effective-quadratures.org)](https://discourse.effective-quadratures.org)
+[![](https://img.shields.io/discourse/status?server=https%3A%2F%2Fdiscourse.equadratures.org)](https://discourse.equadratures.org)
 
 To download and install the code please use the python package index command:
 
@@ -37,7 +37,7 @@ Our code is designed to require minimal dependencies; current package requiremen
 
 Code documentation and details on the syntax can be found [here](https://www.effective-quadratures.org/docs/_documentation/).
 
-We've recently started a Discourse forum! Check it out [here](https://discourse.effective-quadratures.org/).
+We've recently started a Discourse forum! Check it out [here](https://discourse.equadratures.org/).
 
 ## Code objectives
 

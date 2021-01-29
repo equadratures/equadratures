@@ -93,6 +93,8 @@ class Poly(object):
         if self.method is not None:
             if self.method == 'numerical-integration' or self.method == 'integration':
                 self.mesh = self.basis.basis_type
+                if self.basis.basis_type != 'tensor-grid' and self.basis.basis_type != 'sparse-grid':
+                    raise ValueError('tensor-grid or sparse-grid basis must be used with the numerical-integration Poly method') 
             elif self.method == 'least-squares' or self.method == 'least-absolute-residual' or self.method=='huber' or self.method=='elastic-net':
                 self.mesh = 'tensor-grid'
             elif self.method == 'least-squares-with-gradients':

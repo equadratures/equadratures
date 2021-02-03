@@ -16,8 +16,7 @@ class Poly(object):
 
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
-    :param str method: The method used for computing the coefficients. Should be one of: ``compressive-sensing``,
-        ``numerical-integration``, ``least-squares``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``minimum-norm``.
+    :param str method: The method used for computing the coefficients. Should be one of: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``huber``, ``elastic-net``, ``elastic-path`` or ``relevance-vector-machine``. 
     :param dict sampling_args: Optional arguments centered around the specific sampling strategy.
 
             :string mesh: Avaliable options are: ``monte-carlo``, ``sparse-grid``, ``tensor-grid``, ``induced``, or ``user-defined``. Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1] is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
@@ -473,7 +472,7 @@ class Poly(object):
                 indices = [i for i in range(0, len(counts)) if  counts[i] == 2]
                 b = np.dot(W , self._model_evaluations[indices])
                 del counts, indices
-                coefficients_i = self.solver(A, b)  * self.quadrature.sparse_weights[counter]
+                coefficients_i = self.solver(A, b)[0]  * self.quadrature.sparse_weights[counter]
                 multindices_i =  tensor.basis.elements
                 coefficients = np.vstack([coefficients_i, coefficients])
                 multindices = np.vstack([multindices_i, multindices])
@@ -504,9 +503,9 @@ class Poly(object):
                 print('The number of unknown basis terms is '+str(n))
                 if n > r:
                     print('WARNING: Please increase the number of samples; one way to do this would be to increase the sampling-ratio.')
-                self.coefficients = self.solver(A, b, C, self._gradient_evaluations)
+                self.coefficients, self_solver_dict = self.solver(A, b, C, self._gradient_evaluations)
             else:
-                self.coefficients = self.solver(A, b)
+                self.coefficients, self_solver_dict = self.solver(A, b)
     def get_multi_index(self):
         """
         Returns the multi-index set of the basis.
@@ -873,7 +872,6 @@ class Poly(object):
         Sigma = np.diag(data_variance)
 
         # Construct Q, the pseudoinverse of the weighted orthogonal polynomial matrix P
- 
         P = self.get_poly(self._quadrature_points)
         W = np.diag(np.sqrt(self._quadrature_weights))
         A = np.dot(W, P.T)

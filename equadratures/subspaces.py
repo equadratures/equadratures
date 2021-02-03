@@ -1,7 +1,7 @@
 from equadratures.parameter import Parameter
 from equadratures.poly import Poly
 from equadratures.basis import Basis
-#from equadratures.datasets import standardise
+from equadratures.scalers import scaler_minmax, scaler_meanvar, scaler_custom
 import numpy as np
 import scipy
 import scipy.io
@@ -9,7 +9,7 @@ from scipy.linalg import orth, sqrtm
 from scipy.spatial import ConvexHull
 from scipy.special import comb
 from scipy.optimize import linprog
-
+import warnings
 
 class Subspaces(object):
     """
@@ -51,21 +51,29 @@ class Subspaces(object):
           `Paper <https://epubs.siam.org/doi/abs/10.1137/17M1117690>`__.
     """
     def __init__(self, method, full_space_poly=None, sample_points=None, sample_outputs=None,
-                 subspace_dimension=2, param_args=None, poly_args=None, dr_args=None):
+                 subspace_dimension=2, polynomial_degree=2, param_args=None, poly_args=None, dr_args=None):
         self.full_space_poly = full_space_poly
         self.sample_points = sample_points
-        self.Y = None # for the zonotope vertices
-#TODO        if self.sample_points is not None:
-#            self.sample_points = standardise(sample_points)
+        self.Y = None  # for the zonotope vertices
+
+        '''
+        How to standardise?
+        If just a dataset, no poly, then use minmax scaling
+        If poly, no datapoints, then data should be contained in poly
+         - extract points from poly using .get_points() and .get_model_evaluations
+         - standaridise according to distributions extracted from the poly's params
+        If poly, but with new points? We should assume points are drawn from same distr according to poly's params
+         - standaridise according to distributions extracted from the poly's params
+        We need information on whether marginals are bounded, semi-bounded or unbounded?
+         - bounded, minmax scaling: analytical, beta, chebyshev, truncated gaussian, uniform
+         - unbounded, meanvar scaling: cauchy (although stddev undefined!), gaussian, gumbel, logistic, studentst,
+         - semi-bounded, ???: chi, chi squared, exponential, gamma, lognormal, pareto (x \geq 1), rayleigh, weibull
+        '''
+
         self.sample_outputs = sample_outputs
         self.method = method
         self.subspace_dimension = subspace_dimension
-        self.dr_args = dr_args
-        if dr_args is not None:
-            if hasattr(dr_args, 'order'):
-                self.polynomial_degree = dr_args['order']
-        if not(hasattr(self, 'polynomial_degree')):
-            self.polynomial_degree = 2
+        self.polynomial_degree = polynomial_degree
 
         my_poly_args = {'method': 'least-squares', 'solver_args': None}
         if poly_args is not None:
@@ -76,22 +84,78 @@ class Subspaces(object):
         if param_args is not None:
             my_param_args.update(param_args)
 
+        # I suppose we can detect if lower and upper is present to decide between these categories?
+        bounded_distrs = ['analytical', 'beta', 'chebyshev', 'arcsine', 'truncated-gaussian', 'uniform']
+        unbounded_distrs = ['gaussian', 'normal', 'gumbel', 'logistic', 'students-t', 'studentst']
+        semi_bounded_distrs = ['chi', 'chi-squared', 'exponential', 'gamma', 'lognormal', 'log-normal', 'pareto', 'rayleigh', 'weibull']
+
         if self.method.lower() == 'active-subspace' or self.method.lower() == 'active-subspaces':
             self.method = 'active-subspace'
+            if dr_args is not None:
+                self.standardise = getattr(dr_args, 'standardise', True)
+            else:
+                self.standardise = True
+
             if self.full_space_poly is None:
+                # user provided input/output data
                 N, d = self.sample_points.shape
+                if self.standardise:
+                    self.data_scaler = scaler_minmax()
+                    self.data_scaler.fit(self.sample_points)
+                    self.std_sample_points = self.data_scaler.transform(self.sample_points)
+                else:
+                    self.std_sample_points = self.sample_points.copy()
                 param = Parameter(**my_param_args)
+                if param_args is not None:
+                    if (hasattr(dr_args, 'lower') or hasattr(dr_args, 'upper')) and self.standardise:
+                        warnings.warn('Points standardised but parameter range provided. Overriding default ([-1,1])...',
+                            UserWarning)
                 myparameters = [param for _ in range(d)]
                 mybasis = Basis("total-order")
-                mypoly = Poly(myparameters, mybasis, sampling_args={'sample-points': self.sample_points,
+                mypoly = Poly(myparameters, mybasis, sampling_args={'sample-points': self.std_sample_points,
                                                                     'sample-outputs': self.sample_outputs},
                               **my_poly_args)
                 mypoly.set_model()
                 self.full_space_poly = mypoly
-#TODO            self.sample_points = standardise(self.full_space_poly.get_points())
+            else:
+                # User provided polynomial
+                # Standardise according to distribution specified. Only care about the scaling (not shift)
+                # TODO: user provided callable with parameters?
+                user_params = self.full_space_poly.parameters
+                d = len(user_params)
+                self.sample_points = self.full_space_poly.get_points()
+                if self.standardise:
+                    scale_factors = np.zeros(d)
+                    centers = np.zeros(d)
+                    for dd, p in enumerate(user_params):
+                        if p.name.lower() in bounded_distrs:
+                            print(p.name)
+                            scale_factors[dd] = (p.upper - p.lower) / 2.0
+                            centers[dd] = (p.upper + p.lower) / 2.0
+                        elif p.name.lower() in unbounded_distrs:
+                            scale_factors[dd] = np.sqrt(p.variance)
+                            centers[dd] = p.mean
+                        else:
+                            scale_factors[dd] = np.sqrt(p.variance)
+                            centers[dd] = 0.0
+                    self.param_scaler = scaler_custom(centers, scale_factors)
+                    self.std_sample_points = self.param_scaler.transform(self.sample_points)
+                else:
+                    self.std_sample_points = self.sample_points.copy()
+                if not hasattr(self.full_space_poly, 'coefficients'):
+                    raise ValueError('Please call set_model() first on poly.')
+
             self.sample_outputs = self.full_space_poly.get_model_evaluations()
-            self._get_active_subspace()
+            # TODO: use dr_args for resampling of gradient points
+            as_args = {'grad_points': None}
+            if dr_args is not None:
+                as_args.update(dr_args)
+            self._get_active_subspace(**as_args)
         elif self.method == 'variable-projection':
+            self.data_scaler = scaler_minmax()
+            self.data_scaler.fit(self.sample_points)
+            self.std_sample_points = self.data_scaler.transform(self.sample_points)
+
             if dr_args is not None:
                 vp_args = {'gamma':0.1, 'beta':1e-4, 'tol':1e-7, 'maxiter':1000, 'U0':None, 'verbose':0}
                 vp_args.update(dr_args)
@@ -113,16 +177,16 @@ class Subspaces(object):
         """
         # TODO: Try correlated poly here
         active_subspace = self._subspace[:, 0:self.subspace_dimension]
-        projected_points = np.dot(self.sample_points, active_subspace)
+        projected_points = np.dot(self.std_sample_points, active_subspace)
         myparameters = []
         for i in range(0, self.subspace_dimension):
             param = Parameter(distribution='uniform', lower=np.min(projected_points[:, i]),
                               upper=np.max(projected_points[:, i]), order=self.polynomial_degree)
             myparameters.append(param)
         mybasis = Basis("total-order")
-        subspacepoly = Poly(myparameters, mybasis, sampling_args={'sample-points': projected_points,
-                                                                  'sample-outputs': self.sample_outputs},
-                            **self.poly_args)
+        subspacepoly = Poly(myparameters, mybasis, method='least-squares',
+                            sampling_args={'sample-points': projected_points,
+                                           'sample-outputs': self.sample_outputs})
         subspacepoly.set_model()
         return subspacepoly
 
@@ -155,13 +219,32 @@ class Subspaces(object):
         """
         return self._subspace
 
-    def _get_active_subspace(self):
+    def _get_active_subspace(self, grad_points=None, **kwargs):
         """
         Active subspaces.
         """
-        X = self.full_space_poly.get_points()
+        if grad_points is None:
+            X = self.full_space_poly.get_points()
+        else:
+            if hasattr(self, 'data_scaler'):
+                X = self.data_scaler.transform(grad_points)
+            else:
+                # Either no standardisation, or user provided poly + param scaling
+                X = grad_points.copy()
+
         M, d = X.shape
+        if d != self.sample_points.shape[1]:
+            raise ValueError('In _get_active_subspace: dimensions of gradient evaluation points mismatched with input dimension!')
+
+        alpha = 2.0
+        num_grad_lb = alpha * self.subspace_dimension * np.log(d)
+        if M < num_grad_lb:
+            warnings.warn('Number of gradient evaluation points is likely to be insufficient. Consider resampling!', UserWarning)
+
         polygrad = self.full_space_poly.get_polyfit_grad(X)
+        if hasattr(self, 'param_scaler'):
+            # Evaluate gradient in transformed coordinate space
+            polygrad = self.param_scaler.ranges[:, np.newaxis] * polygrad
         weights = np.ones((M, 1)) / M
         R = polygrad.transpose() * weights
         C = np.dot(polygrad, R )
@@ -171,10 +254,15 @@ class Subspaces(object):
         idx = e.argsort()[::-1]
         eigs = e[idx]
         eigVecs = W[:, idx]
+        if hasattr(self, 'data_scaler'):
+            scale_factors = 2.0 / (self.data_scaler.Xmax - self.data_scaler.Xmin)
+            eigVecs = scale_factors[:, np.newaxis] * eigVecs
+            eigVecs = np.linalg.qr(eigVecs)[0]
+
         self._subspace = eigVecs
         self._eigenvalues = eigs
 
-    def _get_variable_projection(self, gamma=0.1, beta=1e-4, tol=1e-7, maxiter=1000, U0=None, verbose=0):
+    def _get_variable_projection(self, gamma=0.1, beta=1e-4, tol=1e-7, maxiter=1000, U0=None, verbose=0, **kw_args):
         """
         Variable Projection function to obtain an active subspace in inputs design space
         Note: It may help to standardize outputs to zero mean and unit variance
@@ -186,13 +274,13 @@ class Subspaces(object):
         :param verbose: int, set to 1 for debug messages
         """
         # NOTE: How do we know these are the best values of gamma and beta?
-        M, m = self.sample_points.shape
+        M, m = self.std_sample_points.shape
         if U0 is None:
             Z = np.random.randn(m, self.subspace_dimension)
             U, _ = np.linalg.qr(Z)
         else:
             U = orth(U0)
-        y = np.dot(self.sample_points,U)
+        y = np.dot(self.std_sample_points,U)
         minmax = np.zeros((2, self.subspace_dimension))
         minmax[0, :] = np.amin(y, axis=0)
         minmax[1, :] = np.amax(y, axis=0)
@@ -210,7 +298,7 @@ class Subspaces(object):
 
         for iteration in range(0,maxiter):
             # Construct the Jacobian step 9
-            J = jacobian_vp(V, V_plus, U, self.sample_outputs, poly_obj, eta, minmax, self.sample_points)
+            J = jacobian_vp(V, V_plus, U, self.sample_outputs, poly_obj, eta, minmax, self.std_sample_points)
             # Calculate the gradient of Jacobian (step 10)
             G = np.zeros((m, self.subspace_dimension))
             # NOTE: Can be vectorised
@@ -249,7 +337,7 @@ class Subspaces(object):
                 U_new = np.dot(UZ, np.diag(np.cos(S*t))) + np.dot(Y, np.diag(np.sin(S*t)))#step 19
                 U_new = orth(U_new)
                 # Update the values with the new U matrix
-                y = np.dot(self.sample_points, U_new)
+                y = np.dot(self.std_sample_points, U_new)
                 minmax[0,:] = np.amin(y, axis=0)
                 minmax[1,:] = np.amax(y, axis=0)
                 eta = 2 * np.divide((y - minmax[0,:]), (minmax[1,:]-minmax[0,:])) - 1

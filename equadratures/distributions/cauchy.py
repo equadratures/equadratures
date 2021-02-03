@@ -16,16 +16,22 @@ class Cauchy(Distribution):
     """
     def __init__(self, location=None, scale=None):
         self.location = location
-        self.scale = scale
+        if scale is None:
+            self.scale = 1.0
+        else:
+            self.scale = scale
+
         self.bounds = np.array([-np.inf, np.inf])
         self.mean = np.nan
+        self.variance = np.nan
         self.skewness = np.nan
         self.kurtosis = np.nan
-        if self.scale is not None:
-            self.x_range_for_pdf = np.linspace(-15*self.scale, 15*self.scale, RECURRENCE_PDF_SAMPLES)
-            self.parent = cauchy(loc=self.location, scale=self.scale)
-            self.mean = np.mean(self.get_samples(m=1000))
-            self.variance = np.var(self.get_samples(m=1000))
+
+        self.x_range_for_pdf = np.linspace(-15*self.scale, 15*self.scale, RECURRENCE_PDF_SAMPLES)
+        self.parent = cauchy(loc=self.location, scale=self.scale)
+        # self.mean = np.mean(self.get_samples(m=1000))
+        # self.variance = np.var(self.get_samples(m=1000))
+
     def get_description(self):
         """
         A description of the Cauchy distribution.

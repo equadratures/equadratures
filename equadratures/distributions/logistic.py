@@ -12,18 +12,23 @@ class Logistic(Distribution):
 		The shape parameter associated with the Logistic distribution.
     """
     def __init__(self, location, scale_parameter):
-        self.scale_parameter = scale_parameter
-        self.location = location
-        if self.scale_parameter is not None:
-            self.bounds = np.array([-np.inf, np.inf])
-            if self.scale_parameter > 0:
-                mean, var, skew, kurt = logistic.stats(loc=self.location, scale=self.scale_parameter, moments='mvsk')
-                self.parent = logistic(loc=self.location, scale=self.scale_parameter)
-                self.mean = mean
-                self.variance = var
-                self.skewness = skew
-                self.kurtosis = kurt
-                self.x_range_for_pdf = np.linspace(self.location - 10.0, 20.0 + self.location, RECURRENCE_PDF_SAMPLES)
+        if location is None:
+            self.location = 0.0
+        else:
+            self.location = location
+        if scale_parameter is None:
+            self.scale_parameter = 1.0
+        else:
+            self.scale_parameter = scale_parameter
+
+        self.bounds = np.array([-np.inf, np.inf])
+        if self.scale_parameter < 0:
+            raise ValueError('Invalid parameter in Logistic distribution. Scale should be positive.')
+
+        self.parent = logistic(loc=self.location, scale=self.scale_parameter)
+        self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
+        self.x_range_for_pdf = np.linspace(self.location - 10.0, 20.0 + self.location, RECURRENCE_PDF_SAMPLES)
+
     def get_description(self):
         """
         A description of the Logistic distribution.

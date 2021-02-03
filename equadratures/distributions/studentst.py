@@ -12,18 +12,20 @@ class Studentst(Distribution):
 		Degrees of freedom for the Student's T distribution.
     """
     def __init__(self, dofs):
-        self.dofs = dofs
-        if self.dofs is not None:
-            if self.dofs > 0:
-                self.bounds = np.array([-np.inf, np.inf])
-                mean, var, skew, kurt = t.stats(df=self.dofs, moments='mvsk')
-                self.parent = t(df=self.dofs)
-                self.mean = mean
-                self.variance = var
-                self.skewness = skew
-                self.kurtosis = kurt
-                self.x_range_for_pdf = np.linspace(-5.0, 5.0,RECURRENCE_PDF_SAMPLES)
-                self.parent = t(self.dofs)
+        if dofs is None:
+            self.dofs = 1
+        else:
+            self.dofs = int(dofs)
+
+        if not isinstance(self.dofs, int) or self.dofs < 1:
+            raise ValueError('Invalid parameter in studentst distribution: dofs must be positive integer.')
+
+        self.bounds = np.array([-np.inf, np.inf])
+
+        self.parent = t(df=self.dofs)
+        self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
+        self.x_range_for_pdf = np.linspace(-5.0, 5.0,RECURRENCE_PDF_SAMPLES)
+
     def get_description(self):
         """
         A description of the Studentst distribution.

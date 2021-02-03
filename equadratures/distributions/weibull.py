@@ -2,7 +2,6 @@
 from equadratures.distributions.template import Distribution
 from equadratures.distributions.recurrence_utils import custom_recurrence_coefficients
 import numpy as np
-from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 from scipy.stats import weibull_min
 RECURRENCE_PDF_SAMPLES = 8000
 
@@ -16,16 +15,21 @@ class Weibull(Distribution):
 		Upper bound of the support of the Weibull distribution.
     """
     def __init__(self, scale=None, shape=None):
-        self.shape = shape
-        self.scale = scale
-        if (self.scale is not None) and (self.shape is not None):
-            if ( self.shape > 0.0 ) and (self.scale > 0.0):
-                self.mean = self.scale * gamma(1.0 + 1.0/self.shape)
-                self.variance = self.scale**2 * ( gamma(1.0 + 2.0/self.shape) - (gamma(1.0 + 1.0/self.shape))**2  )
-                self.parent = weibull_min(c =self.shape, scale=self.scale)
-                self.skewness = (gamma(1.0 + 3.0/self.shape) * self.scale**3 - 3 * self.mean * self.variance - self.mean**3  )/( np.sqrt(self.variance)**3 )
-                self.bounds = np.array([0, np.inf])
-                self.x_range_for_pdf = np.linspace(10**(-15), 30.0, RECURRENCE_PDF_SAMPLES)
+        if shape is None:
+            self.shape = 1.0
+        else:
+            self.shape = shape
+        if scale is None:
+            self.scale = 1.0
+        else:
+            self.scale = scale
+
+        self.bounds = np.array([0.0, np.inf])
+        if self.shape < 0 or self.scale < 0:
+            raise ValueError('Invalid parameters in Weibull distribution. Shape and Scale should be positive.')
+        self.parent = weibull_min(c=self.shape, scale=self.scale)
+        self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
+        self.x_range_for_pdf = np.linspace(0, self.scale*10, RECURRENCE_PDF_SAMPLES)
 
     def get_description(self):
         """

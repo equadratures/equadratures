@@ -309,9 +309,7 @@ class Parameter(object):
         dderivative_orthopoly = np.zeros((order, len(gridPoints)))
 
         # Convert the grid points to a numpy array -- simplfy life!
-        gridPointsII = np.zeros((len(gridPoints), 1))
-        for u in range(0, len(gridPoints)):
-            gridPointsII[u, 0] = gridPoints[u]
+        gridPointsII = gridPoints.reshape((-1, 1))
         orthopoly[0, :] = 1.0
 
         # Cases

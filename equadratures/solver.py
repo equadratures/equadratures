@@ -134,9 +134,10 @@ def null_space_method(Ao, bo, Co, do, verbose):
     if verbose is True:
         print('The condition number of the matrix is '+str(cond)+'.')
     return x, None
+
 def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
     A = deepcopy(Ao)
-    y = deepcopy(bo)
+    y = bo.reshape(-1)
     N = A.shape[0]
     # Possible noise levels
     log_eta = [-8,-7,-6,-5,-4,-3,-2,-1]
@@ -152,6 +153,7 @@ def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
     errors = []
     mean_errors = np.zeros(len(eta))
     # 5 fold cross validation
+    x0 = None
     for e in range(len(eta)):
         for n in range(5):
             try:
@@ -163,11 +165,12 @@ def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
                     continue
                 y_train = np.delete(y, indices).flatten()
 
-                x_train = _bp_denoise(A_train, y_train, eta[e])
+                x_train = _bp_denoise(A_train, y_train, eta[e], x0=x0)
                 y_trained = np.reshape(np.dot(A_ver, x_train), len(y_ver))
 
                 assert y_trained.shape == y_ver.shape
                 errors.append(np.mean(np.abs(y_trained - y_ver))/len(y_ver))
+                x0 = x_train.copy()
             except np.linalg.LinAlgError:
                 continue
         if len(errors) == 0:
@@ -181,12 +184,13 @@ def basis_pursuit_denoising(Ao, bo, noise_level, verbose):
         if ind >= len(log_eta):
             raise ValueError('Singular matrix!! Reconsider sample points!')
         try:
-            x = _bp_denoise(A, y, eta[sorted_ind[ind]])
+            x = _bp_denoise(A, y, eta[sorted_ind[ind]], x0=x0)
         except np.linalg.LinAlgError:
             ind += 1
     if verbose:
         print('The noise level used is '+str(eta[sorted_ind[ind]])+'.')
     return np.reshape(x, (len(x),1)), None
+
 def _CG_solve(A, b, max_iters, tol):
     """
     Solves Ax = b iteratively using conjugate gradient, assuming A is a symmetric positive definite matrix.
@@ -238,7 +242,9 @@ def _CG_solve(A, b, max_iters, tol):
         iterations += 1
 
     return x.flatten(), residual, iterations
-def _bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, cgmaxiter = 200, verbose = False, use_CG = False):
+
+
+def _bp_denoise(A, b, epsilon, verbose=False, **kwargs):
     """
     Solving the basis pursuit de-noising problem.
     :param numpy-matrix A:
@@ -250,10 +256,31 @@ def _bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, c
     :param numpy-array x0:
         Initial solution  if not provided the least norm solution is used.
     """
-    newtontol = lbtol
-    newtonmaxiter = 50
 
-    b = b.flatten()
+    if hasattr(kwargs, 'x0'):
+        x0 = kwargs['x0']
+    else:
+        x0 = None
+    if hasattr(kwargs, 'lbtol'):
+        lbtol = kwargs['lbtol']
+    else:
+        lbtol = 1e-3
+    if hasattr(kwargs, 'mu'):
+        mu = kwargs['mu']
+    else:
+        mu = 10
+    if hasattr(kwargs, 'cgtol'):
+        cgtol = kwargs['cgtol']
+    else:
+        cgtol = 1e-8
+    if hasattr(kwargs, 'cgmaxiter'):
+        cgmaxiter = kwargs['cgmaxiter']
+    else:
+        cgmaxiter = 200
+    if hasattr(kwargs, 'use_CG'):
+        use_CG = kwargs['use_CG']
+    else:
+        use_CG = False
 
     # starting point --- make sure that it is feasible
     if not(x0 is None):
@@ -288,6 +315,30 @@ def _bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, c
                     print('A*At is ill-conditioned: cannot find starting point' )
         x0 = np.dot(A.T, w)
 
+    if cvxpy:
+        # Turns out this is much slower than l1 magic implementation, at least on the test case!
+
+        # d = A.shape[1]
+        # u0 = 0.95 * np.abs(x0) + 0.10 * np.max(np.abs(x0))
+        # xu = cv.Variable(2*d)
+        # xu.value = np.hstack([x0, u0])
+        # c = np.hstack([np.zeros(d), np.ones(d)])
+        # AA = np.hstack([A, np.zeros_like(A)])
+        #
+        # soc_constraint = [cv.SOC(epsilon, AA @ xu - b)]
+        # F = np.vstack([np.hstack([np.eye(d), -np.eye(d)]), np.hstack([-np.eye(d), -np.eye(d)])])
+        # prob = cv.Problem(cv.Minimize(c.T @ xu),
+        #                   soc_constraint + [F @ xu <= np.zeros(2*d)])
+        # prob.solve(warm_start=False, verbose=verbose)
+        #
+        # return xu.value[:d]
+        pass
+
+    newtontol = lbtol
+    newtonmaxiter = 50
+
+    b = b.flatten()
+
     x = x0.copy()
     r = np.reshape(np.dot(A, x), len(b)) - b
     N = len(x0)
@@ -300,16 +351,17 @@ def _bp_denoise(A, b, epsilon, x0 = None, lbtol = 1e-3, mu = 10, cgtol = 1e-8, c
         print('Number of log barrier iterations = ' + str(lbiter) )
     totaliter = 0
     for ii in range(lbiter+1):
-      xp, up, ntiter =  _l1qc_newton(x, u, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter, verbose, use_CG)
-      totaliter += ntiter
-      if verbose:
+        xp, up, ntiter =  _l1qc_newton(x, u, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter, verbose, use_CG)
+        totaliter += ntiter
+        if verbose:
           print('Log barrier iter = ' + str(ii) + ', l1 = ' + str(np.sum(np.abs(xp))) + ', functional = ' + str(np.sum(up)) + \
           ', tau = ' + str(tau) + ', total newton iter = ' + str(totaliter))
 
-      x = xp.copy()
-      u = up.copy()
-      tau *= mu
+        x = xp.copy()
+        u = up.copy()
+        tau *= mu
     return xp
+
 def _l1qc_newton(x0, u0, A, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter, verbose, use_CG):
     # line search parameters
     alpha = 0.01

@@ -1,7 +1,6 @@
 """The Gamma distribution."""
 from equadratures.distributions.template import Distribution
 import numpy as np
-from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 from scipy.stats import gamma
 RECURRENCE_PDF_SAMPLES = 8000
 class Gamma(Distribution):
@@ -14,16 +13,22 @@ class Gamma(Distribution):
 		Scale parameter of the gamma distribution.
     """
     def __init__(self, shape=None, scale=None):
-        self.shape = shape
-        self.scale = scale
+        if shape is None:
+            self.shape = 1.0
+        else:
+            self.shape = shape
+        if scale is None:
+            self.scale = 1.0
+        else:
+            self.scale = scale
+
         self.bounds = np.array([0.0, np.inf])
-        if (self.shape is not None) and (self.scale is not None) and (self.shape > 0.0) :
-            self.mean = self.shape * self.scale
-            self.variance = self.shape * self.scale**2
-            self.skewness = 2.0 / np.sqrt(self.shape)
-            self.kurtosis = 6.0 / self.shape # double-check!
-            self.x_range_for_pdf = np.linspace(0, self.shape*self.scale*10, RECURRENCE_PDF_SAMPLES)
-            self.parent = gamma(a=self.shape, scale=self.scale)
+        if self.shape < 0 or self.scale < 0:
+            raise ValueError('Invalid parameters in Gamma distribution. Shape and Scale should be positive.')
+        self.parent = gamma(a=self.shape, scale=self.scale)
+        self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
+        self.x_range_for_pdf = np.linspace(0, self.scale*10, RECURRENCE_PDF_SAMPLES)
+
     def get_description(self):
         """
         A description of the gamma distribution.
@@ -35,6 +40,7 @@ class Gamma(Distribution):
         """
         text = "is a gamma distribution with a shape parameter of "+str(self.shape)+", and a scale parameter of "+str(self.scale)+"."
         return text
+
     def get_pdf(self, points=None):
         """
         A gamma probability density function.

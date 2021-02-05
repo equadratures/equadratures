@@ -12,17 +12,18 @@ class Pareto(Distribution):
 		The shape parameter associated with the Pareto distribution.
     """
     def __init__(self, shape_parameter):
-        self.shape_parameter = shape_parameter
-        if self.shape_parameter is not None:
-            self.bounds = np.array([0.999, np.inf])
-            if self.shape_parameter > 0:
-                mean, var, skew, kurt = pareto.stats(self.shape_parameter, moments='mvsk')
-                self.parent = pareto(self.shape_parameter)
-                self.mean = mean
-                self.variance = var
-                self.skewness = skew
-                self.kurtosis = kurt
-                self.x_range_for_pdf = np.linspace(0.999, 20.0 + shape_parameter, RECURRENCE_PDF_SAMPLES)
+        if shape_parameter is None:
+            self.shape_parameter = 1.0
+        else:
+            self.shape_parameter = shape_parameter
+
+        self.bounds = np.array([0.999, np.inf])
+        if self.shape_parameter < 0:
+            raise ValueError('Invalid parameters in Pareto distribution. Scale should be positive.')
+        self.parent = pareto(self.shape_parameter)
+        self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
+        self.x_range_for_pdf = np.linspace(0.999, self.shape_parameter + 20.0, RECURRENCE_PDF_SAMPLES)
+
     def get_description(self):
         """
         A description of the Pareto distribution.
@@ -34,6 +35,7 @@ class Pareto(Distribution):
         """
         text = "is a pareto distribution which is characterised by its shape parameter, which here is"+str(self.shape_parameter)+". While the distribution can be characterized by a shape parameter and a scale parameter, in Effective Quadratures we use only the one, that is the scale parameter is set to 1. "
         return text
+
     def get_pdf(self, points=None):
         """
         A Pareto probability density function.

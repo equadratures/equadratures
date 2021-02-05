@@ -12,21 +12,27 @@ class Chi(Distribution):
 		Degrees of freedom for the chi-squared distribution.
     """
     def __init__(self, dofs):
-        self.dofs = dofs
-        if self.dofs is not None:
-            if self.dofs == 1:
-                self.bounds = np.array([1e-15, np.inf])
-            else:
-                self.bounds = np.array([0.0, np.inf])
-            if self.dofs >= 1:
-                mean, var, skew, kurt = chi.stats(dofs, moments='mvsk')
-                self.parent = chi(dofs)
-                self.mean = mean
-                self.variance = var
-                self.skewness = skew
-                self.kurtosis = kurt
-                self.x_range_for_pdf = np.linspace(0.0, 10.0*self.mean,RECURRENCE_PDF_SAMPLES)
-                self.parent = chi(self.dofs)
+        if dofs is None:
+            self.dofs = 1
+        else:
+            self.dofs = dofs
+
+        if self.dofs < 0:
+            raise ValueError('Invalid parameter in chi distribution: dofs must be positive.')
+
+        if self.dofs == 1:
+            self.bounds = np.array([1e-15, np.inf])
+        else:
+            self.bounds = np.array([0.0, np.inf])
+
+        mean, var, skew, kurt = chi.stats(dofs, moments='mvsk')
+        self.mean = mean
+        self.variance = var
+        self.skewness = skew
+        self.kurtosis = kurt
+        self.x_range_for_pdf = np.linspace(0.0, 10.0*self.mean,RECURRENCE_PDF_SAMPLES)
+        self.parent = chi(self.dofs)
+
     def get_description(self):
         """
         A description of the Chi-squared distribution.

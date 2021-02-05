@@ -15,21 +15,22 @@ class Uniform(Distribution):
 		Variance of the Gaussian distribution.
     """
     def __init__(self, lower, upper):
-        self.lower = lower
-        self.upper = upper
-        self.bounds = np.array([-1.0, 1.0])
-        if (self.lower is None) or (self.upper is None):
-            print('One or more bounds not specified. Assuming [0, 1].')
+        if lower is None:
             self.lower = 0.0
+        else:
+            self.lower = lower
+        if upper is None:
             self.upper = 1.0
-        self.mean = 0.5 * (self.upper + self.lower)
-        self.variance = 1.0/12.0 * (self.upper - self.lower)**2
-        self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
-        self.parent = uniform(loc=(self.lower), scale=(self.upper-self.lower))
+        else:
+            self.upper = upper
 
-        self.skewness = 0.0
+        self.parent = uniform(loc=(self.lower), scale=(self.upper - self.lower))
+        self.bounds = np.array([self.lower, self.upper])
+        self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
         self.shape_parameter_A = 0.
         self.shape_parameter_B = 0.
+        self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
+
     def get_description(self):
         """
         A description of the Gaussian.

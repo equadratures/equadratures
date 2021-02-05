@@ -55,3 +55,23 @@ class scaler_meanvar(object):
         Xuntrans = X[:,:]*(self.Xstd+eps) + self.Xmean
         return Xuntrans
 
+class scaler_custom(object):
+    '''
+    Scale the data with custom center and range
+    '''
+    def __init__(self, centers, ranges):
+        self.centers = centers
+        self.ranges = ranges
+        self.fitted = True
+
+    def transform(self,X):
+        if X.ndim == 1: X = X.reshape(-1,1)
+        eps = np.finfo(np.float64).tiny
+        Xtrans = (X - self.centers)/(self.ranges + eps)
+        return Xtrans
+
+    def untransform(self,X):
+        if X.ndim == 1: X = X.reshape(-1,1)
+        eps = np.finfo(np.float64).tiny
+        Xuntrans = X * (self.ranges + eps) + self.centers
+        return Xuntrans

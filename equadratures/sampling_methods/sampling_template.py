@@ -7,17 +7,18 @@ class Sampling(object):
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     """
-    def __init__(self, parameters, basis, points=None, weights=None ):
+    def __init__(self, parameters, basis, points=None, weights=None):
         self.parameters = parameters
         self.basis = basis
         self.points = points
         self.weights = weights
         if self.weights is None:
             self._set_weights()
+
     def _set_weights(self):
-        P = self._get_multivariate_orthogonal_polynomial()
-        wts =  1.0/np.sum( P**2 , 0)
-        self.weights = wts * 1.0/np.sum(wts)
+        self.num_pts = self.points.shape[0]
+        self.weights = np.ones(self.num_pts)
+
     def get_points(self):
         """
         Returns the quadrature points.

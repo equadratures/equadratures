@@ -39,7 +39,7 @@ install:
  - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
  - source activate test
  - conda install --yes numpy scipy matplotlib pip nose
- - pip install cvxpy>=1.1 
+ - pip install cvxpy==1.1.7
  - pip install setuptools
  - python setup.py install
  - pip install coveralls

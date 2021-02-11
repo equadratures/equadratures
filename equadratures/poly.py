@@ -235,32 +235,48 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
+        # TODO: Induced sampling... not sure about that for now!
         if hasattr(self, 'corr'):
             corr = self.corr
         else:
             corr = None
+        if self.sampling_args is not None:
+            if 'oversampling' in self.sampling_args.keys():
+                oversampling = self.sampling_args['oversampling']
+            else:
+                oversampling = 7.0
+        else:
+            oversampling = 7.0
         self.quadrature = Quadrature(parameters=self.parameters, basis=self.basis, \
-                        points=self.inputs, mesh=self.mesh, corr=corr)
+                        points=self.inputs, mesh=self.mesh, corr=corr, oversampling=oversampling)
         quadrature_points, quadrature_weights = self.quadrature.get_points_and_weights()
+        self.P = self.get_poly(quadrature_points)
+        if self.mesh.lower() in ['monte-carlo', 'induced', 'user-defined']:
+            # normalising_factors = 1.0/np.sum(self.P ** 2, axis=1)
+            normalising_factors = np.ones(self.P.shape[0])
+        else:
+            normalising_factors = np.ones(self.P.shape[0])
+        self.W = np.diag(np.sqrt(quadrature_weights))
+        self.A = self.W @ self.P.T @ np.diag(np.sqrt(normalising_factors))
         if self.subsampling_algorithm_name is not None:
-            P = self.get_poly(quadrature_points)
-            W = np.mat( np.diag(np.sqrt(quadrature_weights)))
-            A = W * P.T
-            self.A = A
-            self.P = P
-            mm, nn = A.shape
+            mm, nn = self.A.shape
             m_refined = int(np.round(self.sampling_ratio * nn))
-            z = self.subsampling_algorithm_function(A, m_refined)
+            z = self.subsampling_algorithm_function(self.A, m_refined)
             self._quadrature_points = quadrature_points[z,:]
             self._quadrature_weights = quadrature_weights[z] / np.sum(quadrature_weights[z])
+
+            self.P = self.get_poly(self._quadrature_points)
+            if self.mesh.lower() in ['monte-carlo', 'induced', 'user-defined']:
+                normalising_factors = 1.0/np.sum(self.P ** 2, axis=1)
+            else:
+                normalising_factors = np.ones(self.P.shape[0])
+            self.W = np.diag(np.sqrt(self._quadrature_weights))
+            self.A = self.W @ self.P.T @ np.diag(np.sqrt(normalising_factors))
         else:
             self._quadrature_points = quadrature_points
             self._quadrature_weights = quadrature_weights
-            P = self.get_poly(quadrature_points)
-            W = np.mat( np.diag(np.sqrt(quadrature_weights)))
-            A = W * P.T
-            self.A = A
-            self.P = P
+        self.normalising_factors = normalising_factors
+
     def get_model_evaluations(self):
         """
         Returns the points at which the model was evaluated at.
@@ -461,6 +477,8 @@ class Poly(object):
             self._set_points_and_weights()
             self.set_model()
         if self.mesh == 'sparse-grid':
+            # TODO: Why evaluate design matrix again after _set_points_and_weights()?
+            # because there might have been subsampling?
             counter = 0
             multi_index = []
             coefficients = np.empty([1])
@@ -489,9 +507,11 @@ class Poly(object):
             self.coefficients = coefficients_final
             self.basis.elements = unique_indices
         else:
-            P = self.get_poly(self._quadrature_points)
-            W = np.diag(np.sqrt(self._quadrature_weights))
-            A = np.dot(W , P.T)
+            # P = self.get_poly(self._quadrature_points)
+            # W = np.diag(np.sqrt(self._quadrature_weights))
+            # A = np.dot(W , P.T)
+            A = self.A
+            W = self.W
             b = np.dot(W , self._model_evaluations)
             if self.gradient_flag == 1:
                 # Now, we can reduce the number of rows!
@@ -507,6 +527,10 @@ class Poly(object):
                 self.coefficients = self.solver(A, b, C, self._gradient_evaluations)
             else:
                 self.coefficients = self.solver(A, b)
+            print(self.coefficients)
+            self.coefficients = self.coefficients.reshape(-1) * 1.0 / np.sqrt(self.normalising_factors)
+            self.coefficients = self.coefficients.reshape((-1, 1))
+
     def get_multi_index(self):
         """
         Returns the multi-index set of the basis.
@@ -936,7 +960,7 @@ def evaluate_model_gradients(points, fungrad, format):
             for j in range(0, dimensions):
                 grad_values[counter, 0] = output_from_gradient_call[j]
                 counter = counter + 1
-        return np.mat(grad_values)
+        return np.array(grad_values)
     else:
         raise ValueError( 'evalgradients(): Format must be either matrix or vector!')
 def evaluate_model(points, function):
@@ -994,5 +1018,5 @@ def cell2matrix(G, W):
             for k in range(0,cols):
                 BigC[counter,k] = K[j,k]
             counter = counter + 1
-    BigC = np.mat(BigC)
+    BigC = np.array(BigC)
     return BigC

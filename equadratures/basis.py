@@ -9,6 +9,7 @@ class Basis(object):
     :param string basis_type: The type of index set to be used. Options include: ``univariate``, ``total-order``, ``tensor-grid``,
         ``sparse-grid``, ``hyperbolic-basis`` [1] and ``euclidean-degree`` [2]; all basis are isotropic.
     :param ndarray orders: List of integers corresponding to the highest polynomial order in each direction.
+    :param int level: ???
     :param string growth_rule: The type of growth rule associated with sparse grids.
         Options include: ``linear`` and ``exponential``. This input is only required when using a sparse grid.
     :param double q: The ``q`` parameter is used to control the number of basis terms used in a hyperbolic basis (see [1]).

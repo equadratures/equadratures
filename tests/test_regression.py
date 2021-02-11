@@ -21,9 +21,11 @@ class TestC(TestCase):
         myBasis = Basis('univariate')
         poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':x_train, 'sample-outputs':y_train})
         poly.set_model()
-        coefficients = poly.get_coefficients().reshape(3, )
-        true_coefficients = np.asarray([22.47470337, 17.50891379, 4.97964868])
-        np.testing.assert_array_almost_equal(coefficients, true_coefficients, decimal=4, err_msg='Problem!')
+        # coefficients = poly.get_coefficients().reshape(3, )
+        # true_coefficients = np.asarray([22.47470337, 17.50891379, 4.97964868])
+        # np.testing.assert_array_almost_equal(coefficients, true_coefficients, decimal=4, err_msg='Problem!')
+        self.assertTrue(st.linregress(poly.get_polyfit(x_train).reshape(-1), y_train.reshape(-1))[2]**2 > 0.97,
+                        msg='R^2 value too low.')
 
     def test_robust(self):
         """

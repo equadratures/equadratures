@@ -42,9 +42,7 @@ class Induced(Sampling):
         self.__set_weights()
 
     def __set_weights(self):
-        P = self._get_multivariate_orthogonal_polynomial()
-        wts = np.sum(P**2, 0)
-        self.weights = self.basis_entries/self.samples_number/wts
+        super(Induced, self)._set_weights()
 
     def _set_points(self, orders=None):
         """

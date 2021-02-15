@@ -503,9 +503,9 @@ class Poly(object):
                 print('The number of unknown basis terms is '+str(n))
                 if n > r:
                     print('WARNING: Please increase the number of samples; one way to do this would be to increase the sampling-ratio.')
-                self.coefficients, self_solver_dict = self.solver(A, b, C, self._gradient_evaluations)
+                self.coefficients, self.solver_dict = self.solver(A, b, C, self._gradient_evaluations)
             else:
-                self.coefficients, self_solver_dict = self.solver(A, b)
+                self.coefficients, self.solver_dict = self.solver(A, b)
     def get_multi_index(self):
         """
         Returns the multi-index set of the basis.

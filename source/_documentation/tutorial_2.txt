@@ -1,7 +1,104 @@
 Foundations II: Orthogonal polynomials
 ========================================
-There is an intimate relationship between orthogonal polynomials and quadrature points. In this tutorial, we demonstrate how one can use Effective Quadratures to compute univariate quadrature rules. For multivariate quadrature points and weights, please check out the tutorials on *Sparse and tensor grid quadrature rules*.
+In this tutorial we describe how one can construct orthogonal polynomials in Effective Quadratures. These polynomials have the property of being orthogonal to each other under integration with respect to a specific probability measure. That is, they obey the following:
 
+.. math::
+
+	\int_D \psi_{i}\left(s \right)\psi_{j}\left(s \right) \rho(s) ds=delta_{ij},
+
+
+In this first part, let's consider univariate orthogonal polynomials---it turns out that multivariate orthogonal polynomials can be constructed as products of univariate ones. For starters, we consider Legendre polynomials---orthogonal with respect to the uniform weight function. We define a Parameter :math:`s` with :math:`\rho(s) \sim \mathcal{U}[-1,1]`.
+
+
+.. code::
+
+	from equadratures import *
+	import numpy as np
+	import matplotlib.pyplot as plt
+
+
+	order = 5
+	s1 = Parameter(lower=-1, upper=1, order=order, distribution='Uniform')
+
+Setting `order=5` implies that we restrict our attention to the first five orthogonal polynomials. The polynomials can be evaluated on a grid of :math:`N` points :math:`(\lambda_{j})_{j=1}^N`, forming the Vandermonde-type matrix  :math:`\mathbf{P}` where
+
+.. math::
+
+	\mathbf{P}\left(i,j\right)=\psi_{i}\left(\lambda_{j}\right) \; \; \text{where} \; \; i=1, \ldots, p; \; j = 1, \ldots, N,
+
+Here, :math:`p` denotes the maximum polynomial order, 5 in our case. The matrix for 100 evaluations within [-1,1] can be generated as below: 
+
+.. code::
+
+	myBasis = Basis('univariate')
+	myPoly = Poly(s1, myBasis, method='numerical-integration')
+	xo = np.linspace(-1., 1., 100)
+	P = myPoly.get_poly(xo)
+
+Using this matrix, we can generate plots of the polynomials shown below.
+
+.. code::
+
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	plt.plot(xo, P[0,:], lw=2, label='Order 0')
+	plt.plot(xo, P[1,:], lw=2, label='Order 1')
+	plt.plot(xo, P[2,:], lw=2, label='Order 2')
+	plt.plot(xo, P[3,:], lw=2, label='Order 3')
+	plt.plot(xo, P[4,:], lw=2, label='Order 4')
+	plt.plot(xo, P[5,:], lw=2, label='Order 5')
+	plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.30), ncol=3, fancybox=True, shadow=True)
+	plt.xlabel('$s$', fontsize=18)
+	plt.ylabel('Polynomials', fontsize=18)
+	plt.show()
+
+
+.. figure:: Figures/tutorial_3_fig_a.png
+   :scale: 30 %
+
+   Figure. The first six Legendre polynomials
+
+A few remarks are in order regarding this plot. Standard Legendre polynomials are orthogonal via
+
+.. math::
+
+	\int_{-1}^{1}\psi_{i}\left(s \right)\psi_{j}\left(s \right)ds=\frac{2\delta_{ij}}{2i+1},
+
+where :math:`\delta_{ij}` is the Kronecker delta. In Effective Quadratures, we modify all orthogonal polynomials such that the right hand side of this expression is unity when :math:`i=j`. Re-introducing these scaling factors, we now can plot the standard Legendre polynomials; these are reported in the Wikipedia `entry <https://en.wikipedia.org/wiki/Legendre_polynomials>`__.
+
+
+.. code::
+
+	factor_0 = 1.
+	factor_1 = 1.0 / np.sqrt(2.0 * 1.0 + 1.)
+	factor_2 = 1.0 / np.sqrt(2.0 * 2.0 + 1.)
+	factor_3 = 1.0 / np.sqrt(2.0 * 3.0 + 1.)
+	factor_4 = 1.0 / np.sqrt(2.0 * 4.0 + 1.)
+	factor_5 = 1.0 / np.sqrt(2.0 * 5.0 + 1.)
+
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	plt.plot(xo, factor_0 * P[0,:], lw=2, label='Order 0')
+	plt.plot(xo, factor_1 * P[1,:], lw=2, label='Order 1')
+	plt.plot(xo, factor_2 * P[2,:], lw=2, label='Order 2')
+	plt.plot(xo, factor_3 * P[3,:], lw=2, label='Order 3')
+	plt.plot(xo, factor_4 * P[4,:], lw=2, label='Order 4')
+	plt.plot(xo, factor_5 * P[5,:], lw=2, label='Order 5')
+	plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.30), ncol=3, fancybox=True, shadow=True)
+	plt.xlabel('$s$', fontsize=18)
+	plt.ylabel('Scaled polynomials', fontsize=18)
+	plt.savefig('../Figures/tutorial_3_fig_b.png', dpi=200, bbox_inches='tight')
+
+.. figure:: Figures/tutorial_3_fig_b.png
+   :scale: 30 %
+
+   Figure. The first six (normalized) Legendre polynomials
+
+
+Quadrature Points
+-------
+
+There is an intimate relationship between orthogonal polynomials and quadrature points. In this section, we demonstrate how one can use Effective Quadratures to compute univariate quadrature rules. 
 
 Consider the task of integrating the function
 
@@ -28,7 +125,7 @@ where the pair :math:`\left\{ \lambda_{i} , \omega_i  \right\}_{i=1}^{N}` repres
 	myPoly = Poly(myParameter, myBasis, method='numerical-integration')
 	points, weights = myPoly.get_points_and_weights()
 
-The above quadrature rule is known as *Gauss-Legendre*. In practice if one wishes to evaluate an integral, the weights must be scaled depending on the domain of integration. Let :math:`f(x) = x^7 - 3x^6 + x^5 - 10x^4 + 4` be our function of choice, defined over the domain :math:`[-1,1]`. The analytical integral for this function is 22/7. Now using our 5-point Gauss-Legendre quadrature rule, we obtain
+The above quadrature rule is known as *Gauss-Legendre*, because we used Legendre polynomials (by specifying a uniform distribution) and derived quadrature points and weights from them---All these are done behind the scenes. In practice if one wishes to evaluate an integral, the weights must be scaled depending on the domain of integration. Let :math:`f(x) = x^7 - 3x^6 + x^5 - 10x^4 + 4` be our function of choice, defined over the domain :math:`[-1,1]`. The analytical integral for this function is 22/7. Now using our 5-point Gauss-Legendre quadrature rule, we obtain
 
 .. code::
 
@@ -36,19 +133,18 @@ The above quadrature rule is known as *Gauss-Legendre*. In practice if one wishe
     		return x[0]**7 - 3.0*x[0]**6 + x[0]**5 - 10.0*x[0]**4 +4.0
 
 	integral = float( 2  * np.dot(weights , evaluate_model(points, function) ) )
-	print integral
-	>> 3.14285714
+	print(integral)
 
 
-which is equivalent to 22/7. Note that the constant 2 arises because we are integrating over :math:`[-1,1]` with the uniform measure, which has a density of 1/2.
+which yields `3.14285714` and is equal to 22/7 up to machine precision. Note that the constant 2 arises because we are integrating over :math:`[-1,1]` with the uniform measure, which has a density of 1/2.
 
-Now, in addition to standard Gauss-Christoffel quadrature rules (i.e., substitute different distributions in the definition of Parameter), Effective Quadratures also has Gauss-Christoffel-Lobatto rules, which feature end-points and Gauss-Christoffel-Radau rules, which feature either the upper or lower end-points. As an example, consider the following
+Now, in addition to standard Gauss-Christoffel quadrature rules for a wide range of distributions, Effective Quadratures also has Gauss-Christoffel-Lobatto rules, which feature end-points and Gauss-Christoffel-Radau rules, which are variations on the standard Gauss quadrature rules that include either or both of the end points of the integration domain. To use these rules, we can specify the `endpoints` option when defining the `Parameter` object.
 
 .. code::
 
 	myParameter = Parameter(lower=-1,upper=1,order=order,distribution='uniform',endpoints='both')
 	myBasis = Basis('Univariate')
-	myPoly = Polyint(myParameter2, myBasis2, method='numerical-integration')
+	myPoly = Poly(myParameter2, myBasis2, method='numerical-integration')
 	points, weights = myPoly.get_points_and_weights()
 
 
@@ -57,7 +153,7 @@ Now, in addition to standard Gauss-Christoffel quadrature rules (i.e., substitut
 
    Figure. A comparison of order 4 Gauss-Legendre quadrature points (circles) with order 4 Gauss-Legendre-Lobatto points (squares) and Gauss-Legendre-Radau (triangles).
 
-To verify the accuracy of these points, we use the same code as above.
+In theory, these points should yield the same accuracy as before. To verify the accuracy of these points, we use the same code as above.
 
 .. code::
 
@@ -69,17 +165,32 @@ To verify the accuracy of these points, we use the same code as above.
 	myPoly3 = Poly(s3, myBasis, method='numerical-integration')
 	myPoly4 = Poly(s4, myBasis, method='numerical-integration')
 
+	points2, weights2 = myPoly2.get_points_and_weights()
+	points3, weights3 = myPoly2.get_points_and_weights()
+	points4, weights4 = myPoly2.get_points_and_weights()
+
 	integral2 = float( 2  * np.dot(weights2 , evaluate_model(points2, function) ) )
 	integral3 = float( 2  * np.dot(weights3 , evaluate_model(points3, function) ) )
 	integral4 = float( 2  * np.dot(weights4 , evaluate_model(points4, function) ) )
 	print(integral2, integral3, integral4)
-	>> 3.1428571428571375 3.142857142857139 3.1428571428571535
 
-The full source code for this tutorial can be found `here. <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/source/_documentation/codes/tutorial_2.py>`__
+
+Again, the outputs should be equal to the analytical value up to machine precision. The full source code for this tutorial can be found `here. <https://github.com/Effective-Quadratures/Effective-Quadratures/blob/master/source/_documentation/codes/tutorial_2.py>`__
 
 Index-sets
 --------------
-This notebook covers multi-indices: a key ingredient in constructing multivariate polynomials. There are five different types of index sets in Effective Quadratures:
+In practice, we are often interested in modeling functions of several variables. How can we extend orthogonal polynomials to multiple dimensions? One straightforward observation is that---assuming that all input variables :math:`\mathbf{s} = \{s_1,s_2,...,s_d\}` are independent, we can decompose the joint distribution to the product of marginals in each dimension:
+
+.. math::
+    \rho(\mathbf{s}) = \rho_1(s_1)~\rho_2(s_2)~...~\rho_d(s_d)
+
+This implies that multivariate polynomials of the form are orthogonal:
+
+.. math::
+    \psi(\mathbf{s}) = \psi_1(s_1)~\psi_2(s_2)~...~\psi_d(s_d)
+
+where each :math:`\psi_i` comes from the orthogonal polynomial set for the respective dimension. Thus, to specify a multivariate orthogonal polynomial, we need a :math:`d`-vector that specifies the degree of polynomial in each dimension instead of a single number as in the univariate case. This vector is known as a multi-index, and the possible set of multi-indices in a multivariate basis is known as the index set. 
+There are five different types of index sets in Effective Quadratures:
 
 
 .. list-table:: Multi-index sets in Effective Quadratures.
@@ -90,27 +201,28 @@ This notebook covers multi-indices: a key ingredient in constructing multivariat
      - Index set
      - Parameters
    * - 1
-     - Tensor grid
+     - `tensor-grid`
      - List of max. individual orders
    * - 2
-     - Total order
+     - `total-order`
      - List of max. individual orders
    * - 3
-     - Sparse grid
+     - `sparse-grid`
      - Growth rule and level parameter
    * - 4
-     - Hyperbolic basis
+     - `hyperbolic-basis`
      - List of max. individual orders and a truncation parameter
    * - 5
-     - Euclidean degree
+     - `euclidean-degree`
      - List of max. individual orders
 
-In what follows, we will briefly demonstrate how we construct them and plot them.
+In what follows, we will briefly demonstrate how we construct them and visualise them in three dimensions.
 
 .. code::
 
 	from equadratures import *
 	import numpy as np
+    import matplotlib.pyplot as plt
 
 We begin by defining a tensor grid index set in three dimensions:
 
@@ -126,7 +238,7 @@ We begin by defining a tensor grid index set in three dimensions:
 	ax.set_xlabel('$i_i$')
 	ax.set_ylabel('$i_2$')
 	ax.set_zlabel('$i_3$')
-	plt.savefig('Basis_tensor.png' , dpi=200, bbox_inches='tight', pad_inches=0.1)
+	plt.show()
 
 .. figure:: Figures/tutorial_5_fig_a.png
    :scale: 40 %
@@ -136,44 +248,11 @@ We begin by defining a tensor grid index set in three dimensions:
 
 It is readily apparent that the tensor grid index set has virtually every element within the order [4,4,4] cube. Lets suppose that one does not want to afford :math:`4^3` computations, necessary to approximate all the coefficients associated with a tensor index set multivariate polynomial. One can then opt for a sparse grid, which are select linear combination of select tensor products. In Effective Quadratures, they can be declared as follows:
 
-.. code:
+.. code::
 
-  sparse = Basis('sparse-grid', level=2, growth_rule='linear')
-  sparse.dimension = 3
-  a, b, c = sparse.getBasis()
-  print(a)
-
-	>> [[0. 0. 2.]
- 	[0. 0. 3.]
- 	[0. 0. 4.]
- 	[0. 1. 1.]
- 	[0. 1. 2.]
- 	[0. 1. 3.]
- 	[0. 2. 0.]
- 	[0. 2. 1.]
- 	[0. 2. 2.]
- 	[0. 3. 0.]
- 	[0. 3. 1.]
- 	[0. 4. 0.]
- 	[1. 0. 1.]
- 	[1. 0. 2.]
- 	[1. 0. 3.]
- 	[1. 1. 0.]
- 	[1. 1. 1.]
- 	[1. 1. 2.]
- 	[1. 2. 0.]
- 	[1. 2. 1.]
- 	[1. 3. 0.]
- 	[2. 0. 0.]
- 	[2. 0. 1.]
- 	[2. 0. 2.]
- 	[2. 1. 0.]
- 	[2. 1. 1.]
- 	[2. 2. 0.]
-	[3. 0. 0.]
- 	[3. 0. 1.]
- 	[3. 1. 0.]
- 	[4. 0. 0.]]
+    sparse = Basis('sparse-grid', level=2, growth_rule='linear')
+    sparse.dimension = 3
+    a, b, c = sparse.getBasis()
 
 Here :math:`a` are the select tensor product grids used, and :math:`b` are the linear coefficients used when combining the tensor product grids. While the code can perform integrations and coefficient approximation using sparse grids, we recommend users to stick to the effective subsampling approach that uses least squares. In both theory and practice, the results are identical. We now move on to the three other index sets: Total order, Euclidean and a Hyperbolic basis.
 
@@ -208,99 +287,5 @@ And finally the hyperbolic one:
 
    Figure. Hyperbolic basis multi-index set.
 
-The hyperbolic basis takes in a q value, which varies between 0.1 and 1.0. Feel free to play around with this parameter and see what the effect on the total number of basis terms are. This is known as the cardinality of the index set. 
+The hyperbolic basis takes in a :math:`q` value, which varies between 0.1 and 1.0. Feel free to play around with this parameter and see what the effect on the total number of basis terms are. This is known as the cardinality of the index set. 
 
-
-Orthogonal polynomials
------------------------
-In this tutorial we describe how one can construct orthogonal polynomials in Effective Quadratures. For starters, we consider Legendre polynomials---orthogonal with respect to the uniform weight function. We define a Parameter :math:`s` with :math:`\rho(s) \sim \mathcal{U}[-1,1]`.
-
-
-.. code::
-
-	from equadratures import *
-	import numpy as np
-	import matplotlib.pyplot as plt
-
-
-	order = 5
-	s1 = Parameter(lower=-1, upper=1, order=order, distribution='Uniform')
-
-We restrict our attention to the first five orthogonal polynomials, where the parameterized matrix :math:`\mathbf{P}` has the form
-
-.. math::
-
-	\mathbf{P}\left(i,j\right)=\psi_{i}\left(\lambda_{j}\right) \; \; \text{where} \; \; i=1, \ldots, p; \; j = 1, \ldots, N,
-
-where :math:`N` is the number of points :math:`\lambda_{j}` discretizing the domain of :math:`s`, and :math:`p` is the maximum polynomial order, set to 5. Plots of the polynomials are shown below.
-
-.. code::
-
-	myBasis = Basis('univariate')
-	myPoly = Poly(s1, myBasis, method='numerical-integration')
-	xo = np.linspace(-1., 1, 100)
-	P = myPoly.get_poly(xo)
-
-	fig = plt.figure()
-	ax = fig.add_subplot(1,1,1)
-	plt.plot(xo, P[0,:], lw=2, label='Order 0')
-	plt.plot(xo, P[1,:], lw=2, label='Order 1')
-	plt.plot(xo, P[2,:], lw=2, label='Order 2')
-	plt.plot(xo, P[3,:], lw=2, label='Order 3')
-	plt.plot(xo, P[4,:], lw=2, label='Order 4')
-	plt.plot(xo, P[5,:], lw=2, label='Order 5')
-	plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.30), ncol=3, fancybox=True, shadow=True)
-	plt.xlabel('$s$', fontsize=18)
-	plt.ylabel('Polynomials', fontsize=18)
-	plt.savefig('../Figures/tutorial_3_fig_a.png', dpi=200, bbox_inches='tight')
-
-
-
-.. figure:: Figures/tutorial_3_fig_a.png
-   :scale: 30 %
-
-   Figure. The first six Legendre polynomials
-
-A few remarks are in order regarding this plot. Standard Legendre polynomials are orthogonal via
-
-.. math::
-
-	\int_{-1}^{1}\psi_{i}\left(s \right)\psi_{j}\left(s \right)ds=\frac{2\delta_{ij}}{2i+1},
-
-where :math:`\delta_{ij}` is the Kronecker delta. In Effective Quadratures, we modify all orthogonal polynomials such that the right hand side of this expression is unity when :math:`i=j`
-
-.. math::
-
-	\frac{1}{2i+1} \int_{-1}^{1}\psi_{i}\left(s\right)\psi_{j}\left(s\right) ds \\
-	=\int_{-1}^{1}\frac{1}{\sqrt{2i+1}}\psi_{j}\left(s\right)\frac{1}{\sqrt{2j+1}}\psi_{j}\left(s\right)ds \\
-	=\delta ij
-
-Introducing these scaling factors, we now can plot the standard Legendre polynomials; these are reported in the Wikipedia `entry <https://en.wikipedia.org/wiki/Legendre_polynomials>`__.
-
-
-.. code::
-
-	factor_0 = 1.
-	factor_1 = 1.0 / np.sqrt(2.0 * 1.0 + 1.)
-	factor_2 = 1.0 / np.sqrt(2.0 * 2.0 + 1.)
-	factor_3 = 1.0 / np.sqrt(2.0 * 3.0 + 1.)
-	factor_4 = 1.0 / np.sqrt(2.0 * 4.0 + 1.)
-	factor_5 = 1.0 / np.sqrt(2.0 * 5.0 + 1.)
-
-	fig = plt.figure()
-	ax = fig.add_subplot(1,1,1)
-	plt.plot(xo, factor_0 * P[0,:], lw=2, label='Order 0')
-	plt.plot(xo, factor_1 * P[1,:], lw=2, label='Order 1')
-	plt.plot(xo, factor_2 * P[2,:], lw=2, label='Order 2')
-	plt.plot(xo, factor_3 * P[3,:], lw=2, label='Order 3')
-	plt.plot(xo, factor_4 * P[4,:], lw=2, label='Order 4')
-	plt.plot(xo, factor_5 * P[5,:], lw=2, label='Order 5')
-	plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.30), ncol=3, fancybox=True, shadow=True)
-	plt.xlabel('$s$', fontsize=18)
-	plt.ylabel('Scaled polynomials', fontsize=18)
-	plt.savefig('../Figures/tutorial_3_fig_b.png', dpi=200, bbox_inches='tight')
-
-.. figure:: Figures/tutorial_3_fig_b.png
-   :scale: 30 %
-
-   Figure. The first six (normalized) Legendre polynomials

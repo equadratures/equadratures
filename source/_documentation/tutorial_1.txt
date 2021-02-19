@@ -1,6 +1,6 @@
 Foundations I: Parameter
 ===========================
-A **parameter** is one of the main building blocks in :code:`equadratures`. Let :math:`s` be a parameter defined on a domain :math:`\mathcal{D} \in \mathbb{R}`. The support of the domain :math:`\mathcal{D}` may be:
+A **parameter** is one of the main building blocks in :code:`equadratures`. Let :math:`s` be a parameter defined on a domain :math:`\mathcal{D} \subset \mathbb{R}`. The support of the domain :math:`\mathcal{D}` may be:
 
 * closed :math:`[a,b]`;
 * semi-infinite :math:`(-\infty, b)` or :math:`[a, \infty)`;
@@ -20,8 +20,10 @@ We now demonstrate some basic functionality of this parameter. First consider th
 	from equadratures import *
 	import numpy as np
 	import matplotlib.pyplot as plt
+	VALUE = 15
+	plt.rcParams.update({'font.size': VALUE})
 
-	s = Parameter(distribution='normal', shape_parameter_A = 0.0, shape_parameter_B = 1.0, order=3)
+	s = Parameter(distribution='normal', shape_parameter_A=0.0, shape_parameter_B=1.0, order=3)
 
 Now for some plots; first let us plot the PDF,
 
@@ -37,9 +39,9 @@ Now for some plots; first let us plot the PDF,
 	plt.plot(s_values, pdf, '-', c='crimson', lw=4)
 	plt.xlabel('$s$', fontsize=VALUE)
 	plt.ylabel('PDF', fontsize=VALUE)
-	plt.fill_between(s_values,  pdf*0.0, pdf, color="crimson" , interpolate=True, hatch="\\\\\\\\", edgecolor="grey",  linewidth=0.5,alpha=0.5)
+	plt.fill_between(s_values,  pdf*0.0, pdf, color="crimson", interpolate=True, hatch="\\\\\\\\", edgecolor="grey",  linewidth=0.5, alpha=0.5)
 	plt.grid()
-	plt.savefig('../Figures/tutorial_1_fig_a.png', dpi=200, bbox_inches='tight')
+	plt.show()
 
 
 .. figure:: Figures/tutorial_1_fig_a.png
@@ -59,7 +61,7 @@ followed by the CDF.
 	plt.xlabel('$s$', fontsize=VALUE)
 	plt.ylabel('CDF', fontsize=VALUE)
 	plt.grid()
-	plt.savefig('../Figures/tutorial_1_fig_b.png', dpi=200, bbox_inches='tight')
+	plt.show()
 
 
 .. figure:: Figures/tutorial_1_fig_b.png
@@ -73,12 +75,12 @@ Now, we will use the :code:`get_samples()` functionality to create a histogram.
 
 	fig = plt.figure()
 	ax = fig.add_subplot(1,1,1)
-	n, bins, patches = plt.hist(s_samples, 50, normed=1, facecolor='navy', alpha=0.75, edgecolor='w')
+	n, bins, patches = plt.hist(s_samples, 50, density=True, facecolor='navy', alpha=0.75, edgecolor='w')
 	plt.xlabel('$s$', fontsize=1)
 	plt.ylabel('PDF (Histogram)', fontsize=VALUE)
 	plt.grid()
 	ax.set_axisbelow(True)
-	plt.savefig('../Figures/tutorial_1_fig_c.png', dpi=200, bbox_inches='tight')
+	plt.show()
 
 
 
@@ -92,7 +94,7 @@ distribution,
 
 .. code::
 
-	s = Parameter(distribution='truncated-gaussian', lower=-1.0, upper=2., shape_parameter_A = 0.0, shape_parameter_B = 1.0, order=3)
+	s = Parameter(distribution='truncated-gaussian', lower=-1.0, upper=2., shape_parameter_A=0.0, shape_parameter_B=1.0, order=3)
 
 .. figure:: Figures/tutorial_1_fig_d.png
    :scale: 30 %

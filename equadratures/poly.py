@@ -27,9 +27,6 @@ class Poly(object):
             :numpy.ndarray sample-gradients: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample gradient values over the parameter space.
     :param dict solver_args: Optional arguments centered around the specific solver used for computing the coefficients.
 
-            :numpy.ndarray noise-level: The noise level to be used. Can take in both scalar- and vector-valued inputs.
-            :bool verbose: The default value is set to ``False``; when set to ``True`` details on the convergence of the solution will be provided. Note for direct methods, this will simply output the condition number of the matrix.
-
     **Sample constructor initialisations**::
 
         import numpy as np
@@ -63,7 +60,7 @@ class Poly(object):
         7. Rogers, S., Girolami, M., (2016) Variability in predictions. In: A First Course in Machine Learning, Second Edition (2nd. ed.). Chapman & Hall/CRC. `Book <https://github.com/wwkenwong/book/blob/master/Simon%20Rogers%2C%20Mark%20Girolami%20A%20First%20Course%20in%20Machine%20Learning.pdf>`__
 
     """
-    def __init__(self, parameters, basis, method=None, sampling_args=None, solver_args=None):
+    def __init__(self, parameters, basis, method=None, sampling_args=None, solver_args={}):
         try:
             len(parameters)
         except TypeError:
@@ -75,7 +72,7 @@ class Poly(object):
         self.solver_args = solver_args
         self.dimensions = len(parameters)
         self.orders = []
-        self.gradient_flag = 0
+        self.gradient_flag = False
         for i in range(0, self.dimensions):
             self.orders.append(self.parameters[i].order)
         if not self.basis.orders :
@@ -97,7 +94,7 @@ class Poly(object):
             elif self.method == 'least-squares' or self.method == 'least-absolute-residual' or self.method=='huber' or self.method=='elastic-net':
                 self.mesh = 'tensor-grid'
             elif self.method == 'least-squares-with-gradients':
-                self.gradient_flag = 1
+                self.gradient_flag = True
                 self.mesh = 'tensor-grid'
             elif self.method == 'compressed-sensing' or self.method == 'compressive-sensing':
                 self.mesh = 'monte-carlo'
@@ -225,8 +222,7 @@ class Poly(object):
         :param Poly self:
             An instance of the Poly object.
         """
-        polysolver = Solver(self.method, self.solver_args)
-        self.solver = polysolver.get_solver()
+        self.solver = Solver.select_solver(self.method, self.solver_args)
     def _set_points_and_weights(self):
         """
         Private function that sets the quadrature points.
@@ -410,7 +406,7 @@ class Poly(object):
             if y.shape[1] != 1:
                 raise ValueError( 'model values should be a column vector.')
             self._model_evaluations = y
-            if self.gradient_flag == 1:
+            if self.gradient_flag:
                 if (model_grads is None) and (self.gradients is not None):
                     grad_values = self.gradients
                 else:
@@ -472,7 +468,7 @@ class Poly(object):
                 indices = [i for i in range(0, len(counts)) if  counts[i] == 2]
                 b = np.dot(W , self._model_evaluations[indices])
                 del counts, indices
-                coefficients_i = self.solver(A, b)[0]  * self.quadrature.sparse_weights[counter]
+                coefficients_i = self.solver.get_coefficients(A, b)  * self.quadrature.sparse_weights[counter]
                 multindices_i =  tensor.basis.elements
                 coefficients = np.vstack([coefficients_i, coefficients])
                 multindices = np.vstack([multindices_i, multindices])
@@ -492,7 +488,7 @@ class Poly(object):
             W = np.diag(np.sqrt(self._quadrature_weights))
             A = np.dot(W , P.T)
             b = np.dot(W , self._model_evaluations)
-            if self.gradient_flag == 1:
+            if self.gradient_flag:
                 # Now, we can reduce the number of rows!
                 dP = self.get_poly_grad(self._quadrature_points)
                 C = cell2matrix(dP, W)
@@ -503,9 +499,9 @@ class Poly(object):
                 print('The number of unknown basis terms is '+str(n))
                 if n > r:
                     print('WARNING: Please increase the number of samples; one way to do this would be to increase the sampling-ratio.')
-                self.coefficients, self.solver_dict = self.solver(A, b, C, self._gradient_evaluations)
+                self.coefficients = self.solver.get_coefficients(A, b, C, self._gradient_evaluations)
             else:
-                self.coefficients, self.solver_dict = self.solver(A, b)
+                self.coefficients = self.solver.get_coefficients(A, b)
     def get_multi_index(self):
         """
         Returns the multi-index set of the basis.

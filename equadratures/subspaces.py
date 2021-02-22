@@ -75,7 +75,7 @@ class Subspaces(object):
         self.subspace_dimension = subspace_dimension
         self.polynomial_degree = polynomial_degree
 
-        my_poly_args = {'method': 'least-squares', 'solver_args': None}
+        my_poly_args = {'method': 'least-squares', 'solver_args': {}}
         if poly_args is not None:
             my_poly_args.update(poly_args)
         self.poly_args = my_poly_args
@@ -157,7 +157,7 @@ class Subspaces(object):
             self.std_sample_points = self.data_scaler.transform(self.sample_points)
 
             if dr_args is not None:
-                vp_args = {'gamma':0.1, 'beta':1e-4, 'tol':1e-7, 'maxiter':1000, 'U0':None, 'verbose':0}
+                vp_args = {'gamma':0.1, 'beta':1e-4, 'tol':1e-7, 'maxiter':1000, 'U0':None, 'verbose':False}
                 vp_args.update(dr_args)
                 self._get_variable_projection(**vp_args)
             else:
@@ -262,7 +262,7 @@ class Subspaces(object):
         self._subspace = eigVecs
         self._eigenvalues = eigs
 
-    def _get_variable_projection(self, gamma=0.1, beta=1e-4, tol=1e-7, maxiter=1000, U0=None, verbose=0, **kw_args):
+    def _get_variable_projection(self, gamma=0.1, beta=1e-4, tol=1e-7, maxiter=1000, U0=None, verbose=False, **kw_args):
         """
         Variable Projection function to obtain an active subspace in inputs design space
         Note: It may help to standardize outputs to zero mean and unit variance
@@ -271,7 +271,7 @@ class Subspaces(object):
         :param tol: double, tolerance for convergence, measured in the norm of residual over norm of f
         :param maxiter: int, maximum number of optimisation iterations
         :param U0: numpy.ndarray, initial guess for active subspace
-        :param verbose: int, set to 1 for debug messages
+        :param verbose: bool, set to True for debug messages
         """
         # NOTE: How do we know these are the best values of gamma and beta?
         M, m = self.std_sample_points.shape

@@ -44,6 +44,8 @@ class Plot:
         P, _, _ = Parameter._get_orthogonal_polynomial(Xi)
         if ax is None:
             fig, ax = plt.subplots(figsize=(8,6))
+            ax.set_xlabel(Parameter.name.capitalize()+' parameter')
+            ax.set_ylabel('Orthogonal polynomials')
         if order_limit is None:
             max_order = P.shape[0]
         else:
@@ -56,8 +58,6 @@ class Plot:
             ax.set_ylim([ylim[0], ylim[1]])
         ax.legend()
         sns.despine(offset=10, trim=True)
-        ax.set_xlabel(Parameter.name.capitalize()+' parameter')
-        ax.set_ylabel('Orthogonal polynomials')
         if save:
             fig.savefig('polyfit_1D_plot.png', dpi=140, bbox_inches='tight')
         if show:

@@ -21,7 +21,7 @@ from equadratures.plot import Plot
 import numpy as np
 import scipy as sc
 
-class Parameter(Plot):
+class Parameter(object):
     """
     This class defines a univariate parameter. Below are details of its constructor.
 
@@ -357,6 +357,8 @@ class Parameter(Plot):
             return get_local_quadrature_lobatto(self, order, ab)
         else:
             raise(ValueError, 'Error in endpoints specification.')
+    def plot_orthogonal_polynomials(self,**kwargs):
+        return Plot.plot_orthogonal_polynomials(self,**kwargs)
 def get_local_quadrature(self, order=None, ab=None):
     # Check for extra input argument!
     if order is None:

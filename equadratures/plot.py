@@ -32,35 +32,37 @@ class Plot:
             plt.savefig('pdf_plot.png', dpi=140, bbox_inches='tight')
         else:
             plt.show()
-    def plot_orthogonal_polynomials(self, order_limit=None, number_of_points=200, save=False, xlim=None, ylim=None):
+    @staticmethod
+    def plot_orthogonal_polynomials(Parameter, ax=None, order_limit=None, number_of_points=200, save=False, xlim=None, ylim=None, show=True):
         """
         Plots the first K orthogonal polynomials.
 
-        :param Parameter self: An instance of the Parameter class.
+        :param Parameter Parameter: An instance of the Parameter class.
         """
-        Xi = np.linspace(self.distribution.x_range_for_pdf[0], \
-                    self.distribution.x_range_for_pdf[-1], number_of_points).reshape(number_of_points, 1)
-        P, _, _ = self._get_orthogonal_polynomial(Xi)
-        fig = plt.figure(figsize=(8,6))
-        ax = fig.add_subplot(1,1,1)
+        Xi = np.linspace(Parameter.distribution.x_range_for_pdf[0], \
+                    Parameter.distribution.x_range_for_pdf[-1], number_of_points).reshape(number_of_points, 1)
+        P, _, _ = Parameter._get_orthogonal_polynomial(Xi)
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(8,6))
         if order_limit is None:
             max_order = P.shape[0]
         else:
             max_order = order_limit
         for i in range(0, max_order):
-            plt.plot(Xi, P[i,:], '-', lw=2, label='order %d'%(i))
+            ax.plot(Xi, P[i,:], '-', lw=2, label='order %d'%(i))
         if xlim is not None:
             ax.set_xlim([xlim[0], xlim[1]])
         if ylim is not None:
             ax.set_ylim([ylim[0], ylim[1]])
-        plt.legend()
+        ax.legend()
         sns.despine(offset=10, trim=True)
-        plt.xlabel(self.name.capitalize()+' parameter')
-        plt.ylabel('Orthogonal polynomials')
+        ax.set_xlabel(Parameter.name.capitalize()+' parameter')
+        ax.set_ylabel('Orthogonal polynomials')
         if save:
-            plt.savefig('polyfit_1D_plot.png', dpi=140, bbox_inches='tight')
-        else:
+            fig.savefig('polyfit_1D_plot.png', dpi=140, bbox_inches='tight')
+        if show:
             plt.show()
+        return fig, ax
     def plot_polyfit_1D(self, uncertainty=True, output_variances=None, number_of_points=200, save=False, xlim=None, ylim=None):
         """
         Plots a univariate polynomial.

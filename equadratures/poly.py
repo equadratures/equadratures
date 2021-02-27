@@ -12,7 +12,7 @@ import numpy as np
 from copy import deepcopy
 MAXIMUM_ORDER_FOR_STATS = 8
 
-class Poly(Plot):
+class Poly(object):
     """
     Definition of a polynomial object.
 
@@ -144,6 +144,16 @@ class Poly(Plot):
             self._set_points_and_weights()
         else:
             print('WARNING: Method not declared.')
+    def plot_polyfit_1D(self, **kwargs):
+        """
+        Plots the 1D polynomial fit.
+        """
+        return Plot.plot_polyfit_1D(self,**kwargs)
+    def plot_model_vs_data(self, **kwargs):
+        """
+        Plots the polynomial fit vs. the data.
+        """
+        return Plot.plot_model_vs_data(self,**kwargs)
     def _set_parameters(self, parameters):
         """
         Private function that sets the parameters. Required by the Correlated class.

@@ -1,3 +1,4 @@
+"""Plotting utilities."""
 import seaborn as sns
 import matplotlib.pyplot as plt
 from equadratures.datasets import score
@@ -6,21 +7,33 @@ sns.set(font_scale=1.5)
 sns.set_style("white")
 sns.set_style("ticks")
 
-class Plot:
-    """
-    Plotting utilities.
-    """
-    def plot_pdf(self, data=None, save=False, xlim=None, ylim=None):
+class Plot(object):
+
+    @staticmethod
+    def plot_pdf(Parameter, ax=None, data=None, save=False, xlim=None, ylim=None, show=True, return_figure=False):
         """
         Plots the probability density function for a Parameter.
+
+        :param Parameter Parameter: 
+            An instance of the Parameter class.
+        :param matplotlib.axes ax: 
+            An instance of the ``matplotlib`` axes class.
+        :param numpy.array data: 
+            Samples from the distribution (or a similar one) that need to be plotted as a histogram.
+        :param bool save: 
+            Option to save the plot as a .png file.
+        :param list xlim: 
+            Lower and upper bounds for the horizontal axis, for example ``xlim=[-3, 5]``.
+        :param list ylim: 
+            Lower and upper bounds for the vertical axis, for example ``ylim=[-1, 1]``.
         """
-        s_values, pdf = self.get_pdf()
+        s_values, pdf = Parameter.get_pdf()
         fig = plt.figure(figsize=(8,6))
         ax = fig.add_subplot(1,1,1)
         plt.fill_between(s_values,  pdf*0.0, pdf, color="gold" , label='Density', interpolate=True, hatch="\\\\\\\\", edgecolor="grey",  linewidth=0.5,alpha=0.5)
         if data is not None:
             plt.hist(data, 50, density=True, facecolor='dodgerblue', alpha=0.7, label='Data', edgecolor='white')
-        plt.xlabel(self.variable.capitalize())
+        plt.xlabel(Parameter.variable.capitalize())
         plt.ylabel('PDF')
         if xlim is not None:
             plt.xlim([xlim[0], xlim[1]])
@@ -30,14 +43,42 @@ class Plot:
         sns.despine(offset=10, trim=True)
         if save:
             plt.savefig('pdf_plot.png', dpi=140, bbox_inches='tight')
-        else:
+        if show:
             plt.show()
+        if return_figure:
+            return fig, ax
     @staticmethod
-    def plot_orthogonal_polynomials(Parameter, ax=None, order_limit=None, number_of_points=200, save=False, xlim=None, ylim=None, show=True):
+    def plot_orthogonal_polynomials(Parameter, ax=None, order_limit=None, number_of_points=200, save=False, xlim=None, ylim=None, show=True, return_figure=False):
         """
-        Plots the first K orthogonal polynomials.
+        Plots the first few orthogonal polynomials.
 
-        :param Parameter Parameter: An instance of the Parameter class.
+        :param Parameter Parameter: 
+            An instance of the Parameter class.
+        :param matplotlib.axes ax: 
+            An instance of the ``matplotlib`` axes class.
+        :param int order_limit:
+            The maximum number of orthogonal polynomials that need to be plotted.
+        :param int number_of_points: 
+            The number of points used for plotting.
+        :param bool save: 
+            Option to save the plot as a .png file.
+        :param list xlim: 
+            Lower and upper bounds for the horizontal axis, for example ``xlim=[-3, 5]``.
+        :param list ylim: 
+            Lower and upper bounds for the vertical axis, for example ``ylim=[-1, 1]``.
+        :param bool show: 
+            Option to view the plot.
+        :param bool return_figure: 
+            Option to return the figure and axes instances of the ``matplotlib`` classes.
+
+        **Example**::
+
+            import numpy as np
+            from equadratures import *
+
+            myparam = eq.Parameter(distribution='uniform', lower = -1.0, upper = 1.0, order=8, endpoints='both')
+            myparam.plot_orthogonal_polynomials(xlim=[-1.6, 1.6])
+            
         """
         Xi = np.linspace(Parameter.distribution.x_range_for_pdf[0], \
                     Parameter.distribution.x_range_for_pdf[-1], number_of_points).reshape(number_of_points, 1)
@@ -62,27 +103,33 @@ class Plot:
             fig.savefig('polyfit_1D_plot.png', dpi=140, bbox_inches='tight')
         if show:
             plt.show()
-        return fig, ax
-    def plot_polyfit_1D(self, uncertainty=True, output_variances=None, number_of_points=200, save=False, xlim=None, ylim=None):
+        if return_figure:
+            return fig, ax
+    @staticmethod
+    def plot_polyfit_1D(Polynomial, uncertainty=True, output_variances=None, number_of_points=200, save=False, xlim=None, ylim=None):
         """
-        Plots a univariate polynomial.
+        Plots a 1D only polynomial fit to the data.
+
+        :param Poly Polynomial: 
+            An instance of the Polynomial class.
+            
         """
-        if self.dimensions != 1:
+        if Polynomial.dimensions != 1:
             raise(ValueError, 'plot_polyfit_1D is only meant for univariate polynomials.')
-        Xi = np.linspace(self.parameters[0].distribution.x_range_for_pdf[0], \
-                    self.parameters[0].distribution.x_range_for_pdf[-1], number_of_points).reshape(number_of_points, 1)
+        Xi = np.linspace(Polynomial.parameters[0].distribution.x_range_for_pdf[0], \
+                    Polynomial.parameters[0].distribution.x_range_for_pdf[-1], number_of_points).reshape(number_of_points, 1)
         if uncertainty:
             if output_variances is None:
-                y, ystd = self.get_polyfit(Xi,uq=True)
+                y, ystd = Polynomial.get_polyfit(Xi,uq=True)
             else:
-                self.output_variances = output_variances
-                y, ystd = self.get_polyfit(Xi,uq=True)
+                Polynomial.output_variances = output_variances
+                y, ystd = Polynomial.get_polyfit(Xi,uq=True)
             ystd = ystd.squeeze()
         else:
-            y = self.get_polyfit(Xi)
+            y = Polynomial.get_polyfit(Xi)
         y = y.squeeze()
-        X = self.get_points()
-        y_truth = self._model_evaluations
+        X = Polynomial.get_points()
+        y_truth = Polynomial._model_evaluations
         fig = plt.figure(figsize=(8,6))
         ax = fig.add_subplot(1,1,1)
         plt.plot(Xi, y, '-',label='Polynomial fit', color='navy')
@@ -95,27 +142,38 @@ class Plot:
             ax.set_ylim([ylim[0], ylim[1]])
         plt.legend()
         sns.despine(offset=10, trim=True)
-        plt.xlabel(self.parameters[0].variable.capitalize())
+        plt.xlabel(Polynomial.parameters[0].variable.capitalize())
         plt.ylabel('Polynomial fit')
         if save:
             plt.savefig('polyfit_1D_plot.png', dpi=140, bbox_inches='tight')
         else:
             plt.show()
+    @staticmethod
+    def plot_sobol_indices(Polynomial):
+        """
+        Plots the Sobol' indices.
 
-    def plot_model_vs_data(self, sample_data=None, metric='adjusted_r2', save=False, xlim=None, ylim=None):
+        :param Poly self: 
+            An instance of the Poly class.
+
+        """
+        return 0
+    @staticmethod
+    def plot_model_vs_data(Polynomial, sample_data=None, metric='adjusted_r2', save=False, xlim=None, ylim=None):
         """
         Plots the polynomial approximation against the true data.
 
-        :param Poly self: An instance of the Poly class.
+        :param Poly self: 
+            An instance of the Poly class.
 
         """
         if sample_data is None:
-            X = self.get_points()
-            y_truth = self._model_evaluations
-            y_model = self.get_polyfit(X)
+            X = Polynomial.get_points()
+            y_truth = Polynomial._model_evaluations
+            y_model = Polynomial.get_polyfit(X)
         else:
             X, y_truth = sample_data[0], sample_data[1]
-            y_model = self.get_polyfit(X)
+            y_model = Polynomial.get_polyfit(X)
         R2score = score(y_truth, y_model, metric, X)
         fig = plt.figure(figsize=(8,6))
         ax = fig.add_subplot(1,1,1)

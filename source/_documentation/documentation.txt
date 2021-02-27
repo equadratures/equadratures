@@ -18,3 +18,4 @@ This page covers some of the key modules in Effective Quadratures; they are spli
    correlated
    polytree
    solver
+   plot

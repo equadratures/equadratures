@@ -20,6 +20,7 @@ class Correlations(object):
     :param bool verbose: Display Cholesky decomposition of the fictive matrix.
 
     **Example usage**::
+
         def func(x):
             s1 = s[0]
             s2 = s[1]

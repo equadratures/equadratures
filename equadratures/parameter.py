@@ -130,6 +130,16 @@ class Parameter(object):
             distribution_error()
         self.mean = self.distribution.mean
         self.variance = self.distribution.variance
+    def plot_orthogonal_polynomials(self, **kwargs):
+        """
+        Plots the orthogonal polynomials.
+        """
+        return Plot.plot_orthogonal_polynomials(self,**kwargs)
+    def plot_pdf(self, **kwargs):
+        """
+        Plots the probability distribution.
+        """
+        return Plot.plot_pdf(self,**kwargs)
     def _set_moments(self):
         """
         Private function that sets the mean and the variance of the distribution.
@@ -357,8 +367,6 @@ class Parameter(object):
             return get_local_quadrature_lobatto(self, order, ab)
         else:
             raise(ValueError, 'Error in endpoints specification.')
-    def plot_orthogonal_polynomials(self,**kwargs):
-        return Plot.plot_orthogonal_polynomials(self,**kwargs)
 def get_local_quadrature(self, order=None, ab=None):
     # Check for extra input argument!
     if order is None:

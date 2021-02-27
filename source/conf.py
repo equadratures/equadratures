@@ -19,7 +19,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinxcontrib.slide',
-    'sphinxcontrib.youtube',
+    'sphinxcontrib.youtube'
 ]
 templates_path = ['_docstemplates']
 source_suffix = '.txt'
@@ -29,7 +29,7 @@ html_theme = 'pydata_sphinx_theme'
 html_logo = 'logo_new.png'
 html_favicon = 'eq-logo-favicon.png'
 def setup(app):
-    app.add_stylesheet('styles.css')
+    app.add_css_file('styles.css')
 language = None
 exclude_patterns = [u'_docsbuild', 'Thumbs.db', '.DS_Store']
 html_static_path = ['_static']

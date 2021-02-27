@@ -4,7 +4,7 @@ Tutorials
 
 Below we provide some introductory tutorials to give you an idea of what Effective Quadratures can do. The tutorials are organized by complexity, so if you are new to the notion of learning , consider starting from the first tutorial.
 
-*Note: Throughout January 2021 we will be updating the tutorials. We apologise in advance for any inconvenience this may cause.*
+*Note: Throughout February 2021 we will be updating the tutorials. We apologise in advance for any inconvenience this may cause.*
 
 .. toctree::
    :maxdepth: 1

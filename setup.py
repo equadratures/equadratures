@@ -5,19 +5,20 @@ def readme():
         return f.read()
 
 setup(name='equadratures',
-      version='9.0.0',
+      version='9.5.2',
       description='Polynomial approximations',
       long_description=readme(),
       classifiers=[
 	'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.9',
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Mathematics'
       ],
       keywords='polynomial chaos effective quadratures polynomial approximations gradients',
-      url='https://github.com/Effective-Quadratures/Effective-Quadratures',
-      author='Pranay Seshadri, Nicholas Wong, Irene Virdis, James Gross, Joe Zhou, Ashley Scillitoe',
+      url='https://github.com/Effective-Quadratures/equadratures',
+      author='Developers',
       license='LPGL-2.1',
       packages=['equadratures', 'equadratures.distributions', 'equadratures.sampling_methods'],
       install_requires=[

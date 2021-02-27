@@ -2,12 +2,20 @@
 Research
 =============
 
+
+.. figure:: /_documentation/Figures/equadratures_laptop.jpg
+   :width: 100%
+
 Below you will find a list of publications, along with their supporting code, and in some cases a related blog post. Publications are classified by their domain area. For an overview do check out the slides below:
 
 * `Scope and capability <https://drive.google.com/file/d/1L970YCnN4B-SnbKnXyB9jgbb4qCncDAx/view?usp=sharing>`__
 
 Data-driven dimension reduction
 --------------------------------
+
+
+.. figure:: /_documentation/Figures/embedded.png
+   :width: 85 %
 
 :Title:
   Embedded ridge approximations
@@ -25,18 +33,22 @@ Data-driven dimension reduction
   2020
 
 :Resources:
-  `Paper <https://www.sciencedirect.com/science/article/abs/pii/S0045782520305685?dgcid=rss_sd_all>`__ | `Preprint <https://arxiv.org/abs/1907.07037>`__ | `Blog <https://discourse.effective-quadratures.org/t/embedded-ridge-approximations/73>`__
+  `Paper <https://www.sciencedirect.com/science/article/abs/pii/S0045782520305685?dgcid=rss_sd_all>`__ | `Preprint <https://arxiv.org/abs/1907.07037>`__ | `Blog <https://discourse.equadratures.org/t/embedded-ridge-approximations/73>`__
 
 |
 
+
+.. figure:: /_documentation/Figures/blade_envelopes.jpg
+   :scale: 40 %
+
 :Title:
-  Blade envelopes part I: concept and methodology
+  Blade envelopes parts I & II
 
 :Authors:
   Chun Yui Wong, Pranay Seshadri, Ashley Scillitoe, Andrew Duncan, Geoffrey Parks
 
 :Essence:
-  Interpreting the design of a blade (airfoil) as a Gaussian distribution with known mean (nominal) but unknown covariance. Estimating this covariance matrix by generating samples from the inactive subspace for loss.
+  Interpreting the design of a blade (airfoil) as a Gaussian distribution with known mean (nominal) but unknown covariance. Estimating this covariance matrix by generating samples from the inactive subspace for loss in part I. In part II we extend the approach in part I to multiple objectives (flow capacity, loss and peak Isentropic Mach number) and demonstrating how this approach can be used for inverse design.
 
 :Journal:
   ASME Journal of Turbomachinery (under review)
@@ -45,33 +57,14 @@ Data-driven dimension reduction
   2020
 
 :Resources:
-  `Preprint <https://arxiv.org/abs/2011.11636>`__ | `Blog <https://discourse.equadratures.org/t/blade-envelopes-computational-methods/96>`__ | `Slides <https://drive.google.com/file/d/1iO_CBAdAhIHvTXVPLSFauevcC7luKTED/view?usp=sharing>`__ 
+  `Preprint I <https://arxiv.org/abs/2011.11636>`__ | `Blog I <https://discourse.equadratures.org/t/blade-envelopes-computational-methods/96>`__ | `Preprint II <https://arxiv.org/abs/2012.15579>`__ | `Blog II <https://discourse.equadratures.org/t/blade-envelopes-3d-visualisation/100>`__ | `Slides <https://drive.google.com/file/d/1iO_CBAdAhIHvTXVPLSFauevcC7luKTED/view?usp=sharing>`__ 
 
-..  youtube:: M4N2eBaarpc
-    :width: 100%
-
-
-|
-
-:Title:
-  Blade envelopes part II: multiple objectives and inverse design
-
-:Authors:
-  Chun Yui Wong, Pranay Seshadri, Ashley Scillitoe, Bryn N Ubald, Andrew Duncan, Geoffrey Parks
-
-:Essence:
-  Extending the approach in part I to multiple objectives (flow capacity, loss and peak Isentropic Mach number) and demonstrating how this approach can be used for inverse design.
-
-:Journal:
-  ASME Journal of Turbomachinery (under review)
-
-:Year:
-  2020
-
-:Resources:
-  `Preprint <https://arxiv.org/abs/2012.15579>`__ | `Blog <https://discourse.equadratures.org/t/blade-envelopes-3d-visualisation/100>`__
+:Video:
+   ..  youtube:: M4N2eBaarpc
+       :width: 100%
 
 |
+
 
 :Title:
   Turbomachinery active subspace performance maps
@@ -93,6 +86,9 @@ Data-driven dimension reduction
 
 
 |
+
+.. figure:: /_documentation/Figures/fan_blades.png
+   :width: 80%
 
 :Title:
   Supporting multi-point fan design with dimension reduction
@@ -167,6 +163,9 @@ Coming soon! But in the interim check out the slides below:
 Uncertainty quantification and sensitivity analysis
 --------------------------------------------------------------
 
+.. figure:: /_documentation/Figures/pairplots.png
+   :width: 100%
+
 :Title:
   Extremum sensitivity analysis with polynomial Monte Carlo filtering
 
@@ -187,6 +186,8 @@ Uncertainty quantification and sensitivity analysis
 
 |
 
+.. figure:: /_documentation/Figures/hydro_model.png
+   :width: 80%
 
 :Title:
   Sensitivity analysis of a coupled hydrodynamic-vegetation model using the effectively subsampled quadratures method
@@ -216,4 +217,5 @@ Coming soon!
 Flow-field estimation
 --------------------------------
 
-Coming soon!
+.. figure:: /_documentation/Figures/procvideo.gif
+   :width: 100%

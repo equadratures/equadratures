@@ -1,5 +1,7 @@
-Correlation mapping for polynomials  
-=====================================
+Correlations
+==================
 
 .. automodule:: equadratures.correlations
     :members:
+
+

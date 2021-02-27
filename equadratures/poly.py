@@ -6,7 +6,7 @@ from equadratures.solver import Solver
 from equadratures.subsampling import Subsampling
 from equadratures.quadrature import Quadrature
 from equadratures.datasets import score
-from equadratures.plot import Plot
+import equadratures.plot as plot
 import scipy.stats as st
 import numpy as np
 from copy import deepcopy
@@ -148,12 +148,12 @@ class Poly(object):
         """
         Plots the 1D polynomial fit.
         """
-        return Plot.plot_polyfit_1D(self,**kwargs)
+        return plot.plot_polyfit_1D(self,**kwargs)
     def plot_model_vs_data(self, **kwargs):
         """
         Plots the polynomial fit vs. the data.
         """
-        return Plot.plot_model_vs_data(self,**kwargs)
+        return plot.plot_model_vs_data(self,**kwargs)
     def _set_parameters(self, parameters):
         """
         Private function that sets the parameters. Required by the Correlated class.

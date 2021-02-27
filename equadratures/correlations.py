@@ -203,8 +203,10 @@ class Correlations(object):
         """
         Method for generating correlated samples.
 
-        :param int N: Number of correlated samples required.
-        :param ndarray X: (Optional) Points in the uncorrelated space to map to the correlated space.
+        :param int N: 
+            Number of correlated samples required.
+        :param ndarray X: 
+            (Optional) Points in the uncorrelated space to map to the correlated space.
 
         :return:
             **C**: A numpy.ndarray of shape (N, M), which contains the correlated samples.
@@ -230,11 +232,13 @@ class Correlations(object):
     def get_pdf(self, X):
         """
         Evaluate PDF at the sample points.
-        :param numpy.ndarray X: Sample points (Number of points by dimensions)
+
+        :param numpy.ndarray X: 
+            Sample points (Number of points by dimensions)
+
         :return:
             **C**: A numpy.ndarray of shape (N,) with evaluations of the PDF.
         """
-
         parameters = self.D
         if len(X.shape) == 1:
             X = X.reshape(-1, 1)

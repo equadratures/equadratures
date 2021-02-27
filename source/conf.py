@@ -17,9 +17,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
-    'sphinxcontrib.slide',
-    'sphinxcontrib.youtube'
+    'sphinx.ext.githubpages'
 ]
 templates_path = ['_docstemplates']
 source_suffix = '.txt'

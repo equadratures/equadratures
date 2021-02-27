@@ -7,46 +7,46 @@ from urllib.parse import quote
 
 class PolyTree(object):
         """
-    Definition of a polynomial tree object.
+        Definition of a polynomial tree object.
 
-    :param str splitting_criterion:
+        :param str splitting_criterion:
                 The type of splitting_criterion to use in the fit function. Options include ``model_aware`` which fits polynomials for each candidate split, ``model_agnostic`` which uses a standard deviation based model-agnostic split criterion [1], and ``loss_gradient`` which uses a gradient based splitting criterion similar to that in [2].
-    :param int max_depth:
-        The maximum depth which the tree will grow to.
-    :param int min_samples_leaf:
-        The minimum number of samples per leaf node.
-    :param int order:
-        The order of the generated orthogonal polynomials.
-    :param str basis:
-        The type of index set used for the basis. Options include: ``univariate``, ``total-order``, ``tensor-grid``, ``sparse-grid`` and ``hyperbolic-basis``
-    :param str search:
-        The method of search to be used. Options are ``grid`` or ``exhaustive``.
-    :param int samples:
-        The interval between splits if ``grid`` search is chosen.
-    :param bool verbose:
-        For debugging
-    :param bool all_data:
-        Save data at all nodes (instead of only leaf nodes).
-    :param list split_dims:
-        List of dimensions along which to make splits.
+        :param int max_depth:
+                The maximum depth which the tree will grow to.
+        :param int min_samples_leaf:
+                The minimum number of samples per leaf node.
+        :param int order:
+                The order of the generated orthogonal polynomials.
+        :param str basis:
+                The type of index set used for the basis. Options include: ``univariate``, ``total-order``, ``tensor-grid``, ``sparse-grid`` and ``hyperbolic-basis``
+        :param str search:
+                The method of search to be used. Options are ``grid`` or ``exhaustive``.
+        :param int samples:
+                The interval between splits if ``grid`` search is chosen.
+        :param bool verbose:
+                For debugging
+        :param bool all_data:
+                Save data at all nodes (instead of only leaf nodes).
+        :param list split_dims:
+                List of dimensions along which to make splits.
 
-    **Sample constructor initialisations**::
+        **Sample constructor initialisations**::
 
-        import numpy as np
-        from equadratures import *
+                import numpy as np
+                from equadratures import *
 
-        tree = polytree.PolyTree()
+                tree = polytree.PolyTree()
 
-        X = np.loadtxt('inputs.txt')
-        y = np.loadtxt('outputs.txt')
+                X = np.loadtxt('inputs.txt')
+                y = np.loadtxt('outputs.txt')
 
-        tree.fit(X,y)
+                tree.fit(X,y)
 
-    **References**
-        1. Wang, Y., Witten, I. H., (1997) Inducing Model Trees for Continuous Classes. In Proc. of the 9th European Conf. on Machine Learning Poster Papers. 128-137. `Paper <https://researchcommons.waikato.ac.nz/handle/10289/1183>`__
-        2. Broelemann, K., Kasneci, G., (2019) A Gradient-Based Split Criterion for Highly Accurate and Transparent Model Trees. In Int. Joint Conf. on Artificial Intelligence (IJCAI). 2030-2037. `Paper <https://www.ijcai.org/Proceedings/2019/0281.pdf>`__
-        3. Chan, T. F., Golub, G. H., LeVeque, R. J., (1983) Algorithms for computing the sample variance: Analysis and recommendations. The American Statistician. 37(3): 242–247. `Paper <https://www.tandfonline.com/doi/abs/10.1080/00031305.1983.10483115>`__
-    """
+        **References**
+                1. Wang, Y., Witten, I. H., (1997) Inducing Model Trees for Continuous Classes. In Proc. of the 9th European Conf. on Machine Learning Poster Papers. 128-137. `Paper <https://researchcommons.waikato.ac.nz/handle/10289/1183>`__
+                2. Broelemann, K., Kasneci, G., (2019) A Gradient-Based Split Criterion for Highly Accurate and Transparent Model Trees. In Int. Joint Conf. on Artificial Intelligence (IJCAI). 2030-2037. `Paper <https://www.ijcai.org/Proceedings/2019/0281.pdf>`__
+                3. Chan, T. F., Golub, G. H., LeVeque, R. J., (1983) Algorithms for computing the sample variance: Analysis and recommendations. The American Statistician. 37(3): 242–247. `Paper <https://www.tandfonline.com/doi/abs/10.1080/00031305.1983.10483115>`__
+        """
         def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, order=1, basis='total-order', search='exhaustive', samples=50, verbose=False, poly_method="least-squares", poly_solver_args=None,all_data=False,split_dims=None,k=0.05):
                 self.splitting_criterion = splitting_criterion
                 self.max_depth = max_depth

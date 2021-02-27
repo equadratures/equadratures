@@ -1,5 +1,0 @@
-Linear system solvers
-==================================
-
-.. automodule:: equadratures.solver
-    :members:

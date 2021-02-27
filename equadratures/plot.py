@@ -6,16 +6,52 @@ import numpy as np
 sns.set(font_scale=1.5)
 sns.set_style("white")
 sns.set_style("ticks")
+def plot_Sobol_indices(Polynomial, save=False, xlim=None, ylim=None, show=True, return_figure=False):
+    """
+    Generates a bar chart of the first order Sobol' indices.
 
+    :param Poly Polynomial: 
+        An instance of the Poly class.
+    :param matplotlib.ax ax: 
+        An instance of the ``matplotlib`` axes class.
+    :param numpy.array data: 
+        Samples from the distribution (or a similar one) that need to be plotted as a histogram.
+    :param bool save: 
+        Option to save the plot as a .png file.
+    :param list xlim: 
+        Lower and upper bounds for the horizontal axis, for example ``xlim=[-3, 5]``.
+    :param list ylim: 
+        Lower and upper bounds for the vertical axis, for example ``ylim=[-1, 1]``.
+
+    """
+    sobol = Polynomial.get_sobol_indices(1)
+    fig = plt.figure(figsize=(8,6))
+    ax = fig.add_subplot(1,1,1)
+    data_1 = np.arange(7) - 0.10 + 1
+    for i in range(0, len(sobol)):
+        plt.bar(i+1, sobol[(i,)], color='steelblue',linewidth=1.5)
+    plt.xlabel(r'Parameters', fontsize=16)
+    plt.ylabel(r"First order Sobol' indices", fontsize=16)
+    xTickMarks = [Polynomial.parameters[j].variable for j in range(0, Polynomial.dimensions)]
+    ax.set_xticks(data_1+0.10)
+    xtickNames = ax.set_xticklabels(xTickMarks)
+    plt.setp(xtickNames, rotation=45, fontsize=16)
+    sns.despine(offset=10, trim=True)
+    if save:
+        plt.savefig('sobol_plot.png', dpi=140, bbox_inches='tight')
+    if show:
+        plt.show()
+    if return_figure:
+        return fig, ax
 def plot_pdf(Parameter, ax=None, data=None, save=False, xlim=None, ylim=None, show=True, return_figure=False):
     """
     Plots the probability density function for a Parameter.
 
     :param Parameter Parameter: 
         An instance of the Parameter class.
-    :param matplotlib ax: 
+    :param matplotlib.ax ax: 
         An instance of the ``matplotlib`` axes class.
-    :param ndarray data: 
+    :param numpy.array data: 
         Samples from the distribution (or a similar one) that need to be plotted as a histogram.
     :param bool save: 
         Option to save the plot as a .png file.
@@ -44,14 +80,13 @@ def plot_pdf(Parameter, ax=None, data=None, save=False, xlim=None, ylim=None, sh
         plt.show()
     if return_figure:
         return fig, ax
-
 def plot_orthogonal_polynomials(Parameter, ax=None, order_limit=None, number_of_points=200, save=False, xlim=None, ylim=None, show=True, return_figure=False):
     """
     Plots the first few orthogonal polynomials.
 
     :param Parameter Parameter: 
         An instance of the Parameter class.
-    :param matplotlib ax: 
+    :param matplotlib.ax ax: 
         An instance of the ``matplotlib`` axes class.
     :param int order_limit:
         The maximum number of orthogonal polynomials that need to be plotted.
@@ -102,13 +137,28 @@ def plot_orthogonal_polynomials(Parameter, ax=None, order_limit=None, number_of_
         plt.show()
     if return_figure:
         return fig, ax
-
-def plot_polyfit_1D(Polynomial, uncertainty=True, output_variances=None, number_of_points=200, save=False, xlim=None, ylim=None):
+def plot_polyfit_1D(Polynomial, uncertainty=True, output_variances=None, number_of_points=200, save=False, xlim=None, ylim=None, show=True, return_figure=False):
     """
     Plots a 1D only polynomial fit to the data.
 
     :param Poly Polynomial: 
         An instance of the Polynomial class.
+    :param matplotlib.ax ax: 
+        An instance of the ``matplotlib`` axes class.
+    :param bool uncertainty:
+        Option to show confidence intervals (1 standard deviation).
+    :param numpy.array output_variances:
+        User-defined uncertainty associated with each data point; can be either a ``float`` in which case all data points are assumed to have the same variance, or can be an array of length equivalent to the number of data points.
+    :param bool save: 
+        Option to save the plot as a .png file.
+    :param list xlim: 
+        Lower and upper bounds for the horizontal axis, for example ``xlim=[-3, 5]``.
+    :param list ylim: 
+        Lower and upper bounds for the vertical axis, for example ``ylim=[-1, 1]``.
+    :param bool show: 
+        Option to view the plot.
+    :param bool return_figure: 
+        Option to return the figure and axes instances of the ``matplotlib`` classes.
         
     """
     if Polynomial.dimensions != 1:
@@ -143,15 +193,28 @@ def plot_polyfit_1D(Polynomial, uncertainty=True, output_variances=None, number_
     plt.ylabel('Polynomial fit')
     if save:
         plt.savefig('polyfit_1D_plot.png', dpi=140, bbox_inches='tight')
-    else:
+    if show:
         plt.show()
-
-def plot_model_vs_data(Polynomial, sample_data=None, metric='adjusted_r2', save=False, xlim=None, ylim=None):
+    if return_figure:
+        return fig, ax
+def plot_model_vs_data(Polynomial, sample_data=None, metric='adjusted_r2', save=False, xlim=None, ylim=None, show=True, return_figure=False):
     """
     Plots the polynomial approximation against the true data.
 
     :param Poly self: 
         An instance of the Poly class.
+    :param list sample_data:
+        A list formed by ``[X, y]`` where ``X`` represents the spatial data input and ``y`` the output.
+    :param bool save: 
+        Option to save the plot as a .png file.
+    :param list xlim: 
+        Lower and upper bounds for the horizontal axis, for example ``xlim=[-3, 5]``.
+    :param list ylim: 
+        Lower and upper bounds for the vertical axis, for example ``ylim=[-1, 1]``.
+    :param bool show: 
+        Option to view the plot.
+    :param bool return_figure: 
+        Option to return the figure and axes instances of the ``matplotlib`` classes.
 
     """
     if sample_data is None:
@@ -177,5 +240,7 @@ def plot_model_vs_data(Polynomial, sample_data=None, metric='adjusted_r2', save=
     sns.despine(offset=10, trim=True)
     if save:
         plt.savefig('model_vs_data_plot.png', dpi=140, bbox_inches='tight')
-    else:
+    if show:
         plt.show()
+    if return_figure:
+        return fig, ax

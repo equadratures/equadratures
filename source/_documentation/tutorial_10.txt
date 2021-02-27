@@ -1,4 +1,0 @@
-Machine learning California housing with interpretable polynomial trees
-===========================================================================
-
-Coming soon!

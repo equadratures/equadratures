@@ -1,4 +1,0 @@
-Data-driven dimension reduction in turbomachinery
-==============================================
-
-Coming soon!

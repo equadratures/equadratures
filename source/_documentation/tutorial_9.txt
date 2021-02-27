@@ -1,4 +1,0 @@
-Surrogate-based design optimisation on Rosenbrock's function
-=============================================================
-
-Coming soon!

@@ -1,7 +1,0 @@
-Correlations
-==================
-
-.. automodule:: equadratures.correlations
-    :members:
-
-

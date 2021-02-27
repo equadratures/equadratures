@@ -154,6 +154,11 @@ class Poly(object):
         Plots the polynomial fit vs. the data.
         """
         return plot.plot_model_vs_data(self,**kwargs)
+    def plot_Sobol_indices(self, **kwargs):
+        """
+        Plots the first order Sobol' indices.
+        """
+        return plot.plot_Sobol_indices(self,**kwargs)
     def _set_parameters(self, parameters):
         """
         Private function that sets the parameters. Required by the Correlated class.

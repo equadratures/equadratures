@@ -1,5 +1,0 @@
-Plotting utilities
-======================
-
-.. automodule:: equadratures.plot
-    :members:

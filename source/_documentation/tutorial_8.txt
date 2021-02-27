@@ -1,5 +1,0 @@
-Adjoint/gradient-enhanced surrogate modelling
-==============================================
-
-
-Coming soon!

@@ -1,5 +1,0 @@
-Time-series remaining useful life prediction with spatio-temporal polynomials
-==============================================================================
-
-
-Coming soon!

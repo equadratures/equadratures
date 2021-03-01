@@ -836,7 +836,7 @@ class Poly(object):
 
         X = self.get_points()
         y_pred = self.get_polyfit(X)
-        train_score = score(self.outputs,y_pred,metric,X=X)
+        train_score = score(self._model_evaluations, y_pred,metric, X=X)
         if X_test is not None and y_test is not None:
             y_pred_test = self.get_polyfit(X_test)
             test_score = score(y_test,y_pred_test,metric,X=X_test)

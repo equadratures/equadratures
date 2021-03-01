@@ -66,7 +66,7 @@ class TestC(TestCase):
                 if method != 'huber' and opt != 'scipy': # TODO - remove this if statement once scipy huber regression implemented
                     poly = Poly(parameters=param, basis=basis, method=method,
                             sampling_args= {'mesh': 'user-defined', 'sample-points':x.reshape(-1,1), 'sample-outputs': y.reshape(-1,1)},
-                            solver_args={'param1':0.2**2,'verbose':False,'optimiser':opt})
+                            solver_args={'M':0.2**2,'verbose':False,'optimiser':opt})
                     poly.set_model()
                     _,r2 = poly.get_polyscore(X_test=xtest,y_test=ytest)
                     self.assertTrue(r2 > 0.997,msg='Poly method = %a, optimiser = %a' %(method,opt))
@@ -92,16 +92,16 @@ class TestC(TestCase):
     
         poly_EN = poly = Poly(parameters=param, basis=basis, method='elastic-net', 
                   sampling_args= {'mesh': 'user-defined', 'sample-points':X_train, 'sample-outputs': y_train.reshape(-1,1)},
-                   solver_args={'param1':0.0,'param2':0.5})
+                  solver_args={'path':False,'lambda':0.0,'alpha':0.5})
         poly_EN.set_model()
         _,r2_EN = poly_EN.get_polyscore(X_test=X_test,y_test=y_test)
     
         np.testing.assert_array_almost_equal(r2_OLS,r2_EN, decimal=4, err_msg='Problem!')
 
-        # Now fit Poly with LASSO (alpha/param2 = 1.0) and check r2 improved (it should because irrelevent features + noise)
+        # Now fit Poly with LASSO (alpha = 1.0) and check r2 improved (it should because irrelevent features + noise)
         poly_LASSO = Poly(parameters=param, basis=basis, method='elastic-net', 
                   sampling_args= {'mesh': 'user-defined', 'sample-points':X_train, 'sample-outputs': y_train.reshape(-1,1)},
-                   solver_args={'param1':0.015,'param2':1.0})
+                  solver_args={'path':False,'lambda':0.015,'alpha':1.0})
         poly_LASSO.set_model()
         _,r2_LASSO = poly_LASSO.get_polyscore(X_test=X_test,y_test=y_test)
         self.assertTrue(r2_LASSO > r2_OLS)
@@ -132,10 +132,10 @@ class TestC(TestCase):
         poly_OLS.set_model()
         _,r2_OLS = poly_OLS.get_polyscore(X_test=X_test,y_test=y_test)
 
-        # Fit Poly with LASSO (alpha/param2 = 1.0) and check r2 improved
+        # Fit Poly with LASSO (alpha = 1.0) and check r2 improved
         poly_LASSO = Poly(parameters=param, basis=basis, method='elastic-net', 
                   sampling_args= {'mesh': 'user-defined', 'sample-points':X_train, 'sample-outputs': y_train.reshape(-1,1)},
-                   solver_args={'param1':0.1,'param2':1.0})
+                  solver_args={'path':False,'lambda':0.1,'alpha':1.0})
         poly_LASSO.set_model()
         _,r2_LASSO = poly_LASSO.get_polyscore(X_test=X_test,y_test=y_test)
         self.assertTrue(r2_LASSO > r2_OLS)

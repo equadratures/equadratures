@@ -838,9 +838,9 @@ class PolyTree(object):
 
                     # Renorm. gradients to zero mean and unit std
                     if renorm:
-                        mu_l, mu_r, sigma_l, sigma_r = _get_mean_and_sigma(P[:,1:],splits,N_l,N_r,sort)
-                        gsum_left  = renormalise( gsum_left, 1/sigma_l, -mu_l/sigma_l)
-                        gsum_right = renormalise(gsum_right, 1/sigma_r, -mu_r/sigma_r)
+                        mu_l, mu_r, sigma_l, sigma_r = self._get_mean_and_sigma(P[:,1:],splits,N_l,N_r,sort)
+                        gsum_left  = self._renormalise( gsum_left, 1/sigma_l, -mu_l/sigma_l)
+                        gsum_right = self._renormalise(gsum_right, 1/sigma_r, -mu_r/sigma_r)
 
                     # Compute the Gain (see Eq. (6) in [1])
                     gain = (gsum_left**2).sum(axis=1)/N_l.reshape(-1) + (gsum_right**2).sum(axis=1)/N_r.reshape(-1)
@@ -860,56 +860,56 @@ class PolyTree(object):
                 else:
                     return True, best_split_dim, best_split_val
 
-
-# Code below is to calculate graident based split criterion. This can probably be integrated more elegantly i.e. as private methods rather than nested local functions etc TODO
-def _get_mean_and_sigma(X,splits,N_l,N_r,sort):
-    """
-    Computes mean and standard deviation of the data in array X, when it is
-    split in two by the threshold values in the splits array. The data is offset by
-    its mean to avoid catastrophic cancellation when computing the variance (see ref. [3]).
-    X - [N,ndim] array of data.
-    splits  - [Nsplit] array of split locations.
-    sort   - [N] array reordering X.
-    """
-    # Min value of sigma (for stability later)
-    epsilon = 0.001
-
-    # Reorder, and shift X by mean
-    mu     = np.reshape(np.mean(X, axis=0), (1, -1))
-    Xshift = X[sort] - mu
-
-    # Cumulative sums (and sums of squares) for left and right splits
-    Xsum_l  = Xshift.cumsum(axis=0)
-    Xsum_r  = Xsum_l[-1:,:] - Xsum_l
-    X2sum_l = (Xshift**2).cumsum(axis=0)
-    X2sum_r = X2sum_l[-1:,:] - X2sum_l
-
-    # Compute mean of left and right side for all splits
-    mu_l = Xsum_l[splits-1,:] / N_l
-    mu_r = Xsum_r[splits-1,:] / N_r
-
-    # Compute standard deviation of left and right side for all splits
-    sigma_l = np.sqrt(np.maximum(X2sum_l[splits-1,:]/(N_l-1)-mu_l**2, epsilon**2))
-    sigma_r = np.sqrt(np.maximum(X2sum_r[splits-1,:]/(N_r-1)-mu_r**2, epsilon**2))
-
-    # Correct for previous shift
-    mu_l = mu_l + mu
-    mu_r = mu_r + mu
-
-    return mu_l, mu_r, sigma_l, sigma_r
-
-def renormalise(gradients, a, c):
-    """
-    Renormalises gradients according to according to eq. (14) of [1].
-    Inputs
-    ------
-    gradients: array [n_samples, n_params] of gradients
-    a: array [n_samples, n_params-1]: The normalisation factor
-    c: array [n_samples, n_params-1]: The normalisation offset
-    Returns
-    -------
-    gradients: array [n_samples, n_params]: Renormalised gradients
-    """
-    c = c*gradients[:,0].reshape(-1,1)
-    gradients[:,1:] = gradients[:,1:] * a + c
-    return gradients
+        @staticmethod
+        def _get_mean_and_sigma(X,splits,N_l,N_r,sort):
+                """
+                Computes mean and standard deviation of the data in array X, when it is
+                split in two by the threshold values in the splits array. The data is offset by
+                its mean to avoid catastrophic cancellation when computing the variance (see ref. [3]).
+                X - [N,ndim] array of data.
+                splits  - [Nsplit] array of split locations.
+                sort   - [N] array reordering X.
+                """
+                # Min value of sigma (for stability later)
+                epsilon = 0.001
+        
+                # Reorder, and shift X by mean
+                mu     = np.reshape(np.mean(X, axis=0), (1, -1))
+                Xshift = X[sort] - mu
+        
+                # Cumulative sums (and sums of squares) for left and right splits
+                Xsum_l  = Xshift.cumsum(axis=0)
+                Xsum_r  = Xsum_l[-1:,:] - Xsum_l
+                X2sum_l = (Xshift**2).cumsum(axis=0)
+                X2sum_r = X2sum_l[-1:,:] - X2sum_l
+        
+                # Compute mean of left and right side for all splits
+                mu_l = Xsum_l[splits-1,:] / N_l
+                mu_r = Xsum_r[splits-1,:] / N_r
+        
+                # Compute standard deviation of left and right side for all splits
+                sigma_l = np.sqrt(np.maximum(X2sum_l[splits-1,:]/(N_l-1)-mu_l**2, epsilon**2))
+                sigma_r = np.sqrt(np.maximum(X2sum_r[splits-1,:]/(N_r-1)-mu_r**2, epsilon**2))
+        
+                # Correct for previous shift
+                mu_l = mu_l + mu
+                mu_r = mu_r + mu
+        
+                return mu_l, mu_r, sigma_l, sigma_r
+        
+        @staticmethod
+        def _renormalise(gradients, a, c):
+                """
+                Renormalises gradients according to according to eq. (14) of [1].
+                Inputs
+                ------
+                gradients: array [n_samples, n_params] of gradients
+                a: array [n_samples, n_params-1]: The normalisation factor
+                c: array [n_samples, n_params-1]: The normalisation offset
+                Returns
+                -------
+                gradients: array [n_samples, n_params]: Renormalised gradients
+                """
+                c = c*gradients[:,0].reshape(-1,1)
+                gradients[:,1:] = gradients[:,1:] * a + c
+                return gradients

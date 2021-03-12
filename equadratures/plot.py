@@ -1,11 +1,213 @@
 """Plotting utilities."""
 import seaborn as sns
 import matplotlib.pyplot as plt
+from scipy.spatial import ConvexHull, convex_hull_plot_2d
+import matplotlib
 from equadratures.datasets import score
 import numpy as np
 sns.set(font_scale=1.5)
 sns.set_style("white")
 sns.set_style("ticks")
+
+def plot_2D_contour_zonotope(mysubspace, minmax=[-3.5, 3.5], grid_pts=180,  \
+                             save=False, xlabel='$u_1$', ylabel='$u_2$', xlim=None, ylim=None, \
+                             show=True, return_figure=False):
+    """
+    Generates a 2D contour plot of the polynomial ridge approximation.
+    
+    :param Subspace mysubspace:
+        An instance of the Subspace class.
+    :param list minmax:
+        A list of the minimum and maximum values of :math:`M^T x`, where :math:`M` is the subspace.
+    :param int grid_pts:
+        The number of grid points for generating the contour plot.
+    :param bool save: 
+        Option to save the plot as a .png file.
+    :param string xlabel:
+        The label used on the horizontal axis.
+    :param string ylabel:
+        The label used on the vertical axis.        
+    :param list xlim: 
+        Lower and upper bounds for the horizontal axis, for example ``xlim=[-3, 5]``.
+    :param list ylim: 
+        Lower and upper bounds for the vertical axis, for example ``ylim=[-1, 1]``.
+    :param bool show: 
+        Option to view the plot.
+    :param bool return_figure: 
+        Option to return the figure and axes instances of the ``matplotlib`` classes.
+        
+    """
+    
+    # Utilities for contour plot.
+    x1 = np.linspace(minmax[0], minmax[1], grid_pts)
+    XX, YY = np.meshgrid(x1, x1)
+    xx1 = XX.reshape(grid_pts*grid_pts, )
+    yy1 = YY.reshape(grid_pts*grid_pts, )
+    H = np.vstack([xx1,yy1]).T
+    
+    A, b = mysubspace.get_linear_inequalities()
+    subspacepoly = mysubspace.get_subspace_polynomial()
+    H_evals = subspacepoly.get_polyfit(H)
+    
+    subspace_poly_evals = np.zeros((grid_pts*grid_pts, ))
+    for i in range(0, grid_pts*grid_pts):
+        u_coord = np.array([H[i, 0], H[i, 1]]).reshape(2, 1)
+        b_out = A @ u_coord
+        if np.all(b_out.flatten() <= b):
+            subspace_poly_evals[i] = H_evals[i]
+        else:
+            subspace_poly_evals[i] = np.nan
+    
+    pts = mysubspace.get_zonotope_vertices()
+    hull = ConvexHull(pts)
+    u = mysubspace.sample_points @ mysubspace._subspace[:,0:2]
+    
+    # Contour plot!
+    fig = plt.figure(figsize=(12, 7), facecolor=None)
+    fig.patch.set_alpha(0.)
+    ax = fig.add_subplot(111)
+    norm = matplotlib.colors.Normalize(vmin=np.min(mysubspace.sample_outputs) - 0.4 * np.std(mysubspace.sample_outputs),\
+                                               vmax=np.max(mysubspace.sample_outputs)+ 0.4 * np.std(mysubspace.sample_outputs))
+    ax.contourf(XX, YY, subspace_poly_evals.reshape(grid_pts,grid_pts), levels=40, linewidth=0, \
+                antialiased=False, norm=norm)  
+    c = ax.scatter(u[:,0],u[:,1], c=mysubspace.sample_outputs, marker='o', edgecolor='w', lw=1, alpha=0.8, s=80, norm=norm )  
+    plt.colorbar(c, orientation="vertical", pad=0.1, shrink=0.5)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    for simplex in hull.simplices:
+        plt.plot(pts[simplex, 0], pts[simplex, 1], 'k-', lw=5)
+    if xlim is not None:
+        plt.xlim([xlim[0], xlim[1]])
+    if ylim is not None:
+        plt.ylim([ylim[0], ylim[1]])
+    sns.despine(offset=10, trim=True)
+    if save:
+        plt.savefig('plot_2D_zonotope.png', dpi=140, bbox_inches='tight')  
+    if show:
+        plt.show()
+    if return_figure:
+        return fig, ax
+    
+def plot_samples_from_second_subspace_over_first(mysubspace_1, mysubspace_2, no_of_samples=500,\
+                             minmax=[-3.5, 3.5], grid_pts=180,  \
+                             save=False, xlabel='$u_1$', ylabel='$u_2$', xlim=None, ylim=None, \
+                             show=True, return_figure=False): 
+
+    """
+    Generates a zonotope plot where samples from the second subspace are projected
+    over the first.
+    
+    
+    :param Subspace mysubspace_1:
+        An instance of the Subspace class.
+    :param Subspace mysubspace_1:
+        A second instance of the Subspace class.
+    :param int no_of_samples:
+        Number of inactive samples to be generated.
+    :param list minmax:
+        A list of the minimum and maximum values of :math:`M^T x`, where :math:`M` is the subspace.
+    :param int grid_pts:
+        The number of grid points for generating the contour plot.
+    :param bool save: 
+        Option to save the plot as a .png file.
+    :param string xlabel:
+        The label used on the horizontal axis.
+    :param string ylabel:
+        The label used on the vertical axis.        
+    :param list xlim: 
+        Lower and upper bounds for the horizontal axis, for example ``xlim=[-3, 5]``.
+    :param list ylim: 
+        Lower and upper bounds for the vertical axis, for example ``ylim=[-1, 1]``.
+    :param bool show: 
+        Option to view the plot.
+    :param bool return_figure: 
+        Option to return the figure and axes instances of the ``matplotlib`` classes.
+    """    
+    # 1. Generate a grid on the first zonotope.
+    x1 = np.linspace(minmax[0], minmax[1], grid_pts)
+    XX, YY = np.meshgrid(x1, x1)
+    xx1 = XX.reshape(grid_pts*grid_pts, )
+    yy1 = YY.reshape(grid_pts*grid_pts, )
+    H = np.vstack([xx1,yy1]).T
+
+    A, b = mysubspace_1.get_linear_inequalities()
+    subspacepoly_1 = mysubspace_1.get_subspace_polynomial()
+    subspacepoly_2 = mysubspace_2.get_subspace_polynomial()
+    H_evals = subspacepoly_1.get_polyfit(H)
+
+    subspace_poly_evals = np.zeros((grid_pts*grid_pts, ))
+    for i in range(0, grid_pts*grid_pts):
+        u_coord = np.array([H[i, 0], H[i, 1]]).reshape(2, 1)
+        b_out = A @ u_coord
+        if np.all(b_out.flatten() <= b):
+            subspace_poly_evals[i] = H_evals[i]
+        else:
+            subspace_poly_evals[i] = np.nan
+
+    indices = np.argwhere(~np.isnan(subspace_poly_evals))
+    pts_inside = H[indices.flatten(),:]
+    F = pts_inside.shape[0]
+
+    # 2. For each point on this grid, generate no_of_sample points along the
+    # inactive subspace
+    mean_values = np.zeros((F, 1))
+    std_values = np.zeros((F, 1))
+    for counter in range(0, F):
+        X_samples = mysubspace_1.get_samples_constraining_active_coordinates(no_of_samples, \
+                                            pts_inside[counter, :].reshape(2,))
+        y_values_for_samples = subspacepoly_2.get_polyfit(X_samples)
+        mean_values[counter] = np.mean(y_values_for_samples)
+        std_values[counter] = np.std(y_values_for_samples)
+
+    pts_zono = mysubspace_1.get_zonotope_vertices()
+    hull = ConvexHull(pts_zono)
+    
+    subspace_poly_evals[indices] =  mean_values
+    
+    # Contour plot!
+    fig = plt.figure(figsize=(12, 7), facecolor=None)
+    fig.patch.set_alpha(0.)
+    ax = fig.add_subplot(111)
+    c = ax.contourf(XX, YY, subspace_poly_evals.reshape(grid_pts,grid_pts), levels=40, linewidth=0, \
+                antialiased=False)  
+    plt.colorbar(c, orientation="vertical", pad=0.1, shrink=0.5)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    for simplex in hull.simplices:
+        plt.plot(pts_zono[simplex, 0], pts_zono[simplex, 1], 'k-', lw=5)
+    if xlim is not None:
+        plt.xlim([xlim[0], xlim[1]])
+    if ylim is not None:
+        plt.ylim([ylim[0], ylim[1]])
+    sns.despine(offset=10, trim=True)
+    if save:
+        plt.savefig('mean.png', dpi=140, bbox_inches='tight')  
+    if show:
+        plt.show()
+        
+    subspace_poly_evals[indices] =  std_values
+    
+    # Contour plot!
+    fig = plt.figure(figsize=(12, 7), facecolor=None)
+    fig.patch.set_alpha(0.)
+    ax = fig.add_subplot(111)
+    c = ax.contourf(XX, YY, subspace_poly_evals.reshape(grid_pts,grid_pts), levels=40, linewidth=0, \
+                antialiased=False)  
+    plt.colorbar(c, orientation="vertical", pad=0.1, shrink=0.5)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    for simplex in hull.simplices:
+        plt.plot(pts_zono[simplex, 0], pts_zono[simplex, 1], 'k-', lw=5)
+    if xlim is not None:
+        plt.xlim([xlim[0], xlim[1]])
+    if ylim is not None:
+        plt.ylim([ylim[0], ylim[1]])
+    sns.despine(offset=10, trim=True)
+    if save:
+        plt.savefig('std.png', dpi=140, bbox_inches='tight')  
+    if show:
+        plt.show()
+
 def plot_Sobol_indices(Polynomial, save=False, xlim=None, ylim=None, show=True, return_figure=False):
     """
     Generates a bar chart of the first order Sobol' indices.

@@ -25,7 +25,8 @@ setup(name='equadratures',
       install_requires=[
           'numpy',
           'scipy >= 0.15.0',
-          'matplotlib'
+          'matplotlib',
+          'seaborn'
       ],
       extras_require={
           "cvxpy":  ['cvxpy>=1.1'],

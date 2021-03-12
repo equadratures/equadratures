@@ -68,8 +68,8 @@ class PolyTree(object):
                         assert all(isinstance(dim, int) for dim in split_dims), "split_dims should be a list if ints"
                 self.split_dims = split_dims
 
-                assert max_depth > 0, "max_depth must be a postive integer"
-                assert order > 0, "order must be a postive integer"
+                assert max_depth >= 0, "max_depth must be >= 0"
+                assert order > 0, "order must be a postive integer" 
                 assert samples > 0, "samples must be a postive integer"
                 assert k > 0, "k must be a positive number"
 
@@ -728,7 +728,7 @@ class PolyTree(object):
                                                 ax.annotate('Node %d'%node["index"],(node["Xmax"][0],node["Xmax"][1]),
                                                             ha='right',va='top',textcoords='offset points',
                                                             xytext=(-5, -5))
-                                        return
+                                        #return
                                 else:
                                         for node in nodes[leaf_nodes]:
                                                 ax.annotate('Node %d'%node["index"],(node["Xmax"][0],node["Xmax"][1]),

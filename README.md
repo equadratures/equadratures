@@ -35,7 +35,7 @@ Our code is designed to require minimal dependencies; current package requiremen
 
 ## Documentation, tutorials, Discourse
 
-Code documentation and details on the syntax can be found [here](https://www.effective-quadratures.org/docs/_documentation/).
+Code documentation and details on the syntax can be found [here](https://equadratures.org/_documentation/documentation.html).
 
 We've recently started a Discourse forum! Check it out [here](https://discourse.equadratures.org/).
 

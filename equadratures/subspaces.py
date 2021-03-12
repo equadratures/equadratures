@@ -431,7 +431,7 @@ class Subspaces(object):
 
     def get_linear_inequalities(self):
         """
-        Returns the linear inequalities defining the zontope vertices, i.e., Ax<=b.
+        Returns the linear inequalities defining the zonotope vertices, i.e., Ax<=b.
 
         :param Subspaces self:
             An instance of the Subspaces object.

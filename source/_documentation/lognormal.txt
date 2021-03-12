@@ -1,5 +1,0 @@
-Lognormal
-====================
-
-.. automodule:: equadratures.distributions.lognormal
-    :members:

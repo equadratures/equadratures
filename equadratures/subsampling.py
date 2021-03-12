@@ -4,9 +4,14 @@ from scipy.linalg import qr, svd, lu, det, cholesky, lstsq
 from copy import deepcopy
 class Subsampling(object):
     """
-    Returns subsampling methods for pruning down the number of
+    Returns subsampling methods for pruning down the number of quadrature points. Choices include:
+     - `qr`: QR column pivoting.
+     - `svd`: QR column pivoting on right singular vectors.
+     - `newton`: Determinant maximization.
+     - `lu`: LU row pivoting.
+     - `random`: Randomly subsample.
 
-    :param string method:
+    :param string subsampling_algorithm: Choose between `qr`, `svd`, `newton`, `lu`, `random`.
     """
     def __init__(self, subsampling_algorithm):
         self.subsampling_algorithm = subsampling_algorithm

@@ -17,6 +17,7 @@ from equadratures.distributions.logistic import Logistic
 from equadratures.distributions.gumbel import Gumbel
 from equadratures.distributions.chi import Chi
 from equadratures.distributions.analytical import Analytical
+import equadratures.plot as plot
 import numpy as np
 import scipy as sc
 
@@ -129,6 +130,16 @@ class Parameter(object):
             distribution_error()
         self.mean = self.distribution.mean
         self.variance = self.distribution.variance
+    def plot_orthogonal_polynomials(self, **kwargs):
+        """
+        Plots the orthogonal polynomials.
+        """
+        return plot.plot_orthogonal_polynomials(self,**kwargs)
+    def plot_pdf(self, **kwargs):
+        """
+        Plots the probability distribution.
+        """
+        return plot.plot_pdf(self,**kwargs)
     def _set_moments(self):
         """
         Private function that sets the mean and the variance of the distribution.

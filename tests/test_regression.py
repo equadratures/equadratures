@@ -169,7 +169,7 @@ class TestC(TestCase):
         poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X_train, 'sample-outputs':y_train.reshape(-1,1)} )
         poly.set_model()
         y_pred, y_std = poly.get_polyfit(X_test,uq=True)
-        np.testing.assert_array_almost_equal(y_std.mean(), 0.327769998, decimal=5, err_msg='Problem!')
+        np.testing.assert_array_almost_equal(y_std.mean(), 0.16723, decimal=5, err_msg='Problem!')
 
     def test_polyuq_prescribed(self):
         """
@@ -201,7 +201,7 @@ class TestC(TestCase):
         poly.set_model()
         y_pred, y_std = poly.get_polyfit(X_test,uq=True)
 
-        np.testing.assert_array_almost_equal(y_std.mean(), 0.682095574, decimal=5, err_msg='Problem!')
+        np.testing.assert_array_almost_equal(y_std.mean(), 0.34801, decimal=5, err_msg='Problem!')
 
 if __name__== '__main__':
     unittest.main()

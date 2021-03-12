@@ -6,10 +6,12 @@ from equadratures.solver import Solver
 from equadratures.subsampling import Subsampling
 from equadratures.quadrature import Quadrature
 from equadratures.datasets import score
+import equadratures.plot as plot
 import scipy.stats as st
 import numpy as np
 from copy import deepcopy
 MAXIMUM_ORDER_FOR_STATS = 8
+
 class Poly(object):
     """
     Definition of a polynomial object.
@@ -18,7 +20,6 @@ class Poly(object):
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
     :param str method: The method used for computing the coefficients. Should be one of: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``huber``, ``elastic-net``, ``elastic-path`` or ``relevance-vector-machine``. 
     :param dict sampling_args: Optional arguments centered around the specific sampling strategy.
-
             :string mesh: Avaliable options are: ``monte-carlo``, ``sparse-grid``, ``tensor-grid``, ``induced``, or ``user-defined``. Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1] is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
             :string subsampling-algorithm: The ``subsampling-algorithm`` input refers to the optimisation technique for subsampling. In the aforementioned four sampling strategies, we generate a logarithm factor of samples above the required amount and prune down the samples using an optimisation technique (see [1]). Existing optimisation strategies include: ``qr``, ``lu``, ``svd``, ``newton``. These refer to QR with column pivoting [2], LU with row pivoting [3], singular value decomposition with subset selection [2] and a convex relaxation via Newton's method for determinant maximization [4]. Note that if the ``tensor-grid`` option is selected, then subsampling will depend on whether the Basis argument is a total order index set, hyperbolic basis or a tensor order index set.
             :float sampling-ratio: Denotes the extent of undersampling or oversampling required. For values equal to unity (default), the number of rows and columns of the associated Vandermonde-type matrix are equal.
@@ -142,6 +143,21 @@ class Poly(object):
             self._set_points_and_weights()
         else:
             print('WARNING: Method not declared.')
+    def plot_polyfit_1D(self, **kwargs):
+        """
+        Plots the 1D polynomial fit.
+        """
+        return plot.plot_polyfit_1D(self,**kwargs)
+    def plot_model_vs_data(self, **kwargs):
+        """
+        Plots the polynomial fit vs. the data.
+        """
+        return plot.plot_model_vs_data(self,**kwargs)
+    def plot_Sobol_indices(self, **kwargs):
+        """
+        Plots the first order Sobol' indices.
+        """
+        return plot.plot_Sobol_indices(self,**kwargs)
     def _set_parameters(self, parameters):
         """
         Private function that sets the parameters. Required by the Correlated class.
@@ -351,7 +367,7 @@ class Poly(object):
             An instance of the Poly class.
 
         :return:
-            **total_sobol_indices**: Sobol
+            **total_sobol_indices**: A list of length d (number of input parameters) of total Sobol' indices.
         """
         self._set_statistics()
         return self.statistics_object.get_sobol_total()
@@ -813,7 +829,7 @@ class Poly(object):
         return H
     def get_polyscore(self,X_test=None,y_test=None,metric='adjusted_r2'):
         """
-        Evaluates the accuracy of the polynomial approximation using the selected accuracy metric. Training accuracy is evaluated on the data used for fitting the polynomial. Testing accuracy is evaluated on new data if it is provided by the ``X_test`` and ``y_test`` arguments (both must be provided together). 
+        Evaluates the accuracy of the polynomial approximation using the selected accuracy metric. Training accuracy is evaluated on the data used for fitting the polynomial. Testing accuracy is evaluated on new data if it is provided by the ``X_test`` and ``y_test`` arguments (both must be provided together).
 
         :param Poly self:
             An instance of the Poly class.
@@ -822,7 +838,7 @@ class Poly(object):
         :param numpy.ndarray y_test:
             An ndarray with shape (number_of_observations, 1) containing new ``y_test`` data (optional).
         :param string metric:
-            An optional string containing the scoring metric to use. Avaliable options are: ``adjusted_r2``, ``r2``, ``mae``, ``rmse``, or ``normalised_mae`` (default: ``adjusted_r2``). 
+            An optional string containing the scoring metric to use. Avaliable options are: ``adjusted_r2``, ``r2``, ``mae``, ``rmse``, or ``normalised_mae`` (default: ``adjusted_r2``).
 
         :return:
             **score_train**: The training score of the model, output as a float.
@@ -838,7 +854,6 @@ class Poly(object):
             return train_score, test_score
         else:
             return train_score
-
     def _get_polystd(self, stack_of_points):
         """
         Private function to evaluate the uncertainty of the polynomial approximation at prescribed points, following the approach from [7].
@@ -851,8 +866,8 @@ class Poly(object):
             **y_std**: A numpy.ndarray of shape (number_of_observations,1) corresponding to the uncertainty (one standard deviation) of the polynomial approximation at each point.
         """
         # Training data
-        X_train = self.inputs
-        y_train = self.outputs
+        X_train = self._quadrature_points
+        y_train = self._model_evaluations
 
         # Define covariance matrix - TODO: allow non-diagonal matrix?
         # Empirical variance
@@ -880,8 +895,8 @@ class Poly(object):
 
         # Propagate the uncertainties
         Sigma_X = np.dot( np.dot(Q, Sigma), Q.T)
-        Sigma_F = np.dot( np.dot(Ao, Sigma_X), Ao.T) 
-        std_F = 1.96 * np.sqrt( np.diag(Sigma_F) )
+        Sigma_F = np.dot( np.dot(Ao, Sigma_X), Ao.T)
+        std_F = np.sqrt( np.diag(Sigma_F) )
         return std_F.reshape(-1,1)
 
 def _inv(M):

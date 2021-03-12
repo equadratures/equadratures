@@ -1,5 +1,0 @@
-Dimension reduction with polynomials
-===========================================
-
-.. automodule:: equadratures.subspaces
-    :members:

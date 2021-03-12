@@ -1,5 +1,0 @@
-Logistic
-====================
-
-.. automodule:: equadratures.distributions.logistic
-    :members:

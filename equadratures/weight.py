@@ -2,6 +2,7 @@
 from equadratures.parameter import Parameter
 from equadratures.basis import Basis
 from equadratures.poly import Poly, evaluate_model
+from scipy import stats
 import numpy as np
 ORDER_LIMIT = 5000
 RECURRENCE_PDF_SAMPLES = 50000
@@ -10,8 +11,8 @@ class Weight(object):
     """
     The class offers a template to input bespoke weight (probability density) functions.
 
-    :param lambda weight_function: A function call.
-    :param list support: Lower and upper bounds of the weight respectively.
+    :param lambda weight_function: A function call or an array of data.
+    :param list support: Lower and upper bounds of the weight respectively. Values such as ``-inf`` or ``inf`` are not acceptable.
     :param bool pdf: If set to ``True``, then the weight_function is assumed to be normalised to integrate to unity. Otherwise,
         the integration constant is computed and used to normalise weight_function.
     :param float mean: User-defined mean for distribution. When provided, the code does not compute the mean of the weight_function over its support.
@@ -22,11 +23,19 @@ class Weight(object):
         import numpy as np
         from equadratures import *
 
-        pdf = Weight(lambda x: exp(-x)/ np.sqrt(x), [0.00001, -np.log(1e-10)], pdf=False)
+        pdf_1 = Weight(lambda x: np.exp(-x)/ np.sqrt(x), [0.00001, -np.log(1e-10)], pdf=False)
+        pdf_2 = Weight(np.random(100,)*3, [-15, 15], pdf=False)
     """
-    def __init__(self, weight_function, support, pdf=False, mean=None, variance=None):
+    def __init__(self, weight_function, support=None, pdf=False, mean=None, variance=None):
         self.weight_function = weight_function
+        self.flag = 'function'
+        tmp = lambda:0
+        if not isinstance(self.weight_function, type(tmp)):
+            self.weight_function = stats.gaussian_kde(weight_function, bw_method='silverman')
+            self.flag = 'data'
         self.pdf = pdf
+        if self.flag == 'data' and support is None:
+            support = [np.min(weight_function), np.max(weight_function)]
         self.support = support
         self.lower = self.support[0]
         self.upper = self.support[1]
@@ -54,6 +63,15 @@ class Weight(object):
         return pdf_values
 
     def get_pdf(self, points=None):
+        """
+        Returns the pdf associated with the distribution.
+
+        :param numpy.array points: A vector of points (horizontal axis).
+
+        :return:
+            A N-by-1 matrix that contains the probability distribution
+
+        """
         if points is None:
             return self._evaluate_pdf(self.x_range_for_pdf) * self.integration_constant
         else:

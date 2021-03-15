@@ -38,14 +38,14 @@ class Poly(object):
 
         # Subsampling from a tensor grid
         param = Parameter(distribution='uniform', lower=-1., upper=1., order=3)
-        basis = Basis('total order')
+        basis = Basis('total-order')
         poly = Poly(parameters=[param, param], basis=basis, method='least-squares' , sampling_args={'mesh':'tensor-grid', 'subsampling-algorithm':'svd', 'sampling-ratio':1.0})
 
         # User-defined data with compressive sensing
         X = np.loadtxt('inputs.txt')
         y = np.loadtxt('outputs.txt')
         param = Parameter(distribution='uniform', lower=-1., upper=1., order=3)
-        basis = Basis('total order')
+        basis = Basis('total-order')
         poly = Poly([param, param], basis, method='compressive-sensing', sampling_args={'sample-points':X_red, \
                                                                'sample-outputs':Y_red})
 

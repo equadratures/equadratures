@@ -179,6 +179,30 @@ class Test_Distributions(TestCase):
       b = xo.get_pdf(a)
       samples = xo.get_samples(1000)
       yi = samples
+    def test_poisson(self):
+        shape_A=5 #mean value
+        x = np.arange(poisson.ppf(0.01, shape_A),
+              poisson.ppf(0.99, shape_A))
+        mu=shape_A
+        variance=shape_A
+        f_X=np.zeros(len(x))
+        for i in range(0,len(x)):
+            f_X[i]= (np.exp(-1*mu)*(mu**x[i]))/np.math.factorial(x[i])
+    
+        xo = Parameter(distribution='poisson', shape_parameter_A = mu)
+        myBasis = Basis('univariate')
+        myPoly = Poly(xo, myBasis, method='numerical-integration')
+        mean, variance = myPoly.get_mean_and_variance()    
+        a = x
+        b = xo.get_pdf(a) # analytical!
+        samples = xo.get_samples(3000)
+        yi = samples
+        eq_m = float('%.4f' %mean)
+        mc_m = float('%.4f' %np.mean(yi))
+        error_mean = np.testing.assert_almost_equal(eq_m, xo.mean, decimal=1, err_msg="difference greater than imposed tolerance for mean value")
+        eq_v = float('%.4f' %variance)
+        mc_v = float('%.4f' %np.var(yi))
+        error_var = np.testing.assert_almost_equal(eq_v, xo.variance, decimal=1, err_msg="difference greater than imposed tolerance for variance value") 
     def test_exponential(self):
       param = Parameter(order=1, distribution='exponential', shape_parameter_A=2.0)
       print(param.mean)
@@ -293,6 +317,7 @@ class Test_Distributions(TestCase):
       np.testing.assert_almost_equal(mean, param.mean, decimal=2)
       np.testing.assert_almost_equal(variance, param.variance, decimal=2)
       myPoly.get_summary()
+      
     def test_uniform(self):
       param = Parameter(order=5, distribution='uniform', lower=-1., upper=15.)
       s_values, pdf = param.get_pdf()

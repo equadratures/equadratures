@@ -17,6 +17,7 @@ from equadratures.distributions.logistic import Logistic
 from equadratures.distributions.gumbel import Gumbel
 from equadratures.distributions.chi import Chi
 from equadratures.distributions.analytical import Analytical
+from equadratures.distributions.poisson import Poisson
 import equadratures.plot as plot
 import numpy as np
 import scipy as sc
@@ -36,11 +37,12 @@ class Parameter(object):
         `weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_, `rayleigh  <https://en.wikipedia.org/wiki/Rayleigh_distribution>`_,
         `pareto <https://en.wikipedia.org/wiki/Pareto_distribution>`_, `lognormal <https://en.wikipedia.org/wiki/Log-normal_distribution>`_,
         `students-t <https://en.wikipedia.org/wiki/Student%27s_t-distribution>`_, `logistic <https://en.wikipedia.org/wiki/Log-normal_distribution>`_,
-        `gumbel <https://en.wikipedia.org/wiki/Gumbel_distribution>`_, `chi <https://en.wikipedia.org/wiki/Chi_distribution>`_  and `chi-squared <https://en.wikipedia.org/wiki/Chi-squared_distribution>`_.
+        `gumbel <https://en.wikipedia.org/wiki/Gumbel_distribution>`_, `chi <https://en.wikipedia.org/wiki/Chi_distribution>`_  and `chi-squared <https://en.wikipedia.org/wiki/Chi-squared_distribution>`_,
+        'poisson <https://en.wikipedia.org/wiki/Poisson_distribution>'.
         If no string is provided, a ``uniform`` distribution is assumed. If the user provides data, and would like to generate orthogonal
         polynomials (and quadrature rules) based on the data, they can set this option to be ``Analytical`` (see [1, 2]).
     :param float shape_parameter_A:
-        Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a ``gaussian`` (or ``truncated-gaussian``), this represents the mean. In the case of a beta distribution this represents the alpha value. For a ``uniform`` distribution this input is not required.
+        Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of ``gaussian`` (or ``truncated-gaussian``) and ``poisson``, this represents the mean. In the case of a beta distribution this represents the alpha value. For a ``uniform`` distribution this input is not required.
     :param float shape_parameter_B:
         This is the second shape parameter that characterizes the distribution selected. In the case of a ``gaussian`` or ``truncated-gaussian``, this is the variance.
     :param numpy.ndarray data:
@@ -128,6 +130,8 @@ class Parameter(object):
             self.distribution = Studentst(self.shape_parameter_A)
         elif self.name.lower() == 'lognormal' or self.name.lower() == 'log-normal':
             self.distribution = Lognormal(self.shape_parameter_A)
+        elif self.name.lower == 'poisson':
+            self.distribution = Poisson(self.shape_parameter_A)
         else:
             distribution_error()
         self.mean = self.distribution.mean

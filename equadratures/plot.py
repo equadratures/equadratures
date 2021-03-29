@@ -227,7 +227,7 @@ def plot_Sobol_indices(Polynomial, order=1, save=False, show=True, return_figure
         Option to get the figure axes,figure.
 
     """
-    if len(parameters)==0:
+    if (parameters)==None:
         parameters_x=[r'$S_%d$' %i  for i in range(0,Polynomial.dimensions)]
     else:  
         parameters_x=[i for i in parameters]

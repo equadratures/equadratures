@@ -5,6 +5,7 @@ from scipy.spatial import ConvexHull, convex_hull_plot_2d
 import matplotlib
 from equadratures.datasets import score
 import numpy as np
+import scipy as sp
 sns.set(font_scale=1.5)
 sns.set_style("white")
 sns.set_style("ticks")
@@ -208,43 +209,82 @@ def plot_samples_from_second_subspace_over_first(mysubspace_1, mysubspace_2, no_
     if show:
         plt.show()
 
-def plot_Sobol_indices(Polynomial, save=False, xlim=None, ylim=None, show=True, return_figure=False):
+def plot_Sobol_indices(Polynomial, order=1, save=False, show=True, return_figure=False, parameters=None):
     """
-    Generates a bar chart of the first order Sobol' indices.
+    Generates a bar chart for Sobol indices.
 
     :param Poly Polynomial: 
         An instance of the Poly class.
-    :param matplotlib.ax ax: 
-        An instance of the ``matplotlib`` axes class.
-    :param numpy.array data: 
-        Samples from the distribution (or a similar one) that need to be plotted as a histogram.
+    :param int order:
+        Order of the requires sobol indices.
+    :param list parameters: 
+        List of the parameters for the given polynomial.
     :param bool save: 
         Option to save the plot as a .png file.
-    :param list xlim: 
-        Lower and upper bounds for the horizontal axis, for example ``xlim=[-3, 5]``.
-    :param list ylim: 
-        Lower and upper bounds for the vertical axis, for example ``ylim=[-1, 1]``.
+    :param bool show: 
+        Option to show the graph.
+    :param bool return_figure: 
+        Option to get the figure axes,figure.
 
     """
-    sobol = Polynomial.get_sobol_indices(1)
-    fig = plt.figure(figsize=(8,6))
-    ax = fig.add_subplot(1,1,1)
-    data_1 = np.arange(7) - 0.10 + 1
-    for i in range(0, len(sobol)):
-        plt.bar(i+1, sobol[(i,)], color='steelblue',linewidth=1.5)
-    plt.xlabel(r'Parameters', fontsize=16)
-    plt.ylabel(r"First order Sobol' indices", fontsize=16)
-    xTickMarks = [Polynomial.parameters[j].variable for j in range(0, Polynomial.dimensions)]
-    ax.set_xticks(data_1+0.10)
-    xtickNames = ax.set_xticklabels(xTickMarks)
-    plt.setp(xtickNames, rotation=45, fontsize=16)
-    sns.despine(offset=10, trim=True)
+    if (parameters)==None:
+        parameters_x=[r'$S_%d$' %i  for i in range(0,Polynomial.dimensions)]
+    else:  
+        parameters_x=[i for i in parameters]
+    sobol_indices=Polynomial.get_sobol_indices(order)
+    fig=plt.figure(figsize=(9,9))
+    ax=plt.subplot()
+    if order==1:
+        x=0
+        for i in range(len(parameters_x)):
+            plt.bar(x,sobol_indices[(i,)],color='green')
+            x=x+1
+        plt.xlabel(r'Parameters')
+        plt.ylabel(r'Sobol Indices for order {}'.format(order))
+        xticks=[]
+        xticks.append(" ")
+        for i in range(len(parameters_x)):
+            xticks.append(parameters_x[i])
+            ax.set_xticklabels(xticks,Fontsize=20,rotation=45)
+    elif order==2:
+        x=0
+        for i in range(len(parameters_x)):
+            for j in range(i+1,len(parameters_x)):
+                plt.bar(x,sobol_indices[(i,j)],color='green')
+                x=x+1
+        plt.xlabel(r'Parameters')
+        plt.ylabel(r'Sobol Indices for order {}'.format(order))
+        xticks=[]
+        for i in range(0,len(parameters_x)):
+            for j in range(i+1,len(parameters_x)):
+                string=parameters_x[i] +' ' +parameters_x[j]
+                xticks.append(string)
+        ax.set_xticks(sp.arange(len(sobol_indices)))
+        ax.set_xticklabels(xticks)
+        plt.setp(ax.xaxis.get_majorticklabels(),rotation=45,Fontsize=10)
+    elif order==3:
+        x=0
+        for i in range(len(parameters_x)):
+            for j in range(i+1,len(parameters_x)):
+                for k in range(j+1,len(parameters_x)):
+                    plt.bar(x,sobol_indices[(i,j,k)],color='green')
+                    x=x+1
+        plt.xlabel(r'Parameters')
+        plt.ylabel(r'Sobol Indices for order {}'.format(order))
+        xticks=[]
+        for i in range(len(parameters_x)):
+            for j in range(i+1,len(parameters_x)):
+                for k in range(j+1,len(parameters_x)):
+                    string=parameters_x[i]+' '+parameters_x[j]+' '+parameters_x[k]
+                    xticks.append(string)
+        ax.set_xticks(sp.arange(len(sobol_indices)))
+        ax.set_xticklabels(xticks,Fontsize=10,rotation=45)
     if save:
         plt.savefig('sobol_plot.png', dpi=140, bbox_inches='tight')
     if show:
         plt.show()
     if return_figure:
-        return fig, ax
+        return fig,ax
 def plot_pdf(Parameter, ax=None, data=None, save=False, xlim=None, ylim=None, show=True, return_figure=False):
     """
     Plots the probability density function for a Parameter.

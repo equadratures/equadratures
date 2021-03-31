@@ -354,7 +354,7 @@ class PolyTree(object):
 
                 self.tree = _build_tree()
 
-        def prune(self, X, y, tol=0.0):
+        def prune(self, X, y, tol=0.0, percent=False):
                 """
                 Prunes the tree that you have fitted.
 
@@ -366,8 +366,10 @@ class PolyTree(object):
                         Training output data
                 :param float tol:
                         Pruning tolerance (%). Prune nodes if they only improve loss by less than this tolerance (optional).
+                :param bool percent:
+                        If true, tol is taken as a percentage of the parent node's error. Otherwise, tol is taken to be an absolute value.
                 """
-                tol /= 100.0
+                if percent: tol /= 100.0
                 def pruner(node, X_subset, y_subset):
 
                         if X_subset.shape[0] < 1:
@@ -390,7 +392,12 @@ class PolyTree(object):
 
                                 node["lower_loss"] = lower_loss
 
-                                if lower_loss + (tol* node["test_loss"]) > node["test_loss"]:
+                                if percent:
+                                    loss_eps = tol * node["test_loss"]
+                                else:
+                                    loss_eps = tol
+                                print(lower_loss + loss_eps, node["test_loss"])
+                                if lower_loss + loss_eps > node["test_loss"]:
                                         if self.verbose: print("prune",lower_loss, node["test_loss"], node["children"]["left"]["test_loss"], node["children"]["left"]["n_samples"], node["children"]["right"]["test_loss"], node["children"]["right"]["n_samples"])
                                         node["children"]["left"] = None
                                         node["children"]["right"] = None
@@ -728,7 +735,7 @@ class PolyTree(object):
                                                 ax.annotate('Node %d'%node["index"],(node["Xmax"][0],node["Xmax"][1]),
                                                             ha='right',va='top',textcoords='offset points',
                                                             xytext=(-5, -5))
-                                        #return
+                                        return
                                 else:
                                         for node in nodes[leaf_nodes]:
                                                 ax.annotate('Node %d'%node["index"],(node["Xmax"][0],node["Xmax"][1]),

@@ -5,6 +5,7 @@ from scipy.spatial import ConvexHull, convex_hull_plot_2d
 import matplotlib
 from equadratures.datasets import score
 import numpy as np
+import scipy as sp
 sns.set(font_scale=1.5)
 sns.set_style("white")
 sns.set_style("ticks")

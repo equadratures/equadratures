@@ -258,7 +258,7 @@ def plot_Sobol_indices(Polynomial, order=1, save=False, show=True, return_figure
             for j in range(i+1,len(parameters_x)):
                 string=parameters_x[i] +' ' +parameters_x[j]
                 xticks.append(string)
-        ax.set_xticks(sp.arange(len(sobol_indices)))
+        ax.set_xticks(np.arange(len(sobol_indices)))
         ax.set_xticklabels(xticks)
         plt.setp(ax.xaxis.get_majorticklabels(),rotation=45,Fontsize=10)
     elif order==3:
@@ -276,7 +276,7 @@ def plot_Sobol_indices(Polynomial, order=1, save=False, show=True, return_figure
                 for k in range(j+1,len(parameters_x)):
                     string=parameters_x[i]+' '+parameters_x[j]+' '+parameters_x[k]
                     xticks.append(string)
-        ax.set_xticks(sp.arange(len(sobol_indices)))
+        ax.set_xticks(np.arange(len(sobol_indices)))
         ax.set_xticklabels(xticks,Fontsize=10,rotation=45)
     if save:
         plt.savefig('sobol_plot.png', dpi=140, bbox_inches='tight')

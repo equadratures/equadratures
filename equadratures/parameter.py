@@ -96,6 +96,8 @@ class Parameter(object):
             self.distribution = Uniform(self.lower, self.upper)
         elif self.name.lower() == 'analytical':
             self.distribution = Analytical(self.weight_function)
+        elif self.name.lower() == 'data':
+            self.distribution = Analytical(self.weight_function)
         elif self.name.lower() == 'beta':
             self.distribution = Beta(self.lower, self.upper, self.shape_parameter_A, self.shape_parameter_B)
         elif self.name.lower() == 'truncated-gaussian':

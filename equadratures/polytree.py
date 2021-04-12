@@ -3,6 +3,7 @@ from copy import deepcopy
 from equadratures.parameter import Parameter
 from equadratures.poly import Poly
 from equadratures.basis import Basis
+import equadratures.plot as plot
 from urllib.parse import quote
 
 class PolyTree(object):
@@ -465,7 +466,7 @@ class PolyTree(object):
 
         def apply(self,X):
                 """
-                Returns the node index for each observation in the data.
+                Returns the leaf node index for each observation in the data.
 
                 :param PolyTree self:
                     An instance of the PolyTree class.
@@ -473,7 +474,7 @@ class PolyTree(object):
                     An ndarray with shape (number_of_observations, dimensions) at which the tree fit must be evaluated at.
 
                 :return:
-                **inode**: A numpy.ndarray of shape (number_of_observations,1) corresponding to the node indexs for each observation in X.
+                **inode**: A numpy.ndarray of shape (number_of_observations,1) corresponding to the node indices for each observation in X.
                 """
                 def _apply(node, indexes):
                         no_children = node["children"]["left"] is None and \
@@ -491,6 +492,68 @@ class PolyTree(object):
                 inode = np.zeros(shape=X.shape[0],dtype=int)
                 _apply(self.tree, np.arange(0, X.shape[0]))
                 return inode
+
+        def get_leaves(self):
+                """
+                Returns the node indices for all leaf nodes.
+
+                :param PolyTree self:
+                    An instance of the PolyTree class.
+
+                :return:
+                **inode**: A list containing the node indices of all leaf nodes.
+                """
+                def _recurse(node,leaf_list):
+                    no_children = node["children"]["left"] is None and \
+                    node["children"]["right"] is None
+                    if no_children:
+                        leaf_list.append(node["index"])
+                        return
+                    _recurse(node["children"]["left"],leaf_list)
+                    _recurse(node["children"]["right"],leaf_list)
+                
+                leaf_list = []
+                _recurse(self.tree,leaf_list)
+                return leaf_list
+
+        def get_mean_and_variance(self):
+            """
+            Computes the mean and variance of the polynomial tree model.
+
+            :param Poly self:
+                An instance of the PolyTree class.
+
+            :return:
+                **mean**: The approximated mean of the polynomial tree fit; output as a float.
+
+                **variance**: The approximated variance of the polynomial tree fit; output as a float.
+            """
+            # Get volume of polytree domain
+            root_poly = self.tree["poly"]
+            root_vol = self._calc_domain_vol(root_poly)
+
+            # Get leaf nodes
+            leaves = self.get_leaves()
+
+            # Summation over all leaf nodes in the tree
+            mean = 0.
+            var  = 0.
+            for leaf in leaves:
+                leaf_poly = self.get_node(leaf)["poly"]
+                leaf_vol = self._calc_domain_vol(leaf_poly)
+                coeffs = leaf_poly.coefficients
+
+                # Compute mean
+                mean += (leaf_vol/root_vol) * float(coeffs[0])
+
+                # Compute variance
+                tmp = 0.
+                for i in range(0, len(coeffs)):
+                    tmp += float(coeffs[i]**2)
+                var += (leaf_vol/root_vol) * tmp
+            var -= mean**2 
+        
+            return mean, var
 
         def get_graphviz(self, X=None, feature_names=None, file_name=None):
                 """
@@ -603,44 +666,30 @@ class PolyTree(object):
                         with open(file_name, "w") as file:
                                 file.write(str(g.source))
 
-        def get_node(self, X):
+        def get_node(self, inode):
                 """
-                Returns the node corresponding to a given input vector X (1D float), or node number X (int).
+                Returns the node corresponding to a given node number inode (int).
 
                 :param PolyTree self:
                     An instance of the PolyTree class.
-                :param numpy.ndarray or int X:
-                        An ndarray with shape (dimensions) containing the input vector for a given sample, or an int containing the node index.
+                :param int inode:
+                        An int containing the node index.
                 :return:
                 **node**: The data for the node X belongs to; output as a dict.
                 """
-                # Find node with given index X. Traverse all children until correct node found.
-                if isinstance(X,int):
-                        def _get_node_from_n(node):
-                                if node is not None: # Need to check if node is None here as below _get_node_from_n() calls on children will result in None if leaf node
-                                        if node["index"] == X:
-                                                return node
-                                        else:
-                                                result = _get_node_from_n(node["children"]["right"])
-                                                if result is None:
-                                                        result = _get_node_from_n(node["children"]["left"])
-                                                return result
-                                else:
-                                        return None
-                        return _get_node_from_n(self.tree)
-
-                # Walk through tree for a given X input vector. Return the final leaf node.
-                else:
-                        assert len(X.shape)==1 , "X should be an int, or a 1D float array"
-                        def _get_node_from_X(node):
-                                if node["children"]["left"] is None and \
-                                  node["children"]["right"] is None:
+                # Find node with given index inode. Traverse all children until correct node found.
+                def _get_node_from_n(node):
+                        if node is not None: # Need to check if node is None here as below _get_node_from_n() calls on children will result in None if leaf node
+                                if node["index"] == inode:
                                         return node
-                                if X[node["j_feature"]] <= node["threshold"]:
-                                        return _get_node_from_X(node["children"]["left"])
-                                if X[node["j_feature"]] > node["threshold"]:
-                                        return _get_node_from_X(node["children"]["right"])
-                        return _get_node_from_X(self.tree)
+                                else:
+                                        result = _get_node_from_n(node["children"]["right"])
+                                        if result is None:
+                                                result = _get_node_from_n(node["children"]["left"])
+                                        return result
+                        else:
+                                return None
+                return _get_node_from_n(self.tree)
 
         def get_paths(self,X=None):
                 """
@@ -675,12 +724,12 @@ class PolyTree(object):
                         path.remove(info)
                         return False
 
-                # Get training data if needed
+                # Get leaf node id's
                 if X is None:
-                    X = self.tree["data"][0]
-
-                # Get leaf nodes
-                leave_id = self.apply(X)
+                    leave_id = self.get_leaves()
+                else:
+                    # Get leaf nodes
+                    leave_id = self.apply(X)
 
                 # Loop through leaves and find path for each.
                 paths ={}
@@ -697,91 +746,35 @@ class PolyTree(object):
 
                 return paths
 
-        def get_decision_surface(self,ax,ij,X=None,y=None,max_depth=None,label=True,
-                                 predict=False,error=False,**kwargs):
-                if X is None:
-                        X = self.tree["data"][0]
-                if y is None:
-                        y = self.tree["data"][1]
-                Xij = X[:,ij]
-                self.tree["Xmin"] = np.min(Xij,axis=0)
-                self.tree["Xmax"] = np.max(Xij,axis=0)
-
-                assert (not predict or not error), "predict and error can't both be true at once"
-                if error:
-                        error = y - self.predict(X)
-                        plot = ax.scatter(X[:,ij[0]],X[:,ij[1]],c=error,alpha=0.8,**kwargs)
-                elif predict:
-                        plot = ax.scatter(X[:,ij[0]],X[:,ij[1]],c=self.predict(X),alpha=0.8,**kwargs)
-                else:
-                        plot = ax.scatter(X[:,ij[0]],X[:,ij[1]],c=y,alpha=0.8,**kwargs)
-
-                def _get_boundaries(nodes,final):
-                        # Find leaf nodes
-                        left_children = [node["children"]["left"] for node in nodes]
-                        leaf_nodes = np.array([True if node is None else False for node in left_children])
-
-                        # Get splitting info from non-leaf nodes (i.e. split nodes)
-                        split_nodes = nodes[~leaf_nodes]
-                        split_dims = [node["j_feature"] for node in split_nodes]
-                        split_vals = [node["threshold"] for node in split_nodes]
-                        indices    = [node["index"]     for node in split_nodes]
-
-                        # Labelling done before splits, as we only label up to max_depth and then return
-                        if label:
-                                # If final, label all nodes, else only leaf nodes
-                                if final:
-                                        for node in nodes:
-                                                ax.annotate('Node %d'%node["index"],(node["Xmax"][0],node["Xmax"][1]),
-                                                            ha='right',va='top',textcoords='offset points',
-                                                            xytext=(-5, -5))
-                                        return
-                                else:
-                                        for node in nodes[leaf_nodes]:
-                                                ax.annotate('Node %d'%node["index"],(node["Xmax"][0],node["Xmax"][1]),
-                                                            ha='right',va='top',textcoords='offset points',
-                                                            xytext=(-5, -5))
-
-                        # Plot split lines
-                        for n, node in enumerate(split_nodes):
-                                if split_dims[n]==ij[0]:
-                                        ax.vlines(split_vals[n],node["Xmin"][1],
-                                                   node["Xmax"][1],'k')
-                                else:
-                                        ax.hlines(split_vals[n],node["Xmin"][0],
-                                                   node["Xmax"][0],'k')
-
-                        # Update bounding boxes of child nodes before returning them
-                        for node in split_nodes:
-                                if node["j_feature"]==ij[0]:
-                                        node["children"]["left"]["Xmax"]  = [node["threshold"],node["Xmax"][1]]
-                                        node["children"]["right"]["Xmin"] = [node["threshold"],node["Xmin"][1]]
-                                        node["children"]["left"]["Xmin"]  = node["Xmin"]
-                                        node["children"]["right"]["Xmax"] = node["Xmax"]
-                                else:
-                                        node["children"]["left"]["Xmax"]  = [node["Xmax"][0],node["threshold"]]
-                                        node["children"]["right"]["Xmin"] = [node["Xmin"][0],node["threshold"]]
-                                        node["children"]["left"]["Xmin"]  = node["Xmin"]
-                                        node["children"]["right"]["Xmax"] = node["Xmax"]
-
-                        # Extract child node info for next level down
-                        left_nodes  = [node["children"]["left"]  for node in split_nodes]
-                        right_nodes = [node["children"]["right"] for node in split_nodes]
-
-                        child_nodes = np.array(left_nodes + right_nodes)
-
-                        return child_nodes
-
-                nodes = np.array([self.tree])
-                depth = 0
-                final = False
-                while len(nodes)>0:
-                        if depth==max_depth: final = True
-                        nodes = _get_boundaries(nodes,final)
-                        if final: break
-                        depth += 1
-
-                return plot
+        def plot_decision_surface(self,ij,ax=None,X=None,y=None,max_depth=None,label=True,
+                                         color='data',colorbar=True,show=True,kwargs={}):
+                """
+                Plots the decision boundaries of the PolyTree over a 2D surface.
+        
+                :param PolyTree self: 
+                    An instance of the PolyTree class.
+                :param list ij: 
+                    A list containing the two dimensions to plot over. For example, ``ij=[6,7]`` with plot over the 6th and 7th dimensions in ``X``.
+                :param matplotlib.ax ax: 
+                    An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
+                :param :numpy.ndarray X:
+                    A numpy ndarray containing the input data to plot.
+                :param :numpy.ndarray y:
+                    A numpy ndarray containing the output data to plot.
+                :param int max_depth:
+                    The maximum tree depth to plot decision boundaries for.
+                :param bool label:
+                    If ``True`` then the subdomains are labelled by their node number.
+                :param string color:
+                    What to color the scatter points by. ``'data'`` to color by the ``X``,``y`` data. ``'predict'`` to color by the PolyTree predictions, and ``'error'`` to color by the predictive error. (default: ``'data'``).
+                :param bool colorbar:
+                    Option to add a colorbar.
+                :param bool show:
+                    Option to view the plot.
+                :param dict kwargs:
+                    Dictionary of keyword arguments to pass to matplotlib.scatter().  
+                """
+                return plot.plot_decision_surface(self,ij,ax,X,y,max_depth,label,color,colorbar,show,kwargs)
 
         def _find_split_from_grad(self,model, X, y):
                 """
@@ -920,3 +913,12 @@ class PolyTree(object):
                 c = c*gradients[:,0].reshape(-1,1)
                 gradients[:,1:] = gradients[:,1:] * a + c
                 return gradients
+
+        @staticmethod
+        def _calc_domain_vol(Polynomial):
+            params = Polynomial.parameters
+            vol = 1.
+            for param in params:
+                vol *= param.upper - param.lower
+            return vol
+

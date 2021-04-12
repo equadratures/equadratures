@@ -2,6 +2,7 @@ from equadratures.parameter import Parameter
 from equadratures.poly import Poly
 from equadratures.basis import Basis
 from equadratures.scalers import scaler_minmax, scaler_meanvar, scaler_custom
+import equadratures.plot as plot
 import numpy as np
 import scipy
 import scipy.io
@@ -541,6 +542,47 @@ class Subspaces(object):
         yz = np.vstack([np.repeat(y[:, np.newaxis], N, axis=1), Z.T])
         return np.dot(self._subspace, yz).T
 
+#    def plot_sufficient_summary(self, **kwargs):
+    def plot_sufficient_summary(self, ax=None, X_test=None, y_test=None, show=True, poly=True, uncertainty=False, legend=False, scatter_kwargs={}, plot_kwargs={}):
+        """
+        Generates a sufficient summary plot for 1D or 2D polynomial ridge approximations.
+        
+        :param Subspace mysubspace:
+            An instance of the Subspace class.
+        :param matplotlib.ax ax: 
+            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
+        :param :numpy.ndarray X_test:
+            A numpy ndarray containing input test data to plot (in addition to the training data). Must have same number of dimensions as the training data. 
+        :param :numpy.ndarray y_test:
+            A numpy ndarray containing output test data to plot (in addition to the training data).
+        :param bool show:
+            Option to view the plot.
+        :param bool poly:
+            Option to plot the subspace polynomial.
+        :param bool uncertainty:
+            Option to show confidence intervals (1 standard deviation) of the subspace polynomial.
+        :param bool legend:
+            Option to show legend.
+        :param dict scatter_kwargs:
+            Dictionary of keyword arguments to pass to matplotlib.scatter functions.  
+        :param dict plot_kwargs:
+            Dictionary of keyword arguments to pass to matplotlib.plot functions.  
+        """
+        #return plot.plot_sufficient_summary(self,**kwargs)
+        return plot.plot_sufficient_summary(self, ax, X_test, y_test, show, poly, uncertainty, legend, scatter_kwargs, plot_kwargs)
+
+    def plot_2D_contour_zonotope(self, **kwargs):
+        """
+        Generates a 2D contour plot of the polynomial ridge approximation.
+        """
+        return plot.plot_2D_contour_zonotope(self,**kwargs)
+
+    def plot_samples_from_second_subspace_over_first(self, mysubspace_2, **kwargs):
+        """
+        Generates a zonotope plot where samples from the second subspace are projected
+        over the first.
+        """
+        return plot.plot_samples_from_second_subspace_over_first(self,mysubspace_2, **kwargs)
 
 def vandermonde(eta, p):
     # TODO: Try using a "correlated" basis here?

@@ -132,16 +132,43 @@ class Parameter(object):
             distribution_error()
         self.mean = self.distribution.mean
         self.variance = self.distribution.variance
-    def plot_orthogonal_polynomials(self, **kwargs):
+    def plot_orthogonal_polynomials(Parameter, ax=None, order_limit=None, number_of_points=200, show=True):
         """
-        Plots the orthogonal polynomials.
+        Plots the first few orthogonal polynomials.
+    
+        :param Parameter self: 
+            An instance of the Parameter class.
+        :param matplotlib.ax ax: 
+            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
+        :param int order_limit:
+            The maximum number of orthogonal polynomials that need to be plotted.
+        :param int number_of_points: 
+            The number of points used for plotting.
+        :param bool show: 
+            Option to view the plot.
+    
+        **Example**::
+    
+            import numpy as np
+            from equadratures import *
+    
+            myparam = eq.Parameter(distribution='uniform', lower = -1.0, upper = 1.0, order=8, endpoints='both')
+            myparam.plot_orthogonal_polynomials()
+            
         """
-        return plot.plot_orthogonal_polynomials(self,**kwargs)
-    def plot_pdf(self, **kwargs):
+        return plot.plot_orthogonal_polynomials(self,ax,order_limit,number_of_points,show)
+    def plot_pdf(self, ax=None, data=None, show=True):
         """
-        Plots the probability distribution.
+        Plots the probability density function for a Parameter.
+    
+        :param Parameter self: 
+            An instance of the Parameter class.
+        :param matplotlib.ax ax: 
+            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
+        :param numpy.array data: 
+            Samples from the distribution (or a similar one) that need to be plotted as a histogram.
         """
-        return plot.plot_pdf(self,**kwargs)
+        return plot.plot_pdf(self,ax=None, data=None, show=True)
     def _set_moments(self):
         """
         Private function that sets the mean and the variance of the distribution.

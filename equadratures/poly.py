@@ -143,21 +143,70 @@ class Poly(object):
             self._set_points_and_weights()
         else:
             print('WARNING: Method not declared.')
-    def plot_polyfit_1D(self, **kwargs):
+    def plot_polyfit_1D(self, ax=None, uncertainty=True, output_variances=None, number_of_points=200, show=True):
         """
-        Plots the 1D polynomial fit.
+        Plots a 1D only polynomial fit to the data.
+    
+        :param Poly self: 
+            An instance of the Polynomial class.
+        :param matplotlib.ax ax: 
+            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
+        :param bool uncertainty:
+            Option to show confidence intervals (1 standard deviation).
+        :param numpy.array output_variances:
+            User-defined uncertainty associated with each data point; can be either a ``float`` in which case all data points are assumed to have the same variance, or can be an array of length equivalent to the number of data points.
+        :param bool show: 
+            Option to view the plot.
         """
-        return plot.plot_polyfit_1D(self,**kwargs)
-    def plot_model_vs_data(self, **kwargs):
+        return plot.plot_polyfit_1D(self,ax,uncertainty,output_variances,number_of_points,show)
+    def plot_model_vs_data(self, ax=None, sample_data=None, metric='adjusted_r2', show=True):
         """
-        Plots the polynomial fit vs. the data.
+        Plots the polynomial approximation against the true data.
+    
+        :param Polynomial self: 
+            An instance of the Poly class.
+        :param matplotlib.ax ax: 
+            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
+        :param list sample_data:
+            A list formed by ``[X, y]`` where ``X`` represents the spatial data input and ``y`` the output.
+        :param bool show: 
+            Option to view the plot.
         """
-        return plot.plot_model_vs_data(self,**kwargs)
-    def plot_Sobol_indices(self, **kwargs):
+        return plot.plot_model_vs_data(self,ax,sample_data,metric,show)
+    def plot_sobol(self, ax=None, order=1, show=True, labels=None, kwargs={}):
         """
-        Plots the first order Sobol' indices.
+        Plots a polynomial's Sobol' indices of a given order.
+    
+        :param Poly self: 
+            An instance of the Poly class.
+        :param matplotlib.ax ax: 
+            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
+        :param int order:
+            Order of the Sobol' indices to plot.
+        :param list parameters: 
+            List of the parameters for the given polynomial.
+        :param bool show: 
+            Option to show the graph.
+        :param dict kwargs:
+            Dictionary of keyword arguments to pass to matplotlib.bar() function.  
         """
-        return plot.plot_Sobol_indices(self,**kwargs)
+        return plot.plot_sobol(self,ax,order,show,labels,kwargs)
+    def plot_total_sobol(self, ax=None, show=True, labels=None, kwargs={}):
+        """
+        Plots a polynomial's total-order Sobol' indices.
+    
+        :param Poly self: 
+            An instance of the Poly class.
+        :param matplotlib.ax ax: 
+            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
+        :param list parameters: 
+            List of the parameters for the given polynomial.
+        :param bool show: 
+            Option to show the graph.
+        :param dict kwargs:
+            Dictionary of keyword arguments to pass to matplotlib.bar() function.  
+        """
+        return plot.plot_total_sobol(self,ax,show,labels,kwargs)
     def _set_parameters(self, parameters):
         """
         Private function that sets the parameters. Required by the Correlated class.

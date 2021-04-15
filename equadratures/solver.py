@@ -835,7 +835,7 @@ class elastic_net(Solver):
         """
         n,p = A.shape
         b = b.reshape(-1)
-        assert alpha >= 0.01, 'elastic-path does not work reliably for alpha<0.01, choose 0>alpha<=1.'
+        assert alpha >= 0.01, 'elastic-path does not work reliably for alpha<0.01, choose 0.01>=alpha<=1.'
     
         if crit=='CV':
             nfold = 5

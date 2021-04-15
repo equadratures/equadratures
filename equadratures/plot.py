@@ -381,6 +381,61 @@ def plot_total_sobol(Polynomial, ax=None, show=True, labels=None, kwargs={}):
     else:
         return ax
 
+def plot_regpath(solver,nplot=None,save=False,show=True,return_figure=False):
+    """
+    Generates a regularisation path for elastic net.
+
+    :param Poly Polynomial: 
+        An instance of the Poly class.
+    :param int nplot:
+        Number of coefficients for the plot.
+    :param bool save: 
+        Option to save the plot as a .png file.
+    :param bool show: 
+        Option to show the graph.
+    :param bool return_figure: 
+        Option to get the figure axes,figure.
+
+    """
+    lamdas = solver.lambdas
+    x_path = solver.xpath
+    IC = solver.ic
+    IC_std = solver.ic_std
+    idx = solver.opt_idx
+    if nplot is not None and nplot > x_path.shape[1]:
+        raise ValueError("Max number of plots are {}".format(x_path.shape[1]))
+    else:  
+        fig, (ax1,ax2) = plt.subplots(figsize=(10,7),nrows=2,sharex=True,tight_layout=True)
+        ax1.set_xscale('log')
+        ax1.set_ylabel(r'$\theta$')
+        ax1.grid(True)
+        if nplot is None:
+            plots = range(x_path.shape[1])
+        else:
+            coeffs = x_path[0,:]
+            plots = (-np.abs(coeffs)).argsort()[:nplot]
+        for j in plots:
+            label="j=%d"%j       
+            ax1.plot(lamdas,x_path[:,j],'-',label=label,lw=2)
+        ax1.vlines(lamdas[idx],ax1.get_ylim()[0],ax1.get_ylim()[1],'k',ls='--')
+        fig.legend(loc='center left', bbox_to_anchor=(1, 0.6),ncol=1,edgecolor='0.0')
+        ax2.grid(True)
+        ax2.set_xlabel('Log($\\lambda$)')
+        ax2.set_ylabel('AIC')
+        ax2.set_xscale('log')
+        ax2.set_yscale('log')
+        ax2.plot(lamdas,IC,'-k',lw=2)
+        if IC_std is not None: 
+            plt.fill_between(lamdas,IC-IC_std,IC+IC_std,alpha=0.3)
+        ax2.vlines(lamdas[idx],ax2.get_ylim()[0],ax2.get_ylim()[1],'k',ls='--')
+        plt.setp(ax1.get_xticklabels(), visible=False)
+        plt.subplots_adjust(hspace=.0)
+        if save:
+            plt.savefig('regularisation_path.png', dpi=140, bbox_inches='tight')
+        if show:
+            plt.show()
+        if return_figure:
+            return fig,(ax1,ax2)
 
 def plot_pdf(Parameter, ax=None, data=None, show=True):
     """

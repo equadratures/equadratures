@@ -4,6 +4,7 @@ from scipy.linalg import qr
 from scipy.optimize import linprog, minimize
 from scipy.special import huber as huber_loss
 from copy import deepcopy
+import equadratures.plot as plot
 try:
     import cvxpy as cv
     cvxpy = True
@@ -1000,7 +1001,25 @@ class elastic_net(Solver):
             return (rho - lamda)
         else:
             return 0.0
+    def plot_regpath(self,nplot=None,save=False,show=True,return_figure=False):
+        
+        """
+    Generates a regularisation path for elastic net.
 
+    :param Poly Polynomial: 
+        An instance of the Poly class.
+    :param int nplot:
+        Number of coefficients for the plot.
+    :param bool save: 
+        Option to save the plot as a .png file.
+    :param bool show: 
+        Option to show the graph.
+    :param bool return_figure: 
+        Option to get the figure axes,figure.
+
+    """
+        
+        return plot.plot_regpath(self,nplot,save,show,return_figure)
 # Custom solver subclass.
 #########################
 class custom_solver(Solver):

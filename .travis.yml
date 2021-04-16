@@ -19,12 +19,12 @@ addons:
 # blocklist
 # Block all /*feature*/ branches
 # Anything within /_>/ is treated as a Regex
-branches:
-  except:
-  - /*feature*/
+#branches:
+#  except:
+#  - /*feature*/
 
 # safelist
-# Only Build and Test changes of the master branch
+# Only Build and Test changes of the master and develop branches
 branches:
   only:
   - master
@@ -42,11 +42,10 @@ install:
  - source activate test
  - conda install --yes numpy scipy matplotlib seaborn pip nose
  - conda install --yes -c conda-forge cvxpy
- - pip install cvxpy>=1.1 
  - pip install setuptools
  - python setup.py install
  - pip install coveralls
- - pip install ray
+   # - pip install ray
 
 script: coverage run test.py tests/*
 

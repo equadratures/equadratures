@@ -72,7 +72,7 @@ def gen_friedman(n_observations=100, n_dim=5, noise=0.0, random_seed=None,normal
 
 def load_eq_dataset(dataset,data_dir=None):
     # Check if valid dataset
-    datasets = ['naca0012','blade_envelopes','probes']
+    datasets = ['naca0012','blade_envelopes','probes', '3Dfan_blades']
     if dataset not in datasets:
         raise ValueError('dataset specified in load_eq_dataset not recognised, avaiable datasets: ', datasets)
 

@@ -25,7 +25,6 @@ class Solver(object):
         self.method = method
         self.solver_args = solver_args
         self.gradient_flag = False
-
         # Parse generic solver args here (solver specific ones done in subclass)
         # Defaults
         self.verbose = False
@@ -36,7 +35,6 @@ class Solver(object):
 
         if self.opt=='osqp' and not cvxpy: 
             self.opt='scipy'
-
     @staticmethod
     def select_solver(method,solver_args={}):
         """ 
@@ -1018,8 +1016,12 @@ class elastic_net(Solver):
         Option to get the figure axes,figure.
 
     """
-        
+        if hasattr(self, 'elements'):    
+            elements=self.elements
+        else:
+            elements=None
         return plot.plot_regpath(self,nplot,save,show,return_figure)
+        
 # Custom solver subclass.
 #########################
 class custom_solver(Solver):

@@ -1020,7 +1020,7 @@ class elastic_net(Solver):
             elements=self.elements
         else:
             elements=None
-        return plot.plot_regpath(self,nplot,save,show,return_figure)
+        return plot.plot_regpath(self,elements,nplot,save,show,return_figure)
         
 # Custom solver subclass.
 #########################

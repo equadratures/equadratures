@@ -38,6 +38,11 @@ def plot_sufficient_summary(mysubspace, ax=None, X_test=None, y_test=None, show=
         Dictionary of keyword arguments to pass to matplotlib.scatter().  
     :param dict plot_kwargs:
         Dictionary of keyword arguments to pass to matplotlib.plot().  
+
+    :return:
+        **fig**: An instance of the ``matplotlib`` figure class, containing the generated axes.
+    :return:
+        **ax**: An instance of the ``matplotlib`` axes class, containing the sufficient summary plot.
     """
     # Set default kwargs
     scatter_kwargs = set_defaults(scatter_kwargs,{'marker':'o','s':60,'ec':'k','lw':2,'alpha':0.7})
@@ -60,6 +65,8 @@ def plot_sufficient_summary(mysubspace, ax=None, X_test=None, y_test=None, show=
             ax.set_zlabel(r'$y$'  ,labelpad=10)
         else:
             raise ValueError("Currently can only generate sufficient summary plot for 1D and 2D ridge approximations")
+    else:
+        fig = ax.figure
 
     X = mysubspace.sample_points
     y = mysubspace.sample_outputs
@@ -114,11 +121,7 @@ def plot_sufficient_summary(mysubspace, ax=None, X_test=None, y_test=None, show=
         ax.legend(ncol=2)
     if show:
         plt.show()
-    if 'fig' in locals():
-        return fig, ax
-    else:
-        return ax
-
+    return fig, ax
 
 def plot_2D_contour_zonotope(mysubspace, minmax=[-3.5, 3.5], grid_pts=180,  \
                              show=True, ax=None):
@@ -135,6 +138,11 @@ def plot_2D_contour_zonotope(mysubspace, minmax=[-3.5, 3.5], grid_pts=180,  \
         The number of grid points for generating the contour plot.
     :param bool show: 
         Option to view the plot.
+
+    :return:
+        **fig**: An instance of the ``matplotlib`` figure class.
+    :return:
+        **ax**: An instance of the ``matplotlib`` axes class.
     """
     if ax is None:
         fig,ax = plt.subplots(figsize=(10, 7),tight_layout=True)
@@ -202,6 +210,15 @@ def plot_samples_from_second_subspace_over_first(mysubspace_1, mysubspace_2, axs
         The number of grid points for generating the contour plot.
     :param bool show: 
         Option to view the plot.
+
+    :return:
+        **fig1**: An instance of the ``matplotlib`` figure class, containing the first set of axes generated.
+    :return:
+        **ax1**: An instance of the ``matplotlib`` axes class, with the sample mean plotted over the 2D subspace.
+    :return:
+        **fig2**: An instance of the ``matplotlib`` figure class, containing the second set of axes generated.
+    :return:
+        **ax2**: An instance of the ``matplotlib`` axes class, with the sample variance plotted over the 2D subspace.
     """    
     # 1. Generate a grid on the first zonotope.
     x1 = np.linspace(minmax[0], minmax[1], grid_pts)
@@ -293,6 +310,11 @@ def plot_sobol(Polynomial, ax=None, order=1, show=True, labels=None, kwargs={}):
         Option to show the graph.
     :param dict kwargs:
         Dictionary of keyword arguments to pass to matplotlib.bar().  
+
+    :return:
+        **fig**: An instance of the ``matplotlib`` figure class, containing the generated axes.
+    :return:
+        **ax**: An instance of the ``matplotlib`` axes class, containing a bar chart of the Sobol' indices.
     """
     # Set default kwargs
     kwargs = set_defaults(kwargs, {'color':'dodgerblue', 'ec':'k','lw':2, 'alpha':0.7})
@@ -355,12 +377,19 @@ def plot_total_sobol(Polynomial, ax=None, show=True, labels=None, kwargs={}):
         Option to show the graph.
     :param dict kwargs:
         Dictionary of keyword arguments to pass to matplotlib.bar().  
+
+    :return:
+        **fig**: An instance of the ``matplotlib`` figure class, containing the generated axes.
+    :return:
+        **ax**: An instance of the ``matplotlib`` axes class, containing a bar chart of the Sobol' indices.
     """
     # Set default kwargs
     kwargs = set_defaults(kwargs, {'color':'dodgerblue', 'ec':'k','lw':2, 'alpha':0.7})
 
     if ax is None:
         fig,ax = plt.subplots(figsize=(9, 6),tight_layout=True)
+    else:
+        ax.figure
 
     ndims = Polynomial.dimensions
     sobol_indices=Polynomial.get_total_sobol_indices()
@@ -376,10 +405,7 @@ def plot_total_sobol(Polynomial, ax=None, show=True, labels=None, kwargs={}):
 
     if show:
         plt.show()
-    if 'fig' in locals():
-        return fig, ax
-    else:
-        return ax
+    return fig, ax
 
 def plot_regpath(solver,elements=None,nplot=None,show=True):
     """
@@ -396,6 +422,12 @@ def plot_regpath(solver,elements=None,nplot=None,show=True):
     :param bool return_figure: 
         Option to get the figure axes,figure.
 
+    :return:
+        **fig**: An instance of the ``matplotlib`` figure class, containing the two sets of generated axes.
+    :return:
+        **ax1**: An instance of the ``matplotlib`` axes class, containing the coefficients plot.
+    :return:
+        **ax2**: An instance of the ``matplotlib`` axes class, containing the information criterion plot.
     """
     lamdas = solver.lambdas
     x_path = solver.xpath
@@ -447,7 +479,7 @@ def plot_regpath(solver,elements=None,nplot=None,show=True):
         sns.despine(fig=fig, offset=10, trim=False)
         if show:
             plt.show()
-        return fig,(ax1,ax2)
+        return fig,ax1,ax2
 
 def plot_pdf(Parameter, ax=None, data=None, show=True):
     """
@@ -459,6 +491,11 @@ def plot_pdf(Parameter, ax=None, data=None, show=True):
         An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
     :param numpy.array data: 
         Samples from the distribution (or a similar one) that need to be plotted as a histogram.
+
+    :return:
+        **fig**: An instance of the ``matplotlib`` figure class, containing the generated axes.
+    :return:
+        **ax**: An instance of the ``matplotlib`` axes class, containing a plot of the PDF.
     """
     if ax is None:
         fig,ax = plt.subplots(figsize=(8, 6),tight_layout=True)
@@ -490,6 +527,11 @@ def plot_orthogonal_polynomials(Parameter, ax=None, order_limit=None, number_of_
         The number of points used for plotting.
     :param bool show: 
         Option to view the plot.
+
+    :return:
+        **fig**: An instance of the ``matplotlib`` figure class, containing the generated axes.
+    :return:
+        **ax**: An instance of the ``matplotlib`` axes class, containing a plot of the first few orthogonal polynomials.
 
     **Example**::
 
@@ -535,6 +577,11 @@ def plot_polyfit_1D(Polynomial, ax=None, uncertainty=True, output_variances=None
         User-defined uncertainty associated with each data point; can be either a ``float`` in which case all data points are assumed to have the same variance, or can be an array of length equivalent to the number of data points.
     :param bool show: 
         Option to view the plot.
+
+    :return:
+        **fig**: An instance of the ``matplotlib`` figure class, containing the generated axes.
+    :return:
+        **ax**: An instance of the ``matplotlib`` axes class, containing a plot of the 1D polynomial.
     """
     if ax is None:
         fig,ax = plt.subplots(figsize=(8, 6),tight_layout=True)
@@ -580,6 +627,11 @@ def plot_model_vs_data(Polynomial, ax=None, sample_data=None, metric='adjusted_r
         A list formed by ``[X, y]`` where ``X`` represents the spatial data input and ``y`` the output.
     :param bool show: 
         Option to view the plot.
+
+    :return:
+        **fig**: An instance of the ``matplotlib`` figure class, containing the generated axes.
+    :return:
+        **ax**: An instance of the ``matplotlib`` axes class, containing a plot of the polynomial approximation against the true data.
     """
     if ax is None:
         fig,ax = plt.subplots(figsize=(8, 6),tight_layout=True)
@@ -631,6 +683,13 @@ def plot_decision_surface(PolyTree,ij,ax=None,X=None,y=None,max_depth=None,label
         Option to view the plot.
     :param dict kwargs:
         Dictionary of keyword arguments to pass to matplotlib.scatter().  
+
+    :return:
+        **fig**: An instance of the ``matplotlib`` figure class, containing the generated axes.
+    :return:
+        **ax**: An instance of the ``matplotlib`` axes class, containing a plot of the PolyTree's decision boundaries over a 2D surface.
+    :return:
+        **scat**: An instance of the ``matplotlib`` PathCollection class, corresponding to the plt.scatter() call. This can be used to further customise the scatter markers.
     """
     # Set default kwargs
     kwargs = set_defaults(kwargs, {'alpha':0.8,'ec':'lightgray','cmap':'coolwarm'})

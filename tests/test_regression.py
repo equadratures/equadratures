@@ -73,7 +73,7 @@ class TestC(TestCase):
 
     def test_ElasticNet_linear(self):
         """ 
-        Tests elastic-net regularisation on linear (1st order) synthetic data with irrelevent features.
+        Tests elastic-net regularisation on linear (1st order) synthetic data with irrelevent features. (using cvxpy LP solve here).
         """
         # Load linear dataset with n_observations=500,n_dim=10,bias=0.5,n_relevent=2,noise=0.2,train/test split = 0.8
         data = np.load('./tests/test_data/linear_data.npz')
@@ -115,14 +115,14 @@ class TestC(TestCase):
 
     def test_ElasticNet_friedman(self):
         """ 
-        Tests elastic-net regularisation on quadratic (2nd order) synthetic data with irrelevent features.
+        Tests elastic-net regularisation on quadratic (2nd order) synthetic data with irrelevent features. (using coord descent here).
         """
         # Generate friedman dataset with n_observations=200,n_dim=10,noise=0.2,normalise=False,train/test split of 0.8
         data = np.load('./tests/test_data/friedman_data.npz')
         X_train = data['X_train']; y_train = data['y_train']; X_test = data['X_test']; y_test = data['y_test']
 
         # Define param and basis
-        s = Parameter(distribution='uniform', lower=-1, upper=1, order=4,endpoints='both')
+        s = Parameter(distribution='uniform', lower=-1, upper=1, order=2,endpoints='both')
         param = [s for _ in range(X_train.shape[1])]
         basis = Basis('total-order') 
 
@@ -133,19 +133,22 @@ class TestC(TestCase):
         _,r2_OLS = poly_OLS.get_polyscore(X_test=X_test,y_test=y_test)
 
         # Fit Poly with LASSO (alpha = 1.0) and check r2 improved
+        print('running elastic net')
         poly_LASSO = Poly(parameters=param, basis=basis, method='elastic-net', 
                   sampling_args= {'mesh': 'user-defined', 'sample-points':X_train, 'sample-outputs': y_train.reshape(-1,1)},
-                  solver_args={'path':False,'lambda':0.1,'alpha':1.0})
+                  solver_args={'path':True,'alpha':1.0})
+
         poly_LASSO.set_model()
         _,r2_LASSO = poly_LASSO.get_polyscore(X_test=X_test,y_test=y_test)
         self.assertTrue(r2_LASSO > r2_OLS)
+        print(r2_LASSO,r2_OLS)
    
-        # Finally, check LASSO has shrunk irrelevent Poly coefficients
-        coeffs = poly_LASSO.get_coefficients().squeeze()
-        ideal_coeffs = 126 #As tensor-grid, order=4, relevent_dims=5
-        idx = np.abs(coeffs).argsort()[::-1]
-        irrelevent_coeffs = np.sum(np.abs(coeffs[idx[ideal_coeffs:]]))/np.sum(np.abs(coeffs))
-        self.assertTrue(irrelevent_coeffs < 1e-5,msg='irrelevent_coeffs = %.2e' %irrelevent_coeffs)
+        # Finally, check LASSO has shrunk L1norm of coefficients
+        coeffs_OLS   = poly_OLS.get_coefficients().squeeze()
+        coeffs_LASSO = poly_LASSO.get_coefficients().squeeze()
+        l1_OLS   = np.linalg.norm(coeffs_OLS,ord=1)
+        l1_LASSO = np.linalg.norm(coeffs_LASSO,ord=1)
+        self.assertTrue(l1_LASSO < l1_OLS,msg='l1_LASSO = %.2e, l1_OLS = %.2e' %(l1_LASSO,l1_OLS))
 
     def test_polyuq_empirical(self):
         """ 

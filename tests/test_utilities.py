@@ -73,15 +73,23 @@ class Test_Utilities(TestCase):
 
     def test_friedman(self):
         """
-        Test the gen_friedman() sythetic dataset generator. gen_linear() is tested implicitly by test_scalers(). 
+        Test the gen_friedman() sythetic dataset generator and the train_test_split utility.
         """
         N = 200
         d = 6
         X,y = datasets.gen_friedman(n_observations=N, n_dim=d, noise=0.0, normalise=False)
-        np.testing.assert_equal(X.shape,np.array([N,d]))
-        np.testing.assert_equal(y.shape,np.array([N,]))
-        ytest = 10 * np.sin(np.pi * X[:, 0] * X[:, 1]) + 20 * (X[:, 2] - 0.5) ** 2 + 10 * X[:, 3] + 5 * X[:, 4] 
-        np.testing.assert_array_equal(y,ytest)
+
+        # Split the data
+        X_train,X_test,y_train,y_test = datasets.train_test_split(X,y,train=0.75,shuffle=True,random_seed=42) 
+
+        # Check dims
+        N_train = int(N*0.75)
+        N_test  = int(N*0.25)
+        np.testing.assert_equal(X_train.shape,np.array([N_train,d]))
+        np.testing.assert_equal(y_test.shape,np.array([N_test,]))
+        y_true = 10 * np.sin(np.pi * X_test[:, 0] * X_test[:, 1]) + 20 * (X_test[:, 2] - 0.5) ** 2 + 10 * X_test[:, 3] + 5 * X_test[:, 4] 
+        np.testing.assert_array_equal(y_true,y_test)
+
 
 if __name__== '__main__':
     unittest.main()

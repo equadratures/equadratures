@@ -61,7 +61,7 @@ class Poly(object):
         7. Rogers, S., Girolami, M., (2016) Variability in predictions. In: A First Course in Machine Learning, Second Edition (2nd. ed.). Chapman & Hall/CRC. `Book <https://github.com/wwkenwong/book/blob/master/Simon%20Rogers%2C%20Mark%20Girolami%20A%20First%20Course%20in%20Machine%20Learning.pdf>`__
 
     """
-    def __init__(self, parameters, basis, method=None, sampling_args=None, solver_args={}):
+    def __init__(self, parameters, basis, method=None, sampling_args=None, solver_args={}, variable=None):
         try:
             len(parameters)
         except TypeError:
@@ -74,6 +74,7 @@ class Poly(object):
         self.dimensions = len(parameters)
         self.orders = []
         self.gradient_flag = False
+        self.variable = variable
         for i in range(0, self.dimensions):
             self.orders.append(self.parameters[i].order)
         if not self.basis.orders :
@@ -245,7 +246,11 @@ class Poly(object):
         for i in range(0, self.dimensions):
             added_new = ('\nParameter '+str(i+1)+' '+str(self.parameters[i].get_description()))
             if i == 0:
-                added = introduction + added_new
+                if self.variable is not None:
+                    title = str('This polynomial concerns the output variable '+str(self.variable) + '.\n')
+                    added = title + introduction + added_new
+                else:
+                    added = introduction + added_new
             else:
                 added = added + added_new
         if self.statistics_object is not None:

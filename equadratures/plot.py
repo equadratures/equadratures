@@ -335,7 +335,7 @@ def plot_sobol(Polynomial, ax=None, order=1, show=True, labels=None, kwargs={}):
     ax.set_xticks(np.arange(nsob))
     ax.set_xticklabels(labels,rotation=45,rotation_mode="anchor",ha='right')
     ax.bar(np.arange(nsob),to_plot,**kwargs)
-    sns.despine(fig)
+    sns.despine(offset=10, trim=True)
 
     if show:
         plt.show()
@@ -372,7 +372,7 @@ def plot_total_sobol(Polynomial, ax=None, show=True, labels=None, kwargs={}):
     ax.set_xticks(np.arange(ndims))
     ax.set_xticklabels(labels,rotation=45,rotation_mode="anchor",ha='right')
     ax.bar(np.arange(ndims),to_plot,**kwargs)
-    sns.despine(fig)
+    sns.despine(offset=10, trim=True)
 
     if show:
         plt.show()
@@ -381,7 +381,7 @@ def plot_total_sobol(Polynomial, ax=None, show=True, labels=None, kwargs={}):
     else:
         return ax
 
-def plot_regpath(solver,nplot=None,save=False,show=True,return_figure=False):
+def plot_regpath(solver,nplot=None,show=True):
     """
     Generates a regularisation path for elastic net.
 
@@ -430,12 +430,10 @@ def plot_regpath(solver,nplot=None,save=False,show=True,return_figure=False):
         ax2.vlines(lamdas[idx],ax2.get_ylim()[0],ax2.get_ylim()[1],'k',ls='--')
         plt.setp(ax1.get_xticklabels(), visible=False)
         plt.subplots_adjust(hspace=.0)
-        if save:
-            plt.savefig('regularisation_path.png', dpi=140, bbox_inches='tight')
+        sns.despine(fig=fig, offset=10, trim=False)
         if show:
             plt.show()
-        if return_figure:
-            return fig,(ax1,ax2)
+        return fig,(ax1,ax2)
 
 def plot_pdf(Parameter, ax=None, data=None, show=True):
     """

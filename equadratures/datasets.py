@@ -21,8 +21,12 @@ def gen_linear(n_observations=100, n_dim=5, n_relevent=5,bias=0.0, noise=0.0, ra
     """
     # Generate input data
     n_relevent = min(n_dim, n_relevent)
-    generator = np.random.default_rng(random_seed)
-    X = generator.standard_normal((n_observations,n_dim))
+    if np.__version__ >= '1.17':
+        generator = np.random.default_rng(random_seed)
+        rand_dist = generator.standard_normal
+    else:
+        rand_dist = np.random.RandomState(random_seed).standard_normal
+    X = rand_dist((n_observations,n_dim))
     X = scaler_minmax().transform(X)
 
     # Generate the truth model with n_relevent input dimensions
@@ -58,8 +62,12 @@ def gen_friedman(n_observations=100, n_dim=5, noise=0.0, random_seed=None,normal
     if n_dim < 5:
         raise ValueError("n_dim must be at least five.")
 
-    generator = np.random.default_rng(random_seed)
-    X = generator.standard_normal((n_observations,n_dim))
+    if np.__version__ >= '1.17':
+        generator = np.random.default_rng(random_seed)
+        rand_dist = generator.standard_normal
+    else:
+        rand_dist = np.random.RandomState(random_seed).standard_normal
+    X = rand_dist((n_observations,n_dim))
     X = scaler_minmax().transform(X)
 
     y = 10 * np.sin(np.pi * X[:, 0] * X[:, 1]) + 20 * (X[:, 2] - 0.5) ** 2 \
@@ -129,8 +137,12 @@ def train_test_split(X,y,train=0.7,random_seed=None,shuffle=True):
     else:
         raise ValueError("train should be between 0 and 1")
     if shuffle:
-        generator = np.random.default_rng(random_seed)
-        idx = generator.permutation(n_observations)
+        if np.__version__ >= '1.17':
+            generator = np.random.default_rng(random_seed)
+            permute = generator.permutation
+        else:
+            permute = np.random.RandomState(random_seed).permutation
+        idx = permute(n_observations)
     else:
         idx = np.arange(n_observations)
     idx_train, idx_test = idx[:n_train], idx[n_train:]

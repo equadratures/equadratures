@@ -4,7 +4,6 @@ from equadratures.poly import Poly
 from equadratures.subspaces import Subspaces
 from equadratures.parameter import Parameter
 from scipy import optimize
-from scipy.linalg import null_space
 import numpy as np
 from scipy.special import factorial
 from scipy.stats import linregress

@@ -75,13 +75,13 @@ class TestC(TestCase):
         """ 
         Tests elastic-net regularisation on linear (1st order) synthetic data with irrelevent features.
         """
-        # Generate 10D linear test data with 2 relevent features
-        X,y = datasets.gen_linear(n_observations=500,n_dim=10,bias=0.5,n_relevent=2,noise=0.2,random_seed=1)
-        X_train, X_test, y_train, y_test = datasets.train_test_split(X,y,train=0.8,random_seed=42)
-    
+        # Load linear dataset with n_observations=500,n_dim=10,bias=0.5,n_relevent=2,noise=0.2,train/test split = 0.8
+        data = np.load('./tests/test_data/linear_data.npz')
+        X_train = data['X_train']; y_train = data['y_train']; X_test = data['X_test']; y_test = data['y_test']
+
         # Define param and basis
         s = Parameter(distribution='uniform', lower=-1, upper=1, order=1,endpoints='both')
-        param = [s for _ in range(X.shape[1])]
+        param = [s for _ in range(X_train.shape[1])]
         basis = Basis('total-order') 
     
         # Fit Poly with OLS and Elastic Net (but with lambda=0 so effectively OLS) and check r2 scores match
@@ -117,13 +117,13 @@ class TestC(TestCase):
         """ 
         Tests elastic-net regularisation on quadratic (2nd order) synthetic data with irrelevent features.
         """
-        # Generate friedman dataset with 
-        X,y = datasets.gen_friedman(n_observations=200,n_dim=10,noise=0.2,normalise=False,random_seed=42)
-        X_train, X_test, y_train, y_test = datasets.train_test_split(X,y,train=0.8,random_seed=42)
+        # Generate friedman dataset with n_observations=200,n_dim=10,noise=0.2,normalise=False,train/test split of 0.8
+        data = np.load('./tests/test_data/friedman_data.npz')
+        X_train = data['X_train']; y_train = data['y_train']; X_test = data['X_test']; y_test = data['y_test']
 
         # Define param and basis
         s = Parameter(distribution='uniform', lower=-1, upper=1, order=4,endpoints='both')
-        param = [s for _ in range(X.shape[1])]
+        param = [s for _ in range(X_train.shape[1])]
         basis = Basis('total-order') 
 
         # Fit OLS poly
@@ -152,24 +152,21 @@ class TestC(TestCase):
         Tests the get poly eq routine when no variance data is given, i.e. when estimating the 
         empirical variance from training data.
         """
-        # Generate data
-        dim = 3
+#        # Generate data
         n = 1
-        N = 200
-        data_noise = 0.05
-        X,y = datasets.gen_linear(n_observations=N,n_dim=dim,bias=0.5,n_relevent=1,noise=data_noise,random_seed=1)
-        X_train, X_test, y_train, y_test = datasets.train_test_split(X,y,train=0.7,random_seed=42)
-        N_train = X_train.shape[0]
-        N_test  = X_test.shape[0]
-        
+       # Load linear dataset with n_observations=500,n_dim=10,bias=0.5,n_relevent=2,noise=0.2,train/test split = 0.8
+        data = np.load('./tests/test_data/linear_data.npz')
+        X_train = data['X_train']; y_train = data['y_train']
+        N,dim = X_train.shape
+
         # Fit poly and approx its variance
         param = Parameter(distribution='Uniform', lower=-1, upper=1, order=n)
         myParameters = [param for i in range(dim)] # one-line for loop for parameters
-        myBasis = Basis('tensor-grid')
+        myBasis = Basis('total-order')
         poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X_train, 'sample-outputs':y_train.reshape(-1,1)} )
         poly.set_model()
-        y_pred, y_std = poly.get_polyfit(X_test,uq=True)
-        np.testing.assert_array_almost_equal(y_std.mean(), 0.16723, decimal=5, err_msg='Problem!')
+        y_pred, y_std = poly.get_polyfit(X_train,uq=True)
+        np.testing.assert_array_almost_equal(y_std.mean(), 0.67484, decimal=5, err_msg='Problem!')
 
     def test_polyuq_prescribed(self):
         """
@@ -179,29 +176,25 @@ class TestC(TestCase):
         dim = 1
         n = 5
         N = 100
-        data_noise = 0.0
-        state = np.random.RandomState(42)
         our_function = lambda x:  0.3*x**4 -1.6*x**3 +0.6*x**2 +2.4*x - 0.5
-        X = state.uniform(-1,1,N)
+        X = np.linspace(-1,1,N)
         y = our_function(X)
-        X_train, X_test, y_train, y_test = datasets.train_test_split(X,y,train=0.7,random_seed=42)
-        N_train = X_train.shape[0]
-        N_test  = X_test.shape[0]
 
         # Array of prescribed variances at each training data point
-        y_var = state.uniform(0.05,0.2,N_train)**2
+#        y_var = state.uniform(0.05,0.2,N_train)**2
+        y_var = 0.1*our_function(X)*X
         
         # Fit poly with prescribed variances
         param = Parameter(distribution='Uniform', lower=-1, upper=1, order=n)
         myParameters = [param for i in range(dim)] # one-line for loop for parameters
         myBasis = Basis('univariate')
-        poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X_train.reshape(-1,1), 
-                                                                                  'sample-outputs':y_train.reshape(-1,1), 
+        poly = Poly(myParameters, myBasis, method='least-squares', sampling_args={'sample-points':X.reshape(-1,1), 
+                                                                                  'sample-outputs':y.reshape(-1,1), 
                                                                                   'sample-output-variances':y_var} )
         poly.set_model()
-        y_pred, y_std = poly.get_polyfit(X_test,uq=True)
+        y_pred, y_std = poly.get_polyfit(X,uq=True)
 
-        np.testing.assert_array_almost_equal(y_std.mean(), 0.34801, decimal=5, err_msg='Problem!')
+        np.testing.assert_array_almost_equal(y_std.mean(), 0.64015, decimal=5, err_msg='Problem!')
 
 if __name__== '__main__':
     unittest.main()

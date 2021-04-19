@@ -291,7 +291,7 @@ class Test_optimisation(TestCase):
         x0 = -2*np.ones(n)
         sol = Opt.optimise(x0, del_k=0.1, subspace_method='variable-projection', d=2)
         # print(sol)
-        np.testing.assert_almost_equal(sol['fun'], -39.1661656*n, decimal=1)
+        np.testing.assert_almost_equal(sol['fun'], -39.1661656*n, decimal=4)
             
     def test_optimise_omorf_as(self):
         n = 10
@@ -300,7 +300,7 @@ class Test_optimisation(TestCase):
         x0 = -2*np.ones(n)
         sol = Opt.optimise(x0, del_k=0.1)
         # print(sol)
-        np.testing.assert_almost_equal(sol['fun'], -39.1661656*n, decimal=1)
+        np.testing.assert_almost_equal(sol['fun'], -39.1661656*n, decimal=4)
 
     def test_optimise_omorf_bounds(self):
         n = 10
@@ -310,7 +310,7 @@ class Test_optimisation(TestCase):
         x0 = -2*np.ones(n)
         sol = Opt.optimise(x0, del_k=0.1)
         # print(sol)
-        np.testing.assert_almost_equal(sol['fun'], -39.1661656*n, decimal=1)
+        np.testing.assert_almost_equal(sol['fun'], -39.1661656*n, decimal=4)
 
 if __name__ == '__main__':
     unittest.main()

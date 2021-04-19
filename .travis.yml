@@ -43,6 +43,7 @@ before_install:
 install:
  - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
  - source activate test
+ - if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then conda install --yes nomkl; fi
  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib seaborn pip nose
  - conda install --yes -c conda-forge python=$TRAVIS_PYTHON_VERSION cvxpy
  - pip install setuptools coveralls

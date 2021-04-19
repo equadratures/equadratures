@@ -381,7 +381,7 @@ def plot_total_sobol(Polynomial, ax=None, show=True, labels=None, kwargs={}):
     else:
         return ax
 
-def plot_regpath(solver,nplot=None,show=True):
+def plot_regpath(solver,elements=None,nplot=None,show=True):
     """
     Generates a regularisation path for elastic net.
 
@@ -414,9 +414,23 @@ def plot_regpath(solver,nplot=None,show=True):
         else:
             coeffs = x_path[0,:]
             plots = (-np.abs(coeffs)).argsort()[:nplot]
-        for j in plots:
-            label="j=%d"%j       
-            ax1.plot(lamdas,x_path[:,j],'-',label=label,lw=2)
+        if elements is None:
+            for j in plots:
+                label="j=%d"%j
+                ax1.plot(lamdas,x_path[:,j],'-',label=label,lw=2)
+            
+        else:
+            for j in plots:
+                e1 = elements[j,0]
+                e2 = elements[j,1]
+                if e1 == 0:
+                    label = r'$p_%d(x_2)$' %e2
+                elif e2 == 0:
+                    label = r'$p_%d(x_1)$' %e1
+                else:
+                    label = r'$p_%d(x_1)p_%d(x_2)$' %(e1,e2)
+                ax1.plot(lamdas,x_path[:,j],'-',label=label,lw=2)
+
         ax1.vlines(lamdas[idx],ax1.get_ylim()[0],ax1.get_ylim()[1],'k',ls='--')
         fig.legend(loc='center left', bbox_to_anchor=(1, 0.6),ncol=1,edgecolor='0.0')
         ax2.grid(True)

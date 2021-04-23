@@ -646,9 +646,9 @@ def plot_model_vs_data(Polynomial, ax=None, sample_data=None, metric='adjusted_r
     else:
         X, y_truth = sample_data[0], sample_data[1]
         y_model = Polynomial.get_polyfit(X)
-    score = score(y_truth, y_model, metric, X)
+    myscore = score(y_truth, y_model, metric, X)
     ax.plot(y_model, y_truth, 'o', color='dodgerblue', ms=10, markeredgecolor='k',lw=1, alpha=0.6)
-    displaytext = '$Score$ = '+str(np.round(float(score), 2))
+    displaytext = '$Score$ = '+str(np.round(float(myscore), 2))
     ax.text(0.3, 0.9, displaytext, transform=ax.transAxes, \
         horizontalalignment='center', verticalalignment='center', fontsize=14, color='grey')
     sns.despine(offset=10, trim=True)

@@ -380,6 +380,45 @@ def plot_total_sobol(Polynomial, ax=None, show=True, labels=None, kwargs={}):
         return fig, ax
     else:
         return ax
+    
+def plot_interaction_heatmap(Polynomial,parameters=None,show=True,ax=None):
+  """
+  Generates a heatmap based on interaction of the parameters.
+  :param Poly Polynomial: 
+        An instance of the Poly class.
+  :param matplotlib.ax ax: 
+        An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
+  :param bool show: 
+        Option to show the graph.
+  """
+    if ax is None:
+        fig,ax = plt.subplots(figsize=(10, 7),tight_layout=True)
+        ax.set_xlabel(r'$u_1$')
+        ax.set_ylabel(r'$u_2$')
+    else:
+        fig = ax.figure
+    diag=Polynomial.get_sobol_indices(order=1)
+    vals=Polynomial.get_sobol_indices(order=2)
+    arr=np.ones(shape=(Polynomial.dimensions,Polynomial.dimensions))
+    for val in vals.keys():
+        arr[val[0]][val[1]]=vals[val]
+    for val in diag.keys():
+        arr[val[0]][val[0]]=diag[val]
+    row=len(arr)
+    col=len(arr[0])
+    for i in range(row):
+        for j in range(col):
+            if j<i:
+            arr[i][j]=float("NaN")
+    cmap=sns.color_palette("Blues", as_cmap=True)
+    if parameters is None:
+        sns.heatmap(arr,annot=True,cmap=cmap,cbar_kws={'label':'Sobol Indices'})
+    else:
+        ax=sns.heatmap(arr,annot=True,xticklabels=parameters,yticklabels=parameters,cmap=cmap,cbar_kws={'label':'Sobol Indices'})
+        ax.set_xticklabels(ax.get_xticklabels(),rotation=0 ,FontSize=10) 
+        ax.set_yticklabels(ax.get_yticklabels(),rotation=0 ,FontSize=10) 
+    if show:
+        plt.show()
 
 def plot_regpath(solver,elements=None,nplot=None,save=False,show=True,return_figure=False):
     """

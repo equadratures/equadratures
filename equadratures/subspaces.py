@@ -366,7 +366,7 @@ class Subspaces(object):
         if iteration == maxiter - 1 and verbose:
             print("VP finished with %d iterations" % iteration)
         active_subspace = U
-        inactive_subspace = scipy.linalg.null_space(active_subspace.T)
+        inactive_subspace = null_space(active_subspace.T)
         self._subspace = np.hstack([active_subspace, inactive_subspace])
 
     def get_zonotope_vertices(self, num_samples=10000, max_count=100000):
@@ -736,3 +736,16 @@ def linear_program_ineq(c, A, b):
 def get_unique_rows(X0):
     X1 = X0.view(np.dtype((np.void, X0.dtype.itemsize * X0.shape[1])))
     return np.unique(X1).view(X0.dtype).reshape(-1, X0.shape[1])
+
+def null_space(A, rcond=None):
+    '''
+    null space method adapted from scipy.
+    '''
+    u, s, vh = scipy.linalg.svd(A, full_matrices=True)
+    M, N = u.shape[0], vh.shape[1]
+    if rcond is None:
+        rcond = np.finfo(s.dtype).eps * max(M, N)
+    tol = np.amax(s) * rcond
+    num = np.sum(s > tol, dtype=int)
+    Q = vh[num:,:].T.conj()
+    return Q

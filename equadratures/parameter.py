@@ -1,6 +1,7 @@
 "Definition of a univariate parameter."
 from equadratures.distributions.gaussian import Gaussian
 from equadratures.distributions.uniform import Uniform
+from equadratures.distributions.triangular import Triangular
 from equadratures.distributions.chebyshev import Chebyshev
 from equadratures.distributions.beta import Beta
 from equadratures.distributions.cauchy import Cauchy
@@ -32,7 +33,7 @@ class Parameter(object):
         The type of distribution that characterizes the parameter. Options include `chebyshev (arcsine) <https://en.wikipedia.org/wiki/Arcsine_distribution>`_, `gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_,
         `truncated-gaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_, `beta <https://en.wikipedia.org/wiki/Beta_distribution>`_,
         `cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_, `exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_,
-        `uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_, `gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_,
+        `uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_, `triangular <https://en.wikipedia.org/wiki/Triangular_distribution>,`gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_,
         `weibull <https://en.wikipedia.org/wiki/Weibull_distribution>`_, `rayleigh  <https://en.wikipedia.org/wiki/Rayleigh_distribution>`_,
         `pareto <https://en.wikipedia.org/wiki/Pareto_distribution>`_, `lognormal <https://en.wikipedia.org/wiki/Log-normal_distribution>`_,
         `students-t <https://en.wikipedia.org/wiki/Student%27s_t-distribution>`_, `logistic <https://en.wikipedia.org/wiki/Log-normal_distribution>`_,
@@ -94,6 +95,8 @@ class Parameter(object):
             self.distribution = Gaussian(self.shape_parameter_A, self.shape_parameter_B)
         elif self.name.lower() == 'uniform':
             self.distribution = Uniform(self.lower, self.upper)
+        elif self.name.lower() == 'triangular':
+            self.distribution = Triangular(self.lower, self.upper, self.shape_parameter_A)
         elif self.name.lower() == 'analytical':
             self.distribution = Analytical(self.weight_function)
         elif self.name.lower() == 'data':

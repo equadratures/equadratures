@@ -21,7 +21,10 @@ def gen_linear(n_observations=100, n_dim=5, n_relevent=5,bias=0.0, noise=0.0, ra
     """
     # Generate input data
     n_relevent = min(n_dim, n_relevent)
-    generator = np.random.default_rng(random_seed)
+    if np.__version__ >= '1.17':
+        generator = np.random.default_rng(random_seed)
+    else:
+        generator = np.random.RandomState(random_seed)
     X = generator.standard_normal((n_observations,n_dim))
     X = scaler_minmax().transform(X)
 
@@ -58,7 +61,10 @@ def gen_friedman(n_observations=100, n_dim=5, noise=0.0, random_seed=None,normal
     if n_dim < 5:
         raise ValueError("n_dim must be at least five.")
 
-    generator = np.random.default_rng(random_seed)
+    if np.__version__ >= '1.17':
+        generator = np.random.default_rng(random_seed)
+    else:
+        generator = np.random.RandomState(random_seed)
     X = generator.standard_normal((n_observations,n_dim))
     X = scaler_minmax().transform(X)
 
@@ -72,7 +78,7 @@ def gen_friedman(n_observations=100, n_dim=5, noise=0.0, random_seed=None,normal
 
 def load_eq_dataset(dataset,data_dir=None):
     # Check if valid dataset
-    datasets = ['naca0012','blade_envelopes','probes']
+    datasets = ['naca0012','blade_envelopes','probes', '3Dfan_blades']
     if dataset not in datasets:
         raise ValueError('dataset specified in load_eq_dataset not recognised, avaiable datasets: ', datasets)
 
@@ -129,7 +135,10 @@ def train_test_split(X,y,train=0.7,random_seed=None,shuffle=True):
     else:
         raise ValueError("train should be between 0 and 1")
     if shuffle:
-        generator = np.random.default_rng(random_seed)
+        if np.__version__ >= '1.17':
+            generator = np.random.default_rng(random_seed)
+        else:
+            generator = np.random.RandomState(random_seed)
         idx = generator.permutation(n_observations)
     else:
         idx = np.arange(n_observations)

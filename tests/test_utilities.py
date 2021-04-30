@@ -9,6 +9,7 @@ from unittest import TestCase
 import unittest
 from equadratures import datasets
 import numpy as np
+from copy import deepcopy
 
 class Test_Utilities(TestCase):
 
@@ -44,19 +45,21 @@ class Test_Utilities(TestCase):
         """
         Test the datasets.score() function.
         """
-        X,y = datasets.gen_linear(n_observations=500,bias=5,n_dim=10,random_seed=42)
-        ynoise = y + np.random.RandomState(42).normal(0,0.1,500).reshape(-1,1)
-
-        score = datasets.score(y,ynoise,'r2')
-        np.testing.assert_array_almost_equal(score, 0.928, decimal=3, err_msg='Problem!')
-        score = datasets.score(y,ynoise,'adjusted_r2',X=X)
-        np.testing.assert_array_almost_equal(score, 0.927, decimal=3, err_msg='Problem!')
-        score = datasets.score(y,ynoise,'mae')
-        np.testing.assert_array_almost_equal(score, 0.078, decimal=3, err_msg='Problem!')
-        score = datasets.score(y,ynoise,'normalised_mae')
-        np.testing.assert_array_almost_equal(score, 0.220, decimal=3, err_msg='Problem!')
-        score = datasets.score(y,ynoise,'rmse')
-        np.testing.assert_array_almost_equal(score, 0.098, decimal=3, err_msg='Problem!')
+        x = np.array([0.1,0.05,0.4,0.2,0.31,0.34,0.5,0.6]).reshape(-1,1)
+        y = deepcopy(x)
+        y[0] += 0.02
+        y[2] -= 0.01
+        y[5] += 0.04
+        score = datasets.score(x,y,'r2')
+        np.testing.assert_array_almost_equal(score, 0.99301, decimal=5, err_msg='Problem!')
+        score = datasets.score(x,y,'adjusted_r2',X=x)
+        np.testing.assert_array_almost_equal(score, 0.99185, decimal=5, err_msg='Problem!')
+        score = datasets.score(x,y,'mae')
+        np.testing.assert_array_almost_equal(score, 0.00875, decimal=5, err_msg='Problem!')
+        score = datasets.score(x,y,'normalised_mae')
+        np.testing.assert_array_almost_equal(score, 0.04921, decimal=5, err_msg='Problem!')
+        score = datasets.score(x,y,'rmse')
+        np.testing.assert_array_almost_equal(score, 0.0162, decimal=5, err_msg='Problem!')
 
     def test_dataloader(self):
         """
@@ -67,6 +70,26 @@ class Test_Utilities(TestCase):
         dataset = 'naca0012'
         data = datasets.load_eq_dataset(dataset)
         self.assertIsInstance(data,np.lib.npyio.NpzFile)
+
+    def test_friedman(self):
+        """
+        Test the gen_friedman() sythetic dataset generator and the train_test_split utility.
+        """
+        N = 200
+        d = 6
+        X,y = datasets.gen_friedman(n_observations=N, n_dim=d, noise=0.0, normalise=False)
+
+        # Split the data
+        X_train,X_test,y_train,y_test = datasets.train_test_split(X,y,train=0.75,shuffle=True,random_seed=42) 
+
+        # Check dims
+        N_train = int(N*0.75)
+        N_test  = int(N*0.25)
+        np.testing.assert_equal(X_train.shape,np.array([N_train,d]))
+        np.testing.assert_equal(y_test.shape,np.array([N_test,]))
+        y_true = 10 * np.sin(np.pi * X_test[:, 0] * X_test[:, 1]) + 20 * (X_test[:, 2] - 0.5) ** 2 + 10 * X_test[:, 3] + 5 * X_test[:, 4] 
+        np.testing.assert_array_equal(y_true,y_test)
+
 
 if __name__== '__main__':
     unittest.main()

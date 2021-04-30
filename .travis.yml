@@ -16,22 +16,25 @@ addons:
     - libatlas-base-dev
     - liblapack-dev
 
+notifications:
+  email: false
+
 # blocklist
 # Block all /*feature*/ branches
 # Anything within /_>/ is treated as a Regex
-branches:
-  except:
-  - /*feature*/
+#branches:
+#  except:
+#  - /*feature*/
 
 # safelist
-# Only Build and Test changes of the master branch
+# Only Build and Test changes of the master and develop branches
 branches:
   only:
   - master
   - develop
 
 before_install:
- - travis_retry wget http://repo.continuum.io/miniconda/Miniconda-3.8.3-Linux-x86_64.sh -O miniconda.sh
+ - travis_retry wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
  - chmod +x miniconda.sh
  - bash miniconda.sh -b -p $HOME/miniconda
  - export PATH=/home/travis/miniconda/bin:$PATH
@@ -40,12 +43,11 @@ before_install:
 install:
  - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
  - source activate test
- - conda install --yes numpy scipy matplotlib seaborn pip nose
- - pip install cvxpy>=1.1 
- - pip install setuptools
+ - if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then conda install --yes nomkl; fi
+ - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib seaborn pip nose
+ - conda install --yes -c conda-forge python=$TRAVIS_PYTHON_VERSION cvxpy
+ - pip install setuptools coveralls
  - python setup.py install
- - pip install coveralls
- - pip install ray
 
 script: coverage run test.py tests/*
 

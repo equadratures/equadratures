@@ -208,6 +208,19 @@ class Poly(object):
             Dictionary of keyword arguments to pass to matplotlib.bar() function.  
         """
         return plot.plot_total_sobol(self,ax,show,labels,kwargs)
+    def plot_sobol_heatmap(self,parameters=None,show=True,ax=None):
+        """
+        Generates a heatmap showing the first and second order Sobol indices. 
+        :param Poly self: 
+              An instance of the Poly class.
+        :param list parameters: 
+              A list of strings to use for the axis labels.
+        :param matplotlib.ax ax: 
+              An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
+        :param bool show: 
+              Option to show the graph.
+        """
+        return plot.plot_sobol_heatmap(self,parameters,show,ax)
     def _set_parameters(self, parameters):
         """
         Private function that sets the parameters. Required by the Correlated class.

@@ -407,16 +407,18 @@ def plot_total_sobol(Polynomial, ax=None, show=True, labels=None, kwargs={}):
         plt.show()
     return fig, ax
     
-def plot_interaction_heatmap(Polynomial,parameters=None,show=True,ax=None):
-  """
-  Generates a heatmap based on interaction of the parameters.
-  :param Poly Polynomial: 
-        An instance of the Poly class.
-  :param matplotlib.ax ax: 
-        An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
-  :param bool show: 
-        Option to show the graph.
-  """
+def plot_sobol_heatmap(Polynomial,parameters=None,show=True,ax=None):
+    """
+    Generates a heatmap showing the first and second order Sobol indices. 
+    :param Poly Polynomial: 
+          An instance of the Poly class.
+    :param list parameters: 
+          A list of strings to use for the axis labels.
+    :param matplotlib.ax ax: 
+          An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
+    :param bool show: 
+          Option to show the graph.
+    """
     if ax is None:
         fig,ax = plt.subplots(figsize=(10, 7),tight_layout=True)
         ax.set_xlabel(r'$u_1$')
@@ -434,8 +436,7 @@ def plot_interaction_heatmap(Polynomial,parameters=None,show=True,ax=None):
     col=len(arr[0])
     for i in range(row):
         for j in range(col):
-            if j<i:
-            arr[i][j]=float("NaN")
+            if j<i: arr[i][j]=float("NaN")
     cmap=sns.color_palette("Blues", as_cmap=True)
     if parameters is None:
         sns.heatmap(arr,annot=True,cmap=cmap,cbar_kws={'label':'Sobol Indices'})

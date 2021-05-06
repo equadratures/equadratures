@@ -549,7 +549,53 @@ def plot_pdf(Parameter, ax=None, data=None, show=True):
     if data is not None:
         ax.hist(data, 50, density=True, facecolor='dodgerblue', alpha=0.7, label='Data', edgecolor='white')
     ax.legend()
-    sns.despine(offset=10, trim=True)
+    sns.despine(ax=ax, offset=10, trim=True)
+    if show:
+        plt.show()
+    return fig, ax
+
+def _trim_axs(ax,N):
+    """
+    Private function to reduce *axs* to *N* axes. All further axes are removed from the figure.
+    :param matplotlib.ax ax: 
+        An instance of the ``matplotlib`` axes class to plot onto. 
+    :param int N: 
+        The number of axes to reduce the subplot to.
+    :return:
+        **ax**: An instance of the ``matplotlib`` axes class, reduced to size *N*.
+
+    """
+    ax = ax.flat
+    for a in ax[N:]:
+        a.remove()
+    return ax[:N]
+
+def plot_parameters(Polynomial, ax=None, cols=2, show=True):
+    """
+    Plots the probability density functions for all Parameters within a Polynomial.
+    :param Poly Polynomial: 
+        An instance of the Polynomial class.
+    :param matplotlib.ax ax: 
+        An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
+    :param int cols: 
+        The number of columns to organise the parameter PDF plots into.
+    :param bool show: 
+        Option to show the graph.
+    :return:
+        **fig**: An instance of the ``matplotlib`` figure class, containing the generated axes.
+    :return:
+        **ax**: An instance of the ``matplotlib`` axes class, containing a plot of the PDF.
+    """
+    rows = len(Polynomial.parameters) // cols + 1
+    if ax is None:
+        fig, ax = plt.subplots(rows, cols, figsize=(8*cols, 6*rows), tight_layout=True)
+        ax = _trim_axs(ax, len(Polynomial.parameters))
+    else:
+        fig = ax.figure  
+    for a, param in zip(ax, Polynomial.parameters):
+        plot_pdf(param, ax=a, show=False)
+        a.set_xlabel(param.variable.capitalize())
+        a.set_ylabel('PDF')
     if show:
         plt.show()
     return fig, ax

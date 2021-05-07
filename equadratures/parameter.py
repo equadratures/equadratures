@@ -171,7 +171,7 @@ class Parameter(object):
         :param numpy.array data: 
             Samples from the distribution (or a similar one) that need to be plotted as a histogram.
         """
-        return plot.plot_pdf(self,ax=None, data=None, show=True)
+        return plot.plot_pdf(self,ax, data, show)
     def _set_moments(self):
         """
         Private function that sets the mean and the variance of the distribution.

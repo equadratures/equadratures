@@ -192,6 +192,26 @@ class Poly(object):
             Dictionary of keyword arguments to pass to matplotlib.bar() function.  
         """
         return plot.plot_sobol(self,ax,order,show,labels,kwargs)
+
+    def plot_parameters(self, ax=None, cols=2, show=True):
+        """
+        Plots the probability density functions for all Parameters within a Polynomial.
+        :param Poly self: 
+            An instance of the Polynomial class.
+        :param matplotlib.ax ax: 
+            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
+        :param int cols: 
+            The number of columns to organise the parameter PDF plots into.
+        :param bool show: 
+            Option to show the graph.
+        :return:
+            **fig**: An instance of the ``matplotlib`` figure class, containing the generated axes.
+        :return:
+            **ax**: An instance of the ``matplotlib`` axes class, containing a plot of the PDF.
+        """
+        return plot.plot_parameters(self, ax, cols, show)
+
+
     def plot_total_sobol(self, ax=None, show=True, labels=None, kwargs={}):
         """
         Plots a polynomial's total-order Sobol' indices.

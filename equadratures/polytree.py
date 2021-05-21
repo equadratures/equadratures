@@ -1,6 +1,7 @@
 import numpy as np
 from copy import deepcopy
 from equadratures.parameter import Parameter
+from equadratures import Weight
 from equadratures.poly import Poly
 from equadratures.basis import Basis
 import equadratures.plot as plot
@@ -48,7 +49,8 @@ class PolyTree(object):
                 2. Broelemann, K., Kasneci, G., (2019) A Gradient-Based Split Criterion for Highly Accurate and Transparent Model Trees. In Int. Joint Conf. on Artificial Intelligence (IJCAI). 2030-2037. `Paper <https://www.ijcai.org/Proceedings/2019/0281.pdf>`__
                 3. Chan, T. F., Golub, G. H., LeVeque, R. J., (1983) Algorithms for computing the sample variance: Analysis and recommendations. The American Statistician. 37(3): 242–247. `Paper <https://www.tandfonline.com/doi/abs/10.1080/00031305.1983.10483115>`__
         """
-        def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, order=1, basis='total-order', search='exhaustive', samples=50, verbose=False, poly_method="least-squares", poly_solver_args={},all_data=False,split_dims=None,k=0.05):
+        def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, order=1, basis='total-order', search='exhaustive', samples=50, verbose=False, 
+                poly_method="least-squares", poly_solver_args={},all_data=False,split_dims=None,k=0.05,distribution='uniform'):
                 self.splitting_criterion = splitting_criterion
                 self.max_depth = max_depth
                 self.min_samples_leaf = min_samples_leaf
@@ -64,6 +66,7 @@ class PolyTree(object):
                 self.actual_max_depth = 0
                 self.all_data = all_data
                 self.k = k
+                self.distribution = distribution
                 if split_dims is not None:
                         split_dims = [split_dims] if not isinstance(split_dims, list) else split_dims
                         assert all(isinstance(dim, int) for dim in split_dims), "split_dims should be a list if ints"
@@ -273,9 +276,16 @@ class PolyTree(object):
                                         values_max = np.amax(values)
 
                                         if (values_min - values_max) ** 2 < 0.01:
-                                                myParameters.append(Parameter(distribution='Uniform', lower=values_min-0.01, upper=values_max+0.01, order=self.order))
+                                            values_min -= 0.01
+                                            values_max += 0.01
+                                            myParameters.append(Parameter(distribution='Uniform', lower=values_min, upper=values_max, order=self.order))
                                         else:
+                                            if self.distribution == 'uniform':
                                                 myParameters.append(Parameter(distribution='Uniform', lower=values_min, upper=values_max, order=self.order))
+                                            elif self.distribution == 'data':
+                                                input_dist = Weight(values, support=[values_min, values_max], pdf=False)
+                                                myParameters.append(Parameter(distribution='data',weight_function=input_dist,order=self.order))
+
                                 if self.basis == "hyperbolic-basis":
                                         myBasis = Basis(self.basis, orders=[self.order for _ in range(d)], q=0.5)
                                 else:

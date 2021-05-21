@@ -734,7 +734,6 @@ def plot_decision_surface(PolyTree,ij,ax=None,X=None,y=None,max_depth=None,label
     """
     # Set default kwargs
     kwargs = set_defaults(kwargs, {'alpha':0.8,'ec':'lightgray','cmap':'coolwarm'})
-
     if ax is None:
         fig, ax = plt.subplots(tight_layout=True)
     else:
@@ -752,17 +751,17 @@ def plot_decision_surface(PolyTree,ij,ax=None,X=None,y=None,max_depth=None,label
     if color.lower() == 'error':
             error = y - PolyTree.predict(X)
             scat = ax.scatter(X[:,ij[0]],X[:,ij[1]],c=error,**kwargs)
-            label = 'Error'
+            col_label = 'Error'
     elif color.lower() == 'predict':
             scat = ax.scatter(X[:,ij[0]],X[:,ij[1]],c=PolyTree.predict(X),**kwargs)
-            label = 'Prediction'
+            col_label = 'Prediction'
     elif color.lower() == 'data':
             scat = ax.scatter(X[:,ij[0]],X[:,ij[1]],c=y,**kwargs)
-            label = 'Truth'
+            col_label = 'Truth'
     else:
         raise ValueError("color argument should be set to 'error', 'predict', or 'data'")
     if colorbar:
-        fig.colorbar(scat, orientation="vertical", pad=0.1, shrink=0.5,label=label)
+        fig.colorbar(scat, orientation="vertical", pad=0.1, shrink=0.5,label=col_label)
 
     def _get_boundaries(nodes,final):
             # Find leaf nodes
@@ -794,10 +793,10 @@ def plot_decision_surface(PolyTree,ij,ax=None,X=None,y=None,max_depth=None,label
             for n, node in enumerate(split_nodes):
                     if split_dims[n]==ij[0]:
                             ax.vlines(split_vals[n],node["Xmin"][1],
-                                       node["Xmax"][1],'k')
+                                       node["Xmax"][1],'k',lw=3)
                     else:
                             ax.hlines(split_vals[n],node["Xmin"][0],
-                                       node["Xmax"][0],'k')
+                                       node["Xmax"][0],'k',lw=3)
 
             # Update bounding boxes of child nodes before returning them
             for node in split_nodes:

@@ -992,7 +992,7 @@ class elastic_net(Solver):
 
     @staticmethod
     def _soft_threshold(rho,lamda):
-        '''Soft thresholding operator for 1D LASSO in elastic net coordinate descent algoritm'''
+        """Soft thresholding operator for 1D LASSO in elastic net coordinate descent algoritm"""
         if rho < -lamda:
             return (rho + lamda)
         elif rho > lamda:
@@ -1000,22 +1000,23 @@ class elastic_net(Solver):
         else:
             return 0.0
 
-    def plot_regpath(self,nplot=None,save=False,show=True,return_figure=False):
+    def plot_regpath(self,nplot=None,show=True):
         
-        """
-        Generates a regularisation path for elastic net.
-
-        :param Poly Polynomial: 
-            An instance of the Poly class.
-        :param int nplot:
+        """ Plots the regularisation path. Wrapper for :func:`plot.plot_regpath<equadratures.plot.plot_regpath>`.
+ 
+        Parameters
+        ----------
+        solver : Solver
+            An instance of the Solver class.
+        nplot : int, optional
             Number of coefficients for the plot.
-        :param bool save: 
-            Option to save the plot as a .png file.
-        :param bool show: 
+        show : bool, optional
             Option to show the graph.
-        :param bool return_figure: 
-            Option to get the figure axes,figure.
 
+        Returns
+        -------
+        tuple
+            Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`, :obj:`~matplotlib.axes.Axes`) containing figure and two axes corresponding to the polynomial coefficients and information criterion plots.
         """
         if hasattr(self, 'elements'):    
             elements=self.elements

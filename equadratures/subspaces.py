@@ -13,64 +13,65 @@ from scipy.optimize import linprog
 import warnings
 
 class Subspaces(object):
-    """
-    This class defines a subspaces object. It can be used for polynomial-based subspace dimension reduction.
+    """ This class defines a subspaces object. It can be used for polynomial-based subspace dimension reduction.
 
-    :param string method: The method to be used for subspace-based dimension reduction. One option is
-    ``active-subspace``, which uses ideas in [1] and [2] to compute a dimension-reducing subspace with a global
-     polynomial approximant. Gradients evaluations of the polynomial approximation are used to compute the averaged
-      outer product of the gradient covariance matrix. Another option is ``variable-projection`` [3], where a
-      Gauss-Newton optimisation problem is solved to compute both the polynomial coefficients and its subspace.
-    :param numpy.ndarray sample_points: A numpy ndarray with shape (number_of_observations, dimensions) that corresponds
-     to a set of sample points over the parameter space.
-    :param numpy.ndarray sample_outputs: A numpy ndarray with shape (number_of_observations, 1) that corresponds to
-    model evaluations at the sample points.
-    :param int subspace_dimension: The dimension of the *active* subspace.
-    :param dict param_args: Arguments passed to parameters of the AS polynomial. (see `parameter.py`)
-    :param dict poly_args: Arguments passed to constructing polynomial used for AS computation. (see `poly.py`)
-    :param dict dr_args: Arguments passed to customise the VP optimiser. See documentation for _get_variable_projection.
+    TODO: - incorperate below in examples?
+    How to standardise?
+    If just a dataset, no poly, then use minmax scaling
+    If poly, no datapoints, then data should be contained in poly
+     - extract points from poly using .get_points() and .get_model_evaluations
+     - standaridise according to distributions extracted from the poly's params
+    If poly, but with new points? We should assume points are drawn from same distr according to poly's params
+     - standaridise according to distributions extracted from the poly's params
+    We need information on whether marginals are bounded, semi-bounded or unbounded?
+     - bounded, minmax scaling: analytical, beta, chebyshev, truncated gaussian, uniform
+     - unbounded, meanvar scaling: cauchy (although stddev undefined!), gaussian, gumbel, logistic, studentst,
+     - semi-bounded, ???: chi, chi squared, exponential, gamma, lognormal, pareto (x \geq 1), rayleigh, weibull
 
-    **Sample constructor initialisations**::
+    Parameters
+    ----------
+    method : str
+        The method to be used for subspace-based dimension reduction. Two options:
 
-        import numpy as np
-        from equadratures import *
+        - ``active-subspace``, which uses ideas in [1] and [2] to compute a dimension-reducing subspace with a global polynomial approximant. Gradients evaluations of the polynomial approximation are used to compute the averaged outer product of the gradient covariance matrix. The polynomial approximation in the original full-space can be provided via ``full_space_poly``. Otherwise, it is fit internally to the data provided via ``sample_points`` and ``sample_outputs``.
+        - ``variable-projection`` [3], where a Gauss-Newton optimisation problem is solved to compute both the polynomial coefficients and its subspace, with the data provided via ``sample_points`` and ``sample_outputs``.
 
-        # Active subspaces with a global order 2 polynomial.
-        mysubspace = Subspaces(method='active-subspace', sample_points=X_red, sample_outputs=Y_red)
-        eigs = mysubspace.get_eigenvalues()
-        W = mysubspace.get_subspace()
-        e = mysubspace.get_eigenvalues()
+    full_space_poly : Poly, optional
+        An instance of Poly fitted to the full-space data, to use for the AS computation.
+    sample_points : numpy.ndarray, optional
+        Array with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
+    sample_outputs : numpy.ndarray, optional
+        Array with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points.
+    subspace_dimension : int, optional
+        The dimension of the *active* subspace.
+    param_args : dict, optional
+        Arguments passed to parameters of the AS polynomial. (see :class:`~equadratures.parameter.Parameter`)
+    poly_args : dict , optional
+        Arguments passed to constructing polynomial used for AS computation. (see :class:`~equadratures.poly.Poly`)
+    dr_args : dict, optional
+        Arguments passed to customise the VP optimiser. See documentation for :meth:`~equadratures.subspaces.Subspaces._get_variable_projection` in source.
 
-    **References**
-        1. Constantine, P., (2015) Active Subspaces: Emerging Ideas for Dimension Reduction in Parameter Studies.
-        SIAM Spotlights.
-        2. Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery Active Subspace
-         Performance Maps. Journal of Turbomachinery, 140(4), 041003.
-         `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__.
-        3. Hokanson, J., Constantine, P., (2018) Data-driven Polynomial Ridge Approximation Using Variable Projection.
-         SIAM Journal of Scientific Computing, 40(3), A1566-A1589.
-          `Paper <https://epubs.siam.org/doi/abs/10.1137/17M1117690>`__.
+    Examples
+    --------
+    Obtaining a 1D subspace via variable projection
+        >>> mysubspace = Subspaces(method='active-subspace', sample_points=X, sample_outputs=Y)
+        >>> eigs = mysubspace.get_eigenvalues()
+        >>> W = mysubspace.get_subspace()
+        >>> e = mysubspace.get_eigenvalues()
+
+    Obtaining a second order polynomial fitted over a two dimensional subspace, via variable 
+
+    References
+    ----------
+    1. Constantine, P., (2015) Active Subspaces: Emerging Ideas for Dimension Reduction in Parameter Studies. SIAM Spotlights.
+    2. Seshadri, P., Shahpar, S., Constantine, P., Parks, G., Adams, M. (2018) Turbomachinery Active Subspace Performance Maps. Journal of Turbomachinery, 140(4), 041003. `Paper <http://turbomachinery.asmedigitalcollection.asme.org/article.aspx?articleid=2668256>`__.
+    3. Hokanson, J., Constantine, P., (2018) Data-driven Polynomial Ridge Approximation Using Variable Projection. SIAM Journal of Scientific Computing, 40(3), A1566-A1589. `Paper <https://epubs.siam.org/doi/abs/10.1137/17M1117690>`__.
     """
     def __init__(self, method, full_space_poly=None, sample_points=None, sample_outputs=None,
                  subspace_dimension=2, polynomial_degree=2, param_args=None, poly_args=None, dr_args=None):
         self.full_space_poly = full_space_poly
         self.sample_points = sample_points
         self.Y = None  # for the zonotope vertices
-
-        '''
-        How to standardise?
-        If just a dataset, no poly, then use minmax scaling
-        If poly, no datapoints, then data should be contained in poly
-         - extract points from poly using .get_points() and .get_model_evaluations
-         - standaridise according to distributions extracted from the poly's params
-        If poly, but with new points? We should assume points are drawn from same distr according to poly's params
-         - standaridise according to distributions extracted from the poly's params
-        We need information on whether marginals are bounded, semi-bounded or unbounded?
-         - bounded, minmax scaling: analytical, beta, chebyshev, truncated gaussian, uniform
-         - unbounded, meanvar scaling: cauchy (although stddev undefined!), gaussian, gumbel, logistic, studentst,
-         - semi-bounded, ???: chi, chi squared, exponential, gamma, lognormal, pareto (x \geq 1), rayleigh, weibull
-        '''
-
         self.sample_outputs = sample_outputs
         self.method = method
         self.subspace_dimension = subspace_dimension
@@ -165,16 +166,14 @@ class Subspaces(object):
                 self._get_variable_projection()
 
     def get_subspace_polynomial(self):
-        """
-        Returns a polynomial defined over the dimension reducing subspace.
-
-        :param Subspaces self:
-            An instance of the Subspaces object.
-
-        :return:
-            **subspacepoly**: A Poly object that defines a polynomial over the subspace. The distribution of parameters
-             is assumed to be uniform and the maximum and minimum bounds for each parameter are defined by the maximum
-              and minimum values of the project samples.
+        """ Returns a polynomial defined over the dimension reducing subspace.
+        
+        Returns
+        -------
+        Poly
+            A Poly object that defines a polynomial over the subspace. The distribution of parameters
+            is assumed to be uniform and the maximum and minimum bounds for each parameter are defined by the maximum
+            and minimum values of the project samples.
         """
         # TODO: Try correlated poly here
         active_subspace = self._subspace[:, 0:self.subspace_dimension]
@@ -192,15 +191,13 @@ class Subspaces(object):
         return subspacepoly
 
     def get_eigenvalues(self):
-        """
-        Returns the eigenvalues of the dimension reducing subspace. Note: this option is
+        """ Returns the eigenvalues of the dimension reducing subspace. Note: this option is
         currently only valid for method ``active-subspace``.
 
-        :param Subspaces self:
-            An instance of the Subspaces object.
-
-        :return:
-            **eigenvalues**: A numpy.ndarray of shape (dimensions,) corresponding to the eigenvalues of the above mentioned covariance matrix.
+        Returns
+        -------
+        numpy.ndarray
+            Array of shape (dimensions,) corresponding to the eigenvalues of the above mentioned covariance matrix.
         """
         if self.method == 'active-subspace':
             return self._eigenvalues
@@ -208,22 +205,18 @@ class Subspaces(object):
             print('Only the active-subspace method yields eigenvalues.')
 
     def get_subspace(self):
-        """
-        Returns the dimension reducing subspace.
+        """ Returns the dimension reducing subspace.
 
-        :param Subspaces self:
-            An instance of the Subspaces object.
-
-        :return:
-            **subspace**: A numpy.ndarray of shape (dimensions, dimensions) where the first ``subspace_dimension`` columns
+        Returns
+        -------
+        numpy.ndarray
+            Array of shape (dimensions, dimensions) where the first ``subspace_dimension`` columns
             contain the dimension reducing subspace, while the remaining columns contain its orthogonal complement.
         """
         return self._subspace
 
     def _get_active_subspace(self, grad_points=None, **kwargs):
-        """
-        Active subspaces.
-        """
+        """ Private method to compute ctive subspaces. """
         if grad_points is None:
             X = self.full_space_poly.get_points()
         else:
@@ -263,16 +256,25 @@ class Subspaces(object):
         self._subspace = eigVecs
         self._eigenvalues = eigs
 
-    def _get_variable_projection(self, gamma=0.1, beta=1e-4, tol=1e-7, maxiter=1000, U0=None, verbose=False, **kw_args):
-        """
-        Variable Projection function to obtain an active subspace in inputs design space
+    def _get_variable_projection(self, gamma=0.1, beta=1e-4, tol=1e-7, maxiter=1000, U0=None, verbose=False):
+        """ Private method to obtain an active subspace in inputs design space via variable projection.
+
         Note: It may help to standardize outputs to zero mean and unit variance
-        :param gamma: double, step length reduction factor (0,1)
-        :param beta: double, Armijo tolerance for backtracking line search (0,1)
-        :param tol: double, tolerance for convergence, measured in the norm of residual over norm of f
-        :param maxiter: int, maximum number of optimisation iterations
-        :param U0: numpy.ndarray, initial guess for active subspace
-        :param verbose: bool, set to True for debug messages
+
+        Parameters
+        ----------
+        gamma : float, optional
+            Step length reduction factor (0,1).
+        beta : float, optional
+            Armijo tolerance for backtracking line search (0,1).
+        tol : float, optional
+            Tolerance for convergence, measured in the norm of residual over norm of f.
+        maxiter : int, optional
+            Maximum number of optimisation iterations.
+        U0 : numpy.ndarray, optional
+            Initial guess for active subspace.
+        verbose : bool, optional
+            Set to ``True`` for debug messages.
         """
         # NOTE: How do we know these are the best values of gamma and beta?
         M, m = self.std_sample_points.shape
@@ -366,21 +368,27 @@ class Subspaces(object):
         if iteration == maxiter - 1 and verbose:
             print("VP finished with %d iterations" % iteration)
         active_subspace = U
-        inactive_subspace = null_space(active_subspace.T)
+        inactive_subspace = _null_space(active_subspace.T)
         self._subspace = np.hstack([active_subspace, inactive_subspace])
 
     def get_zonotope_vertices(self, num_samples=10000, max_count=100000):
-        """
-        Returns the vertices of the zonotope -- the projection of the high-dimensional space over the computed
+        """ Returns the vertices of the zonotope -- the projection of the high-dimensional space over the computed
         subspace.
+        
+        Parameters
+        ----------
+        num_samples : int, optional
 
-        :param Subspaces self:
-            An instance of the Subspaces object.
+        max_count : int, optional
+   
 
-        :return:
-            **vertices**: A numpy.ndarray of shape (number of vertices, ``subspace_dimension``).
+        Returns
+        -------
+        numpy.ndarray
+            Array of shape (number of vertices, ``subspace_dimension``).
 
-        **Note:**
+        Note
+        ----
         This routine has been adapted from Paul Constantine's zonotope_vertices() function; see reference below.
 
         Constantine, P., Howard, R., Glaws, A., Grey, Z., Diaz, P., Fletcher, L., (2016) Python Active-Subspaces Utility Library. Journal of Open Source Software, 1(5), 79. `Paper <http://joss.theoj.org/papers/10.21105/joss.00079>`__.
@@ -431,16 +439,13 @@ class Subspaces(object):
             return self.Y
 
     def get_linear_inequalities(self):
-        """
-        Returns the linear inequalities defining the zonotope vertices, i.e., Ax<=b.
+        """ Returns the linear inequalities defining the zonotope vertices, i.e., Ax<=b.
 
-        :param Subspaces self:
-            An instance of the Subspaces object.
-
-        :return:
-            **A**: The matrix for setting the linear inequalities.
-        :return:
-            **b**: The right-hand-side vector for setting the linear inequalities.
+        Returns
+        -------
+        tuple
+            Tuple (A,b), containing the numpy.ndarray's A and b; where A is the matrix for setting the linear inequalities, 
+            and b is the right-hand-side vector for setting the linear inequalities.
         """
         if self.Y is None:
             self.Y = self.get_zonotope_vertices()
@@ -456,22 +461,23 @@ class Subspaces(object):
             return A, b
 
     def get_samples_constraining_active_coordinates(self, inactive_samples, active_coordinates):
-        """
-
-        A hit and run type sampling strategy for generating samples at a given coordinate in the active subspace
+        """ A hit and run type sampling strategy for generating samples at a given coordinate in the active subspace
         by varying its coordinates along the inactive subspace.
 
-        :param Subspaces self:
-            An instance of the Subspaces object.
-        :param int inactive_samples:
+        Parameters
+        ----------
+        inactive_samples : int
             The number of inactive samples required.
-        :param numpy.ndarray active_coordiantes:
+        active_coordiantes : numpy.ndarray
             The active subspace coordinates.
 
-        :return:
-            **X**: An numpy.ndarray of the full-space coordinates.
+        Returns
+        -------
+        numpy.ndarray
+            Array containing the full-space coordinates.
 
-        **Note:**
+        Note
+        ----
         This routine has been adapted from Paul Constantine's hit_and_run() function; see reference below.
 
         Constantine, P., Howard, R., Glaws, A., Grey, Z., Diaz, P., Fletcher, L., (2016) Python Active-Subspaces Utility Library. Journal of Open Source Software, 1(5), 79. `Paper <http://joss.theoj.org/papers/10.21105/joss.00079>`__.
@@ -542,45 +548,41 @@ class Subspaces(object):
         yz = np.vstack([np.repeat(y[:, np.newaxis], N, axis=1), Z.T])
         return np.dot(self._subspace, yz).T
 
-#    def plot_sufficient_summary(self, **kwargs):
     def plot_sufficient_summary(self, ax=None, X_test=None, y_test=None, show=True, poly=True, uncertainty=False, legend=False, scatter_kwargs={}, plot_kwargs={}):
+        """ Generates a sufficient summary plot for 1D or 2D polynomial ridge approximations.
+        Wrapper for :meth:`~equadratures.plot.plot_sufficient_summary`.
+
+        Example
+        -------
+        >>> mysubspace = Subspaces(method='active-subspace', sample_points=X, sample_outputs=Y)
+        >>> fig, ax = mysubspace.plot_sufficient_summary()
         """
-        Generates a sufficient summary plot for 1D or 2D polynomial ridge approximations.
-        
-        :param Subspace mysubspace:
-            An instance of the Subspace class.
-        :param matplotlib.ax ax: 
-            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
-        :param :numpy.ndarray X_test:
-            A numpy ndarray containing input test data to plot (in addition to the training data). Must have same number of dimensions as the training data. 
-        :param :numpy.ndarray y_test:
-            A numpy ndarray containing output test data to plot (in addition to the training data).
-        :param bool show:
-            Option to view the plot.
-        :param bool poly:
-            Option to plot the subspace polynomial.
-        :param bool uncertainty:
-            Option to show confidence intervals (1 standard deviation) of the subspace polynomial.
-        :param bool legend:
-            Option to show legend.
-        :param dict scatter_kwargs:
-            Dictionary of keyword arguments to pass to matplotlib.scatter functions.  
-        :param dict plot_kwargs:
-            Dictionary of keyword arguments to pass to matplotlib.plot functions.  
-        """
-        #return plot.plot_sufficient_summary(self,**kwargs)
         return plot.plot_sufficient_summary(self, ax, X_test, y_test, show, poly, uncertainty, legend, scatter_kwargs, plot_kwargs)
 
-    def plot_2D_contour_zonotope(self, **kwargs):
+    def plot_2D_contour_zonotope(self, mysubspace, minmax=[- 3.5, 3.5], grid_pts=180, show=True, ax=None):
         """
         Generates a 2D contour plot of the polynomial ridge approximation.
+        Wrapper for :meth:`~equadratures.plot.plot_2D_contour_zonotope`.
+
+        Example
+        -------
+        >>> mysubspace = Subspaces(method='active-subspace', sample_points=X, sample_outputs=Y)
+        >>> fig, ax = mysubspace.plot_2D_contour_zonotope()
         """
         return plot.plot_2D_contour_zonotope(self,**kwargs)
 
-    def plot_samples_from_second_subspace_over_first(self, mysubspace_2, **kwargs):
+    def plot_samples_from_second_subspace_over_first(self, mysubspace_2, axs=None, no_of_samples=500, minmax=[- 3.5, 3.5], grid_pts=180, show=True):
         """
         Generates a zonotope plot where samples from the second subspace are projected
         over the first.
+
+        Wrapper for :meth:`~equadratures.plot.plot_samples_from_second_subspace_over_first`.
+
+        Example
+        -------
+        >>> mysubspace1 = Subspaces(method='active-subspace', sample_points=X, sample_outputs=Y)
+        >>> mysubspace2 = Subspaces(method='variable-projection', sample_points=X, sample_outputs=Y)
+        >>> fig1, ax1, fig2, ax2 = mysubspace1.plot_samples_from_second_subspace_over_first(mysubspace2)
         """
         return plot.plot_samples_from_second_subspace_over_first(self,mysubspace_2, **kwargs)
 
@@ -737,10 +739,10 @@ def get_unique_rows(X0):
     X1 = X0.view(np.dtype((np.void, X0.dtype.itemsize * X0.shape[1])))
     return np.unique(X1).view(X0.dtype).reshape(-1, X0.shape[1])
 
-def null_space(A, rcond=None):
-    '''
+def _null_space(A, rcond=None):
+    """
     null space method adapted from scipy.
-    '''
+    """
     u, s, vh = scipy.linalg.svd(A, full_matrices=True)
     M, N = u.shape[0], vh.shape[1]
     if rcond is None:

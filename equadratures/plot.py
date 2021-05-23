@@ -44,6 +44,11 @@ def plot_sufficient_summary(mysubspace, ax=None, X_test=None, y_test=None, show=
     -------
     tuple
         Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
+
+    Example
+    -------
+    >>> mysubspace = Subspaces(method='active-subspace', sample_points=X, sample_outputs=Y)
+    >>> fig, ax = mysubspace.plot_sufficient_summary()
     """
     # Set default kwargs
     scatter_kwargs = set_defaults(scatter_kwargs,{'marker':'o','s':60,'ec':'k','lw':2,'alpha':0.7})
@@ -145,6 +150,11 @@ def plot_2D_contour_zonotope(mysubspace, minmax=[-3.5, 3.5], grid_pts=180,  \
     -------
     tuple
         Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
+
+    Example
+    -------
+    >>> mysubspace = Subspaces(method='active-subspace', sample_points=X, sample_outputs=Y)
+    >>> fig, ax = mysubspace.plot_2D_contour_zonotope()
     """
     if ax is None:
         fig,ax = plt.subplots(figsize=(10, 7),tight_layout=True)
@@ -217,6 +227,12 @@ def plot_samples_from_second_subspace_over_first(mysubspace_1, mysubspace_2, axs
     -------
     tuple
         Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`, :obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes` ) containing contour plots of the sample mean and variance over the 2D subspace.
+
+    Example
+    -------
+    >>> mysubspace1 = Subspaces(method='active-subspace', sample_points=X, sample_outputs=Y)
+    >>> mysubspace2 = Subspaces(method='variable-projection', sample_points=X, sample_outputs=Y)
+    >>> fig1, ax1, fig2, ax2 = mysubspace1.plot_samples_from_second_subspace_over_first(mysubspace2)
     """    
     # 1. Generate a grid on the first zonotope.
     x1 = np.linspace(minmax[0], minmax[1], grid_pts)
@@ -512,7 +528,7 @@ def plot_regpath(solver,elements=None,nplot=None,show=True):
         fig.legend(loc='center left', bbox_to_anchor=(1, 0.6),ncol=1,edgecolor='0.0')
         ax2.grid(True)
         ax2.set_xlabel('Log($\\lambda$)')
-        ax2.set_ylabel('AIC')
+        ax2.set_ylabel(solver.crit)
         ax2.set_xscale('log')
         ax2.set_yscale('log')
         ax2.plot(lamdas,IC,'-k',lw=2)

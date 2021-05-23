@@ -9,6 +9,7 @@ from equadratures.subspaces import Subspaces
 from equadratures.weight import Weight
 from equadratures.poly import evaluate_model, evaluate_model_gradients, vector_to_2D_grid
 from equadratures.polytree import PolyTree
+from equadratures.solver import Solver
 from equadratures.scalers import *
 import numpy as np
 import os, sys

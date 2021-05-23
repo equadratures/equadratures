@@ -22,7 +22,7 @@ class Poly(object):
     basis : Basis
         An instance of the Basis class corresponding to the multi-index set used.
     method : str, optional
-        The method used for computing the coefficients. Should be one of: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``huber``, ``elastic-net``, ``elastic-path`` or ``relevance-vector-machine``. 
+        The method used for computing the coefficients. Should be one of: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``huber``, ``elastic-net``, ``relevance-vector-machine`` or ``custom-solver``. See :class:`~equadratures.solver.Solver` for further details.
     sampling_args : dict, optional
         A dict containing optional arguments centered around the specific sampling strategy:
 
@@ -60,9 +60,7 @@ class Poly(object):
     2. Xiu, D., Karniadakis, G. E., (2002) The Wiener-Askey Polynomial Chaos for Stochastic Differential Equations. SIAM Journal on Scientific Computing,  24(2), `Paper <https://epubs.siam.org/doi/abs/10.1137/S1064827501387826?journalCode=sjoce3>`__
     3. Seshadri, P., Iaccarino, G., Ghisu, T., (2018) Quadrature Strategies for Constructing Polynomial Approximations. Uncertainty Modeling for Engineering Applications. Springer, Cham, 2019. 1-25. `Preprint <https://arxiv.org/pdf/1805.07296.pdf>`__
     4. Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations. SIAM/ASA Journal on Uncertainty Quantification, 5(1). `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
-    5. Bos, L., De Marchi, S., Sommariva, A., Vianello, M., (2010) Computing Multivariate Fekete and Leja points by Numerical Linear Algebra. SIAM Journal on Numerical Analysis, 48(5). `Paper <https://epubs.siam.org/doi/abs/10.1137/090779024>`__
-    6. Joshi, S., Boyd, S., (2009) Sensor Selection via Convex Optimization. IEEE Transactions on Signal Processing, 57(2). `Paper <https://ieeexplore.ieee.org/document/4663892>`__
-    7. Rogers, S., Girolami, M., (2016) Variability in predictions. In: A First Course in Machine Learning, Second Edition (2nd. ed.). Chapman & Hall/CRC. `Book <https://github.com/wwkenwong/book/blob/master/Simon%20Rogers%2C%20Mark%20Girolami%20A%20First%20Course%20in%20Machine%20Learning.pdf>`__
+    5. Rogers, S., Girolami, M., (2016) Variability in predictions. In: A First Course in Machine Learning, Second Edition (2nd. ed.). Chapman & Hall/CRC. `Book <https://github.com/wwkenwong/book/blob/master/Simon%20Rogers%2C%20Mark%20Girolami%20A%20First%20Course%20in%20Machine%20Learning.pdf>`__
     """
     def __init__(self, parameters, basis, method=None, sampling_args=None, solver_args={}, variable=None):
         try:
@@ -149,133 +147,27 @@ class Poly(object):
             print('WARNING: Method not declared.')
 
     def plot_polyfit_1D(self, ax=None, uncertainty=True, output_variances=None, number_of_points=200, show=True):
-        """ Plots a 1D only polynomial fit to the data. Wrapper for :meth:`~equadratures.plot.plot_polyfit_1D`.
-    
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes, optional
-            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
-        uncertainty : bool, optional
-            Option to show confidence intervals (1 standard deviation).
-        output_variances : numpy.ndarray, optional
-            User-defined uncertainty associated with each data point; can be either a ``float`` in which case all data points are assumed to have the same variance, or can be an array of length equivalent to the number of data points.
-        show : bool, optional
-            Option to view the plot.
-    
-        Returns
-        -------
-        tuple
-            Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
-        """
+        """ Plots a 1D only polynomial fit to the data. See :meth:`~equadratures.plot.plot_polyfit_1D` for full description. """
         return plot.plot_polyfit_1D(self,ax,uncertainty,output_variances,number_of_points,show)
 
     def plot_model_vs_data(self, ax=None, sample_data=None, metric='adjusted_r2', show=True):
-        """ Plots the polynomial approximation against the true data. :meth:`~equadratures.plot.plot_model_vs_data`.
-    
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes, optional
-            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
-        sample_data : list, optional
-            A list formed by ``[X, y]`` where ``X`` represents the spatial data input and ``y`` the output.
-        metric : str, optional
-            Accuracy/error score metric to annotate graph with. See :meth:`~equadratures.datasets.score` for options.
-        show : bool , optional
-            Option to view the plot.
-    
-        Returns
-        -------
-        tuple
-            Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
-        """
+        """ Plots the polynomial approximation against the true data. See :meth:`~equadratures.plot.plot_model_vs_data` for full description. """
         return plot.plot_model_vs_data(self,ax,sample_data,metric,show)
 
     def plot_sobol(self, ax=None, order=1, show=True, labels=None, kwargs={}):
-        """ Plots a polynomial's Sobol' indices of a given order. :meth:`~equadratures.plot.plot_sobol`.
-    
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes, optional
-            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
-        order : int, optional
-            Order of the Sobol' indices to plot.
-        parameters : list, optional
-            List of the parameters for the given polynomial.
-        show : bool, optional
-            Option to show the graph.
-        kwargs : dict, optional
-            Dictionary of keyword arguments to pass to matplotlib.bar().  
-    
-        Returns
-        -------
-        tuple
-            Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
-        """
+        """ Plots a polynomial's Sobol' indices of a given order. See :meth:`~equadratures.plot.plot_sobol` for full description. """
         return plot.plot_sobol(self,ax,order,show,labels,kwargs)
 
     def plot_parameters(self, ax=None, cols=2, show=True):
-        """ Plots the probability density functions for all Parameters within a Polynomial. :meth:`~equadratures.plot.plot_parameters`.
-    
-        Parameters
-        ----------
-        Polynomial : Poly
-            An instance of the Poly class.
-        ax : matplotlib.axes.Axes, optional
-            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
-        cols : int, optional
-            The number of columns to organise the parameter PDF plots into.
-        show : bool, optional
-            Option to show the graph.
-    
-        Returns
-        -------
-        tuple
-            Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
-        """
+        """ Plots the probability density functions for all Parameters within a Polynomial. See :meth:`~equadratures.plot.plot_parameters` for full description. """
         return plot.plot_parameters(self, ax, cols, show)
 
     def plot_total_sobol(self, ax=None, show=True, labels=None, kwargs={}):
-        """ Plots a polynomial's total-order Sobol' indices. :meth:`~equadratures.plot.plot_total_sobol`.
-    
-        Parameters
-        ----------
-        Polynomial : Poly 
-            An instance of the Poly class.
-        ax : matplotlib.axes.Axes, optional
-            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
-        parameters : list, optional 
-            List of the parameters for the given polynomial.
-        show : bool, optional 
-            Option to show the graph.
-        kwargs : dict, optional
-            Dictionary of keyword arguments to pass to matplotlib.bar().  
-    
-        Returns
-        -------
-        tuple
-            Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
-        """
+        """ Plots a polynomial's total-order Sobol' indices. See :meth:`~equadratures.plot.plot_total_sobol` for full description. """
         return plot.plot_total_sobol(self,ax,show,labels,kwargs)
 
     def plot_sobol_heatmap(self,parameters=None,show=True,ax=None):
-        """ Generates a heatmap showing the first and second order Sobol indices. :meth:`~equadratures.plot.plot_sobol_heatmap`.
-    
-        Parameters
-        ----------
-        Polynomial : Poly 
-              An instance of the Poly class.
-        parameters : list 
-              A list of strings to use for the axis labels.
-        ax : matplotlib.axes.Axes 
-              An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
-        show : bool
-              Option to show the graph.
-    
-        Returns
-        -------
-        tuple
-            Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
-        """
+        """ Generates a heatmap showing the first and second order Sobol indices. See :meth:`~equadratures.plot.plot_sobol_heatmap` for full description. """
         return plot.plot_sobol_heatmap(self,parameters,show,ax)
 
     def _set_parameters(self, parameters):
@@ -720,7 +612,7 @@ class Poly(object):
         stack_of_points : numpy.ndarray
             An ndarray with shape (number_of_observations, dimensions) at which the polynomial fit must be evaluated at.
         uq : bool, optional
-            If ``True``, the estimated uncertainty (standard deviation) of the polynomial approximation is also returned (see [7]).
+            If ``True``, the estimated uncertainty (standard deviation) of the polynomial approximation is also returned (see [5]).
 
         Returns
         -------
@@ -1012,7 +904,7 @@ class Poly(object):
             return train_score
 
     def _get_polystd(self, stack_of_points):
-        """ Private function to evaluate the uncertainty of the polynomial approximation at prescribed points, following the approach from [7].
+        """ Private function to evaluate the uncertainty of the polynomial approximation at prescribed points, following the approach from [5].
 
         Parameters
         ----------

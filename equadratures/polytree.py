@@ -8,46 +8,49 @@ import equadratures.plot as plot
 from urllib.parse import quote
 
 class PolyTree(object):
-        """
-        Definition of a polynomial tree object.
+        """ Definition of a polynomial tree object.
 
-        :param str splitting_criterion:
+        Parameters
+        ----------
+        splitting_criterion : str, optional
                 The type of splitting_criterion to use in the fit function. Options include ``model_aware`` which fits polynomials for each candidate split, ``model_agnostic`` which uses a standard deviation based model-agnostic split criterion [1], and ``loss_gradient`` which uses a gradient based splitting criterion similar to that in [2].
-        :param int max_depth:
+        max_depth : int, optional
                 The maximum depth which the tree will grow to.
-        :param int min_samples_leaf:
+        min_samples_leaf : int, optional
                 The minimum number of samples per leaf node.
-        :param int order:
+        order : int, optional
                 The order of the generated orthogonal polynomials.
-        :param str basis:
-                The type of index set used for the basis. Options include: ``univariate``, ``total-order``, ``tensor-grid``, ``sparse-grid`` and ``hyperbolic-basis``
-        :param str search:
+        basis : str, optional
+                The type of index set used for the basis. Options include: ``univariate``, ``total-order``, ``tensor-grid``, ``sparse-grid`` and ``hyperbolic-basis``.
+        search : str, optional
                 The method of search to be used. Options are ``grid`` or ``exhaustive``.
-        :param int samples:
+        samples : int, optional
                 The interval between splits if ``grid`` search is chosen.
-        :param bool verbose:
-                For debugging
-        :param bool all_data:
-                Save data at all nodes (instead of only leaf nodes).
-        :param list split_dims:
+        verbose : bool, optional
+                For debugging.
+        all_data : bool, optional
+                Store data at all nodes in :class:`~PolyTree` (instead of only leaf nodes).
+        split_dims : list, optional
                 List of dimensions along which to make splits.
+        k : float, optional
+                The smoothing parameter. Range from 0.0 to 1.0, with 0 giving no smoothing, and 1 giving maximum smoothing.
+        distribution : str, optional
+                The type of input parameter distributions. Either ``uniform`` or ``data``.                    
 
-        **Sample constructor initialisations**::
+        Example
+        -------
+        >>> tree = polytree.PolyTree()
+        >>> X = np.loadtxt('inputs.txt')
+        >>> Xtest = np.loadtxt('inputs_test.txt')
+        >>> y = np.loadtxt('outputs.txt')
+        >>> tree.fit(X,y)
+        >>> y_test = tree.predict(X_test)
 
-                import numpy as np
-                from equadratures import *
-
-                tree = polytree.PolyTree()
-
-                X = np.loadtxt('inputs.txt')
-                y = np.loadtxt('outputs.txt')
-
-                tree.fit(X,y)
-
-        **References**
-                1. Wang, Y., Witten, I. H., (1997) Inducing Model Trees for Continuous Classes. In Proc. of the 9th European Conf. on Machine Learning Poster Papers. 128-137. `Paper <https://researchcommons.waikato.ac.nz/handle/10289/1183>`__
-                2. Broelemann, K., Kasneci, G., (2019) A Gradient-Based Split Criterion for Highly Accurate and Transparent Model Trees. In Int. Joint Conf. on Artificial Intelligence (IJCAI). 2030-2037. `Paper <https://www.ijcai.org/Proceedings/2019/0281.pdf>`__
-                3. Chan, T. F., Golub, G. H., LeVeque, R. J., (1983) Algorithms for computing the sample variance: Analysis and recommendations. The American Statistician. 37(3): 242–247. `Paper <https://www.tandfonline.com/doi/abs/10.1080/00031305.1983.10483115>`__
+        References
+        ----------
+        1. Wang, Y., Witten, I. H., (1997) Inducing Model Trees for Continuous Classes. In Proc. of the 9th European Conf. on Machine Learning Poster Papers. 128-137. `Paper <https://researchcommons.waikato.ac.nz/handle/10289/1183>`__
+        2. Broelemann, K., Kasneci, G., (2019) A Gradient-Based Split Criterion for Highly Accurate and Transparent Model Trees. In Int. Joint Conf. on Artificial Intelligence (IJCAI). 2030-2037. `Paper <https://www.ijcai.org/Proceedings/2019/0281.pdf>`__
+        3. Chan, T. F., Golub, G. H., LeVeque, R. J., (1983) Algorithms for computing the sample variance: Analysis and recommendations. The American Statistician. 37(3): 242–247. `Paper <https://www.tandfonline.com/doi/abs/10.1080/00031305.1983.10483115>`__
         """
         def __init__(self, splitting_criterion='model_aware', max_depth=5, min_samples_leaf=None, order=1, basis='total-order', search='exhaustive', samples=50, verbose=False, 
                 poly_method="least-squares", poly_solver_args={},all_data=False,split_dims=None,k=0.05,distribution='uniform'):
@@ -78,13 +81,12 @@ class PolyTree(object):
                 assert k > 0, "k must be a positive number"
 
         def get_splits(self):
-                """
-                Returns the list of splits made
+                """ Returns all of the data splits made.
 
-                :param PolyTree self:
-                    An instance of the PolyTree class.
-                :return:
-                        **splits**: A list of Splits made in the format of a nested list: [[split, dimension], ...]
+                Returns
+                -------
+                list
+                    A list of splits made in the format of a nested list: [[split, dimension], ...]
                 """
 
                 def _search_tree(node, splits):
@@ -110,12 +112,12 @@ class PolyTree(object):
 
         def get_polys(self):
                 """
-                Returns the list of polynomials used in the tree
+                Returns all of the polynomials fitted at each node in the tree.
 
-                :param PolyTree self:
-                    An instance of the PolyTree class.
-                :return:
-                        **polys**: A list of Poly objects
+                Returns
+                -------
+                list
+                    A list of Poly objects.
                 """
 
                 def _search_tree(node, polys):
@@ -134,13 +136,13 @@ class PolyTree(object):
 
         def fit(self, X, y):
                 """
-                Fits the tree to the provided data
+                Fits the PolyTree to the provided data.
 
-                :param PolyTree self:
-                    An instance of the PolyTree class.
-                :param numpy.ndarray X:
+                Parameters
+                ----------
+                X : numpy.ndarray
                         Training input data
-                :param numpy.ndarray y:
+                y : numpy.ndarray
                         Training output data
                 """
 
@@ -366,18 +368,17 @@ class PolyTree(object):
                 self.tree = _build_tree()
 
         def prune(self, X, y, tol=0.0, percent=False):
-                """
-                Prunes the tree that you have fitted.
+                """ Prunes the tree that you have fitted.
 
-                :param PolyTree self:
-                    An instance of the PolyTree class.
-                :param numpy.ndarray X:
+                Parameters
+                ----------
+                X : numpy.ndarray
                         Training input data
-                :param numpy.ndarray y:
+                y : numpy.ndarray
                         Training output data
-                :param float tol:
-                        Pruning tolerance (%). Prune nodes if they only improve loss by less than this tolerance (optional).
-                :param bool percent:
+                tol : float, optional
+                        Pruning tolerance (%). Prune nodes if they only improve loss by less than this tolerance.
+                percent : bool, optional
                         If true, tol is taken as a percentage of the parent node's error. Otherwise, tol is taken to be an absolute value.
                 """
                 if percent: tol /= 100.0
@@ -423,12 +424,17 @@ class PolyTree(object):
 
 
         def predict(self, X):
-            """
-            Evaluates the the polynomial tree approximation of the data.
-            :param numpy.ndarray X:
+            """ Evaluates the the polynomial tree approximation of the data.
+
+            Parameters
+            ----------
+            X : numpy.ndarray
                 An ndarray with shape (number_of_observations, dimensions) at which the tree fit must be evaluated at.
-            :return: **y**:
-                A numpy.ndarray of shape (1, number_of_observations) corresponding to the polynomial approximation of the tree.
+
+            Returns
+            -------
+            numpy.ndarray
+                Array with shape (1, number_of_observations) corresponding to the polynomial approximations of the tree.
             """
 
             def _predict(node, indexes):
@@ -475,16 +481,17 @@ class PolyTree(object):
             return smoothed_y_pred
 
         def apply(self,X):
-                """
-                Returns the leaf node index for each observation in the data.
+                """ Returns the leaf node index for each observation in the data.
 
-                :param PolyTree self:
-                    An instance of the PolyTree class.
-                :param numpy.ndarray X:
-                    An ndarray with shape (number_of_observations, dimensions) at which the tree fit must be evaluated at.
+                Parameters
+                ----------
+                X : numpy.ndarray
+                    Array with shape (number_of_observations, dimensions) at which the tree fit must be evaluated at.
 
-                :return:
-                **inode**: A numpy.ndarray of shape (number_of_observations,1) corresponding to the node indices for each observation in X.
+                Returns
+                -------
+                numpy.ndarray
+                    A numpy.ndarray of shape (number_of_observations,1) corresponding to the node indices for each observation in X.
                 """
                 def _apply(node, indexes):
                         no_children = node["children"]["left"] is None and \
@@ -504,14 +511,12 @@ class PolyTree(object):
                 return inode
 
         def get_leaves(self):
-                """
-                Returns the node indices for all leaf nodes.
-
-                :param PolyTree self:
-                    An instance of the PolyTree class.
-
-                :return:
-                **inode**: A list containing the node indices of all leaf nodes.
+                """ Returns the node indices for all leaf nodes.
+                
+                Returns
+                -------
+                list
+                    Contains the node indices of all leaf nodes.
                 """
                 def _recurse(node,leaf_list):
                     no_children = node["children"]["left"] is None and \
@@ -527,16 +532,12 @@ class PolyTree(object):
                 return leaf_list
 
         def get_mean_and_variance(self):
-            """
-            Computes the mean and variance of the polynomial tree model.
-
-            :param Poly self:
-                An instance of the PolyTree class.
-
-            :return:
-                **mean**: The approximated mean of the polynomial tree fit; output as a float.
-
-                **variance**: The approximated variance of the polynomial tree fit; output as a float.
+            """ Computes the mean and variance of the polynomial tree model.
+            
+            Returns
+            -------
+            tuple
+                Tuple (mean,variance) containing two floats; the approximated mean and variance from the fitted PolyTree.
             """
             # Get volume of polytree domain
             root_poly = self.tree["poly"]
@@ -566,17 +567,16 @@ class PolyTree(object):
             return mean, var
 
         def get_graphviz(self, X=None, feature_names=None, file_name=None):
-                """
-                Returns a url to the rendered graphviz representation of the tree.
+                """ Generates a graphviz visualisation of the PolyTree.
 
-                :param PolyTree self:
-                    An instance of the PolyTree class.
-                :param numpy.ndarray X:
-                        An ndarray with shape (dimensions) containing an input vector for a given sample, to highlight in the tree (optional).
-                :param list feature_names:
-                        A list of the names of the features used in the training data (optional).
-                :param string filename:
-                        Filename to write graphviz data to (optional). If None (default) then rendered in-place.
+                Parameters
+                ----------
+                X : numpy.ndarray, optional
+                        An ndarray with shape (dimensions) containing an input vector for a given sample, to highlight in the tree.
+                feature_names : list, optional
+                        A list of the names of the features used in the training data.
+                filename : str, optional
+                        Filename to write graphviz data to. If ``None`` (default) then rendered in-place.
                 """
                 from graphviz import Digraph
                 g = Digraph('g', node_attr={'shape': 'record', 'height': '.1'})
@@ -677,15 +677,17 @@ class PolyTree(object):
                                 file.write(str(g.source))
 
         def get_node(self, inode):
-                """
-                Returns the node corresponding to a given node number inode (int).
+                """ Returns the node corresponding to a given node number.
 
-                :param PolyTree self:
-                    An instance of the PolyTree class.
-                :param int inode:
-                        An int containing the node index.
-                :return:
-                **node**: The data for the node X belongs to; output as a dict.
+                Parameters
+                ----------
+                inode : int
+                    The node number.
+
+                Returns
+                -------
+                dict
+                    Dictionary containing the data for the requested node.
                 """
                 # Find node with given index inode. Traverse all children until correct node found.
                 def _get_node_from_n(node):
@@ -702,16 +704,17 @@ class PolyTree(object):
                 return _get_node_from_n(self.tree)
 
         def get_paths(self,X=None):
-                """
-                Returns the tree paths for the leaf nodes in the tree.
+                """ Returns the tree paths for the leaf nodes in the tree.
 
-                :param PolyTree self:
-                    An instance of the PolyTree class.
-                :param numpy.ndarray X:
-                    An ndarray with shape (number_of_observations, dimensions) to apply the tree to (optional). If given, paths will only be returned for leaves which contain observations.
-
-                :return:
-                **paths**: A dict containing a dict for each leaf node. Indexed by the node indexes for the leaf nodes.
+                Parameters
+                ----------
+                X : numpy.ndarray, optional
+                    Array with shape (number_of_observations, dimensions) to apply the tree to. If given, paths will only be returned for leaves which contain observations.
+                
+                Returns
+                -------
+                dict
+                    Dictionary containing a dict for each leaf node. Indexed by the node indices for the leaf nodes.
                 """
 
                 def _find_path(node, path, i):
@@ -758,50 +761,28 @@ class PolyTree(object):
 
         def plot_decision_surface(self,ij,ax=None,X=None,y=None,max_depth=None,label=True,
                                          color='data',colorbar=True,show=True,kwargs={}):
-                """
-                Plots the decision boundaries of the PolyTree over a 2D surface.
-        
-                :param PolyTree self: 
-                    An instance of the PolyTree class.
-                :param list ij: 
-                    A list containing the two dimensions to plot over. For example, ``ij=[6,7]`` with plot over the 6th and 7th dimensions in ``X``.
-                :param matplotlib.ax ax: 
-                    An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
-                :param :numpy.ndarray X:
-                    A numpy ndarray containing the input data to plot.
-                :param :numpy.ndarray y:
-                    A numpy ndarray containing the output data to plot.
-                :param int max_depth:
-                    The maximum tree depth to plot decision boundaries for.
-                :param bool label:
-                    If ``True`` then the subdomains are labelled by their node number.
-                :param string color:
-                    What to color the scatter points by. ``'data'`` to color by the ``X``,``y`` data. ``'predict'`` to color by the PolyTree predictions, and ``'error'`` to color by the predictive error. (default: ``'data'``).
-                :param bool colorbar:
-                    Option to add a colorbar.
-                :param bool show:
-                    Option to view the plot.
-                :param dict kwargs:
-                    Dictionary of keyword arguments to pass to matplotlib.scatter().  
-                """
+                """ Plots the decision boundaries of the PolyTree over a 2D surface. See :meth:`~equadratures.plot.plot_decision_surface` for full description. """
                 return plot.plot_decision_surface(self,ij,ax,X,y,max_depth,label,color,colorbar,show,kwargs)
 
         def _find_split_from_grad(self,model, X, y):
-                """
-                Private method to find the optimal split point for a tree node based on the training data in that node.
+                """ Private method to find the optimal split point for a tree node based on the training data in that node.
 
-                :param PolyTree self:
-                    An instance of the PolyTree class.
-                :param Poly model:
+                Parameters
+                ----------
+                model : Poly
                     An instance of the Poly class, corresponding to the Poly belonging to the tree node.
-                :param numpy.ndarray X:
+                X : numpy.ndarray
                         An ndarray with shape (number_of_observations, dimensions) containing the input data belonging to the tree node.
-                :param numpy.ndarray y:
+                y : numpy.ndarray
                         An ndarray with shape (number_of_observations, 1) containing the response data belonging to the tree node.
-                :return:
-                **did_split**: True if a split was found, otherwise False; output as a bool.
-                **split_dim**: The dimension in X within which the best split was found; output as an int.
-                **split_val**: The location of the best split; output as a float.
+
+                Returns
+                -------
+                tuple
+                    Tuple (did_split, split_dim, split_val), where:
+                        did_split (bool): True if a split was found, otherwise False.
+                        split_dim (int): The dimension in X within which the best split was found.
+                        split_val (float): The location of the best split.
                 """
                 renorm = True
                 N,D = np.shape(X)
@@ -872,13 +853,22 @@ class PolyTree(object):
 
         @staticmethod
         def _get_mean_and_sigma(X,splits,N_l,N_r,sort):
-                """
-                Computes mean and standard deviation of the data in array X, when it is
+                """ Computes mean and standard deviation of the data in array X, when it is
                 split in two by the threshold values in the splits array. The data is offset by
                 its mean to avoid catastrophic cancellation when computing the variance (see ref. [3]).
-                X - [N,ndim] array of data.
-                splits  - [Nsplit] array of split locations.
-                sort   - [N] array reordering X.
+
+                Parameters
+                ----------
+                X : numpy.ndarray
+                    Arrray with dimensions (N,ndim) containing the orthogonal polynomials P.
+                splits : numpy.ndarray
+                    Array of split locations.
+                N_l : numpy.ndarray
+                    Array containing info on number of samples to left of splits.
+                N_r : numpy.ndarray
+                    Array containing info on number of samples to right of splits.
+                sort : numpy.ndarray
+                    Index array to reorder X.
                 """
                 # Min value of sigma (for stability later)
                 epsilon = 0.001
@@ -911,14 +901,19 @@ class PolyTree(object):
         def _renormalise(gradients, a, c):
                 """
                 Renormalises gradients according to according to eq. (14) of [1].
-                Inputs
-                ------
-                gradients: array [n_samples, n_params] of gradients
-                a: array [n_samples, n_params-1]: The normalisation factor
-                c: array [n_samples, n_params-1]: The normalisation offset
+                Parameters
+                ----------
+                gradients : numpy.ndarray 
+                    Array with shape (n_samples, n_params), containing the gradients.
+                a : numpy.ndarray
+                    Array with shape (n_samples, n_params-1) containing the normalisation factors.
+                c: numpy.ndarray 
+                    Array with shape (n_samples, n_params-1) containing the normalisation offsets.
+
                 Returns
                 -------
-                gradients: array [n_samples, n_params]: Renormalised gradients
+                gradients : numpy.ndarray 
+                    Array with shape (n_samples, n_params) containing the renormalised gradients.
                 """
                 c = c*gradients[:,0].reshape(-1,1)
                 gradients[:,1:] = gradients[:,1:] * a + c

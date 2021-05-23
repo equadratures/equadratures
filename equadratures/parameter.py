@@ -132,49 +132,13 @@ class Parameter(object):
             distribution_error()
         self.mean = self.distribution.mean
         self.variance = self.distribution.variance
+
     def plot_orthogonal_polynomials(self, ax=None, order_limit=None, number_of_points=200, show=True):
-        """ Plots the first few orthogonal polynomials.
-    
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes, optional
-            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
-        order_limit : int, optional
-            The maximum number of orthogonal polynomials that need to be plotted.
-        number_of_points : int, optional
-            The number of points used for plotting.
-        show : bool, optional
-            Option to view the plot.
-    
-        Returns
-        -------
-        tuple
-            Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
-    
-        Example
-        -------
-            >>> myparam = eq.Parameter(distribution='uniform', lower = -1.0, upper = 1.0, order=8, endpoints='both')
-            >>> myparam.plot_orthogonal_polynomials()        
-        """
+        """ Plots the first few orthogonal polynomials. See :meth:`~equadratures.plot.plot_orthogonal_polynomials` for full description. """
         return plot.plot_orthogonal_polynomials(self,ax,order_limit,number_of_points,show)
 
     def plot_pdf(self, ax=None, data=None, show=True):
-        """ Plots the probability density function for a Parameter.
-    
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes, optional
-            An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
-        data : numpy.ndarray, optional
-            Samples from the distribution (or a similar one) that need to be plotted as a histogram.
-        show : bool, optional
-            Option to show the graph.
-    
-        Returns
-        -------
-        tuple
-            Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
-        """
+        """ Plots the probability density function for a Parameter. See :meth:`~equadratures.plot.plot_pdf` for full description. """
         return plot.plot_pdf(self,ax, data, show)
 
     def _set_moments(self):

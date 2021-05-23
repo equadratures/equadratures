@@ -550,41 +550,20 @@ class Subspaces(object):
 
     def plot_sufficient_summary(self, ax=None, X_test=None, y_test=None, show=True, poly=True, uncertainty=False, legend=False, scatter_kwargs={}, plot_kwargs={}):
         """ Generates a sufficient summary plot for 1D or 2D polynomial ridge approximations.
-        Wrapper for :meth:`~equadratures.plot.plot_sufficient_summary`.
-
-        Example
-        -------
-        >>> mysubspace = Subspaces(method='active-subspace', sample_points=X, sample_outputs=Y)
-        >>> fig, ax = mysubspace.plot_sufficient_summary()
-        """
+        See :meth:`~equadratures.plot.plot_sufficient_summary` for full description. """
         return plot.plot_sufficient_summary(self, ax, X_test, y_test, show, poly, uncertainty, legend, scatter_kwargs, plot_kwargs)
 
     def plot_2D_contour_zonotope(self, mysubspace, minmax=[- 3.5, 3.5], grid_pts=180, show=True, ax=None):
-        """
-        Generates a 2D contour plot of the polynomial ridge approximation.
-        Wrapper for :meth:`~equadratures.plot.plot_2D_contour_zonotope`.
-
-        Example
-        -------
-        >>> mysubspace = Subspaces(method='active-subspace', sample_points=X, sample_outputs=Y)
-        >>> fig, ax = mysubspace.plot_2D_contour_zonotope()
-        """
-        return plot.plot_2D_contour_zonotope(self,**kwargs)
+        """ Generates a 2D contour plot of the polynomial ridge approximation.
+        See :meth:`~equadratures.plot.plot_2D_contour_zonotope` for full description. """
+        return plot.plot_2D_contour_zonotope(self,minmax,grid_pts,show,ax)
 
     def plot_samples_from_second_subspace_over_first(self, mysubspace_2, axs=None, no_of_samples=500, minmax=[- 3.5, 3.5], grid_pts=180, show=True):
         """
-        Generates a zonotope plot where samples from the second subspace are projected
-        over the first.
-
-        Wrapper for :meth:`~equadratures.plot.plot_samples_from_second_subspace_over_first`.
-
-        Example
-        -------
-        >>> mysubspace1 = Subspaces(method='active-subspace', sample_points=X, sample_outputs=Y)
-        >>> mysubspace2 = Subspaces(method='variable-projection', sample_points=X, sample_outputs=Y)
-        >>> fig1, ax1, fig2, ax2 = mysubspace1.plot_samples_from_second_subspace_over_first(mysubspace2)
+        Generates a zonotope plot where samples from the second subspace are projected over the first.
+        See :meth:`~equadratures.plot.plot_samples_from_second_subspace_over_first` for full description.
         """
-        return plot.plot_samples_from_second_subspace_over_first(self,mysubspace_2, **kwargs)
+        return plot.plot_samples_from_second_subspace_over_first(self,mysubspace_2, axs, no_of_samples, minmax, grid_pts, show)
 
 def vandermonde(eta, p):
     # TODO: Try using a "correlated" basis here?

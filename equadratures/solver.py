@@ -1,4 +1,9 @@
-"""Solvers for computing of a linear system."""
+"""
+Solvers for computation of linear systems of the form :math:`\mathbf{A}\mathbf{x}=\mathbf{b}`.
+
+These solvers are used *under-the-hood* by :class:`~equadratures.poly.Poly` when :meth:`~equadratures.poly.Poly.set_model()` is called, with the solver specified by the ``method`` argument. 
+The solvers can also be used independently (see examples) for debugging and experimentation purposes.
+"""
 import numpy as np
 from scipy.linalg import qr
 from scipy.optimize import linprog, minimize
@@ -15,14 +20,59 @@ except ImportError as e:
 ###################
 class Solver(object):
     """
-    Returns solver functions for solving Ax=b
-    :param string method: The method used for solving the linear system. Options include: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``huber``, ``elastic-net``, ``elastic-path`` and ``relevance-vector-machine``. 
-    :param dict solver_args: Optional arguments centered around the specific solver.
-        :param bool verbose: Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
-        :param string opt: Specifies the underlying optimisation method to use. ``scipy`` for scipy, and `osqp` to use the OSQP optimiser (requires ``cvxpy`` to be installed). 
+    The parent solver class. All other solver subclasses inherit attributes and methods from this parent class. 
+
+    Note
+    ----
+    This parent class should not be used directly, but can be used to select the desired solver subclass (see examples).
+
+    Parameters
+    ----------
+    method : string
+        The method used for solving the linear system. Options include: ``compressed-sensing``, ``least-squares``, ``minimum-norm``, ``numerical-integration``, ``least-squares-with-gradients``, ``least-absolute-residual``, ``huber``, ``elastic-net``, and ``relevance-vector-machine``. 
+    solver_args : dict, optional
+        Dictionary containing optional arguments centered around the specific solver. Arguments are specific to the requested solver, except for the following generic arguments:
+
+        - **verbose** (bool): Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
+        - **opt** (str): Specifies the underlying optimisation method to use. ``scipy`` for scipy, and `osqp` to use the OSQP optimiser (requires ``cvxpy`` to be installed). 
+
+    Examples
+    --------
+    Accessing the underlying solver used by a Poly instance
+        >>> # Fit a 2D polynomial using the elastic-net solver (with some specific solver_args passed)
+        >>> x = np.linspace(-1,1,80)
+        >>> xx = np.vstack([x,x]).T
+        >>> y = xx[:,0]**3 + xx[0,1]**2 + np.random.normal(0,0.1,80)
+        >>> myparam = eq.Parameter(distribution='uniform',order=3)
+        >>> mybasis = eq.Basis('total-order')
+        >>> mypoly = eq.Poly([myparam,myparam],mybasis,method='elastic-net',
+        >>>                 sampling_args={'mesh': 'user-defined','sample-points':xx,'sample-outputs':y},
+        >>>                 solver_args={'verbose':True,'crit':'AIC'})
+        >>> mypoly.set_model()
+        >>> # Plot the regularisation path using the solver's method
+        >>> mypoly.solver.plot_regpath()
+
+    Using solver subclasses directly
+        >>> # Example data
+        >>> A = np.array([[1,2,3],[1,1,1],[2,1,1]])
+        >>> b = np.array([1,0,1])
+        >>>
+        >>> # # select_solver will return the requested solver subclass
+        >>> mysolver = eq.Solver.select_solver('least-squares',solver_args={'verbose':False})
+        >>> 
+        >>> # Or you can select the solversubclass directly
+        >>> mysolver = solver.least_squares(solver_args={'verbose':True})
+        >>> 
+        >>> # You can manually run solve and then get_coefficients
+        >>> mysolver.solve(A,b)
+        >>> x = mysolver.get_coefficients()
+        >>> 
+        >>> # Or providing get_coefficients() with A and b will automatically run solve()
+        >>> x = mysolver.get_coefficients(A,b)
+        The condition number of the matrix is 29.82452477932781.
+        The condition number of the matrix is 29.82452477932781.
     """
     def __init__(self, method, solver_args={}):
-        self.method = method
         self.solver_args = solver_args
         self.gradient_flag = False
         # Parse generic solver args here (solver specific ones done in subclass)
@@ -35,11 +85,25 @@ class Solver(object):
 
         if self.opt=='osqp' and not cvxpy: 
             self.opt='scipy'
+
     @staticmethod
     def select_solver(method,solver_args={}):
-        """ 
-        Method to return a solver subclass.
-        :param string method: The name of the solver to return.
+        """ Method to return a solver subclass.
+
+        Parameters
+        ----------
+        method : str
+            The name of the solver to return.
+        solver_args : dict, optional
+            Dictionary containing optional arguments centered around the specific solver. Arguments are specific to the requested solver, except for the following generic arguments:
+    
+            - **verbose** (bool): Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
+            - **opt** (str): Specifies the underlying optimisation method to use. ``scipy`` for scipy, and `osqp` to use the OSQP optimiser (requires ``cvxpy`` to be installed). 
+
+        Returns
+        -------
+        Solver
+            The Solver subclass specified in ``method``.
         """
         if method.lower()=='least-squares':
             return least_squares(solver_args)
@@ -65,12 +129,23 @@ class Solver(object):
             raise ValueError('You have not selected a valid method for solving the coefficients of the polynomial. Choose from compressed-sensing, least-squares, least-squares-with-gradients, least-absolute-residual, minimum-norm, numerical-integration, huber, elastic-net or custom_solver.')
 
     def get_coefficients(self,*args):
-        """
-        Get the coefficients the solver has calculated. If the A and b matrices are provied Solver.solve() will be run first. If the solver uses gradients, C and d can also be given.
-        :param :numpy.ndarray A: ``numpy.ndarray`` with shape (number_of_observations, cardinality). Optional.
-        :param :numpy.ndarray b: ``numpy.ndarray`` with shape (number_of_observations, 1) or (number_of_observations). Optional.
-        :param :numpy.ndarray C: ``numpy.ndarray`` with shape (number_of_observations, cardinality). Optional.
-        :param :numpy.ndarray d: ``numpy.ndarray`` with shape (number_of_observations, 1) or (number_of_observations). Optional.
+        """ Get the coefficients the solver has calculated. If the A and b matrices are provied Solver.solve() will be run first. If the solver uses gradients, C and d can also be given.
+
+        Parameters
+        ----------
+        A : numpy.ndarray, optional
+            Array with shape (number_of_observations, cardinality).
+        b : numpy.ndarray, optional
+            Array with shape (number_of_observations, 1) or (number_of_observations).
+        C : numpy.ndarray, optional
+            Array with shape (number_of_observations, cardinality).
+        d : numpy.ndarray, optional
+            Array with shape (number_of_observations, 1) or (number_of_observations).
+
+        Returns
+        -------
+        numpy.ndarray
+            Array containing the coefficients x computed by the solver.
         """
         #TODO - amend descriptions of A,b,C and d above
         # If A and b are given then run the solver
@@ -101,10 +176,14 @@ class Solver(object):
 # Least squares solver subclass.
 ################################
 class least_squares(Solver):
-    """
-    Ordinary least squares solver.
-    :param dict solver_args: Optional arguments for the solver.
-        :param bool verbose: Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
+    """ Ordinary least squares solver.
+
+    Parameters
+    ----------
+    solver_args : dict 
+        Optional arguments for the solver:
+
+        - **verbose** (bool): Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
     """
     def __init__(self,solver_args={}):
         # Init base class
@@ -122,10 +201,14 @@ class least_squares(Solver):
 # Minimum-norm solver subclass.
 ###############################
 class minimum_norm(Solver):
-    """
-    Minimum norm solver, used for uniquely or overdetermined systems (i.e. m>=n).
-    :param dict solver_args: Optional arguments for the solver.
-        :param bool verbose: Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
+    """ Minimum norm solver, used for uniquely or overdetermined systems (i.e. m>=n).
+
+    Parameters
+    ----------
+    solver_args : dict 
+        Optional arguments for the solver:
+
+        - **verbose** (bool): Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
     """
     def __init__(self,solver_args={}):
         # Init base class
@@ -148,12 +231,16 @@ class minimum_norm(Solver):
         self.coefficients = x
 
 class compressed_sensing(Solver):
-    """
-    Compressed sensing solver.
-    :param dict solver_args: Optional arguments for the solver.
-        :param bool verbose: Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
-        :param float noise-level:  
-        :param string opt: Specifies the underlying optimisation method to use. ``scipy`` for scipy, and `osqp` to use the OSQP optimiser (requires ``cvxpy`` to be installed). 
+    """ Compressed sensing solver.
+
+    Parameters
+    ----------
+    solver_args : dict 
+        Optional arguments for the solver:
+
+        - **verbose** (bool): Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
+        - **noise-level** (float)  
+        - **opt** (str): Specifies the underlying optimisation method to use. ``scipy`` for scipy, and `osqp` to use the OSQP optimiser (requires ``cvxpy`` to be installed). 
     """
     def __init__(self,solver_args={}):
         # Init base class
@@ -222,15 +309,17 @@ class compressed_sensing(Solver):
 
     @staticmethod
     def _CG_solve(A, b, max_iters, tol):
-        """
-        Solves Ax = b iteratively using conjugate gradient, assuming A is a symmetric positive definite matrix.
-        :param numpy-matrix A:
+        """ Solves Ax = b iteratively using conjugate gradient, assuming A is a symmetric positive definite matrix.
+
+        Parameters
+        ----------
+        A : numpy-matrix
             The matrix.
-        :param numpy-array b:
+        b : numpy.ndarray
             The right hand side column vector.
-        :param int max_iters:
+        max_iters : int
             Maximum number of iterations for the conjugate gradient algorithm.
-        :param double tol:
+        tol : float
             Tolerance for cut-off.
         """
         if not(np.all(np.linalg.eigvals(A) > 0)):
@@ -274,18 +363,19 @@ class compressed_sensing(Solver):
     
     @staticmethod
     def _bp_denoise(A, b, epsilon, verbose=False, **kwargs):
-        """
-        Solving the basis pursuit de-noising problem.
-        :param numpy-matrix A:
+        """ Solving the basis pursuit de-noising problem.
+
+        Parameters
+        ----------
+        A : numpy-matrix
             The matrix.
-        :param numpy-array b:
+        b : numpy.ndarray
             The right hand side column vector.
-        :param double epsilon:
+        epsilon : float
             The noise.
-        :param numpy-array x0:
-            Initial solution  if not provided the least norm solution is used.
-        """
-    
+        x0 : numpy.ndarray
+            Initial solution, if not provided the least norm solution is used.
+        """ 
         if hasattr(kwargs, 'x0'):
             x0 = kwargs['x0']
         else:
@@ -361,7 +451,7 @@ class compressed_sensing(Solver):
             # prob.solve(warm_start=False, verbose=verbose)
             #
             # return xu.value[:d]
-            pass
+            raise ValueError('cvxpy currently not implemented for compressed sensing')
     
         newtontol = lbtol
         newtonmaxiter = 50
@@ -497,10 +587,14 @@ class compressed_sensing(Solver):
 # Numerical integration solver subclass.
 ########################################
 class numerical_integration(Solver):
-    """
-    Numerical integration solver. This solves an orthogonal linear system i.e. simply c=A^T.b.
-    :param dict solver_args: Optional arguments for the solver.
-        :param bool verbose: Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
+    """ Numerical integration solver. This solves an orthogonal linear system i.e. simply c=A^T.b.
+
+    Parameters
+    ----------
+    solver_args : dict 
+        Optional arguments for the solver:
+
+        - **verbose** (bool): Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
     """
     def __init__(self,solver_args={}):
         # Init base class
@@ -512,11 +606,15 @@ class numerical_integration(Solver):
 # Least absolute residual solver.
 #################################
 class least_absolute_residual(Solver):
-    """
-    Least absolute residual solver. Solves Ax=b by minimising the L1 norm (absolute residuals).
-    :param dict solver_args: Optional arguments for the solver.
-        :param bool verbose: Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
-        :param string opt: Specifies the underlying optimisation method to use. ``scipy`` for scipy, and `osqp` to use the OSQP optimiser (requires ``cvxpy`` to be installed). 
+    """ Least absolute residual solver. Solves Ax=b by minimising the L1 norm (absolute residuals).
+
+    Parameters
+    ----------
+    solver_args : dict 
+        Optional arguments for the solver:
+
+        - **verbose** (bool): Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
+        - **opt** (str): Specifies the underlying optimisation method to use. ``scipy`` for scipy, and `osqp` to use the OSQP optimiser (requires ``cvxpy`` to be installed). 
     """
     def __init__(self,solver_args={}):
         # Init base class
@@ -552,14 +650,20 @@ class least_absolute_residual(Solver):
 # Huber solver subclass.
 ########################
 class huber(Solver):
-    """
-    Huber regression solver. Solves Ax=b by minimising the Huber loss function. 
-    This function is identical to the least squares (L2) penalty for small residuals (i.e. ||Ax-b||**2<=M). 
-    But on large residuals (||Ax-b||**2>M), its penalty is lower (L1) and increases linearly rather than quadratically. 
+    """ Huber regression solver. 
+
+    Solves :math:`\mathbf{A}\mathbf{x}=\mathbf{b}` by minimising the Huber loss function. 
+    This function is identical to the least squares (L2) penalty for small residuals (i.e. :math:`||\mathbf{A}\mathbf{x}-\mathbf{b}||^2\le M`).
+    But on large residuals (:math:`||\mathbf{A}\mathbf{x}-\mathbf{b}||^2 > M`), its penalty is lower (L1) and increases linearly rather than quadratically. 
     It is thus more forgiving of outliers.
-    :param dict solver_args: Optional arguments for the solver.
-        :param bool verbose: Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
-        :param float M: The huber threshold. Default ``M=1``.
+
+    Parameters
+    ----------
+    solver_args : dict, optional
+        Optional arguments for the solver:
+
+        - **verbose** (bool): Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
+        - **M** (float): The huber threshold. Default ``M=1``.
     """
     def __init__(self,solver_args={}):
         # Init base class
@@ -602,11 +706,15 @@ class huber(Solver):
 # Relevence vector machine solver.
 ##################################
 class rvm(Solver):
-    """
-    Relevence vector machine solver.
-    :param dict solver_args: Optional arguments for the solver.
-        :param bool verbose: Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
-        :param int max_iter: Maximum number of iterations. Default is 1000.
+    """ Relevence vector machine solver.
+
+    Parameters
+    ----------
+    solver_args : dict 
+        Optional arguments for the solver:
+
+        - **verbose** (bool): Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
+        - **max_iter** (int): Maximum number of iterations. Default is 1000.
     """
     def __init__(self,solver_args={}):
         # Init base class
@@ -674,11 +782,16 @@ class rvm(Solver):
 # Numerical integration solver subclass.
 ########################################
 class constrained_least_squares(Solver):
-    """
-    Constrained least squares regression. 
+    """ Constrained least squares regression. 
+
     This solves an orthogonal linear system i.e. simply c=A^T.b.
-    :param dict solver_args: Optional arguments for the solver.
-        :param bool verbose: Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
+
+    Parameters
+    ----------
+    solver_args : dict 
+        Optional arguments for the solver:
+
+        - **verbose** (bool): Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
     """
     def __init__(self,solver_args={}):
         # Init base class
@@ -729,34 +842,36 @@ class constrained_least_squares(Solver):
 # Elastic net solver subclass.
 ##############################
 class elastic_net(Solver):
-    """
-    Elastic net solver. Solves 0.5*||Ax-b||_2 + lamda*( alpha*||x||_1  + 0.5*(1-alpha)*||x||_2**2).
-    The elastic net consists of an L2 cost function, with mix of L1 and L2 penalties (scaled by lamda1 and lamda2).
-    The penalties shrink the parameter estimates in the hopes of reducing variance, improving prediction accuracy, and aiding interpetation.
-    lamda controls amount of penalisation i.e. lamda=0 gives OLS. 
-    alpha controls L1/L2 penalisation mix. alpha=1 gives LASSO, and alpha=0 gives ridge regression (however alpha<0.01 is unreliable). 
+    """ Elastic net solver. 
 
-    Note, to set lamda1 and lamda2 directly:
-    lamda = lamda1 + lamda2
-    alpha = lamda1 / (lamda1 + lamda2)
+    The elastic net solver minimises
 
-    If ``path=True``, the elastic net is solved via coordinate descent [1]. The full regularisation path is computed (for a given l1 vs l2 blending parameter alpha), and the set of coefficients with the lowest model selection criteria is then selected according to [2]. Otherwise, the elastic net is solved for a given alpha and lambda value using the OSQP optimiser (if ``cvxpy`` is installed).
+    :math:`\\frac{1}{2}||\mathbf{A}\mathbf{x}-\mathbf{b}||_2 + \lambda (\\alpha||\mathbf{x}||_1 + \\frac{1}{2}(1-\\alpha)||\mathbf{x}||_2^2)`.
 
-    :param dict solver_args: Optional arguments for the solver.
-        :param bool verbose: Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
-        :param float alpha: The L1/L2 pentalty blending parameter. Default: ``alpha=1.0``.
-        :param bool path: Computes the full regularisation path if True, otherwise solves for a single lambda value. Default: ``path=True``.
-        :param int max_iter: Max number of iterations for the coordinate descent solver (if ``path=True``). Default: ``max_iter=100``.
-        :param int n_lambdas: Number of lambda values along the regularisation path (if ``path=True``). Default: ``n_lambdas=100``.
-        :param float lambda_eps: Minimum lambda value, as a fraction of ``lambda_max`` (if ``path=True``). Default: ``lambda_eps=1e-3``.
-        :param float lambda_max: Maximum lambda value (if ``path=True``). If not ``None`` this overrides the automatically calculated value. Default: ``lambda_max=None``.
-        :param float tol: Convergence tolerance criterion for coordinate descent solver (if ``path=True``). ``tol=1e-6``.
-        :param string crit: Information criterion to select optimal lambda from regularisation path. ``'AIC'`` is Akaike information criterion, ``'BIC'`` is Bayesian information criterion, ``'CV'`` is 5-fold cross-validated RSS error (if ``path=True``). ``crit='CV'``.
-        :param float lambda: The penalty scaling parameter (if ``path=False``). Default: ``lambda=0.01`.
+    where :math:`\lambda` controls the strength of the regularisation (with OLS returned when :math:`\lambda=0`), and :math:`\\alpha` controlling the blending between the L1 and L2 penalty terms.
 
-    **References**
-        1. Friedman J., Hastie T., Tibshirani R., (2010) Regularization Paths for Generalized Linear Models via Coordinate Descent. Journal of Statistical Software, 33(1), 1-22. `Paper <https://www.jstatsoft.org/article/view/v033i01>`__
-        2. Zou, H., Hastie, T., Tibshirani, R., (2007) On the “degrees of freedom” of the lasso. The Annals of Statistics, 35(5), 2173–2192. `Paper <https://projecteuclid.org/download/pdfview_1/euclid.aos/1194461726>`__
+    If ``path=True``, the elastic net is solved via coordinate descent [1]. The full regularisation path (:math:`\lambda` path) is computed (for a given :math:`\\alpha`), and the set of coefficients with the lowest model selection criteria is then selected according to [2]. Otherwise, the elastic net is solved for a given :math:`\\alpha` and :math:`\lambda` using the OSQP quadratic program optimiser (if ``cvxpy`` is installed).
+
+    Parameters
+    ----------
+    solver_args : dict 
+        Optional arguments for the solver:
+
+        - **verbose** (bool): Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
+        - **alpha** (float): The L1/L2 pentalty blending parameter :math:`\\alpha`. Default: ``alpha=1.0``. If ``alpha=0`` is desired, use :class:`~equadratures.solver.least_squares`.
+        - **path** (bool): Computes the full regularisation path if True, otherwise solves for a single :math:`\lambda` value. Default: ``path=True``.
+        - **max_iter** (int): Max number of iterations for the coordinate descent solver (if ``path=True``). Default: ``max_iter=100``.
+        - **n_lambdas** (int): Number of lambda values along the regularisation path (if ``path=True``). Default: ``n_lambdas=100``.
+        - **lambda_eps** (float): Minimum lambda value, as a fraction of ``lambda_max`` (if ``path=True``). Default: ``lambda_eps=1e-3``.
+        - **lambda_max** (float): Maximum lambda value (if ``path=True``). If not ``None`` this overrides the automatically calculated value. Default: ``lambda_max=None``.
+        - **tol** (float): Convergence tolerance criterion for coordinate descent solver (if ``path=True``). Default: ``tol=1e-6``.
+        - **crit** (str): Information criterion to select optimal lambda from regularisation path. ``'AIC'`` is Akaike information criterion, ``'BIC'`` is Bayesian information criterion, ``'CV'`` is 5-fold cross-validated RSS error (if ``path=True``). Default: ``crit='CV'``.
+        - **lambda** (float): The penalty scaling parameter (if ``path=False``). Default: ``lambda=0.01`.
+
+    References
+    ----------
+    1. Friedman J., Hastie T., Tibshirani R., (2010) Regularization Paths for Generalized Linear Models via Coordinate Descent. Journal of Statistical Software, 33(1), 1-22. `Paper <https://www.jstatsoft.org/article/view/v033i01>`__
+    2. Zou, H., Hastie, T., Tibshirani, R., (2007) On the “degrees of freedom” of the lasso. The Annals of Statistics, 35(5), 2173–2192. `Paper <https://projecteuclid.org/download/pdfview_1/euclid.aos/1194461726>`__
     """
     def __init__(self,solver_args={}):
         # Init base class
@@ -797,9 +912,7 @@ class elastic_net(Solver):
 
     @staticmethod
     def _elastic_net_single(A, b, verbose, lamda_val, alpha_val, opt):
-        '''
-        Performs elastic net regression for single lambda value using OSQP optimiser. 
-        '''
+        """ Private method, performs elastic net regression for single lambda value using OSQP optimiser. """
         N,d = A.shape
         if lamda_val == None: lamda_val = 0.1
         if alpha_val == None: alpha_val = 1.0 
@@ -829,12 +942,10 @@ class elastic_net(Solver):
 
     @staticmethod
     def _elastic_path(A, b, verbose, max_iter, alpha, n_lamdas, lamda_eps, lamda_max, tol, crit):
-        """
-        Performs elastic net regression via coordinate descent. 
-        """
+        """ Private method to perform elastic net regression via coordinate descent. """
         n,p = A.shape
         b = b.reshape(-1)
-        assert alpha >= 0.01, 'elastic-path does not work reliably for alpha<0.01, choose 0.01>=alpha<=1.'
+        assert alpha >= 0.01, 'elastic-net does not work reliably for alpha<0.01, choose 0.01>=alpha<=1.'
     
         if crit=='CV':
             nfold = 5
@@ -892,8 +1003,8 @@ class elastic_net(Solver):
 
     @staticmethod
     def _elastic_net_cd(x,A,b,lamda,alpha, max_iter,tol,verbose):
-        """
-        Private method to perform coordinate descent (with elastic net soft  thresholding) for a given lambda and alpha value.
+        """ Private method to perform coordinate descent (with elastic net soft thresholding) for a given lambda and alpha value.
+
         Following section 2.6 of [1], the algo does one complete pass over the features, and then for following iterations it only loops over the active set (non-zero coefficients). See commit 2b0af9f58fa5ff1876f76f7aedeaf2a0d7d252c8 for a more simple (but considerably slower for large p) algo. 
         """
         # TODO - covariance updates (see 2.2 of [1]) could provide further speed up...
@@ -1001,38 +1112,47 @@ class elastic_net(Solver):
             return 0.0
 
     def plot_regpath(self,nplot=None,show=True):
-        
-        """ Plots the regularisation path. Wrapper for :func:`plot.plot_regpath<equadratures.plot.plot_regpath>`.
- 
-        Parameters
-        ----------
-        solver : Solver
-            An instance of the Solver class.
-        nplot : int, optional
-            Number of coefficients for the plot.
-        show : bool, optional
-            Option to show the graph.
-
-        Returns
-        -------
-        tuple
-            Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`, :obj:`~matplotlib.axes.Axes`) containing figure and two axes corresponding to the polynomial coefficients and information criterion plots.
-        """
+        """ Plots the regularisation path. See :func:`plot.plot_regpath<equadratures.plot.plot_regpath>` for full description."""
         if hasattr(self, 'elements'):    
             elements=self.elements
         else:
             elements=None
-        return plot.plot_regpath(self,elements,nplot,save,show,return_figure)
+        return plot.plot_regpath(self,elements,nplot,show)
         
 # Custom solver subclass.
 #########################
 class custom_solver(Solver):
-    """
-    Custom solver class. This class allows you to enter a custom ``solve()`` function to solve Ax=b.
-    The ``solve()`` is provided via ``solver_args``, and should accept the ``numpy.ndarrays`` A and b, and return the coefficients x.   
+    """ Custom solver class. 
 
-    :param dict solver_args: Optional arguments for the solver. Additional arguments are passed through to the custom ``solve()`` function as kwargs.
-        :param function solve: The custom ``solve()`` solve function. This must accept A and b, and return x. 
+    This class allows you to enter a custom ``solve()`` function to solve :math:`\mathbf{A}\mathbf{x}=\mathbf{b}`. The ``solve()`` is provided via ``solver_args``, and should accept the numpy.ndarray's :math:`\mathbf{A} and :math:`\mathbf{b}, and return a numpy.ndarray containing the coefficients :math:`\mathbf{x}`.   
+
+    Parameters
+    ----------
+    solver_args : dict 
+        Optional arguments for the solver. Optional arguments for the solver. Additional arguments are passed through to the custom ``solve()`` function as kwargs.
+
+        - **verbose** (bool): Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
+        - **solve** (Callable): The custom ``solve()`` solve function. This must accept A and b, and return x. 
+
+    Example
+    -------
+    >>> # Create a new solve method - the Kaczmarz iterative solver
+    >>> def kaczmarz(A, b, verbose=False):
+    >>>     m, n = A.shape
+    >>>     x = np.random.rand(n, 1) # initial guess
+    >>>     MAXITER = 50
+    >>>     for iters in range(0, MAXITER):
+    >>>         for i in range(0, m):
+    >>>             a_row = A[i, :].reshape(1, n)
+    >>>             term_3 = float(1.0/(np.dot(a_row , a_row.T)))
+    >>>             term_1 = float(b[i] - float(np.dot(a_row , x)))
+    >>>             x = x + (term_1 * term_3 * a_row.T)
+    >>>     return x
+    >>>
+    >>> # Wrap this function in the custom_solver subclass and use it to fit a polynomial
+    >>> mypoly = eq.Poly(myparam, mybasis, method='custom-solver',
+    >>>             sampling_args={'mesh':'user-defined', 'sample-points':X, 'sample-outputs':y},
+    >>>               solver_args={'solve':lsq,'verbose':True})
     """
     def __init__(self,solver_args={}):
         # Init base class

@@ -52,7 +52,7 @@ class Solver(object):
         >>> # Plot the regularisation path using the solver's method
         >>> mypoly.solver.plot_regpath()
 
-    Using solver subclasses directly
+    Using solver subclasses independently
         >>> # Example data
         >>> A = np.array([[1,2,3],[1,1,1],[2,1,1]])
         >>> b = np.array([1,0,1])
@@ -587,7 +587,7 @@ class compressed_sensing(Solver):
 # Numerical integration solver subclass.
 ########################################
 class numerical_integration(Solver):
-    """ Numerical integration solver. This solves an orthogonal linear system i.e. simply c=A^T.b.
+    """ Numerical integration solver. This solves an orthogonal linear system i.e. simply :math:`\mathbf{x}=\mathbf{A}^T\mathbf{b}`.
 
     Parameters
     ----------
@@ -606,7 +606,7 @@ class numerical_integration(Solver):
 # Least absolute residual solver.
 #################################
 class least_absolute_residual(Solver):
-    """ Least absolute residual solver. Solves Ax=b by minimising the L1 norm (absolute residuals).
+    """ Least absolute residual solver. Minimises the L1 norm (absolute residuals).
 
     Parameters
     ----------
@@ -650,9 +650,8 @@ class least_absolute_residual(Solver):
 # Huber solver subclass.
 ########################
 class huber(Solver):
-    """ Huber regression solver. 
+    """ Huber regression solver. Minimises the Huber loss function. 
 
-    Solves :math:`\mathbf{A}\mathbf{x}=\mathbf{b}` by minimising the Huber loss function. 
     This function is identical to the least squares (L2) penalty for small residuals (i.e. :math:`||\mathbf{A}\mathbf{x}-\mathbf{b}||^2\le M`).
     But on large residuals (:math:`||\mathbf{A}\mathbf{x}-\mathbf{b}||^2 > M`), its penalty is lower (L1) and increases linearly rather than quadratically. 
     It is thus more forgiving of outliers.
@@ -1124,7 +1123,7 @@ class elastic_net(Solver):
 class custom_solver(Solver):
     """ Custom solver class. 
 
-    This class allows you to enter a custom ``solve()`` function to solve :math:`\mathbf{A}\mathbf{x}=\mathbf{b}`. The ``solve()`` is provided via ``solver_args``, and should accept the numpy.ndarray's :math:`\mathbf{A} and :math:`\mathbf{b}, and return a numpy.ndarray containing the coefficients :math:`\mathbf{x}`.   
+    This class allows you to enter a custom ``solve()`` function to solve :math:`\mathbf{A}\mathbf{x}=\mathbf{b}`. The ``solve()`` is provided via ``solver_args``, and should accept the numpy.ndarray's :math:`\mathbf{A}` and :math:`\mathbf{b}`, and return a numpy.ndarray containing the coefficients :math:`\mathbf{x}`.   
 
     Parameters
     ----------
@@ -1142,6 +1141,7 @@ class custom_solver(Solver):
     >>>     x = np.random.rand(n, 1) # initial guess
     >>>     MAXITER = 50
     >>>     for iters in range(0, MAXITER):
+    >>>         if verbose: print('Iteration %d/%d' %(iters,MAXITER))
     >>>         for i in range(0, m):
     >>>             a_row = A[i, :].reshape(1, n)
     >>>             term_3 = float(1.0/(np.dot(a_row , a_row.T)))

@@ -8,23 +8,26 @@ ORDER_LIMIT = 5000
 RECURRENCE_PDF_SAMPLES = 50000
 QUADRATURE_ORDER_INCREMENT = 80
 class Weight(object):
-    """
-    The class offers a template to input bespoke weight (probability density) functions.
+    """ The class offers a template to input bespoke weight (probability density) functions.
 
-    :param lambda weight_function: A function call or an array of data.
-    :param list support: Lower and upper bounds of the weight respectively. Values such as ``-inf`` or ``inf`` are not acceptable.
-    :param bool pdf: If set to ``True``, then the weight_function is assumed to be normalised to integrate to unity. Otherwise,
+    Parameters
+    ----------
+    weight_function : ~collections.abc.Callable,numpy.ndarray
+        A callable function or an array of data representing the weights.
+    support : list, optional
+        Lower and upper bounds of the weight respectively. Values such as ``-inf`` or ``inf`` are not acceptable.
+    pdf : bool, optional
+        If set to ``True``, then the weight_function is assumed to be normalised to integrate to unity. Otherwise,
         the integration constant is computed and used to normalise weight_function.
-    :param float mean: User-defined mean for distribution. When provided, the code does not compute the mean of the weight_function over its support.
-    :param float variance: User-defined variance for distribution. When provided, the code does not compute the variance of the weight_function over its support.
+    mean : float, optional
+        User-defined mean for distribution. When provided, the code does not compute the mean of the weight_function over its support.
+    variance : float, optional 
+        User-defined variance for distribution. When provided, the code does not compute the variance of the weight_function over its support.
 
-    **Sample constructor initialisations**::
-
-        import numpy as np
-        from equadratures import *
-
-        pdf_1 = Weight(lambda x: np.exp(-x)/ np.sqrt(x), [0.00001, -np.log(1e-10)], pdf=False)
-        pdf_2 = Weight(np.random(100,)*3, [-15, 15], pdf=False)
+    Example
+    -------
+    >>> pdf_1 = Weight(lambda x: np.exp(-x)/ np.sqrt(x), [0.00001, -np.log(1e-10)], pdf=False)
+    >>> pdf_2 = Weight(np.random(100,)*3, [-15, 15], pdf=False)
     """
     def __init__(self, weight_function, support=None, pdf=False, mean=None, variance=None):
         self.weight_function = weight_function
@@ -63,13 +66,17 @@ class Weight(object):
         return pdf_values
 
     def get_pdf(self, points=None):
-        """
-        Returns the pdf associated with the distribution.
+        """ Returns the pdf associated with the distribution.
 
-        :param numpy.array points: A vector of points (horizontal axis).
+        Parameters
+        ----------
+        points : numpy.ndarray, optional
+            Array of points to evaluate pdf at.
 
-        :return:
-            A N-by-1 matrix that contains the probability distribution
+        Returns
+        -------
+        numpy.ndarray
+            Array with shape ( len(points),1 ) containing the probability distribution.
 
         """
         if points is None:

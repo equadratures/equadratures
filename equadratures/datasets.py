@@ -1,3 +1,6 @@
+""" 
+Utilities for downloading or generating datasets, splitting data, and computing accuracy metrics.
+"""
 import os
 import numpy as np
 import scipy.stats as st
@@ -6,18 +9,32 @@ from io import BytesIO
 from equadratures.scalers import scaler_minmax 
 
 def gen_linear(n_observations=100, n_dim=5, n_relevent=5,bias=0.0, noise=0.0, random_seed=None):
-    """Generate a synthetic linear dataset for regression. Data is generated using a random linear regression model with ``n_relevent`` input dimensions. Gaussian noise with standard deviation ``noise`` is added. 
+    """ Generate a synthetic linear dataset for regression. 
+
+    Data is generated using a random linear regression model with ``n_relevent`` input dimensions. 
+    The remaining dimensions are "irrelevent" noise i.e. they do not affect the output.
+    Gaussian noise with standard deviation ``noise`` is added. 
+  
+    Parameters
+    ----------
+    n_observations : int, optional
+        The number of observations (samples).
+    n_dim : int, optional
+        The total number of dimensions.
+    n_relevent : int, optional 
+        The number of relevent input dimensions, i.e., the number of features used to build the linear model used to generate the output.
+    bias : float, optional 
+        The bias term in the underlying linear model.
+    noise : float, optional 
+        The standard deviation of the gaussian noise applied to the output.
+    random_seed : int, optional 
+        Random number generator seed. 
     
-    :param int n_observations: The number of observations (samples).
-    :param int n_dim: The total number of dimensions.
-    :param int n_relevent: The number of relevent input dimensions, i.e., the number of features used to build the linear model used to generate the output.
-    :param float bias: The bias term in the underlying linear model.
-    :param float noise: The standard deviation of the gaussian noise applied to the output.
-    :param int random_seed: Random number generator seed. 
-    
-    :return:
-    **X**: A numpy.ndarray of shape (n_observations,n_dim) containing the inputs.
-    **y** : A numpy.ndarray of shape (n_observations,1) containing the outputs/targets.
+    Returns
+    -------
+    tuple
+        Tuple (X,y) containing two numpy.ndarray's; One with shape (n_observations,n_dim) containing the inputs, 
+        and one with shape (n_observations,1) containing the outputs/targets.
     """
     # Generate input data
     n_relevent = min(n_dim, n_relevent)
@@ -41,21 +58,34 @@ def gen_linear(n_observations=100, n_dim=5, n_relevent=5,bias=0.0, noise=0.0, ra
     return X, y
 
 def gen_friedman(n_observations=100, n_dim=5, noise=0.0, random_seed=None,normalise=False):
-    """Generates the friedman regression problem described by Friedman [1] and Breiman [2]. The function has n_dim=5, and choosing n_dim>5 adds irrelevent input dimensions. Gaussian noise with standard deviation ``noise`` is added. 
-    
-    :param int n_observations: The number of observations (samples).
-    :param int n_dim: The total number of dimensions. n_dim>=5, with n_dim>5 adding irrelevent input dimensions.
-    :param float noise: The standard deviation of the gaussian noise applied to the output.
-    :param int random_seed: Random number generator seed. 
-    :param boolean normalise: Normalise y to lie between -1 to 1. 
-   
-    :return:
-    **X**: A numpy.ndarray of shape (n_observations,n_dim) containing the inputs.
-    **y** : A numpy.ndarray of shape (n_observations,1) containing the outputs/targets.
+    """ Generates the friedman regression problem described by Friedman [1] and Breiman [2]. 
 
-    **References**
-        1. J. Friedman, "Multivariate adaptive regression splines", The Annals of Statistics 19 (1), pages 1-67, 1991.
-        2. L. Breiman, "Bagging predictors", Machine Learning 24, pages 123-140, 1996.
+    Inspired by :obj:`sklearn.datasets.make_friedman1`. The function has ``n_dim=5``, and choosing ``n_dim>5`` adds irrelevent input dimensions. 
+    Gaussian noise with standard deviation ``noise`` is added. 
+    
+    Parameters
+    ----------
+    n_observations : int, optional 
+        The number of observations (samples).
+    n_dim : int, optional 
+        The total number of dimensions. n_dim>=5, with n_dim>5 adding irrelevent input dimensions.
+    noise : float, optional
+        The standard deviation of the gaussian noise applied to the output.
+    random_seed : int, optional
+        Random number generator seed. 
+    normalise : bool, optional 
+        Normalise y to lie between -1 to 1. 
+   
+    Returns
+    -------
+    tuple
+        Tuple (X,y) containing two numpy.ndarray's; One with shape (n_observations,n_dim) containing the inputs, 
+        and one with shape (n_observations,1) containing the outputs/targets.
+
+    References
+    ----------
+    1. J. Friedman, "Multivariate adaptive regression splines", The Annals of Statistics 19 (1), pages 1-67, 1991.
+    2. L. Breiman, "Bagging predictors", Machine Learning 24, pages 123-140, 1996.
     """
 
     if n_dim < 5:
@@ -77,6 +107,42 @@ def gen_friedman(n_observations=100, n_dim=5, noise=0.0, random_seed=None,normal
     return X,y
 
 def load_eq_dataset(dataset,data_dir=None):
+    """
+    Loads the requested dataset from the `equadratures dataset repository <https://github.com/Effective-Quadratures/data-sets>`__. 
+
+    Visit the aforementioned repo for a description of the available datasets.
+
+    The requested dataset can either be downloaded directly upon request, or to minimise downloads the repo can be cloned 
+    once by the user, and the local repo directory can be given via ``data_dir`` (see examples).
+
+    Parameters
+    ----------
+    dataset : str
+        The dataset to download. Options are ```naca0012```, ```blade_envelopes```, ```probes```, ```3Dfan_blades```.
+    data_dir : str, optional
+        Directory name where a local clone of the data-sets repo is located. If given, the dataset will be loaded from here 
+        instead of downloading from the remote repo.
+
+    Returns
+    -------
+    NpzFile
+        NpzFile instance (see `numpy.lib.format <https://numpy.org/devdocs/reference/generated/numpy.lib.format.html#module-numpy.lib.format>`__)
+        containing the dataset. Contents can be accessed in the usual way e.g. ``X = NpzFile['X']``.
+
+    Examples
+    --------
+    Loading from remote repository
+        >>> # Load the naca0012 aerofoil dataset
+        >>> data = eq.datasets.load_eq_dataset('naca0012')
+        >>> print(data.files)
+        ['X', 'Cp', 'Cl', 'Cd']
+        >>> X = data['X']
+        >>> y = data['Cp']
+
+    Loading from a locally cloned repository
+        >>> git clone https://github.com/Effective-Quadratures/data-sets.git
+        >>> data = eq.datasets.load_eq_dataset('naca0012', data_dir='/Users/user/Documents/data-sets')
+    """
     # Check if valid dataset
     datasets = ['naca0012','blade_envelopes','probes', '3Dfan_blades']
     if dataset not in datasets:
@@ -113,17 +179,32 @@ def load_eq_dataset(dataset,data_dir=None):
 
 
 def train_test_split(X,y,train=0.7,random_seed=None,shuffle=True):
-    """Split arrays or matrices into random train and test subsets. Inspired by scikit-learn's datasets.train_test_split.
-    :param numpy.ndarray X: An numpy.ndarray of shape (n_observations,n_dim) containing the inputs.
-    :param numpy.ndarray y: A numpy.ndarray of shape (n_observations,1) containing the outputs/targets.
-    :param float train: Fraction between 0.0 and 1.0, representing the proportion of the dataset to include in the train split. 
-    :param boolean shuffle: Whether to shuffle the rows of data when spliting
+    """ Split arrays or matrices into random train and test subsets. 
 
-    :return:
-    **X_train**: A numpy.ndarray of shape (n_train,n_dim) containing the training inputs.
-    **X_test**: A numpy.ndarray of shape (n_test,n_dim) containing the test inputs.
-    **y_train**: A numpy.ndarray of shape (n_train,1) containing the training outputs/targets.
-    **y_test**: A numpy.ndarray of shape (n_test,1) containing the test outputs/targets.
+    Inspired by :obj:`sklearn.model_selection.train_test_split`.
+
+    Parameters
+    ----------
+    X : numpy.ndarray
+        Array with shape (n_observations,n_dim) containing the inputs.
+    y : numpy.ndarray 
+        Array with shape (n_observations,1) containing the outputs/targets.
+    train : float, optional
+        Fraction between 0.0 and 1.0, representing the proportion of the dataset to include in the train split. 
+    random_seed : int, optional
+        Seed for random number generator.
+    shuffle : bool, optional
+        Whether to shuffle the rows of data when spliting.
+
+    Returns
+    -------
+    tuple
+        Tuple (X_train, X_test, y_train, y_test) containing the split data, output as numpy.ndarray's.
+
+    Example
+    -------
+    >>> X_train, X_test, y_train, y_test = eq.datasets.train_test_split(X, y, 
+    >>>                                    train=0.8, random_seed = 42)
     """
     if X.shape[0] == y.shape[0]:
         n_observations = X.shape[0]
@@ -145,19 +226,24 @@ def train_test_split(X,y,train=0.7,random_seed=None,shuffle=True):
     idx_train, idx_test = idx[:n_train], idx[n_train:]
     return X[idx_train], X[idx_test], y[idx_train], y[idx_test]
 
-def score(y_true,y_pred,metric,X=None):
-    """
-    Evaluates the accuracy/error score between predictions ``y_pred`` and the truth ``y_true``, according to the given accuracy metric ``metric``. 
+def score(y_true,y_pred,metric='r2',X=None):
+    """ Evaluates the accuracy/error score between predictions and the truth, according to the given accuracy metric.
 
-    :param numpy.ndarray y_true:
-        An ndarray with shape (number_of_observations, 1), containing predictions.
-    :param numpy.ndarray y_pred:
-        An ndarray with shape (number_of_observations, 1) containing the true data.
-    :param string metric:
-        An optional string containing the scoring metric to use. Avaliable options are: ``adjusted_r2``, ``r2``, ``mae``, ``rmse``, or ``normalised_mae`` (default: ``adjusted_r2``). 
+    Parameters
+    ----------
+    y_true : numpy.ndarray
+        Array with shape (number_of_observations, 1), containing predictions.
+    y_pred : numpy.ndarray
+        Array with shape (number_of_observations, 1) containing the true data.
+    metric : str, optional
+        The scoring metric to use. Avaliable options are: ```adjusted_r2```, ```r2```, ```mae```, ```rmse```, or ```normalised_mae```.
+    X : numpy.ndarray
+        The input data associated with **y_pred**. Required if ``metric=`adjusted_r2```.
 
-    :return:
-        **score**: The accuracy or error score..
+    Returns
+    -------
+    float
+        The accuracy or error score.
     """
     y_true = y_true.flatten()
     y_pred = y_pred.flatten()

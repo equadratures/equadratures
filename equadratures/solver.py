@@ -240,7 +240,6 @@ class compressed_sensing(Solver):
 
         - **verbose** (bool): Default value of this input is set to ``False``; when ``True``, the solver prints information to screen.
         - **noise-level** (float)  
-        - **opt** (str): Specifies the underlying optimisation method to use. ``scipy`` for scipy, and `osqp` to use the OSQP optimiser (requires ``cvxpy`` to be installed). 
     """
     def __init__(self,solver_args={}):
         # Init base class
@@ -434,7 +433,7 @@ class compressed_sensing(Solver):
                         print('A*At is ill-conditioned: cannot find starting point' )
             x0 = np.dot(A.T, w)
     
-        if cvxpy:
+        #if cvxpy:
             # Turns out this is much slower than l1 magic implementation, at least on the test case!
     
             # d = A.shape[1]
@@ -451,7 +450,6 @@ class compressed_sensing(Solver):
             # prob.solve(warm_start=False, verbose=verbose)
             #
             # return xu.value[:d]
-            raise ValueError('cvxpy currently not implemented for compressed sensing')
     
         newtontol = lbtol
         newtonmaxiter = 50

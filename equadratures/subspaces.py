@@ -238,7 +238,7 @@ class Subspaces(object):
         polygrad = self.full_space_poly.get_polyfit_grad(X)
         if hasattr(self, 'param_scaler'):
             # Evaluate gradient in transformed coordinate space
-            polygrad = self.param_scaler.ranges[:, np.newaxis] * polygrad
+            polygrad = self.param_scaler.div[:, np.newaxis] * polygrad
         weights = np.ones((M, 1)) / M
         R = polygrad.transpose() * weights
         C = np.dot(polygrad, R )

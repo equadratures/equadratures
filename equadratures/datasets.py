@@ -231,9 +231,9 @@ def score(y_true,y_pred,metric='r2',X=None):
 
     Parameters
     ----------
-    y_true : numpy.ndarray
-        Array with shape (number_of_observations, 1), containing predictions.
     y_pred : numpy.ndarray
+        Array with shape (number_of_observations, 1), containing predictions.
+    y_true : numpy.ndarray
         Array with shape (number_of_observations, 1) containing the true data.
     metric : str, optional
         The scoring metric to use. Avaliable options are: ```adjusted_r2```, ```r2```, ```mae```, ```rmse```, or ```normalised_mae```.

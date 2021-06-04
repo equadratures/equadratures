@@ -15,19 +15,6 @@ import warnings
 class Subspaces(object):
     """ This class defines a subspaces object. It can be used for polynomial-based subspace dimension reduction.
 
-    TODO: - incorperate below in examples?
-    How to standardise?
-    If just a dataset, no poly, then use minmax scaling
-    If poly, no datapoints, then data should be contained in poly
-     - extract points from poly using .get_points() and .get_model_evaluations
-     - standaridise according to distributions extracted from the poly's params
-    If poly, but with new points? We should assume points are drawn from same distr according to poly's params
-     - standaridise according to distributions extracted from the poly's params
-    We need information on whether marginals are bounded, semi-bounded or unbounded?
-     - bounded, minmax scaling: analytical, beta, chebyshev, truncated gaussian, uniform
-     - unbounded, meanvar scaling: cauchy (although stddev undefined!), gaussian, gumbel, logistic, studentst,
-     - semi-bounded, ???: chi, chi squared, exponential, gamma, lognormal, pareto (x \geq 1), rayleigh, weibull
-
     Parameters
     ----------
     method : str
@@ -53,13 +40,21 @@ class Subspaces(object):
 
     Examples
     --------
-    Obtaining a 1D subspace via variable projection
+    Obtaining a 2D subspace via active subspaces on user data
         >>> mysubspace = Subspaces(method='active-subspace', sample_points=X, sample_outputs=Y)
         >>> eigs = mysubspace.get_eigenvalues()
-        >>> W = mysubspace.get_subspace()
+        >>> W = mysubspace.get_subspace()[:, :2]
         >>> e = mysubspace.get_eigenvalues()
 
-    Obtaining a second order polynomial fitted over a two dimensional subspace, via variable 
+    Obtaining a 2D subspace via active subspaces with a Poly object (remember to call set_model() on Poly first)
+        >>> mysubspace = Subspaces(method='active-subspace', full_space_poly=my_poly)
+        >>> eigs = mysubspace.get_eigenvalues()
+        >>> W = mysubspace.get_subspace()[:, :2]
+        >>> e = mysubspace.get_eigenvalues()
+
+    Obtaining a 2D subspace via variable projection on user data
+        >>> mysubspace = Subspaces(method='variable-projection', sample_points=X, sample_outputs=Y)
+        >>> W = mysubspace.get_subspace()[:, :2]
 
     References
     ----------
@@ -90,6 +85,10 @@ class Subspaces(object):
         bounded_distrs = ['analytical', 'beta', 'chebyshev', 'arcsine', 'truncated-gaussian', 'uniform']
         unbounded_distrs = ['gaussian', 'normal', 'gumbel', 'logistic', 'students-t', 'studentst']
         semi_bounded_distrs = ['chi', 'chi-squared', 'exponential', 'gamma', 'lognormal', 'log-normal', 'pareto', 'rayleigh', 'weibull']
+
+        if dr_args is not None:
+            if 'standardize' in dr_args:
+                dr_args['standardise'] = dr_args['standardize']
 
         if self.method.lower() == 'active-subspace' or self.method.lower() == 'active-subspaces':
             self.method = 'active-subspace'
@@ -131,7 +130,6 @@ class Subspaces(object):
                     centers = np.zeros(d)
                     for dd, p in enumerate(user_params):
                         if p.name.lower() in bounded_distrs:
-                            print(p.name)
                             scale_factors[dd] = (p.upper - p.lower) / 2.0
                             centers[dd] = (p.upper + p.lower) / 2.0
                         elif p.name.lower() in unbounded_distrs:
@@ -216,7 +214,7 @@ class Subspaces(object):
         return self._subspace
 
     def _get_active_subspace(self, grad_points=None, **kwargs):
-        """ Private method to compute ctive subspaces. """
+        """ Private method to compute active subspaces. """
         if grad_points is None:
             X = self.full_space_poly.get_points()
         else:

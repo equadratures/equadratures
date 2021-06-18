@@ -106,7 +106,10 @@ class Basis(object):
         int
             The number of multi-index elements of the basis.
         """
-        a, b = self.elements.shape
+        try:
+            a, b = self.elements.shape
+        except AttributeError as e:
+            raise type(e)('The basis elements have not yet been set. get_cardinality() can only be called if a list of orders is provided during the definition of Basis. Otherwise, call Poly.basis.get_cardinality() once the Poly has been defined.') from e
         return a
 
     def prune(self, number_of_elements_to_delete):
@@ -288,7 +291,7 @@ def total_order_basis(orders):
     L = int(np.math.factorial(highest_order+dimensions)/(np.math.factorial(highest_order)*np.math.factorial(dimensions)))
     # Check cardinality
     if L >= CARD_LIMIT_HARD:
-        raise Exception('Cardinality %.1e is >= to hard cardinality limit %.1e' %(L,CARD_LIMIT_HARD))
+        raise Exception('Cardinality %.1e is >= hard cardinality limit %.1e' %(L,CARD_LIMIT_HARD))
     # Generate basis
     total_order = np.zeros((1, dimensions))
     for i in range(1, highest_order+1):
@@ -370,7 +373,7 @@ def tensor_grid_basis(orders):
         L *= p+1
         # Check cardinality so far
         if L >= CARD_LIMIT_HARD:
-            raise Exception('Cardinality %.1e is >= to hard cardinality limit %.1e' %(L,CARD_LIMIT_HARD))
+            raise Exception('Cardinality (so far) is %.1e, which is >= hard cardinality limit %.1e' %(L,CARD_LIMIT_HARD))
 
     # For loop across each dimension
     for u in range(0,dimensions):

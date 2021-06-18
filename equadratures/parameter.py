@@ -34,7 +34,7 @@ class Parameter(object):
     order : int, optional
         Order of the parameter.
     param_type : str, optional
-        The type of distribution that characterizes the parameter. Options include `chebyshev (arcsine) <https://en.wikipedia.org/wiki/Arcsine_distribution>`_, `gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_,
+        The type of distribution that characterizes the parameter (see [1, 2]). Options include `chebyshev (arcsine) <https://en.wikipedia.org/wiki/Arcsine_distribution>`_, `gaussian <https://en.wikipedia.org/wiki/Normal_distribution>`_,
         `truncated-gaussian <https://en.wikipedia.org/wiki/Truncated_normal_distribution>`_, `beta <https://en.wikipedia.org/wiki/Beta_distribution>`_,
         `cauchy <https://en.wikipedia.org/wiki/Cauchy_distribution>`_, `exponential <https://en.wikipedia.org/wiki/Exponential_distribution>`_,
         `uniform <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`_, `triangular <https://en.wikipedia.org/wiki/Triangular_distribution>`_, `gamma <https://en.wikipedia.org/wiki/Gamma_distribution>`_,
@@ -42,8 +42,7 @@ class Parameter(object):
         `pareto <https://en.wikipedia.org/wiki/Pareto_distribution>`_, `lognormal <https://en.wikipedia.org/wiki/Log-normal_distribution>`_,
         `students-t <https://en.wikipedia.org/wiki/Student%27s_t-distribution>`_, `logistic <https://en.wikipedia.org/wiki/Log-normal_distribution>`_,
         `gumbel <https://en.wikipedia.org/wiki/Gumbel_distribution>`_, `chi <https://en.wikipedia.org/wiki/Chi_distribution>`_  and `chi-squared <https://en.wikipedia.org/wiki/Chi-squared_distribution>`_.
-        If no string is provided, a ``uniform`` distribution is assumed. If the user provides data, and would like to generate orthogonal
-        polynomials (and quadrature rules) based on the data, they can set this option to be ``Analytical`` (see [1, 2]).
+        If no string is provided, a ``uniform`` distribution is assumed. Data-driven and custom analytical parameters can also be constructed by setting this option to ``data`` and ``analytical`` and providing a **weight_function** (see examples).
     shape_parameter_A : float, optional
         Most of the aforementioned distributions are characterized by two shape parameters. For instance, in the case of a ``gaussian`` (or ``truncated-gaussian``), this represents the mean. In the case of a beta distribution this represents the alpha value. For a ``uniform`` distribution this input is not required.
     shape_parameter_B : float, optional
@@ -52,14 +51,23 @@ class Parameter(object):
         A data-set with shape (number_of_data_points, 2), where the first column comprises of parameter values, while the second column corresponds to the data observations. This input should only be used with the ``Analytical`` distribution.
     endpoints : str, optional
         If set to ``both``, then the quadrature points and weights will have end-points, based on Gauss-Lobatto quadrature rules. If set to ``upper`` or ``lower`` a Gauss-Radau rule is used to compute one end-point at either the upper or lower bound.
+    weight_function: Weight, optional
+        An instance of Weight, which contains a bespoke analytical or data-driven weight (probability density) function. 
 
     Examples
     --------
-    >>> # uniform parameter.
-    >>> param = eq.Parameter(distribution='uniform', lower=-2, upper=2., order=3)
+    A uniform parameter
+        >>> param = eq.Parameter(distribution='uniform', lower=-2, upper=2., order=3)
 
-    >>> # beta parameter.
-    >>> param = eq.Parameter(distribution='beta', lower=-2., upper=15., order=4, shape_parameter_A=3.2, shape_parameter_B=1.7)
+    A beta parameter
+        >>> param = eq.Parameter(distribution='beta', lower=-2., upper=15., order=4, 
+        >>>        shape_parameter_A=3.2, shape_parameter_B=1.7)
+
+    A data-driven parameter
+        >>> pdf = eq.Weight( stats.gaussian_kde(data, bw_method='silverman'), 
+        >>>        support=[-3, 3.2])
+        >>> param = eq.Parameter(distribution='analytical', 
+        >>>        weight_function=pdf, order=2)
 
     References
     ----------
@@ -94,9 +102,7 @@ class Parameter(object):
             self.distribution = Uniform(self.lower, self.upper)
         elif self.name.lower() == 'triangular':
             self.distribution = Triangular(self.lower, self.upper, self.shape_parameter_A)
-        elif self.name.lower() == 'analytical':
-            self.distribution = Analytical(self.weight_function)
-        elif self.name.lower() == 'data':
+        elif self.name.lower() == 'analytical' or self.name.lower() == 'data':
             self.distribution = Analytical(self.weight_function)
         elif self.name.lower() == 'beta':
             self.distribution = Beta(self.lower, self.upper, self.shape_parameter_A, self.shape_parameter_B)

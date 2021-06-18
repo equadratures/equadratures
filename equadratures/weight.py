@@ -1,4 +1,3 @@
-"Definition of a probability distribution."
 from equadratures.parameter import Parameter
 from equadratures.basis import Basis
 from equadratures.poly import Poly, evaluate_model
@@ -8,7 +7,7 @@ ORDER_LIMIT = 5000
 RECURRENCE_PDF_SAMPLES = 50000
 QUADRATURE_ORDER_INCREMENT = 80
 class Weight(object):
-    """ The class offers a template to input bespoke weight (probability density) functions.
+    """ The class offers a template to input bespoke weight (probability density) functions. The resulting weight function can be given to :class:`~equadratures.parameter.Parameter` to create a bespoke analytical or data-driven parameter.
 
     Parameters
     ----------
@@ -26,8 +25,33 @@ class Weight(object):
 
     Example
     -------
-    >>> pdf_1 = Weight(lambda x: np.exp(-x)/ np.sqrt(x), [0.00001, -np.log(1e-10)], pdf=False)
-    >>> pdf_2 = Weight(np.random(100,)*3, [-15, 15], pdf=False)
+    Analytical weight functions
+        >>> # exp(-x)/sqrt(x)
+        >>> pdf_1 = Weight(lambda x: np.exp(-x)/ np.sqrt(x), [0.00001, -np.log(1e-10)], 
+        >>>        pdf=False)
+        >>> 
+        >>> # A triangular distribution
+        >>> a = 3.
+        >>> b = 6.
+        >>> c = 4.
+        >>> mean = (a + b + c)/3.
+        >>> var = (a**2 + b**2 + c**2 - a*b - a*c - b*c)/18.
+        >>> pdf_2 = Weight(lambda x : 2*(x-a)/((b-a)*(c-a)) if (a <= x < c) 
+        >>>                         else( 2/(b-a) if (x == c) 
+        >>>                         else( 2*(b-x)/((b-a)*(b-c)))), 
+        >>>             support=[a, b], pdf=True)
+        >>> 
+        >>> # Passing to Parameter
+        >>> param = Parameter(distribution='analytical', weight_function=pdf_2, order=2)
+
+    Data driven weight functions
+        >>> # Constructing a kde based on given data, using Rilverman's rule for bandwidth selection
+        >>> pdf_2 = Weight( stats.gaussian_kde(data, bw_method='silverman'), 
+        >>>        support=[-3, 3.2])
+        >>> 
+        >>> # Passing to Parameter
+        >>> param = Parameter(distribution='analytical', weight_function=pdf, order=2)
+
     """
     def __init__(self, weight_function, support=None, pdf=False, mean=None, variance=None):
         self.weight_function = weight_function

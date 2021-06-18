@@ -376,9 +376,9 @@ class Subspaces(object):
         Parameters
         ----------
         num_samples : int, optional
-
+            Number of samples per iteration to check.
         max_count : int, optional
-   
+            Maximum number of iteration.
 
         Returns
         -------

@@ -171,7 +171,7 @@ class Basis(object):
         """
         name = self.basis_type
         if name == "total-order":
-            basis = (self.orders)
+            basis = total_order_basis(self.orders)
         elif name == "tensor-grid":
             basis = tensor_grid_basis(self.orders)
         elif name == "hyperbolic-basis":

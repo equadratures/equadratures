@@ -3,7 +3,6 @@ from equadratures.distributions.template import Distribution
 from equadratures.distributions.gaussian import *
 import numpy as np
 from scipy.stats import truncnorm
-from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
 RECURRENCE_PDF_SAMPLES = 8000
 
 class TruncatedGaussian(Distribution):
@@ -19,24 +18,30 @@ class TruncatedGaussian(Distribution):
         Upper bound of the truncated Gaussian distribution.
     """
     def __init__(self, mean, variance, lower, upper):
-        if (mean is not None) and (variance is not None) and (lower is not None) and (upper is not None):
-            meanParent = mean
-            varianceParent = variance
-            self.std = Gaussian(mean = 0.0, variance = 1.0)
-            self.parent = Gaussian(mean = meanParent, variance = varianceParent)
+        if mean is None:
+            self.mean = 0.0
+        else:
+            self.mean = mean
+        if variance is None:
+            self.variance = 1.0
+        else:
+            self.variance = variance
+        if lower is None:
+            self.lower = -3.0
+        else:
             self.lower = lower
+        if upper is None:
+            self.upper = 3.0
+        else:
             self.upper = upper
-            self.skewness = 0.0
-            self.kurtosis = 0.0
-            self.bounds = np.array([-np.inf, np.inf])
-            self.beta  = (self.upper - self.parent.mean)/np.sqrt(self.parent.variance)
-            self.alpha = (self.lower - meanParent)/np.sqrt(varianceParent)
-            self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
 
-            self.parents = truncnorm(a =self.alpha , b =self.beta, loc=meanParent, scale=np.sqrt(varianceParent))
-            self.mean = self.parents.mean()
-            self.variance = self.parents.var()
-            self.sigma = np.sqrt(self.variance)
+        self.std = np.sqrt(self.variance)
+        a = (self.lower - self.mean) / self.std
+        b = (self.upper - self.mean) / self.std
+        self.parent = truncnorm(a, b, loc=self.mean, scale=self.std)
+        self.bounds = np.array([self.lower, self.upper])
+        self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
+        self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
 
     def get_description(self):
         """
@@ -47,7 +52,7 @@ class TruncatedGaussian(Distribution):
         :return:
             A string describing the truncated Gaussian.
         """
-        text = "a truncated Gaussian distribution with a mean of "+str(self.mean)+" and a variance of "+str(self.variance)+", and a lower bound of "+str(self.lower)+" and an upper bound of "+str(self.upper)+"."
+        text = "a truncated Gaussian distribution with a center of "+str(self.mean)+" and a scale of "+str(self.std)+", and a lower bound of "+str(self.lower)+" and an upper bound of "+str(self.upper)+"."
         return text
     def get_pdf(self, points=None):
         """
@@ -63,7 +68,7 @@ class TruncatedGaussian(Distribution):
             Probability density values along the support of the truncated Gaussian distribution.
         """
         if points is not None:
-            return self.parents.pdf(points)
+            return self.parent.pdf(points)
         else:
             raise ValueError( 'Please digit an input for getPDF method')
     def get_icdf(self, xx):
@@ -75,7 +80,7 @@ class TruncatedGaussian(Distribution):
         :return:
             Inverse cumulative density function values of the Truncated Gaussian distributuion.
         """
-        return self.parents.ppf(xx)
+        return self.parent.ppf(xx)
     def get_samples(self, m=None):
         """ Generates samples from the Truncated-Gaussian distribution.
 
@@ -90,7 +95,7 @@ class TruncatedGaussian(Distribution):
            number = m
         else:
            number = 500000
-        return self.parents.rvs(size=number)
+        return self.parent.rvs(size=number)
     def get_cdf(self, points=None):
         """
         A truncated Gaussian cumulative density function.
@@ -105,6 +110,6 @@ class TruncatedGaussian(Distribution):
             Cumulative density values along the support of the truncated Gaussian distribution.
         """
         if points is not None:
-            return self.parents.cdf(points)
+            return self.parent.cdf(points)
         else:
             raise ValueError( 'Please digit an input for getCDF method')

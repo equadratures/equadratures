@@ -1104,18 +1104,20 @@ def data():
     [0.9956436,0.358282,-0.15275728,-0.57280664,-0.087762,0.939348,0.5316308,0.8886284,0.416306,0.39524728,0.7887828,0.39620296,0.38067348,-0.7793868,0.9313936,-0.281948,-0.08257332,0.3192,0.18656414,-0.1581843,0.8179192,0.485438,0.005795364,0.5511956,-0.34955368],
     [0.9993388,-0.15829144,0.110528,-0.1104108,0.65763936,0.018751128,0.5150728,-0.8686552,0.003809682,-0.5171348,-0.8185576,0.709784,-0.446038,-0.06724404,0.02085272,-0.3851304,-0.8670188,0.5087578,0.5500584,-0.6376162,0.16387948,0.51113224,0.45510152,0.50295088,-0.30369624] ] )
     return X, Y
+
+#%%
 class TestB(TestCase):
 
     def test_cs(self):
+        np.random.seed(0)
         X, Y = data()
         N = X.shape[0]
         p_order = 2
         params = []
         basis_orders = []
         for i in range(25):
-                params.append(Parameter(p_order, distribution = 'Uniform', lower=-1., upper=1.) )
-                basis_orders.append(p_order)
-
+            params.append(Parameter(p_order, distribution = 'Uniform', lower=-1., upper=1.) )
+            basis_orders.append(p_order)
         basis = Basis("total-order", orders = basis_orders)
         num_obs = 200
         chosen_points = np.random.choice(range(N), size = num_obs, replace = False)
@@ -1131,6 +1133,7 @@ class TestB(TestCase):
         y_valid = Y
         a,b,r,_,_ = st.linregress(y_eval.flatten(),y_valid.flatten())
         r2 = np.round(r**2, 4)
+        print(r2)
         np.testing.assert_array_less(0.80, r2, err_msg='Problem!')
 
         poly = Poly(params, basis, method='compressive-sensing', sampling_args={'sample-points':X_red, 'sample-outputs':Y_red}, \
@@ -1140,8 +1143,37 @@ class TestB(TestCase):
         y_valid = Y
         a,b,r,_,_ = st.linregress(y_eval.flatten(),y_valid.flatten())
         r2 = np.round(r**2, 4)
+        print(r2)
+        np.testing.assert_array_less(0.80, r2, err_msg='Problem!')
+#%%
+    def test_rvm(self):
+        np.random.seed(0)
+        X, Y = data()
+        N = X.shape[0]
+        p_order = 2
+        params = []
+        basis_orders = []
+        for i in range(25):
+            params.append(Parameter(p_order, distribution = 'uniform', lower=-1.0, upper = 1.0))
+            basis_orders.append(p_order)
+
+        basis = Basis("total-order", orders = basis_orders)
+        num_obs = 200
+        chosen_points = np.random.choice(range(N), size = num_obs, replace = False)
+        X_red = X[chosen_points,:]
+        Y_red = Y[chosen_points]
+        remaining_pts = np.delete(np.arange(N), chosen_points)
+        chosen_valid_pts = np.random.choice(remaining_pts, size = 30, replace = False)
+
+        poly = Poly(params, basis, method='relevance-vector-machine', sampling_args={'sample-points':X_red, 'sample-outputs':Y_red})
+        poly.set_model()
+        y_eval = poly.get_polyfit(X)
+        y_valid = Y
+        a,b,r,_,_ = st.linregress(y_eval.flatten(),y_valid.flatten())
+        r2 = np.round(r**2, 4)
+        print(r2)
         np.testing.assert_array_less(0.80, r2, err_msg='Problem!')
 
-
+#%%
 if __name__== '__main__':
     unittest.main()

@@ -11,15 +11,17 @@ class Rayleigh(Distribution):
 		Scale parameter of the Rayleigh distribution.
     """
     def __init__(self, scale):
-        self.scale = scale
-        self.bounds = np.array([0.0, np.inf])
-        if self.scale is not None:
-            if self.scale > 0:
-                self.mean = self.scale * np.sqrt(np.pi / 2.0)
-                self.variance = self.scale**2 * (4.0 - np.pi)/ 2.0
-                self.skewness = 2.0 * np.sqrt(np.pi) * (np.pi - 3.0) / ((4.0 - np.pi)**(1.5))
-                self.kurtosis = -(6 * np.pi**2 - 24 * np.pi + 16.0 )/( (4 - np.pi)**(1.5)) + 3.0
-                self.x_range_for_pdf = np.linspace(0.0, 8.0 * self.scale, RECURRENCE_PDF_SAMPLES)
+        if scale is None:
+            self.scale = 1.0
+        else:
+            self.scale = scale
+
+        self.bounds = np.array([0.999, np.inf])
+        if self.scale < 0:
+            raise ValueError('Invalid parameters in Rayleigh distribution. Scale should be positive.')
+        self.parent = rayleigh(scale=self.scale)
+        self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
+        self.x_range_for_pdf = np.linspace(0.0, 8.0 * self.scale, RECURRENCE_PDF_SAMPLES)
 
     def get_icdf(self, xx):
         """
@@ -32,7 +34,7 @@ class Rayleigh(Distribution):
         :return:
             Inverse cumulative density function values of the Rayleigh distribution.
         """
-        return rayleigh.ppf(xx, loc=0, scale=self.scale)
+        return self.parent.ppf(xx)
 
     def get_description(self):
         """
@@ -57,7 +59,10 @@ class Rayleigh(Distribution):
         :return:
             Probability density values along the support of the Rayleigh distribution.
         """
-        return rayleigh.pdf(points, loc=0, scale=self.scale )
+        if points is not None:
+            return self.parent.pdf(points)
+        else:
+            raise ValueError('Please digit an input for get_pdf method')
 
 
     def get_cdf(self, points=None):
@@ -71,7 +76,10 @@ class Rayleigh(Distribution):
         :return:
             Cumulative density values along the support of the Rayleigh distribution.
         """
-        return rayleigh.cdf(points, loc=0, scale=self.scale )
+        if points is not None:
+            return self.parent.cdf(points)
+        else:
+            raise ValueError('Please digit an input for get_cdf method')
 
     def get_samples(self, m=None):
         """
@@ -85,7 +93,7 @@ class Rayleigh(Distribution):
              A N-by-1 vector that contains the samples.
         """
         if m is not None:
-           number = m
+            number = m
         else:
             number = 500000
-        return rayleigh.rvs(loc=0.0, scale=self.scale, size=number, random_state=None)
+        return self.parent.rvs(size= number)

@@ -1,32 +1,68 @@
-"Definition of a probability distribution."
 from equadratures.parameter import Parameter
 from equadratures.basis import Basis
 from equadratures.poly import Poly, evaluate_model
+from scipy import stats
 import numpy as np
 ORDER_LIMIT = 5000
 RECURRENCE_PDF_SAMPLES = 50000
 QUADRATURE_ORDER_INCREMENT = 80
 class Weight(object):
-    """
-    The class offers a template to input bespoke weight (probability density) functions.
+    """ The class offers a template to input bespoke weight (probability density) functions. The resulting weight function can be given to :class:`~equadratures.parameter.Parameter` to create a bespoke analytical or data-driven parameter.
 
-    :param lambda weight_function: A function call.
-    :param list support: Lower and upper bounds of the weight respectively.
-    :param bool pdf: If set to ``True``, then the weight_function is assumed to be normalised to integrate to unity. Otherwise,
+    Parameters
+    ----------
+    weight_function : ~collections.abc.Callable,numpy.ndarray
+        A callable function or an array of data representing the weights.
+    support : list, optional
+        Lower and upper bounds of the weight respectively. Values such as ``-inf`` or ``inf`` are not acceptable.
+    pdf : bool, optional
+        If set to ``True``, then the weight_function is assumed to be normalised to integrate to unity. Otherwise,
         the integration constant is computed and used to normalise weight_function.
-    :param float mean: User-defined mean for distribution. When provided, the code does not compute the mean of the weight_function over its support.
-    :param float variance: User-defined variance for distribution. When provided, the code does not compute the variance of the weight_function over its support.
+    mean : float, optional
+        User-defined mean for distribution. When provided, the code does not compute the mean of the weight_function over its support.
+    variance : float, optional 
+        User-defined variance for distribution. When provided, the code does not compute the variance of the weight_function over its support.
 
-    **Sample constructor initialisations**::
+    Example
+    -------
+    Analytical weight functions
+        >>> # exp(-x)/sqrt(x)
+        >>> pdf_1 = Weight(lambda x: np.exp(-x)/ np.sqrt(x), [0.00001, -np.log(1e-10)], 
+        >>>        pdf=False)
+        >>> 
+        >>> # A triangular distribution
+        >>> a = 3.
+        >>> b = 6.
+        >>> c = 4.
+        >>> mean = (a + b + c)/3.
+        >>> var = (a**2 + b**2 + c**2 - a*b - a*c - b*c)/18.
+        >>> pdf_2 = Weight(lambda x : 2*(x-a)/((b-a)*(c-a)) if (a <= x < c) 
+        >>>                         else( 2/(b-a) if (x == c) 
+        >>>                         else( 2*(b-x)/((b-a)*(b-c)))), 
+        >>>             support=[a, b], pdf=True)
+        >>> 
+        >>> # Passing to Parameter
+        >>> param = Parameter(distribution='analytical', weight_function=pdf_2, order=2)
 
-        import numpy as np
-        from equadratures import *
+    Data driven weight functions
+        >>> # Constructing a kde based on given data, using Rilverman's rule for bandwidth selection
+        >>> pdf_2 = Weight( stats.gaussian_kde(data, bw_method='silverman'), 
+        >>>        support=[-3, 3.2])
+        >>> 
+        >>> # Passing to Parameter
+        >>> param = Parameter(distribution='analytical', weight_function=pdf, order=2)
 
-        pdf = Weight(lambda x: exp(-x)/ np.sqrt(x), [0.00001, -np.log(1e-10)], pdf=False)
     """
-    def __init__(self, weight_function, support, pdf=False, mean=None, variance=None):
+    def __init__(self, weight_function, support=None, pdf=False, mean=None, variance=None):
         self.weight_function = weight_function
+        self.flag = 'function'
+        tmp = lambda:0
+        if not isinstance(self.weight_function, type(tmp)):
+            self.weight_function = stats.gaussian_kde(weight_function, bw_method='silverman')
+            self.flag = 'data'
         self.pdf = pdf
+        if self.flag == 'data' and support is None:
+            support = [np.min(weight_function), np.max(weight_function)]
         self.support = support
         self.lower = self.support[0]
         self.upper = self.support[1]
@@ -54,6 +90,19 @@ class Weight(object):
         return pdf_values
 
     def get_pdf(self, points=None):
+        """ Returns the pdf associated with the distribution.
+
+        Parameters
+        ----------
+        points : numpy.ndarray, optional
+            Array of points to evaluate pdf at.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array with shape ( len(points),1 ) containing the probability distribution.
+
+        """
         if points is None:
             return self._evaluate_pdf(self.x_range_for_pdf) * self.integration_constant
         else:

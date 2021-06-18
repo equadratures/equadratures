@@ -12,17 +12,18 @@ class Lognormal(Distribution):
 		The shape parameter associated with the Lognormal distribution.
     """
     def __init__(self, shape_parameter):
-        self.shape_parameter = shape_parameter
-        if self.shape_parameter is not None:
-            self.bounds = np.array([0.0, np.inf])
-            if self.shape_parameter > 0:
-                mean, var, skew, kurt = lognorm.stats(s=self.shape_parameter, moments='mvsk')
-                self.parent = lognorm(s=self.shape_parameter)
-                self.mean = mean
-                self.variance = var
-                self.skewness = skew
-                self.kurtosis = kurt
-                self.x_range_for_pdf = np.linspace(0., 20., RECURRENCE_PDF_SAMPLES)
+        if shape_parameter is None:
+            self.shape_parameter = 1.0
+        else:
+            self.shape_parameter = shape_parameter
+
+        self.bounds = np.array([0.0, np.inf])
+        if self.shape_parameter < 0:
+            raise ValueError('Invalid parameters in lognormal distribution. Scale should be positive.')
+        self.parent = lognorm(s=self.shape_parameter)
+        self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
+        self.x_range_for_pdf = np.linspace(0, self.shape_parameter*10, RECURRENCE_PDF_SAMPLES)
+
     def get_description(self):
         """
         A description of the Lognormal distribution.

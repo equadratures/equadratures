@@ -13,17 +13,19 @@ class Exponential(Distribution):
 		Rate parameter of the Exponential distribution.
     """
     def __init__(self, rate=None):
-        self.rate = rate
+        if rate is None:
+            self.rate = 1.0
+        else:
+            self.rate = rate
+
         if (self.rate is not None) and (self.rate > 0.0):
-            #self.mean = 1. / self.rate
-            #self.variance = 1./(self.rate)**2
-            self.skewness = 2.0
-            self.kurtosis = 6.0
+            self.parent = expon(scale=1.0 / rate)
+            self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
             self.bounds = np.array([0.0, np.inf])
             self.x_range_for_pdf = np.linspace(0.0, 20*self.rate, RECURRENCE_PDF_SAMPLES)
-            self.parent = expon(scale=1.0/rate)
-            self.mean = self.parent.mean()
-            self.variance = self.parent.var()
+        else:
+            raise ValueError('Invalid parameters in exponential distribution. Rate should be positive.')
+
     def get_description(self):
         """
         A description of the Exponential distribution.

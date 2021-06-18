@@ -5,7 +5,8 @@ from itertools import *
 
 class Statistics(object):
     """
-    Definition of a statistics object.
+    Compute statistics (mean, variance, skewness, kurtosis and sensitivity indices) of an orthogonal polynomial defined via parameters, a basis and coefficients.
+    Typically, it is recommended to use equivalent routines in `poly.py`.
 
     :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
     :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
@@ -92,13 +93,6 @@ class Statistics(object):
         :return: indices: Dictionary where keys specify non-zero dimensions and values represent Sobol' indices.
         :rtype: dict
 
-        **Sample usage:**
-
-        .. code-block:: python
-
-            stats = Statistics(coeffcients, basis)
-            fosi = stats.getSobol(1)
-
         """
         return {key: value for key, value in self._sobol.items() if len(key) == order}
     def get_conditional_skewness(self, order=1):
@@ -109,13 +103,6 @@ class Statistics(object):
 
         :return: indices: Dictionary where keys specify non-zero dimensions and values represent conditional skewness indices.
         :rtype: dict
-
-        **Sample usage:**
-
-        .. code-block:: python
-
-            stats = Statistics(coeffcients, basis)
-            first_order_skewness = stats.getCondSkewness(1)
 
         """
         return private_conditional_skewness(order, self.quadrature_weights, \
@@ -128,13 +115,6 @@ class Statistics(object):
 
         :return: indices: Dictionary where keys specify non-zero dimensions and values represent conditional kurtosis indices.
         :rtype: dict
-
-        **Sample usage:**
-
-        .. code-block:: python
-
-            stats = Statistics(coeffcients, basis)
-            first_order_kurtosis = stats.getCondKurtosis(1)
 
         """
         return private_conditional_kurtosis(order, self.quadrature_weights, \

@@ -4,17 +4,18 @@ from equadratures.poly import Poly
 from equadratures.subspaces import Subspaces
 from equadratures.parameter import Parameter
 from scipy import optimize
-from scipy.linalg import null_space
 import numpy as np
 from scipy.special import factorial
 from scipy.stats import linregress
 import warnings
 warnings.filterwarnings('ignore')
 class Optimisation:
-    """
-    This class performs unconstrained or constrained optimisation of poly objects or custom functions
-    using scipy.optimize.minimize or an in-house trust-region method.
-    :param string method: A string specifying the method that will be used for optimisation. All of the available choices come from scipy.optimize.minimize (`click here <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html>`__ for a list of methods and further information). In the case of general constrained optimisation, the options are ``COBYLA``, ``SLSQP``, and ``trust-constr``. The default is ``trust-constr``.
+    """ This class performs unconstrained or constrained optimisation of poly objects or custom functions using scipy.optimize.minimize or an in-house trust-region method.
+
+    Parameters
+    ----------
+    method : str 
+        A string specifying the method that will be used for optimisation. Any of the methods available from :obj:`scipy.optimize.minimize` can be chosen. In the case of general constrained optimisation, the options are ``COBYLA``, ``SLSQP``, and ``trust-constr``. The in-house options ``trust-region`` and ``omorf`` are also available. 
     """
     def __init__(self, method):
         self.method = method
@@ -29,17 +30,22 @@ class Optimisation:
             self.S = np.array([])
             self.f = np.array([])
             self.g = np.array([])
-    def add_objective(self, poly=None, custom=None, maximise=False):
-        """
-        Adds objective function to be optimised.
 
-        :param poly poly:
+    def add_objective(self, poly=None, custom=None, maximise=False):
+        """ Adds objective function to be optimised.
+
+        Parameters
+        ----------
+        poly : Poly
             A Poly object.
-        :param dict custom: Optional arguments centered around the custom option.
-            :callable function: The objective function to be called.
-            :callable jac_function: The gradient (or derivative) of the objective.
-            :callable hess_function: The Hessian of the objective function.
-        :param bool maximise: A flag to specify if the user would like to maximise the function instead of minimising it.
+        custom : dict, optional
+            Dictionary containing optional arguments:
+
+            - **function** (Callable): The objective function to be called.
+            - **jac_function** (Callable, *optional*): The gradient (or derivative) of the objective.
+            - **hess_function** (Callable, *optional*): The Hessian of the objective function.
+        maximise : bool, optional
+            A flag to specify if the user would like to maximise the function instead of minimising it.
         """
         assert poly is not None or custom is not None
         if self.method == 'trust-region':
@@ -68,12 +74,16 @@ class Optimisation:
             else:
                 objective_hess = optimize.BFGS()
         self.objective = {'function': objective, 'gradient': objective_deriv, 'hessian': objective_hess}
-    def add_bounds(self, lb, ub):
-        """
-        Adds bounds :math:`lb <= x <=ub` to the optimisation problem. Only ``L-BFGS-B``, ``TNC``, ``SLSQP``, ``trust-constr``, ``trust-region``, and ``COBYLA`` methods can handle bounds.
 
-        :param numpy.ndarray lb: 1-by-n matrix that contains lower bounds of x.
-        :param numpy.ndarray ub: 1-by-n matrix that contains upper bounds of x.
+    def add_bounds(self, lb, ub):
+        """ Adds bounds :math:`lb <= x <=ub` to the optimisation problem. Only ``L-BFGS-B``, ``TNC``, ``SLSQP``, ``trust-constr``, ``trust-region``, and ``COBYLA`` methods can handle bounds.
+
+        Parameters
+        ----------
+        lb : numpy.ndarray 
+            1-by-n matrix that contains lower bounds of x.
+        ub : numpy.ndarray 
+            1-by-n matrix that contains upper bounds of x.
         """
         assert lb.size == ub.size
         assert self.method in ['L-BFGS-B', 'TNC', 'SLSQP', 'trust-constr', 'COBYLA', 'trust-region', 'omorf']
@@ -94,14 +104,19 @@ class Optimisation:
                     u = {'type': 'ineq',
                          'fun': lambda x, i=factor: ub[i] - x[i]}
                     self.constraints.append(u)
-    def add_linear_ineq_con(self, A, b_l, b_u):
-        """
-        Adds linear inequality constraints :math:`b_l <= A x <= b_u` to the optimisation problem.
-        Only ``trust-constr``, ``COBYLA``, and ``SLSQP`` methods can handle general constraints.
 
-        :param numpy.ndarray A: An (M,n) matrix that contains coefficients of the linear inequality constraints.
-        :param numpy.ndarray b_l: An (M,1) matrix that specifies lower bounds of the linear inequality constraints. If there is no lower bound, set ``b_l = -np.inf * np.ones(M)``.
-        :param numpy.ndarray b_u: A (M,1) matrix that specifies upper bounds of the linear inequality constraints. If there is no upper bound, set ``b_u = np.inf * np.ones(M)``.
+    def add_linear_ineq_con(self, A, b_l, b_u):
+        """ Adds linear inequality constraints :math:`b_l <= A x <= b_u` to the optimisation problem.
+        Only ``trust-constr``, ``COBYLA``, and ``SLSQP`` methods can handle general constraints.
+    
+        Parameters
+        ----------
+        A : numpy.ndarray
+            An (M,n) matrix that contains coefficients of the linear inequality constraints.
+        b_l : numpy.ndarray 
+            An (M,1) matrix that specifies lower bounds of the linear inequality constraints. If there is no lower bound, set ``b_l = -np.inf * np.ones(M)``.
+        b_u : numpy.ndarray 
+            An (M,1) matrix that specifies upper bounds of the linear inequality constraints. If there is no upper bound, set ``b_u = np.inf * np.ones(M)``.
         """
         # trust-constr method has its own linear constraint handler
         assert self.method in ['SLSQP', 'trust-constr', 'COBYLA']
@@ -113,19 +128,28 @@ class Optimisation:
                 self.constraints.append({'type':'ineq', 'fun': lambda x: np.dot(A,x) - b_l, 'jac': lambda x: A})
             if not np.any(np.isinf(b_u)):
                 self.constraints.append({'type':'ineq', 'fun': lambda x: -np.dot(A,x) + b_u, 'jac': lambda x: -A})
+
     def add_nonlinear_ineq_con(self, poly=None, custom=None):
-        """
-        Adds nonlinear inequality constraints :math:`lb <= g(x) <= ub` (for poly option) with :math:`lb`, :math:`ub = bounds` or :math:`g(x) >= 0` (for function option) to the optimisation problem. Only ``trust-constr``, ``COBYLA``, and ``SLSQP`` methods can handle general constraints.
-        If Poly object is provided in the poly dictionary, gradients and Hessians will be computed automatically. If a lambda function is provided in the ``function`` dictionary, the user may also provide ``jac_function`` for gradients and ``hess_function`` for Hessians; otherwise, a 2-point differentiation rule
+        """ Adds nonlinear inequality constraints :math:`lb <= g(x) <= ub` (for poly option) with :math:`lb`, :math:`ub = bounds` or :math:`g(x) >= 0` (for function option) to the optimisation problem. 
+
+        Only ``trust-constr``, ``COBYLA``, and ``SLSQP`` methods can handle general constraints.
+        If Poly object is provided in the poly dictionary, gradients and Hessians will be computed automatically. If a lambda function is provided via ``function`` dictionary, the user may also provide ``jac_function`` for gradients and ``hess_function`` for Hessians; otherwise, a 2-point differentiation rule
         will be used to approximate the derivative and a BFGS update will be used to approximate the Hessian.
 
-        :param dict poly: Arguments for poly dictionary.
-            :param Poly poly: An instance of the Poly class.
-            :param numpy.ndarray bounds: An array with two entries specifying the lower and upper bounds of the inequality. If there is no lower bound, set bounds[0] = -np.inf.If there is no upper bound, set bounds[1] = np.inf.
-        :param dict custom: Additional custom callable arguments.
-            :callable function: The constraint function to be called.
-            :callable jac_function: The gradient (or derivative) of the constraint.
-            :callable hess_function: The Hessian of the constraint function.
+        Parameters
+        ----------
+        poly : dict, optional
+            Dictionary containing a Poly and bounds for constraints:
+
+                - **poly** (Poly): An instance of the Poly class.
+                - **bounds** (numpy.ndarray): An array with two entries specifying the lower and upper bounds of the inequality. If there is no lower bound, set ``bounds[0] = -np.inf``. If there is no upper bound, set ``bounds[1] = np.inf``.
+
+        custom : dict, optional
+            Dictionary containing additional custom callable arguments:
+
+                - **function** (Callable): The constraint function to be called.
+                - **jac_function** (Callable, *optional*): The gradient (or derivative) of the constraint.
+                - **hess_function** (Callable, *optional*): The Hessian of the constraint function.
         """
         assert self.method in ['SLSQP', 'trust-constr', 'COBYLA']
         assert poly is not None or custom is not None
@@ -180,29 +204,40 @@ class Optimisation:
                 self.constraints.append({'type': 'ineq', 'fun': constraint})
 
     def add_linear_eq_con(self, A, b):
-        """
-        Adds linear equality constraints  :math:`Ax = b` to the optimisation routine. Only ``trust-constr`` and ``SLSQP`` methods can handle equality constraints.
+        """ Adds linear equality constraints  :math:`Ax = b` to the optimisation routine. Only ``trust-constr`` and ``SLSQP`` methods can handle equality constraints.
 
-        :param numpy.ndarray A: A (M, n) matrix that contains coefficients of the linear equality constraints.
-        :param numpy.ndarray b: A (M, 1) matrix that specifies right hand side of the linear equality constraints.
+        Parameters
+        ----------
+        A : numpy.ndarray 
+            An (M, n) matrix that contains coefficients of the linear equality constraints.
+        b : numpy.ndarray 
+            An (M, 1) matrix that specifies right hand side of the linear equality constraints.
         """
         assert self.method == 'trust-constr' or 'SLSQP'
         if self.method == 'trust-constr':
             self.constraints.append(optimize.LinearConstraint(A,b,b))
         else:
             self.constraints.append({'type':'eq', 'fun': lambda x: A.dot(x) - b, 'jac': lambda x: A})
-    def add_nonlinear_eq_con(self, poly=None, custom=None):
-        """
-        Adds nonlinear inequality constraints :math:`g(x) = value` (for poly option) or :math:`g(x) = 0` (for function option) to the optimisation routine.
-        Only ``trust-constr`` and ``SLSQP`` methods can handle equality constraints. If poly object is providedin the poly dictionary, gradients and Hessians will be computed automatically.
 
-        :param dict poly: Arguments for poly dictionary.
-            :param Poly poly: An instance of the Poly class.
-            :param float value: Value of the nonlinear constraint.
-        :param dict custom: Additional custom callable arguments.
-            :callable function: The constraint function to be called.
-            :callable jac_function: The gradient (or derivative) of the constraint.
-            :callable hess_function: The Hessian of the constraint function.
+    def add_nonlinear_eq_con(self, poly=None, custom=None):
+        """ Adds nonlinear inequality constraints :math:`g(x) = value` (for poly option) or :math:`g(x) = 0` (for function option) to the optimisation routine.
+        
+        Only ``trust-constr`` and ``SLSQP`` methods can handle equality constraints. If poly object is provided in the poly dictionary, gradients and Hessians will be computed automatically.
+
+        Parameters
+        ----------
+        poly : dict, optional
+            Dictionary containing a Poly and value for constraints:
+
+                - **poly** (Poly): An instance of the Poly class.
+                - **value** (float): Value of the nonlinear constraint. 
+
+        custom : dict, optional
+            Dictionary containing additional custom callable arguments:
+
+                - **function** (Callable): The constraint function to be called.
+                - **jac_function** (Callable, *optional*): The gradient (or derivative) of the constraint.
+                - **hess_function** (Callable, *optional*): The Hessian of the constraint function.
         """
         assert self.method == 'trust-constr' or 'SLSQP'
         assert poly is not None or custom is not None
@@ -242,19 +277,28 @@ class Optimisation:
                     self.constraints.append({'type':'eq', 'fun': constraint})
 
     def optimise(self, x0, *args, **kwargs):
-        """
-        Performs optimisation on a specified function, provided the objective has been added using 'add_objective' method
+        """ Performs optimisation on a specified function, provided the objective has been added using :meth:'~equadratures.optimisation.add_objective'
         and constraints have been added using the relevant method.
 
-        :param numpy.ndarray x0: Starting point for optimiser.
-        :param float del_k: initial trust-region radius for ``trust-region`` or ``omorf`` methods
-        :param float delmin: minimum allowable trust-region radius for ``trust-region`` or ``omorf`` methods
-        :param float delmax: maximum allowable trust-region radius for ``trust-region`` or ``omorf`` methods
-        :param int d: reduced dimension for ``omorf`` method
-        :param string subspace_method: subspace method for ``omorf`` method with options ``variable-projection`` or ``active-subspaces``
+        Parameters
+        ----------
+        x0 : numpy.ndarray 
+            Starting point for optimiser.
+        del_k : float 
+            Initial trust-region radius for ``trust-region`` or ``omorf`` methods
+        delmin : float 
+            Minimum allowable trust-region radius for ``trust-region`` or ``omorf`` methods
+        delmax : float 
+            Maximum allowable trust-region radius for ``trust-region`` or ``omorf`` methods
+        d : int 
+            Reduced dimension for ``omorf`` method
+        subspace_method : str 
+            Subspace method for ``omorf`` method with options ``variable-projection`` or ``active-subspaces``
 
-        :return:
-            **sol**: An object containing the optimisation result. Important attributes are: the solution array ``x``, and a Boolean flag ``success`` indicating
+        Returns
+        -------
+        dict
+            A dictionary containing the optimisation result. Important attributes are: the solution array ``x``, and a Boolean flag ``success`` indicating
             if the optimiser exited successfully.
         """
         assert self.objective['function'] is not None
@@ -339,8 +383,8 @@ class Optimisation:
             U0 = np.hstack((U0, U1[:, index].reshape(-1,1)))
             U1 = np.delete(U1, index, 1)
         if self.subspace_method == 'variable-projection':
-            Subs = Subspaces(method='variable-projection', sample_points=S, sample_outputs=f, \
-                    subspace_init=U0, subspace_dimension=self.d, polynomial_degree=2, tol=1.0e-5, max_iter=2*self.d*self.n)
+            vp_args = {'U0': U0, 'maxiter': 2*self.d*self.n}
+            Subs = Subspaces(method='variable-projection', sample_points=S, sample_outputs=f, dr_args=vp_args)
             self.U = Subs.get_subspace()[:, :self.d]
         elif self.subspace_method == 'active-subspaces':
             self.U = U0

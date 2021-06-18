@@ -7,11 +7,22 @@ from equadratures.sampling_methods.induced import Induced
 from equadratures.sampling_methods.sampling_template import Sampling
 import numpy as np
 class Quadrature(object):
-    """
-    The class defines a Sampling object. It serves as a template for all sampling methodologies.
+    """ The class defines a Sampling object. It serves as a template for all sampling methodologies.
 
-    :param list parameters: A list of parameters, where each element of the list is an instance of the Parameter class.
-    :param Basis basis: An instance of the Basis class corresponding to the multi-index set used.
+    Parameters
+    ----------
+    parameters : list 
+        A list of parameters, where each element of the list is an instance of the Parameter class.
+    basis : Basis 
+        An instance of the Basis class corresponding to the multi-index set used.
+    points : numpy.ndarray
+        Array containing the quadrature points.
+    mesh : numpy.ndarray
+        Description needed.
+    corr : numpy.ndarray, optional
+        Description needed.
+    oversampling : float, optional
+        Description needed.
     """
     def __init__(self, parameters, basis, points, mesh, corr=None, oversampling=7.0):
         self.parameters = parameters
@@ -34,29 +45,36 @@ class Quadrature(object):
             self.samples = Userdefined(self.parameters, self.basis, self.points)
         else:
             error_message()
-    def get_points(self):
-        """
-        Returns the quadrature points.
 
-        :param Sampling self:
-                An instance of the sampling class.
+    def get_points(self):
+        """ Returns the quadrature points.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array of quadrature points.
         """
         return self.samples.points
-    def get_weights(self):
-        """
-        Returns the quadrature weights.
 
-        :param Sampling self:
-                An instance of the sampling class.
+    def get_weights(self):
+        """ Returns the quadrature weights.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array of quadrature weights
         """
         return self.samples.weights
-    def get_points_and_weights(self):
-        """
-        Returns the quadrature points and weights.
 
-        :param Sampling self:
-                An instance of the sampling class.
+    def get_points_and_weights(self):
+        """ Returns the quadrature points and weights.
+
+        Returns
+        -------
+        tuple
+            Tuple (points,weights) containing two numpy.ndarray's; the quadrature points and weights.
         """
         return self.samples.points, self.samples.weights
+
 def error_message():
     raise ValueError( 'Oh no. Something went wrong in quadrature.py!')

@@ -8,6 +8,7 @@ import equadratures.distributions.beta
 import equadratures.distributions.gamma
 import equadratures.distributions.rayleigh
 import equadratures.distributions.uniform
+import equadratures.distributions.triangular
 import equadratures.distributions.weibull
 import equadratures.distributions.chi
 import equadratures.distributions.pareto

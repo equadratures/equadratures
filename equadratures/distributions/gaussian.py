@@ -18,12 +18,21 @@ class Gaussian(Distribution):
 		Variance of the Gaussian distribution.
     """
     def __init__(self, mean, variance):
-        self.mean = mean
-        self.variance = variance
-        if self.variance is not None:
-            self.sigma = np.sqrt(self.variance)
-            self.x_range_for_pdf = np.linspace(-15.0 * self.sigma, 15.0*self.sigma, RECURRENCE_PDF_SAMPLES) + self.mean
-            self.parent = norm(loc=self.mean, scale=self.sigma)
+        if mean is None:
+            self.mean = 0.0
+        else:
+            self.mean = mean
+        if variance is None:
+            self.variance = 1.0
+        else:
+            self.variance = variance
+
+        if self.variance <= 0:
+            raise ValueError('Invalid Gaussian distribution parameters. Variance should be positive.')
+
+        self.sigma = np.sqrt(self.variance)
+        self.x_range_for_pdf = np.linspace(-15.0 * self.sigma, 15.0*self.sigma, RECURRENCE_PDF_SAMPLES) + self.mean
+        self.parent = norm(loc=self.mean, scale=self.sigma)
         self.skewness = 0.0
         self.kurtosis = 0.0
         self.bounds = np.array([-np.inf, np.inf])

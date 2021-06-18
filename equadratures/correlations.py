@@ -10,18 +10,46 @@ from scipy import optimize
 from copy import deepcopy
 
 class Correlations(object):
-    """
-    The class defines methods for polynomial approximations with correlated inputs, including the Nataf transform and Gram-Schmidt process.
+    """ The class defines methods for polynomial approximations with correlated inputs, including the Nataf transform and Gram-Schmidt process.
 
-    :param numpy.ndarray correlation_matrix: The correlation matrix associated with the joint distribution.
-    :param Poly poly: Polynomial defined with parameters with marginal distributions in uncorrelated space.
-    :param list parameters: List of parameters with marginal distributions.
-    :param str method: `nataf-transform` or `gram-schmidt`.
-    :param bool verbose: Display Cholesky decomposition of the fictive matrix.
+    Parameters
+    ----------
+    correlation_matrix : numpy.ndarray 
+        The correlation matrix associated with the joint distribution.
+    poly : Poly, optional
+        Polynomial defined with parameters with marginal distributions in uncorrelated space.
+    parameters : list, optional
+        List of parameters with marginal distributions.
+    method : str, optional
+        `nataf-transform` or `gram-schmidt`.
+    verbose : bool, optional
+        Display Cholesky decomposition of the fictive matrix.
 
-    **References**
-        1. Melchers, R. E., (1945) Structural Reliability Analysis and Predictions. John Wiley and Sons, second edition.
-        2. Jakeman, J. D. et al., (2019) Polynomial chaos expansions for dependent random variables.
+    Example
+    -------
+    >>> def func(x):
+    >>>     s1 = s[0]
+    >>>     s2 = s[1]
+    >>>     return s1**2 - s2**3 - 2. * s1 - 0.5 * s2
+    >>>
+    >>> parameters = [Parameter(distribution='beta', shape_parameter_A=5.0, shape_parameter_B=2.0, lower=0.0, upper=1.0, order=15) for _ in range(2)]
+    >>> basis = Basis('total-order')
+    >>> uncorr_poly = Poly(parameters, basis, method='least-squares',
+    >>>                     sampling_args={'mesh': 'monte-carlo',
+    >>>                                     'subsampling-algorithm': 'lu'})
+    >>>
+    >>> corr_mat = np.array([[1.0, -0.855],
+    >>>                     [-0.855, 1.0]])
+    >>>
+    >>> corr_gs = Correlations(corr_mat, poly=uncorr_poly, method='gram-schmidt')
+    >>> corr_gs.set_model(func)
+    >>> corrected_poly_gs = corr_gs.get_transformed_poly()
+    >>> print(corrected_poly_gs.get_mean_and_variance())
+
+    References
+    ----------
+    1. Melchers, R. E., (1945) Structural Reliability Analysis and Predictions. John Wiley and Sons, second edition.
+    2. Jakeman, J. D. et al., (2019) Polynomial chaos expansions for dependent random variables.
     """
     def __init__(self, correlation_matrix, poly=None, parameters=None, method=None, verbose=False):
         if (poly is None) and (method is not None):
@@ -131,26 +159,29 @@ class Correlations(object):
                 self._points = self.corrected_poly._quadrature_points
         else:
             raise ValueError('Invalid method for correlations.')
+
     def get_points(self):
-        """
-        Returns the correlated samples based on the quadrature rules used in poly.
+        """ Returns the quadrature points accounting for correlations. 
 
-        :param Correlations self: An instance of the Correlations object.
+        For Nataf transform, returns points in the correlated standard normal space.
+        For Gram-Schmidt, returns points according to the GS polynomial basis.
 
-        :return:
-            **points**: A numpy.ndarray of sampled quadrature points with shape (number_of_samples, dimension).
+        Returns
+        -------
+        numpy.ndarray
+            Array of quadrature points with shape (number_of_samples, dimension).
 
         """
         return self._points
-    def set_model(self, model=None, model_grads=None):
-        """
-        Computes the coefficients of the polynomial.
 
-        :param Correlations self:
-            An instance of the Correlations class.
-        :param callable model:
+    def set_model(self, model=None, model_grads=None):
+        """ Computes the coefficients of transformed polynomial (equivalent to calling ``self.get_transformed_poly().set_model(...)``)
+
+        Parameters
+        ----------
+        model : ~collections.abc.Callable,numpy.ndarray, optional
             The function that needs to be approximated. In the absence of a callable function, the input can be the function evaluated at the quadrature points.
-        :param callable model_grads:
+        model_grads : ~collections.abc.Callable,numpy.ndarray, optional
             The gradient of the function that needs to be approximated. In the absence of a callable gradient function, the input can be a matrix of gradient evaluations at the quadrature points.
         """
         # Need to account for the nataf transform here?
@@ -166,26 +197,31 @@ class Correlations(object):
             else:
                 model_grads_values = model_grads
         self.corrected_poly.set_model(model_values, model_grads_values)
+
     def get_transformed_poly(self):
-        """
-        Returns the transformed polynomial.
+        """ Returns the transformed polynomial.
 
-        :param Correlations self:
-            An instance of the Correlations class.
-
-        :return:
-            **poly**: An instance of the Poly class.
+        Returns
+        -------
+        Poly
+            The transformed polynomial.
         """
         return self.corrected_poly
+
     def get_correlated_samples(self, N=None, X=None):
-        """
-        Method for generating correlated samples.
+        """ Method for generating correlated samples.
 
-        :param int N: Number of correlated samples required.
-        :param ndarray X: (Optional) Points in the uncorrelated space to map to the correlated space.
+        Parameters
+        ----------
+        N : int 
+            Number of correlated samples required.
+        X : numpy.ndarray, optional 
+            Points in the uncorrelated space to map to the correlated space.
 
-        :return:
-            **C**: A numpy.ndarray of shape (N, M), which contains the correlated samples.
+        Returns
+        -------
+        numpy.ndarray
+            Array with shape (N, M), which contains the correlated samples.
         """
         d = len(self.D)
 
@@ -206,13 +242,18 @@ class Correlations(object):
         return Z_test
 
     def get_pdf(self, X):
-        """
-        Evaluate PDF at the sample points.
-        :param numpy.ndarray X: Sample points (Number of points by dimensions)
-        :return:
-            **C**: A numpy.ndarray of shape (N,) with evaluations of the PDF.
-        """
+        """ Evaluate PDF at the sample points.
 
+        Parameters
+        ----------
+        X : numpy.ndarray
+            Array of sample points with shape (number_of_points, dimensions).
+
+        Returns
+        -------
+        numpy.ndarray
+            Array with shape (N,) containing evaluations of the PDF.
+        """
         parameters = self.D
         if len(X.shape) == 1:
             X = X.reshape(-1, 1)

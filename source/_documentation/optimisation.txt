@@ -1,5 +1,0 @@
-Optimisation with polynomials
-===========================================
-
-.. automodule:: equadratures.optimisation
-    :members:

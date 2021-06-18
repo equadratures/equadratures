@@ -22,22 +22,40 @@ class Beta(Distribution):
         Upper bound of the support of the beta distribution.
     """
     def __init__(self, lower=None, upper=None, shape_A=None, shape_B=None):
-        self.shape_A = shape_A
-        self.shape_B = shape_B
-        self.lower = lower
-        self.upper = upper
-        if (self.shape_A is not None) and (self.shape_B is not None):
-            if self.shape_A >= 1. and self.shape_B >= 1.0:
-                self.mean = (self.shape_A) / (self.shape_A + self.shape_B)
-                self.variance = (self.shape_A * self.shape_B) / ( (self.shape_A + self.shape_B)**2 * (self.shape_A + self.shape_B + 1.0) )
-                self.skewness = 2.0 * (self.shape_B - self.shape_A) * np.sqrt(self.shape_A + self.shape_B + 1.0) / ( (self.shape_A + self.shape_B + 2.0) * np.sqrt(self.shape_A * self.shape_B) )
-                self.kurtosis = 6.0 * ((self.shape_A - self.shape_B)**2 * (self.shape_A + self.shape_B + 1.0) - self.shape_A * self.shape_B * (self.shape_A + self.shape_B + 2.0)  ) /( (self.shape_A * self.shape_B) * (self.shape_A + self.shape_B + 2.0) * (self.shape_A + self.shape_B + 3.0)) + 3.0
-                self.bounds = np.array([0, 1])
-                self.shape_parameter_A = self.shape_B - 1.0
-                self.shape_parameter_B = self.shape_A - 1.0
-                self.parent = beta(self.shape_A, self.shape_B)
-        if (self.lower is not None) and (self.upper is not None):
-            self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
+        if shape_A is None:
+            self.shape_A = 2.0
+        else:
+            self.shape_A = shape_A
+        if shape_B is None:
+            self.shape_B = 2.0
+        else:
+            self.shape_B = shape_B
+        if self.shape_A <= 0 or self.shape_B <= 0:
+            raise ValueError('Invalid Beta distribution parameters. Alpha and beta should be positive.')
+
+        self.shape_parameter_A = self.shape_B
+        self.shape_parameter_B = self.shape_A
+
+        if lower is None:
+            self.lower = 0.0
+        else:
+            self.lower = lower
+        if upper is None:
+            self.upper = 1.0
+        else:
+            self.upper = upper
+
+        if self.lower > self.upper:
+            raise ValueError('Invalid Beta distribution parameters. Lower should be smaller than upper.')
+
+        self.bounds = np.array([self.lower, self.upper])
+        loc = self.lower
+        scale = self.upper - self.lower
+        self.parent = beta(self.shape_A, self.shape_B, loc=loc, scale=scale)
+        self.mean, self.variance, self.skewness, self.kurtosis = beta.stats(self.shape_A, self.shape_B, loc=loc,
+                                                                            scale=scale, moments='mvsk')
+        self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
+
     def get_description(self):
         """
         A description of the beta distribution.
@@ -91,7 +109,9 @@ class Beta(Distribution):
         :return:
             Recurrence coefficients associated with the beta distribution.
         """
-        ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, order)
+        ab = jacobi_recurrence_coefficients(self.shape_parameter_A - 1.0
+                                            , self.shape_parameter_B - 1.0
+                                            , self.lower, self.upper, order)
         return ab
 
     def get_icdf(self, xx):

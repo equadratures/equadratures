@@ -6,9 +6,9 @@ Effective Quadratures is an open-source library for *uncertainty quantification*
 
 ## Code
 
-The latest version of the code is v9.1.0 *Narwhal*, released in June 2021. 
+The latest version of the code is v9.1.0 *Narwhal*, released June 2021. 
 
-![](https://travis-ci.org/Effective-Quadratures/Effective-Quadratures.svg?branch=master)
+![](https://travis-ci.com/Effective-Quadratures/equadratures.svg?branch=master)
 [![](https://coveralls.io/repos/github/Effective-Quadratures/Effective-Quadratures/badge.svg?branch=master)](https://coveralls.io/github/Effective-Quadratures/Effective-Quadratures)
 [![](https://badge.fury.io/py/equadratures.svg)](https://pypi.org/project/equadratures/)
 [![](https://joss.theoj.org/papers/10.21105/joss.00166/status.svg)](https://joss.theoj.org/papers/10.21105/joss.00166)

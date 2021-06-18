@@ -1,6 +1,6 @@
 # equadratures
 
-Effective Quadratures is an open-source library for *uncertainty quantification*, *machine learning*, *optimisation*, *numerical integration* and *dimension reduction* -- all using orthogonal polynomials. It is particularly useful for models / problems where output quantities of interest are smooth and continuous; to this extent it has found widespread applications in computational engineering models (finite elements, computational fluid dynamics, etc). It is built on the latest research within these areas and has both deterministic and randomized algorithms. Effective Quadratures is actively being developed by researchers at the [University of Cambridge](https://www.cam.ac.uk), [Imperial College London](https://www.imperial.ac.uk), [Stanford University](https://www.stanford.edu), [The University of Utah](https://www.utah.edu), [The Alan Turing Institute](https://www.turing.ac.uk) and the [University of Cagliari](https://www.unica.it/unica/). Effective Quadratures is a NumFOCUS affiliated project.
+*equadratures* is an open-source library for *uncertainty quantification*, *machine learning*, *optimisation*, *numerical integration* and *dimension reduction* -- all using orthogonal polynomials. It is particularly useful for models / problems where output quantities of interest are smooth and continuous; to this extent it has found widespread applications in computational engineering models (finite elements, computational fluid dynamics, etc). It is built on the latest research within these areas and has both deterministic and randomized algorithms. Effective Quadratures is actively being developed by researchers at the [University of Cambridge](https://www.cam.ac.uk), [Imperial College London](https://www.imperial.ac.uk), [Stanford University](https://www.stanford.edu), [The University of Utah](https://www.utah.edu), [The Alan Turing Institute](https://www.turing.ac.uk) and the [University of Cagliari](https://www.unica.it/unica/). *equadratures* is a NumFOCUS affiliated project.
 
 **Key words associated with this code**: polynomial surrogates, polynomial chaos, polynomial variable projection, Gaussian quadrature, Clenshaw Curtis, polynomial least squares, compressed sensing, gradient-enhanced surrogates, supervised learning.
 
@@ -17,19 +17,15 @@ The latest version of the code is v9.1.0 *Narwhal*, released June 2021.
 ![](https://static.pepy.tech/badge/equadratures/week)
 [![](https://img.shields.io/discourse/status?server=https%3A%2F%2Fdiscourse.equadratures.org)](https://discourse.equadratures.org)
 
-To download and install the code please use the python package index command:
+If you use `pip` you can install the code with:
 
 ```python
 pip install equadratures
 ```
 
-or if you are using python3, then
+or `pip` can be replaced with `python -m pip`, where `python` is the python version you wish to install *equadratures* for. Use of a virtual enviroment such as [virtualenv](https://pypi.org/project/virtualenv/) or [pyenv](https://github.com/pyenv/pyenv)/[pipenv](https://pypi.org/project/pipenv/) is also encouraged. Alternatively you can click either on the **Fork Code** button or **Clone**, and install from your local version of the code.
 
-```python
-pip3 install equadratures
-```
-
-Alternatively you can click either on the **Fork Code** button or **Clone**. For issues with the code, please do *raise an issue* on our Github page; do make sure to add the relevant bits of code and specifics on package version numbers. We welcome contributions and suggestions from both users and folks interested in developing the code further.
+For issues with the code, please do *raise an issue* on our Github page; do make sure to add the relevant bits of code and specifics on package version numbers. We welcome contributions and suggestions from both users and folks interested in developing the code further.
 
 Our code is designed to require minimal dependencies; current package requirements include ``numpy``, ``scipy`` and ``matplotlib``.
 

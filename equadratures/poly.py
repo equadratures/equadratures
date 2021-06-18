@@ -11,6 +11,7 @@ import scipy.stats as st
 import numpy as np
 from copy import deepcopy
 MAXIMUM_ORDER_FOR_STATS = 8
+CARD_LIMIT_SOFT = int(50e3)
 
 class Poly(object):
     """ Definition of a polynomial object.
@@ -34,6 +35,8 @@ class Poly(object):
             - **sample-gradients** (numpy.ndarray): A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample gradient values over the parameter space.
     solver_args : dict, optional
         Optional arguments centered around the specific solver used for computing the coefficients. See :class:`Solver<equadratures.solver.Solver>`.
+    override_cardinality: bool, optional
+        Option to override the soft cardinality limit of 50E3. By default the limit is enforced in order to avoid excessively long run times when the polynomial coefficients are computed.
 
     Examples
     --------
@@ -62,7 +65,7 @@ class Poly(object):
     4. Seshadri, P., Narayan, A., Sankaran M., (2017) Effectively Subsampled Quadratures for Least Squares Polynomial Approximations. SIAM/ASA Journal on Uncertainty Quantification, 5(1). `Paper <https://epubs.siam.org/doi/abs/10.1137/16M1057668>`__
     5. Rogers, S., Girolami, M., (2016) Variability in predictions. In: A First Course in Machine Learning, Second Edition (2nd. ed.). Chapman & Hall/CRC. `Book <https://github.com/wwkenwong/book/blob/master/Simon%20Rogers%2C%20Mark%20Girolami%20A%20First%20Course%20in%20Machine%20Learning.pdf>`__
     """
-    def __init__(self, parameters, basis, method=None, sampling_args=None, solver_args={}, variable=None):
+    def __init__(self, parameters, basis, method=None, sampling_args=None, solver_args={}, variable=None, override_cardinality=False):
         try:
             len(parameters)
         except TypeError:
@@ -72,6 +75,7 @@ class Poly(object):
         self.method = method
         self.sampling_args = sampling_args
         self.solver_args = solver_args
+        self.override = override_cardinality
         self.dimensions = len(parameters)
         self.orders = []
         self.gradient_flag = False
@@ -140,6 +144,14 @@ class Poly(object):
                 if 'sample-outputs' in sampling_args:
                     self.output_variances = sampling_args.get('sample-output-variances')
 
+            # Check cardinality before setting points and weights etc (unless override_cardinality=True)
+            if not self.override:
+                cardinality = self.basis.get_cardinality()
+                if cardinality >= CARD_LIMIT_SOFT:
+                    raise Exception('Cardinality %.1e >= soft cardinality limit %.1e. Computing polynomial coefficients may take a long time. To override this, set override_cardinality=True.'
+                        %(cardinality,CARD_LIMIT_SOFT)) 
+
+            # Set solver, points and weight etc 
             self._set_solver()
             self._set_subsampling_algorithm()
             self._set_points_and_weights()

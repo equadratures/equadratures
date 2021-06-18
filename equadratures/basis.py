@@ -2,6 +2,8 @@
 import numpy as np
 import math as mt
 
+CARD_LIMIT_HARD = int(1e6)
+
 class Basis(object):
     """ Basis class constructor.
 
@@ -166,7 +168,7 @@ class Basis(object):
         """
         name = self.basis_type
         if name == "total-order":
-            basis = total_order_basis(self.orders)
+            basis = (self.orders)
         elif name == "tensor-grid":
             basis = tensor_grid_basis(self.orders)
         elif name == "hyperbolic-basis":
@@ -279,13 +281,21 @@ def getTotalOrderBasisRecursion(highest_order, dimensions):
    return I
 
 def total_order_basis(orders):
+    # init
     dimensions = len(orders)
     highest_order = np.max(orders)
+    # Check what the cardinality will be, stop if too large!
+    L = int(np.math.factorial(highest_order+dimensions)/(np.math.factorial(highest_order)*np.math.factorial(dimensions)))
+    # Check cardinality
+    if L >= CARD_LIMIT_HARD:
+        raise Exception('Cardinality %.1e is >= to hard cardinality limit %.1e' %(L,CARD_LIMIT_HARD))
+    # Generate basis
     total_order = np.zeros((1, dimensions))
     for i in range(1, highest_order+1):
         R = getTotalOrderBasisRecursion(i, dimensions)
         total_order = np.vstack((total_order, R))
     return total_order
+
 def sparse_grid_basis(level, growth_rule, dimensions):
 
     # Initialize a few parameters for the setup
@@ -353,6 +363,14 @@ def tensor_grid_basis(orders):
 
     dimensions = len(orders) # number of dimensions
     I = [1.0] # initialize!
+
+    # Check what the cardinality will be, stop if too large!
+    L = 1
+    for p in orders:
+        L *= p+1
+        # Check cardinality so far
+        if L >= CARD_LIMIT_HARD:
+            raise Exception('Cardinality %.1e is >= to hard cardinality limit %.1e' %(L,CARD_LIMIT_HARD))
 
     # For loop across each dimension
     for u in range(0,dimensions):

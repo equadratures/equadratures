@@ -27,7 +27,8 @@ setup(name='equadratures',
           'scipy >= 0.15.0',
           'matplotlib',
           'seaborn',
-          'requests >= 2.11.1'
+          'requests >= 2.11.1',
+          'graphviz'
       ],
       extras_require={
           "cvxpy":  ['cvxpy>=1.1'],

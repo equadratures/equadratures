@@ -576,7 +576,8 @@ class PolyTree(object):
                 feature_names : list, optional
                         A list of the names of the features used in the training data.
                 filename : str, optional
-                        Filename to write graphviz data to. If ``None`` (default) then rendered in-place.
+                        Filename to write graphviz data to. If ``None`` (default) then rendered in-place, if ``'source'``, the raw graphviz string is returned.
+
                 """
                 from graphviz import Digraph
                 g = Digraph('g', node_attr={'shape': 'record', 'height': '.1'})
@@ -665,7 +666,10 @@ class PolyTree(object):
                                                            parent_depth=0,
                                                            edge_label="")
 
-                if file_name is None:
+                if file_name == 'source':
+                        return g.source
+
+                elif file_name is None:
                         try:
                                 g.render(view=True)
                         except:

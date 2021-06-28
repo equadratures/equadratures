@@ -2,6 +2,7 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+from matplotlib.ticker import MaxNLocator
 from scipy.spatial import ConvexHull, convex_hull_plot_2d
 from equadratures.datasets import score
 import numpy as np
@@ -43,7 +44,7 @@ def plot_sufficient_summary(mysubspace, ax=None, X_test=None, y_test=None, show=
     Returns
     -------
     tuple
-        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
+        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes (only if `show=False`).
 
     Example
     -------
@@ -127,7 +128,8 @@ def plot_sufficient_summary(mysubspace, ax=None, X_test=None, y_test=None, show=
         ax.legend(ncol=2)
     if show:
         plt.show()
-    return fig, ax
+    else:
+        return fig, ax
 
 def plot_2D_contour_zonotope(mysubspace, minmax=[-3.5, 3.5], grid_pts=180,  \
                              show=True, ax=None):
@@ -149,7 +151,8 @@ def plot_2D_contour_zonotope(mysubspace, minmax=[-3.5, 3.5], grid_pts=180,  \
     Returns
     -------
     tuple
-        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
+        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes (only if `show=False`).
+
 
     Example
     -------
@@ -199,7 +202,8 @@ def plot_2D_contour_zonotope(mysubspace, minmax=[-3.5, 3.5], grid_pts=180,  \
     sns.despine(offset=10, trim=True)
     if show:
         plt.show()
-    return fig, ax
+    else:
+        return fig, ax
     
 def plot_samples_from_second_subspace_over_first(mysubspace_1, mysubspace_2, axs=None, no_of_samples=500,\
                              minmax=[-3.5, 3.5], grid_pts=180, show=True): 
@@ -226,7 +230,7 @@ def plot_samples_from_second_subspace_over_first(mysubspace_1, mysubspace_2, axs
     Returns
     -------
     tuple
-        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`, :obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes` ) containing contour plots of the sample mean and variance over the 2D subspace.
+        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`, :obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes` ) containing contour plots of the sample mean and variance over the 2D subspace (only if `show=False`).
 
     Example
     -------
@@ -306,7 +310,8 @@ def plot_samples_from_second_subspace_over_first(mysubspace_1, mysubspace_2, axs
     sns.despine(fig2,offset=10, trim=True)
     if show:
         plt.show()
-    return fig1, ax1, fig2, ax2
+    else:
+        return fig1, ax1, fig2, ax2
 
 def plot_sobol(Polynomial, ax=None, order=1, show=True, labels=None, kwargs={}):
     """ Plots a polynomial's Sobol' indices of a given order.
@@ -329,7 +334,7 @@ def plot_sobol(Polynomial, ax=None, order=1, show=True, labels=None, kwargs={}):
     Returns
     -------
     tuple
-        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
+        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes (only if `show=False`).
     """
     # Set default kwargs
     kwargs = set_defaults(kwargs, {'color':'dodgerblue', 'ec':'k','lw':2, 'alpha':0.7})
@@ -376,7 +381,8 @@ def plot_sobol(Polynomial, ax=None, order=1, show=True, labels=None, kwargs={}):
 
     if show:
         plt.show()
-    return fig, ax
+    else:
+        return fig, ax
 
 def plot_total_sobol(Polynomial, ax=None, show=True, labels=None, kwargs={}):
     """ Plots a polynomial's total-order Sobol' indices.
@@ -397,7 +403,7 @@ def plot_total_sobol(Polynomial, ax=None, show=True, labels=None, kwargs={}):
     Returns
     -------
     tuple
-        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
+        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes (only if `show=False`).
     """
     # Set default kwargs
     kwargs = set_defaults(kwargs, {'color':'dodgerblue', 'ec':'k','lw':2, 'alpha':0.7})
@@ -421,7 +427,8 @@ def plot_total_sobol(Polynomial, ax=None, show=True, labels=None, kwargs={}):
 
     if show:
         plt.show()
-    return fig, ax
+    else:
+        return fig, ax
     
 def plot_sobol_heatmap(Polynomial,parameters=None,show=True,ax=None):
     """ Generates a heatmap showing the first and second order Sobol indices. 
@@ -440,7 +447,7 @@ def plot_sobol_heatmap(Polynomial,parameters=None,show=True,ax=None):
     Returns
     -------
     tuple
-        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
+        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes (only if `show=False`).
     """
     if ax is None:
         fig,ax = plt.subplots(figsize=(10, 7),tight_layout=True)
@@ -469,7 +476,8 @@ def plot_sobol_heatmap(Polynomial,parameters=None,show=True,ax=None):
         ax.set_yticklabels(ax.get_yticklabels(),rotation=0 ,FontSize=10) 
     if show:
         plt.show()
-    return fig, ax
+    else:
+        return fig, ax
 
 def plot_regpath(solver,elements=None,nplot=None,show=True):
     """ Generates the regularisation path for the :class:`~equadratures.solver.elastic_net` solver.
@@ -488,7 +496,7 @@ def plot_regpath(solver,elements=None,nplot=None,show=True):
     Returns
     -------
     tuple
-        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`, :obj:`~matplotlib.axes.Axes`) containing figure and two axes corresponding to the polynomial coefficients and information criterion plots.
+        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`, :obj:`~matplotlib.axes.Axes`) containing figure and two axes corresponding to the polynomial coefficients and information criterion plots (only if `show=False`).
     """
     lamdas = solver.lambdas
     x_path = solver.xpath
@@ -514,7 +522,7 @@ def plot_regpath(solver,elements=None,nplot=None,show=True):
             
         else:
             for j in plots:
-                e1 = elements[j,0]
+                e1 = elements[j,0]  #TODO - this is insufficient! Currently only works for case with two parameters!
                 e2 = elements[j,1]
                 if e1 == 0:
                     label = r'$p_%d(x_2)$' %e2
@@ -540,9 +548,10 @@ def plot_regpath(solver,elements=None,nplot=None,show=True):
         sns.despine(fig=fig, offset=10, trim=False)
         if show:
             plt.show()
-        return fig,ax1,ax2
+        else:
+            return fig,ax1,ax2
 
-def plot_pdf(Parameter, ax=None, data=None, show=True):
+def plot_pdf(Parameter, ax=None, data=None, show=True, lim_range=True):
     """ Plots the probability density function for a Parameter.
 
     Parameters
@@ -555,11 +564,13 @@ def plot_pdf(Parameter, ax=None, data=None, show=True):
         Samples from the distribution (or a similar one) that need to be plotted as a histogram.
     show : bool, optional
         Option to show the graph.
+    lim_range : bool, optional
+        Option to limit the range of the x-axis to just the immediate region of the pdf (rather than the full parameter support).
 
     Returns
     -------
     tuple
-        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
+        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes (only if `show=False`).
     """
     if ax is None:
         fig,ax = plt.subplots(figsize=(8, 6),tight_layout=True)
@@ -571,11 +582,53 @@ def plot_pdf(Parameter, ax=None, data=None, show=True):
     ax.fill_between(s_values,  pdf*0.0, pdf, color="gold" , label='Density', interpolate=True, hatch="\\\\\\\\", edgecolor="grey",  linewidth=0.5,alpha=0.5)
     if data is not None:
         ax.hist(data, 50, density=True, facecolor='dodgerblue', alpha=0.7, label='Data', edgecolor='white')
+    # Adjust xrange
+    if lim_range:
+        idx = np.argwhere(pdf/pdf.max() >= 1e-5)
+        ax.set_xlim([s_values[idx].min(),s_values[idx].max()])
     ax.legend()
     sns.despine(ax=ax, offset=10, trim=True)
     if show:
         plt.show()
-    return fig, ax
+    else:
+        return fig, ax
+
+def plot_cdf(Parameter, ax=None, show=True, lim_range=True):
+    """ Plots the cumulative density function for a Parameter.
+
+    Parameters
+    ----------
+    Parameter : Parameter
+        An instance of the Parameter class.
+    ax : matplotlib.axes.Axes, optional
+        An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
+    show : bool, optional
+        Option to show the graph.
+    lim_range : bool, optional
+        Option to limit the range of the x-axis to just the immediate region of the pdf (rather than the full parameter support).
+
+    Returns
+    -------
+    tuple
+        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes (only if `show=False`).
+    """
+    if ax is None:
+        fig,ax = plt.subplots(figsize=(8, 6),tight_layout=True)
+        ax.set_xlabel(Parameter.variable.capitalize())
+        ax.set_ylabel('CDF')
+    else:
+        fig = ax.figure
+    s_values, cdf = Parameter.get_cdf()
+    ax.plot(s_values,cdf, '-', c='navy', lw=4)
+    # Adjust xrange
+    if lim_range:
+        idx = np.argwhere((cdf >= 1e-5) & (cdf<=1-1e-5))
+        ax.set_xlim([s_values[idx].min(),s_values[idx].max()])
+    sns.despine(ax=ax, offset=10, trim=True)
+    if show:
+        plt.show()
+    else:
+        return fig, ax
 
 def _trim_axs(ax,N):
     """ Private function to reduce *axs* to *N* axes. All further axes are removed from the figure.
@@ -614,7 +667,7 @@ def plot_parameters(Polynomial, ax=None, cols=2, show=True):
     Returns
     -------
     tuple
-        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
+        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes (only if `show=False`).
     """
     rows = len(Polynomial.parameters) // cols + 1
     if ax is None:
@@ -628,7 +681,68 @@ def plot_parameters(Polynomial, ax=None, cols=2, show=True):
         a.set_ylabel('PDF')
     if show:
         plt.show()
-    return fig, ax
+    else:
+        return fig, ax
+
+def plot_index_set(Basis, ax=None, show=True):
+    """ Plots the index set. If more than three dimensions, only the first three are plotted.  
+
+    Parameters
+    ----------
+    Basis: Basis
+        An instance of the Basis class.
+    ax : matplotlib.axes.Axes, optional
+        An instance of the ``matplotlib`` axes class to plot onto. If ``None``, a new figure and axes are created (default: ``None``).
+    show : bool, optional
+        Option to view the plot.
+
+    Returns
+    -------
+    tuple
+        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes (only if `show=False`).
+
+    Example
+    -------
+        >>> mybasis = eq.Basis('tensor-grid', [4,4,4])
+        >>> mybasis.plot_orthogonal_polynomials()        
+    """
+    if ax is None:
+        fig = plt.figure(figsize=(5, 5),tight_layout=True)
+        ax = fig.add_subplot(111, projection='3d')
+        ax.set_xlabel(r'$i_1$')
+        ax.set_ylabel(r'$i_2$')
+        ax.set_zlabel(r'$i_3$')
+    else:
+        fig = ax.figure
+    if Basis.basis_type.lower() == 'sparse-grid':
+        elements, _, _ = Basis.get_basis() 
+    else:
+        elements = Basis.elements
+    # Deal with dims less than 3
+    p,d = elements.shape
+    if d == 2:
+        elements = np.c_[elements,np.zeros(p)]
+        ax.set_zlim([0,1])
+    if d == 1:
+        elements = np.c_[elements,np.zeros([p,2])]
+        ax.set_ylim([0,1])
+        ax.set_zlim([0,1])
+    ax.scatter(elements[:,0], elements[:,1], elements[:,2],  marker='s', s=80, color='dodgerblue')
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.zaxis.set_major_locator(MaxNLocator(integer=True))
+#    ax.xaxis.pane.fill = False
+#    ax.yaxis.pane.fill = False
+#    ax.zaxis.pane.fill = False
+    ax.xaxis.pane.set_edgecolor('k')
+    ax.yaxis.pane.set_edgecolor('k')
+    ax.zaxis.pane.set_edgecolor('k')
+    ax.grid(False)
+    sns.despine(offset=10, trim=True)
+    if show:
+        plt.show()
+    else:
+        return fig, ax
 
 def plot_orthogonal_polynomials(Parameter, ax=None, order_limit=None, number_of_points=200, show=True):
     """ Plots the first few orthogonal polynomials.
@@ -649,7 +763,7 @@ def plot_orthogonal_polynomials(Parameter, ax=None, order_limit=None, number_of_
     Returns
     -------
     tuple
-        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
+        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes (only if `show=False`).
 
     Example
     -------
@@ -671,11 +785,13 @@ def plot_orthogonal_polynomials(Parameter, ax=None, order_limit=None, number_of_
         max_order = order_limit
     for i in range(0, max_order):
         ax.plot(Xi, P[i,:], '-', lw=2, label='order %d'%(i))
-    ax.legend()
+    if max_order <= 10:
+        ax.legend(ncol=3)
     sns.despine(offset=10, trim=True)
     if show:
         plt.show()
-    return fig, ax
+    else:
+        return fig, ax
 
 def plot_polyfit_1D(Polynomial, ax=None, uncertainty=True, output_variances=None, number_of_points=200, show=True):
     """ Plots a 1D only polynomial fit to the data.
@@ -696,7 +812,7 @@ def plot_polyfit_1D(Polynomial, ax=None, uncertainty=True, output_variances=None
     Returns
     -------
     tuple
-        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
+        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes (only if `show=False`).
     """
     if ax is None:
         fig,ax = plt.subplots(figsize=(8, 6),tight_layout=True)
@@ -728,7 +844,8 @@ def plot_polyfit_1D(Polynomial, ax=None, uncertainty=True, output_variances=None
     sns.despine(offset=10, trim=True)
     if show:
         plt.show()
-    return fig, ax
+    else:
+        return fig, ax
 
 def plot_model_vs_data(Polynomial, ax=None, sample_data=None, metric='adjusted_r2', show=True):
     """ Plots the polynomial approximation against the true data.
@@ -749,7 +866,7 @@ def plot_model_vs_data(Polynomial, ax=None, sample_data=None, metric='adjusted_r
     Returns
     -------
     tuple
-        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes.
+        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`) containing the generated figure and axes (only if `show=False`).
     """
     if ax is None:
         fig,ax = plt.subplots(figsize=(8, 6),tight_layout=True)
@@ -772,7 +889,8 @@ def plot_model_vs_data(Polynomial, ax=None, sample_data=None, metric='adjusted_r
     sns.despine(offset=10, trim=True)
     if show:
         plt.show()
-    return fig, ax
+    else:
+        return fig, ax
 
 def plot_decision_surface(PolyTree,ij,ax=None,X=None,y=None,max_depth=None,label=True,
                                  color='data',colorbar=True,show=True,kwargs={}):
@@ -806,7 +924,7 @@ def plot_decision_surface(PolyTree,ij,ax=None,X=None,y=None,max_depth=None,label
     Returns
     -------
     tuple
-        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`, :obj:`~matplotlib.collections.PathCollection`) containing the figure, axes and handle for the scatter plot.
+        Tuple (:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`, :obj:`~matplotlib.collections.PathCollection`) containing the figure, axes and handle for the scatter plot (only if `show=False`).
     """
     # Set default kwargs
     kwargs = set_defaults(kwargs, {'alpha':0.8,'ec':'lightgray','cmap':'coolwarm'})
@@ -906,7 +1024,8 @@ def plot_decision_surface(PolyTree,ij,ax=None,X=None,y=None,max_depth=None,label
 
     if show:
         plt.show()
-    return fig, ax, scat
+    else:
+        return fig, ax, scat
 
 def set_defaults(kwargs, defaults):
     for key in defaults:

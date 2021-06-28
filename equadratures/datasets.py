@@ -106,7 +106,7 @@ def gen_friedman(n_observations=100, n_dim=5, noise=0.0, random_seed=None,normal
     
     return X,y
 
-def load_eq_dataset(dataset,data_dir=None):
+def load_eq_dataset(dataset,data_dir=None,verbose=True):
     """
     Loads the requested dataset from the `equadratures dataset repository <https://github.com/Effective-Quadratures/data-sets>`__. 
 
@@ -122,6 +122,8 @@ def load_eq_dataset(dataset,data_dir=None):
     data_dir : str, optional
         Directory name where a local clone of the data-sets repo is located. If given, the dataset will be loaded from here 
         instead of downloading from the remote repo.
+    verbose: bool, optional
+        Option to print verbose messages to screen.
 
     Returns
     -------
@@ -164,7 +166,7 @@ def load_eq_dataset(dataset,data_dir=None):
         try:
             r = requests.get(git_url)
             r.raise_for_status()
-            print('\n',r.text)
+            if verbose: print('\n',r.text)
         except requests.exceptions.RequestException as e:  
             raise SystemExit(e)
 
@@ -173,7 +175,7 @@ def load_eq_dataset(dataset,data_dir=None):
         print('Loading the dataset from ', data_dir)
         data = np.load(os.path.join(data_dir,dataset,dataset+'.npz'))
         f = open(os.path.join(data_dir,dataset,'README.md'))
-        print(f.read())
+        if verbose: print(f.read())
 
     return data
 

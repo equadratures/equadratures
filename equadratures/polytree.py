@@ -576,7 +576,8 @@ class PolyTree(object):
                 feature_names : list, optional
                         A list of the names of the features used in the training data.
                 filename : str, optional
-                        Filename to write graphviz data to. If ``None`` (default) then rendered in-place.
+                        Filename to write graphviz data to. If ``None`` (default) then rendered in-place, if ``'source'``, the raw graphviz string is returned.
+
                 """
                 from graphviz import Digraph
                 g = Digraph('g', node_attr={'shape': 'record', 'height': '.1'})
@@ -585,7 +586,7 @@ class PolyTree(object):
                     dim = self.tree["poly"].dimensions
                     feature_names = ['x_%d'%i for i in range(dim)]
 
-                def _build_graphviz_recurse(node, parent_node_index=0, parent_depth=0, edge_label=""):
+                def _build_graphviz_recurse(node, parent_node_index=0, parent_depth=0, edge_label="",labelangle=0):
 
                         # Empty node
                         if node is None:
@@ -620,7 +621,7 @@ class PolyTree(object):
                         bordercolor = "black"
                         fontcolor = "black"
                         g.attr('node', label=label_str, shape=nodeshape)
-                        g.node('node{}'.format(node_index),
+                        g.node('{}'.format(node_index),
                                    color=bordercolor, style=', '.join(style),
                                    fillcolor=fillcolor, fontcolor=fontcolor)
 
@@ -632,18 +633,19 @@ class PolyTree(object):
                                 else:
                                     edgecolor = 'black'
                                     style     = 'solid'
-                                g.edge('node{}'.format(parent_node_index),
-                                           'node{}'.format(node_index), label=edge_label, color=edgecolor,style=style)
+                                if parent_depth > 1: edge_label = '' # Only label True/False for root node
+                                g.edge('{}'.format(parent_node_index),
+                                           '{}'.format(node_index), headlabel=edge_label, color=edgecolor,style=style,labeldistance="2.5",labelangle=labelangle)
 
                         # Traverse child or append leaf value
                         _build_graphviz_recurse(node["children"]["left"],
                                                                    parent_node_index=node_index,
                                                                    parent_depth=parent_depth + 1,
-                                                                   edge_label="")
+                                                                   edge_label="True",labelangle="45")
                         _build_graphviz_recurse(node["children"]["right"],
                                                                    parent_node_index=node_index,
                                                                    parent_depth=parent_depth + 1,
-                                                                   edge_label="")
+                                                                   edge_label="False",labelangle="-45")
 
                 def _flag_tree_walk(node,X):
                         node["flag"] = True
@@ -665,7 +667,10 @@ class PolyTree(object):
                                                            parent_depth=0,
                                                            edge_label="")
 
-                if file_name is None:
+                if file_name == 'source':
+                        return g.source
+
+                elif file_name is None:
                         try:
                                 g.render(view=True)
                         except:

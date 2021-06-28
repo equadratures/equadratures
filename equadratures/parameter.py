@@ -143,9 +143,13 @@ class Parameter(object):
         """ Plots the first few orthogonal polynomials. See :meth:`~equadratures.plot.plot_orthogonal_polynomials` for full description. """
         return plot.plot_orthogonal_polynomials(self,ax,order_limit,number_of_points,show)
 
-    def plot_pdf(self, ax=None, data=None, show=True):
+    def plot_pdf(self, ax=None, data=None, show=True, lim_range=True):
         """ Plots the probability density function for a Parameter. See :meth:`~equadratures.plot.plot_pdf` for full description. """
-        return plot.plot_pdf(self,ax, data, show)
+        return plot.plot_pdf(self,ax, data, show, lim_range)
+
+    def plot_cdf(self, ax=None, show=True, lim_range=True):
+        """ Plots the cumulative density function for a Parameter. See :meth:`~equadratures.plot.plot_cdf` for full description. """
+        return plot.plot_cdf(self,ax, show, lim_range)
 
     def _set_moments(self):
         """ Private function that sets the mean and the variance of the distribution. """

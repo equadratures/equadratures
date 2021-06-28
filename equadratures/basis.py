@@ -1,6 +1,7 @@
 "Rountines for defining the index set associated with multivariate polynomials."
 import numpy as np
 import math as mt
+import equadratures.plot as plot
 
 CARD_LIMIT_HARD = int(1e6)
 
@@ -195,6 +196,10 @@ class Basis(object):
             The multi-index elements of the basis.
         """
         return self.elements
+
+    def plot_index_set(self, ax=None, uncertainty=True, output_variances=None, number_of_points=200, show=True):
+        """ Plot the index set. See :meth:`~equadratures.plot.plot_index_set` for full description. """
+        return plot.plot_index_set(self,ax,show)
 
 #---------------------------------------------------------------------------------------------------
 # PRIVATE FUNCTIONS

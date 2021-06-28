@@ -706,39 +706,43 @@ def plot_index_set(Basis, ax=None, show=True):
         >>> mybasis = eq.Basis('tensor-grid', [4,4,4])
         >>> mybasis.plot_orthogonal_polynomials()        
     """
-    if ax is None:
-        fig = plt.figure(figsize=(5, 5),tight_layout=True)
-        ax = fig.add_subplot(111, projection='3d')
-        ax.set_xlabel(r'$i_1$')
-        ax.set_ylabel(r'$i_2$')
-        ax.set_zlabel(r'$i_3$')
-    else:
-        fig = ax.figure
+    # Get basis elements
     if Basis.basis_type.lower() == 'sparse-grid':
         elements, _, _ = Basis.get_basis() 
     else:
         elements = Basis.elements
-    # Deal with dims less than 3
     p,d = elements.shape
-    if d == 2:
-        elements = np.c_[elements,np.zeros(p)]
-        ax.set_zlim([0,1])
-    if d == 1:
-        elements = np.c_[elements,np.zeros([p,2])]
-        ax.set_ylim([0,1])
-        ax.set_zlim([0,1])
-    ax.scatter(elements[:,0], elements[:,1], elements[:,2],  marker='s', s=80, color='dodgerblue')
-    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-    ax.zaxis.set_major_locator(MaxNLocator(integer=True))
-#    ax.xaxis.pane.fill = False
-#    ax.yaxis.pane.fill = False
-#    ax.zaxis.pane.fill = False
-    ax.xaxis.pane.set_edgecolor('k')
-    ax.yaxis.pane.set_edgecolor('k')
-    ax.zaxis.pane.set_edgecolor('k')
+    # Init figure
+    if ax is None:
+        fig = plt.figure(figsize=(5, 5),tight_layout=True)
+        if d < 3: ax = fig.add_subplot(111)
+        else: ax = fig.add_subplot(111, projection='3d')
+        ax.set_xlabel(r'$i_1$')
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    else:
+        fig = ax.figure
+    # Plotting
+    if d >= 3:
+        ax.scatter(elements[:,0], elements[:,1], elements[:,2],  marker='s', s=80, color='dodgerblue')
+        ax.set_ylabel(r'$i_2$')
+        ax.set_zlabel(r'$i_3$')
+        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+        ax.zaxis.set_major_locator(MaxNLocator(integer=True))
+        ax.xaxis.pane.set_edgecolor('k')
+        ax.yaxis.pane.set_edgecolor('k')
+        ax.zaxis.pane.set_edgecolor('k')
+    elif d == 2:
+        ax.scatter(elements[:,0], elements[:,1],  marker='s', s=80, color='dodgerblue')
+        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+        ax.set_ylabel(r'$i_2$')
+    elif d == 1:
+        ax.scatter(elements[:,0], np.zeros_like(elements),  marker='s', s=80, color='dodgerblue')
+        ax.get_yaxis().set_visible(False)
+        width, height = fig.get_size_inches()
+        fig.set_size_inches(width,0.1*width)
     ax.grid(False)
     sns.despine(offset=10, trim=True)
+    if d == 1: ax.spines['left'].set_visible(False) # Have to do after sns.despine otherwise it overwrites
     if show:
         plt.show()
     else:

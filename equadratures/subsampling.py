@@ -16,15 +16,15 @@ class Subsampling(object):
     def __init__(self, subsampling_algorithm):
         self.subsampling_algorithm = subsampling_algorithm
         if self.subsampling_algorithm is None:
-            self.algorithm = lambda A, k: _get_all_pivots(A, k)
+            self.algorithm = _get_all_pivots
         elif self.subsampling_algorithm.lower() == 'qr':
-            self.algorithm = lambda A, k : get_qr_column_pivoting(A, k)
+            self.algorithm = get_qr_column_pivoting
         elif self.subsampling_algorithm.lower() == 'svd':
-            self.algorithm = lambda A, k : get_svd_subset_selection(A, k)
+            self.algorithm = get_svd_subset_selection
         elif self.subsampling_algorithm.lower() == 'newton':
-            self.algorithm = lambda A, k : get_newton_determinant_maximization(A, k)
+            self.algorithm = get_newton_determinant_maximization
         elif self.subsampling_algorithm.lower() == 'lu':
-            self.algorithm = lambda A, k : get_lu_row_pivoting(A, k)
+            self.algorithm = get_lu_row_pivoting
         elif self.subsampling_algorithm.lower() == 'random':
             # Is this a placeholder?
             self.algorithm = 0 #np.random.choice(int(m), m_refined, replace=False)

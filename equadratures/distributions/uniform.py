@@ -14,16 +14,31 @@ class Uniform(Distribution):
 	:param double variance:
 		Variance of the Gaussian distribution.
     """
-    def __init__(self, lower, upper):
+    def __init__(self, lower, upper, data):
         if lower is None:
-            self.lower = 0.0
+            if data is None:
+                self.lower = 0.0
+                self.data = None
+            else:
+                self.lower = None
+                self.data = data
         else:
             self.lower = lower
+            self.data = None
+
         if upper is None:
-            self.upper = 1.0
+            if data is None:
+                self.upper = 1.0
+            else:
+                self.upper = None
+                self.data = data
         else:
             self.upper = upper
 
+        if self.data is not None:
+            params=uniform.fit(data)
+            self.lower=params[0]
+            self.upper=params[1]
         self.parent = uniform(loc=(self.lower), scale=(self.upper - self.lower))
         self.bounds = np.array([self.lower, self.upper])
         self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')

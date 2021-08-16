@@ -12,14 +12,23 @@ class Exponential(Distribution):
     :param double rate:
 		Rate parameter of the Exponential distribution.
     """
-    def __init__(self, rate=None):
+    def __init__(self, rate=None, data=None):
         if rate is None:
-            self.rate = 1.0
+            if data is None:
+                self.rate = 1.0
+                self.data = None
+            else:
+                self.rate = None
+                self.data = data
         else:
             self.rate = rate
+            self.data = data
 
+        if self.data is not None:
+            params=expon.fit(data)
+            self.rate=1.0 / params[1]
         if (self.rate is not None) and (self.rate > 0.0):
-            self.parent = expon(scale=1.0 / rate)
+            self.parent = expon(scale=1.0 / rate, loc=0)
             self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
             self.bounds = np.array([0.0, np.inf])
             self.x_range_for_pdf = np.linspace(0.0, 20*self.rate, RECURRENCE_PDF_SAMPLES)

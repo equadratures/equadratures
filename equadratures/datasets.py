@@ -6,7 +6,8 @@ import numpy as np
 import scipy.stats as st
 import requests
 from io import BytesIO
-from equadratures.scalers import scaler_minmax 
+from equadratures.scalers import scaler_minmax
+import posixpath
 
 def gen_linear(n_observations=100, n_dim=5, n_relevent=5,bias=0.0, noise=0.0, random_seed=None):
     """ Generate a synthetic linear dataset for regression. 
@@ -154,7 +155,7 @@ def load_eq_dataset(dataset,data_dir=None,verbose=True):
     if data_dir is None:
         print('Downloading the ' + dataset + ' dataset from github...') 
         # .npz file
-        git_url = os.path.join('https://github.com/Effective-Quadratures/data-sets/raw/main/',dataset,dataset+'.npz')
+        git_url = posixpath.join('https://github.com/Effective-Quadratures/data-sets/raw/main/',dataset,dataset+'.npz')
         try:
             r = requests.get(git_url,stream=True)
             r.raise_for_status()
@@ -162,7 +163,7 @@ def load_eq_dataset(dataset,data_dir=None,verbose=True):
         except requests.exceptions.RequestException as e:  
             raise SystemExit(e)
         # .md file
-        git_url = os.path.join('https://raw.githubusercontent.com/Effective-Quadratures/data-sets/main',dataset,'README.md')
+        git_url = posixpath.join('https://raw.githubusercontent.com/Effective-Quadratures/data-sets/main',dataset,'README.md')
         try:
             r = requests.get(git_url)
             r.raise_for_status()
@@ -173,8 +174,8 @@ def load_eq_dataset(dataset,data_dir=None,verbose=True):
     # If the user has cloned the data-sets repo and provided its location in data_dir
     else:
         print('Loading the dataset from ', data_dir)
-        data = np.load(os.path.join(data_dir,dataset,dataset+'.npz'))
-        f = open(os.path.join(data_dir,dataset,'README.md'))
+        data = np.load(posixpath.join(data_dir,dataset,dataset+'.npz'))
+        f = open(posixpath.join(data_dir,dataset,'README.md'))
         if verbose: print(f.read())
 
     return data

@@ -21,32 +21,65 @@ class Beta(Distribution):
     :param double upper:
         Upper bound of the support of the beta distribution.
     """
-    def __init__(self, lower=None, upper=None, shape_A=None, shape_B=None):
+    def __init__(self, lower=None, upper=None, shape_A=None, shape_B=None, data=None):
         if shape_A is None:
-            self.shape_A = 2.0
+            if data is None:
+                self.shape_A = 2.0
+                self.data = None
+            else:
+                self.data = data
+                self.shape_A = None
         else:
             self.shape_A = shape_A
+            self.data = None
         if shape_B is None:
-            self.shape_B = 2.0
+            if data is None:
+                self.shape_B = 2.0
+            else:
+                self.data = data
+                self.shape_B = None
         else:
             self.shape_B = shape_B
-        if self.shape_A <= 0 or self.shape_B <= 0:
-            raise ValueError('Invalid Beta distribution parameters. Alpha and beta should be positive.')
+            self.data = None
+
+            if self.shape_A <= 0 or self.shape_B <= 0:
+                raise ValueError('Invalid Beta distribution parameters. Alpha and beta should be positive.')
+
+
+        if lower is None:
+            if data is None:
+                self.lower = 0.0
+                self.data = None
+            else:
+                self.lower = None
+                self.data = data
+        else:
+            self.lower = lower
+            self.data = None
+
+        if upper is None:
+            if data is None:
+                self.upper = 1.0
+                self.data = None
+            else:
+                self.data = data
+                self.upper = None
+        else:
+            self.upper = upper
+            self.data = None
+
+            if self.lower > self.upper:
+                raise ValueError('Invalid Beta distribution parameters. Lower should be smaller than upper.')
+
+        if self.data is not None:
+            params=beta.fit(self.data)
+            self.shape_A=params[0]
+            self.shape_B=params[1]
+            self.lower=params[2]
+            self.upper=params[2]+params[3]
 
         self.shape_parameter_A = self.shape_B
         self.shape_parameter_B = self.shape_A
-
-        if lower is None:
-            self.lower = 0.0
-        else:
-            self.lower = lower
-        if upper is None:
-            self.upper = 1.0
-        else:
-            self.upper = upper
-
-        if self.lower > self.upper:
-            raise ValueError('Invalid Beta distribution parameters. Lower should be smaller than upper.')
 
         self.bounds = np.array([self.lower, self.upper])
         loc = self.lower

@@ -52,7 +52,8 @@ class Parameter(object):
     endpoints : str, optional
         If set to ``both``, then the quadrature points and weights will have end-points, based on Gauss-Lobatto quadrature rules. If set to ``upper`` or ``lower`` a Gauss-Radau rule is used to compute one end-point at either the upper or lower bound.
     weight_function: Weight, optional
-        An instance of Weight, which contains a bespoke analytical or data-driven weight (probability density) function. 
+        An instance of Weight, which contains a bespoke analytical or data-driven weight (probability density) function.
+
 
     Examples
     --------

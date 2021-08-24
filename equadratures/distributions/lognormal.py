@@ -10,6 +10,8 @@ class Lognormal(Distribution):
 
     :param int shape_parameter:
 		The shape parameter associated with the Lognormal distribution.
+	:param numpy.ndarray data:
+	    Data for which the distribution is to be set
     """
     def __init__(self, shape_parameter, data):
         if shape_parameter is None:

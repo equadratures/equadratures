@@ -11,6 +11,8 @@ class Exponential(Distribution):
 
     :param double rate:
 		Rate parameter of the Exponential distribution.
+	:param numpy.ndarray data:
+	    Data for which the distribution is to be set
     """
     def __init__(self, rate=None, data=None):
         if rate is None:

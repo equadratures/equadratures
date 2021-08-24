@@ -20,6 +20,8 @@ class Beta(Distribution):
         Lower bound of the support of the beta distribution.
     :param double upper:
         Upper bound of the support of the beta distribution.
+    :param numpy.ndarray data:
+	    Data for which the distribution is to be set
     """
     def __init__(self, lower=None, upper=None, shape_A=None, shape_B=None, data=None):
         if shape_A is None:

@@ -16,6 +16,8 @@ class Gaussian(Distribution):
 		Mean of the Gaussian distribution.
 	:param double variance:
 		Variance of the Gaussian distribution.
+	:param numpy.ndarray data:
+	    Data for which the distribution is to be set
     """
     def __init__(self, mean, variance, data):
         if mean is None:

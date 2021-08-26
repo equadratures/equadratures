@@ -40,7 +40,7 @@ class Uniform(Distribution):
         if self.data is not None:
             params=uniform.fit(data)
             self.lower=params[0]
-            self.upper=params[1]
+            self.upper=params[1]+params[0]
         self.parent = uniform(loc=(self.lower), scale=(self.upper - self.lower))
         self.bounds = np.array([self.lower, self.upper])
         self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')

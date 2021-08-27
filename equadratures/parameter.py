@@ -48,7 +48,7 @@ class Parameter(object):
     shape_parameter_B : float, optional
         This is the second shape parameter that characterizes the distribution selected. In the case of a ``gaussian`` or ``truncated-gaussian``, this is the variance.
     data : numpy.ndarray, optional
-        A data-set with shape (number_of_data_points, 2), where the first column comprises of parameter values, while the second column corresponds to the data observations. This input should only be used with the ``Analytical`` distribution.
+        A numpy array with shape (n,1), here n are the number of data points in the input data; Currently, data parameter works with distributions such as 'exponential','lognormal','uniform','gaussian'.
     endpoints : str, optional
         If set to ``both``, then the quadrature points and weights will have end-points, based on Gauss-Lobatto quadrature rules. If set to ``upper`` or ``lower`` a Gauss-Radau rule is used to compute one end-point at either the upper or lower bound.
     weight_function: Weight, optional
@@ -69,6 +69,9 @@ class Parameter(object):
         >>>        support=[-3, 3.2])
         >>> param = eq.Parameter(distribution='analytical', 
         >>>        weight_function=pdf, order=2)
+    A data-constructed parameter
+        >>> arr = np.array([0,1,2,3,4])
+        >>> param = eq.Parameter(distribution='uniform',data=arr)
 
     References
     ----------

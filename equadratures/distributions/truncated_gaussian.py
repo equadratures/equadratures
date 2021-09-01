@@ -61,7 +61,7 @@ class TruncatedGaussian(Distribution):
             self.upper = upper
             self.data = None
 
-        if self.data:
+        if self.data is not None:
             params=truncnorm.fit(self.data)
             self.mean=params[2]
             self.variance=params[3]**2

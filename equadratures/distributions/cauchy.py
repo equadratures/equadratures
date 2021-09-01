@@ -14,12 +14,30 @@ class Cauchy(Distribution):
     :param double scale:
 		Scale parameter of the Cauchy distribution.
     """
-    def __init__(self, location=None, scale=None):
-        self.location = location
+    def __init__(self, location=None, scale=None, data=None):
+
+        if data is None:
+            self.location = location
+            self.data = None
+        else:
+            self.location = None
+            self.data = data
+
         if scale is None:
-            self.scale = 1.0
+            if data is None:
+                self.scale = 1.0
+                self.data = None
+            else:
+                self.scale = None
+                self.data =data
         else:
             self.scale = scale
+            self.data = None
+
+        if self.data is not None:
+            params=cauchy.fit(self.data)
+            self.location=params[0]
+            self.scale=params[1]
 
         self.bounds = np.array([-np.inf, np.inf])
         self.mean = np.nan

@@ -114,7 +114,7 @@ class Parameter(object):
         elif self.name.lower() == 'truncated-gaussian':
             self.distribution = TruncatedGaussian(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, self.data)
         elif self.name.lower() == 'cauchy':
-            self.distribution = Cauchy(self.shape_parameter_A, self.shape_parameter_B)
+            self.distribution = Cauchy(self.shape_parameter_A, self.shape_parameter_B, self.data)
         elif self.name.lower() == 'exponential':
             self.distribution = Exponential(self.shape_parameter_A,self.data)
         elif self.name.lower() == 'gamma':
@@ -122,7 +122,7 @@ class Parameter(object):
         elif self.name.lower() == 'weibull':
             self.distribution = Weibull(self.shape_parameter_A, self.shape_parameter_B, self.data)
         elif self.name.lower() == 'arcsine' or self.name.lower() == 'chebyshev':
-            self.distribution = Chebyshev(self.lower, self.upper)
+            self.distribution = Chebyshev(self.lower, self.upper, self.data)
         elif self.name.lower() == 'rayleigh':
             self.distribution = Rayleigh(self.shape_parameter_A)
         elif self.name.lower() == 'chi-squared':

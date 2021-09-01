@@ -13,15 +13,32 @@ class Chebyshev(Distribution):
 	:param double upper:
 		Upper bound of the support of the Chebyshev (arcsine) distribution.
     """
-    def __init__(self, lower, upper):
+    def __init__(self, lower, upper, data):
         if lower is None:
-            self.lower = 0.0
+            if data is None:
+                self.lower = 0.0
+                self.data = None
+            else:
+                self.lower = None
+                self.data = data
         else:
             self.lower = lower
+            self.data = None
         if upper is None:
-            self.upper = 1.0
+            if data is None:
+                self.upper = 1.0
+                self.data = None
+            else:
+                self.upper = None
+                self.data = data
         else:
             self.upper = upper
+            self.data = data
+
+        if self.data is not None:
+            params = arcsine.fit(data)
+            self.lower = params[0]
+            self.upper = params[0] + params[1]
 
         if self.lower > self.upper:
             raise ValueError('Invalid Beta distribution parameters. Lower should be smaller than upper.')

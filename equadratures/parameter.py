@@ -120,7 +120,7 @@ class Parameter(object):
         elif self.name.lower() == 'gamma':
             self.distribution = Gamma(self.shape_parameter_A, self.shape_parameter_B)
         elif self.name.lower() == 'weibull':
-            self.distribution = Weibull(self.shape_parameter_A, self.shape_parameter_B)
+            self.distribution = Weibull(self.shape_parameter_A, self.shape_parameter_B, self.data)
         elif self.name.lower() == 'arcsine' or self.name.lower() == 'chebyshev':
             self.distribution = Chebyshev(self.lower, self.upper)
         elif self.name.lower() == 'rayleigh':

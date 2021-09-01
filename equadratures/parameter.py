@@ -112,7 +112,7 @@ class Parameter(object):
         elif self.name.lower() == 'beta':
             self.distribution = Beta(self.lower, self.upper, self.shape_parameter_A, self.shape_parameter_B, self.data)
         elif self.name.lower() == 'truncated-gaussian':
-            self.distribution = TruncatedGaussian(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
+            self.distribution = TruncatedGaussian(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, self.data)
         elif self.name.lower() == 'cauchy':
             self.distribution = Cauchy(self.shape_parameter_A, self.shape_parameter_B)
         elif self.name.lower() == 'exponential':

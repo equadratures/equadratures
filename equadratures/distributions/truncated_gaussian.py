@@ -17,23 +17,56 @@ class TruncatedGaussian(Distribution):
     :param double upper:
         Upper bound of the truncated Gaussian distribution.
     """
-    def __init__(self, mean, variance, lower, upper):
+    def __init__(self, mean, variance, lower, upper, data):
         if mean is None:
-            self.mean = 0.0
+            if data is None:
+                self.mean = 0.0
+                self.data = None
+            else:
+                self.data = data
+                self.mean = None
         else:
             self.mean = mean
+            self.data = None
         if variance is None:
-            self.variance = 1.0
+            if data is None:
+                self.variance = 1.0
+                self.data = None
+            else:
+                self.variance = None
+                self.data = data
         else:
             self.variance = variance
+            self.data = None
+
         if lower is None:
-            self.lower = -3.0
+            if data is None:
+                self.lower = -3.0
+                self.data = None
+            else:
+                self.data = data
+                self.lower = None
         else:
             self.lower = lower
+            self.data = None
+
         if upper is None:
-            self.upper = 3.0
+            if data is None:
+                self.upper = 3.0
+                self.data = None
+            else:
+                self.upper = None
+                self.data = data
         else:
             self.upper = upper
+            self.data = None
+
+        if self.data:
+            params=truncnorm.fit(self.data)
+            self.mean=params[2]
+            self.variance=params[3]**2
+            self.lower=(params[0]*params[3])+params[2]
+            self.upper=(params[1]*params[3])+params[2]
 
         self.std = np.sqrt(self.variance)
         a = (self.lower - self.mean) / self.std

@@ -11,11 +11,21 @@ class Chi(Distribution):
     :param int dofs:
 		Degrees of freedom for the chi-squared distribution.
     """
-    def __init__(self, dofs):
+    def __init__(self, dofs, data=None):
         if dofs is None:
-            self.dofs = 1
+            if data is None:
+                self.dofs = 1
+                self.data = None
+            else:
+                self.dofs = None
+                self.data =data
         else:
             self.dofs = dofs
+            self.data = None
+
+        if self.data is not None:
+            params=chi.fit(self.data)
+            self.dofs=params[0]
 
         if self.dofs < 0:
             raise ValueError('Invalid parameter in chi distribution: dofs must be positive.')

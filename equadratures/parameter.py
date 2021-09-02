@@ -118,7 +118,7 @@ class Parameter(object):
         elif self.name.lower() == 'exponential':
             self.distribution = Exponential(self.shape_parameter_A,self.data)
         elif self.name.lower() == 'gamma':
-            self.distribution = Gamma(self.shape_parameter_A, self.shape_parameter_B)
+            self.distribution = Gamma(self.shape_parameter_A, self.shape_parameter_B, self.data)
         elif self.name.lower() == 'weibull':
             self.distribution = Weibull(self.shape_parameter_A, self.shape_parameter_B, self.data)
         elif self.name.lower() == 'arcsine' or self.name.lower() == 'chebyshev':
@@ -128,7 +128,7 @@ class Parameter(object):
         elif self.name.lower() == 'chi-squared':
             self.distribution = Chisquared(self.shape_parameter_A)
         elif self.name.lower() == 'chi':
-            self.distribution = Chi(self.shape_parameter_A)
+            self.distribution = Chi(self.shape_parameter_A, self.data)
         elif self.name.lower() == 'pareto':
             self.distribution = Pareto(self.shape_parameter_A)
         elif self.name.lower() == 'gumbel':

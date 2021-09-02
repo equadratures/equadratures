@@ -12,15 +12,33 @@ class Gamma(Distribution):
     :param double scale:
 		Scale parameter of the gamma distribution.
     """
-    def __init__(self, shape=None, scale=None):
+    def __init__(self, shape=None, scale=None, data=None):
         if shape is None:
-            self.shape = 1.0
+            if data is None:
+                self.shape = 1.0
+                self.data = None
+            else:
+                self.shape = None
+                self.data = data
         else:
             self.shape = shape
+            self.data = None
+
         if scale is None:
-            self.scale = 1.0
+            if data is None:
+                self.scale = 1.0
+                self.data = None
+            else:
+                self.scale = None
+                self.data = data
         else:
             self.scale = scale
+            self.data = None
+
+        if self.data is not None:
+            params = gamma.fit(data)
+            self.shape = params[0]
+            self.scale = params[2]
 
         self.bounds = np.array([0.0, np.inf])
         if self.shape < 0 or self.scale < 0:

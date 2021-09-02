@@ -35,7 +35,7 @@ class Chi(Distribution):
         else:
             self.bounds = np.array([0.0, np.inf])
 
-        mean, var, skew, kurt = chi.stats(dofs, moments='mvsk')
+        mean, var, skew, kurt = chi.stats(self.dofs, moments='mvsk')
         self.mean = mean
         self.variance = var
         self.skewness = skew

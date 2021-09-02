@@ -11,7 +11,7 @@ class Chi(Distribution):
     :param int dofs:
 		Degrees of freedom for the chi-squared distribution.
     """
-    def __init__(self, dofs, data=None):
+    def __init__(self, dofs=None, data=None):
         if dofs is None:
             if data is None:
                 self.dofs = 1

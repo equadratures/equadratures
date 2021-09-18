@@ -1,4 +1,6 @@
 """The Logistic distribution."""
+import scipy.stats
+
 from equadratures.distributions.template import Distribution
 from equadratures.distributions.recurrence_utils import jacobi_recurrence_coefficients
 import numpy as np
@@ -10,18 +12,38 @@ class Logistic(Distribution):
 
     :param int shape_parameter:
 		The shape parameter associated with the Logistic distribution.
+	:param numpy.ndarray data:
+	    Data for which the distribution is to be set
     """
-    def __init__(self, location, scale_parameter):
+    def __init__(self, location, scale_parameter, data):
         if location is None:
-            self.location = 0.0
+            if data is None:
+                self.location = 0.0
+                self.data = None
+            else:
+                self.location = None
+                self.data = data
         else:
             self.location = location
+            self.data = None
         if scale_parameter is None:
-            self.scale_parameter = 1.0
+            if data is None:
+                self.scale_parameter = 1.0
+                self.data = None
+            else:
+                self.scale_parameter = None
+                self.data = data
         else:
             self.scale_parameter = scale_parameter
+            self.data = None
 
         self.bounds = np.array([-np.inf, np.inf])
+
+        if self.data is not None:
+            params=scipy.stats.logistic(self.data)
+            self.location = params[0]
+            self.scale_parameter = params[1]
+
         if self.scale_parameter < 0:
             raise ValueError('Invalid parameter in Logistic distribution. Scale should be positive.')
 

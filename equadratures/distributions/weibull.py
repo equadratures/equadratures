@@ -13,6 +13,8 @@ class Weibull(Distribution):
 		Lower bound of the support of the Weibull distribution.
     :param double scale:
 		Upper bound of the support of the Weibull distribution.
+	:param numpy.ndarray data:
+	    Data for which the distribution is to be set
     """
     def __init__(self, scale=None, shape=None, data=None):
         if shape is None:

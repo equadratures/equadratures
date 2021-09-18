@@ -16,6 +16,8 @@ class TruncatedGaussian(Distribution):
         Lower bound of the truncated Gaussian distribution.
     :param double upper:
         Upper bound of the truncated Gaussian distribution.
+    :param numpy.ndarray data:
+	    Data for which the distribution is to be set
     """
     def __init__(self, mean, variance, lower, upper, data):
         if mean is None:

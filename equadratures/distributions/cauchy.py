@@ -13,6 +13,8 @@ class Cauchy(Distribution):
 		Location parameter of the Cauchy distribution.
     :param double scale:
 		Scale parameter of the Cauchy distribution.
+	:param numpy.ndarray data:
+	    Data for which the distribution is to be set
     """
     def __init__(self, location=None, scale=None, data=None):
 

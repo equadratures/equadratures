@@ -124,7 +124,7 @@ class Parameter(object):
         elif self.name.lower() == 'arcsine' or self.name.lower() == 'chebyshev':
             self.distribution = Chebyshev(self.lower, self.upper, self.data)
         elif self.name.lower() == 'rayleigh':
-            self.distribution = Rayleigh(self.shape_parameter_A)
+            self.distribution = Rayleigh(self.shape_parameter_A, self.data)
         elif self.name.lower() == 'chi-squared':
             self.distribution = Chisquared(self.shape_parameter_A)
         elif self.name.lower() == 'chi':
@@ -132,9 +132,9 @@ class Parameter(object):
         elif self.name.lower() == 'pareto':
             self.distribution = Pareto(self.shape_parameter_A)
         elif self.name.lower() == 'gumbel':
-            self.distribution = Gumbel(self.shape_parameter_A, self.shape_parameter_B)
+            self.distribution = Gumbel(self.shape_parameter_A, self.shape_parameter_B, self.data)
         elif self.name.lower() == 'logistic':
-            self.distribution = Logistic(self.shape_parameter_A, self.shape_parameter_B)
+            self.distribution = Logistic(self.shape_parameter_A, self.shape_parameter_B, self.data)
         elif self.name.lower() == 'students-t' or self.name.lower() == 't' or self.name.lower() == 'studentt':
             self.distribution = Studentst(self.shape_parameter_A)
         elif self.name.lower() == 'lognormal' or self.name.lower() == 'log-normal':

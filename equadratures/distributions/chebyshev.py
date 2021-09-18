@@ -12,6 +12,8 @@ class Chebyshev(Distribution):
 		Lower bound of the support of the Chebyshev (arcsine) distribution.
 	:param double upper:
 		Upper bound of the support of the Chebyshev (arcsine) distribution.
+	:param numpy.ndarray data:
+	    Data for which the distribution is to be set
     """
     def __init__(self, lower, upper, data):
         if lower is None:

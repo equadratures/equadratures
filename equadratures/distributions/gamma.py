@@ -11,6 +11,8 @@ class Gamma(Distribution):
 		Shape parameter of the gamma distribution.
     :param double scale:
 		Scale parameter of the gamma distribution.
+	:param numpy.ndarray data:
+	    Data for which the distribution is to be set
     """
     def __init__(self, shape=None, scale=None, data=None):
         if shape is None:

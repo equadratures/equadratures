@@ -9,14 +9,25 @@ class Rayleigh(Distribution):
 
     :param double scale:
 		Scale parameter of the Rayleigh distribution.
+	:param numpy.ndarray data:
+	    Data for which the distribution is to be set
     """
-    def __init__(self, scale):
+    def __init__(self, scale, data):
         if scale is None:
-            self.scale = 1.0
+            if data is None:
+                self.scale = 1.0
+                self.data = None
+            else:
+                self.data = data
+                self.scale = None
         else:
             self.scale = scale
+            self.data = None
 
         self.bounds = np.array([0.999, np.inf])
+        if self.data is not None:
+            params=rayleigh.fit(data)
+            self.scale=params[1]
         if self.scale < 0:
             raise ValueError('Invalid parameters in Rayleigh distribution. Scale should be positive.')
         self.parent = rayleigh(scale=self.scale)

@@ -48,11 +48,12 @@ class Parameter(object):
     shape_parameter_B : float, optional
         This is the second shape parameter that characterizes the distribution selected. In the case of a ``gaussian`` or ``truncated-gaussian``, this is the variance.
     data : numpy.ndarray, optional
-        A data-set with shape (number_of_data_points, 2), where the first column comprises of parameter values, while the second column corresponds to the data observations. This input should only be used with the ``Analytical`` distribution.
+        A numpy array with shape (n,1), here n are the number of data points in the input data; Currently, data parameter works with distributions such as 'exponential','lognormal','uniform','gaussian'.
     endpoints : str, optional
         If set to ``both``, then the quadrature points and weights will have end-points, based on Gauss-Lobatto quadrature rules. If set to ``upper`` or ``lower`` a Gauss-Radau rule is used to compute one end-point at either the upper or lower bound.
     weight_function: Weight, optional
-        An instance of Weight, which contains a bespoke analytical or data-driven weight (probability density) function. 
+        An instance of Weight, which contains a bespoke analytical or data-driven weight (probability density) function.
+
 
     Examples
     --------
@@ -68,13 +69,16 @@ class Parameter(object):
         >>>        support=[-3, 3.2])
         >>> param = eq.Parameter(distribution='analytical', 
         >>>        weight_function=pdf, order=2)
+    A data-constructed parameter
+        >>> arr = np.array([0,1,2,3,4])
+        >>> param = eq.Parameter(distribution='uniform',data=arr)
 
     References
     ----------
         1. Xiu, D., Karniadakis, G. E., (2002) The Wiener-Askey Polynomial Chaos for Stochastic Differential Equations. SIAM Journal on Scientific Computing,  24(2), `Paper <https://epubs.siam.org/doi/abs/10.1137/S1064827501387826?journalCode=sjoce3>`__
         2. Gautschi, W., (1985) Orthogonal Polynomials-Constructive Theory and Applications. Journal of Computational and Applied Mathematics 12 (1985), pp. 61-76. `Paper <https://www.sciencedirect.com/science/article/pii/037704278590007X>`__
     """
-    def __init__(self, order=1, distribution='Uniform', endpoints=None, shape_parameter_A=None, shape_parameter_B=None, variable='parameter', lower=None, upper=None, weight_function=None):
+    def __init__(self, order=1, distribution='Uniform', endpoints=None, shape_parameter_A=None, shape_parameter_B=None, variable='parameter', lower=None, upper=None, weight_function=None, data=None):
         self.name = distribution
         self.variable = variable
         self.order = order
@@ -83,6 +87,7 @@ class Parameter(object):
         self.lower = lower
         self.upper = upper
         self.endpoints = endpoints
+        self.data=data
         self.weight_function = weight_function
         self._set_distribution()
         self._set_bounds()
@@ -97,43 +102,43 @@ class Parameter(object):
     def _set_distribution(self):
         """ Private function that sets the distribution. """
         if self.name.lower() == 'gaussian' or self.name.lower() == 'normal':
-            self.distribution = Gaussian(self.shape_parameter_A, self.shape_parameter_B)
+            self.distribution = Gaussian(self.shape_parameter_A, self.shape_parameter_B, self.data)
         elif self.name.lower() == 'uniform':
-            self.distribution = Uniform(self.lower, self.upper)
+            self.distribution = Uniform(self.lower, self.upper, self.data)
         elif self.name.lower() == 'triangular':
             self.distribution = Triangular(self.lower, self.upper, self.shape_parameter_A)
         elif self.name.lower() == 'analytical' or self.name.lower() == 'data':
             self.distribution = Analytical(self.weight_function)
         elif self.name.lower() == 'beta':
-            self.distribution = Beta(self.lower, self.upper, self.shape_parameter_A, self.shape_parameter_B)
+            self.distribution = Beta(self.lower, self.upper, self.shape_parameter_A, self.shape_parameter_B, self.data)
         elif self.name.lower() == 'truncated-gaussian':
-            self.distribution = TruncatedGaussian(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
+            self.distribution = TruncatedGaussian(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, self.data)
         elif self.name.lower() == 'cauchy':
-            self.distribution = Cauchy(self.shape_parameter_A, self.shape_parameter_B)
+            self.distribution = Cauchy(self.shape_parameter_A, self.shape_parameter_B, self.data)
         elif self.name.lower() == 'exponential':
-            self.distribution = Exponential(self.shape_parameter_A)
+            self.distribution = Exponential(self.shape_parameter_A,self.data)
         elif self.name.lower() == 'gamma':
-            self.distribution = Gamma(self.shape_parameter_A, self.shape_parameter_B)
+            self.distribution = Gamma(self.shape_parameter_A, self.shape_parameter_B, self.data)
         elif self.name.lower() == 'weibull':
-            self.distribution = Weibull(self.shape_parameter_A, self.shape_parameter_B)
+            self.distribution = Weibull(self.shape_parameter_A, self.shape_parameter_B, self.data)
         elif self.name.lower() == 'arcsine' or self.name.lower() == 'chebyshev':
-            self.distribution = Chebyshev(self.lower, self.upper)
+            self.distribution = Chebyshev(self.lower, self.upper, self.data)
         elif self.name.lower() == 'rayleigh':
-            self.distribution = Rayleigh(self.shape_parameter_A)
+            self.distribution = Rayleigh(self.shape_parameter_A, self.data)
         elif self.name.lower() == 'chi-squared':
             self.distribution = Chisquared(self.shape_parameter_A)
         elif self.name.lower() == 'chi':
-            self.distribution = Chi(self.shape_parameter_A)
+            self.distribution = Chi(self.shape_parameter_A, self.data)
         elif self.name.lower() == 'pareto':
             self.distribution = Pareto(self.shape_parameter_A)
         elif self.name.lower() == 'gumbel':
-            self.distribution = Gumbel(self.shape_parameter_A, self.shape_parameter_B)
+            self.distribution = Gumbel(self.shape_parameter_A, self.shape_parameter_B, self.data)
         elif self.name.lower() == 'logistic':
-            self.distribution = Logistic(self.shape_parameter_A, self.shape_parameter_B)
+            self.distribution = Logistic(self.shape_parameter_A, self.shape_parameter_B, self.data)
         elif self.name.lower() == 'students-t' or self.name.lower() == 't' or self.name.lower() == 'studentt':
             self.distribution = Studentst(self.shape_parameter_A)
         elif self.name.lower() == 'lognormal' or self.name.lower() == 'log-normal':
-            self.distribution = Lognormal(self.shape_parameter_A)
+            self.distribution = Lognormal(self.shape_parameter_A,self.data)
         else:
             distribution_error()
         self.mean = self.distribution.mean

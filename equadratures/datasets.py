@@ -7,7 +7,8 @@ import scipy.stats as st
 import requests
 import posixpath
 from io import BytesIO
-from equadratures.scalers import scaler_minmax 
+from equadratures.scalers import scaler_minmax
+import posixpath
 
 def gen_linear(n_observations=100, n_dim=5, n_relevent=5,bias=0.0, noise=0.0, random_seed=None):
     """ Generate a synthetic linear dataset for regression. 

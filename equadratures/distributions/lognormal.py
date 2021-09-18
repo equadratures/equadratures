@@ -10,17 +10,32 @@ class Lognormal(Distribution):
 
     :param int shape_parameter:
 		The shape parameter associated with the Lognormal distribution.
+	:param numpy.ndarray data:
+	    Data for which the distribution is to be set
     """
-    def __init__(self, shape_parameter):
+    def __init__(self, shape_parameter, data):
         if shape_parameter is None:
-            self.shape_parameter = 1.0
+            if data is None:
+                self.shape_parameter = 1.0
+                self.data=None
+            else:
+                self.shape_parameter = None
+                self.data = data
         else:
             self.shape_parameter = shape_parameter
+            self.data = None
+
+            if self.shape_parameter < 0:
+                raise ValueError('Invalid parameters in lognormal distribution. Scale should be positive.')
+
 
         self.bounds = np.array([0.0, np.inf])
-        if self.shape_parameter < 0:
-            raise ValueError('Invalid parameters in lognormal distribution. Scale should be positive.')
-        self.parent = lognorm(s=self.shape_parameter)
+        if self.data is None:
+            self.parent = lognorm(s=self.shape_parameter)
+        else:
+            params=lognorm.fit(data)
+            self.shape_parameter=params[0]
+            self.parent = lognorm(s=self.shape_parameter,loc=0)
         self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
         self.x_range_for_pdf = np.linspace(0, self.shape_parameter*10, RECURRENCE_PDF_SAMPLES)
 

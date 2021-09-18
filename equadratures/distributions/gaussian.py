@@ -16,20 +16,36 @@ class Gaussian(Distribution):
 		Mean of the Gaussian distribution.
 	:param double variance:
 		Variance of the Gaussian distribution.
+	:param numpy.ndarray data:
+	    Data for which the distribution is to be set
     """
-    def __init__(self, mean, variance):
+    def __init__(self, mean, variance, data):
         if mean is None:
-            self.mean = 0.0
+            if data is None:
+                self.mean = 0.0
+                self.data = None
+            else:
+                self.mean = None
+                self.data = data
         else:
             self.mean = mean
+            self.data = None
+
         if variance is None:
-            self.variance = 1.0
+            if data is None:
+                self.variance = 1.0
+            else:
+                self.variance = None
+                self.data = data
         else:
             self.variance = variance
+            if self.variance <= 0:
+                raise ValueError('Invalid Gaussian distribution parameters. Variance should be positive.')
 
-        if self.variance <= 0:
-            raise ValueError('Invalid Gaussian distribution parameters. Variance should be positive.')
-
+        if self.data is not None:
+            params=norm.fit(data)
+            self.mean=params[0]
+            self.variance=params[1]**2
         self.sigma = np.sqrt(self.variance)
         self.x_range_for_pdf = np.linspace(-15.0 * self.sigma, 15.0*self.sigma, RECURRENCE_PDF_SAMPLES) + self.mean
         self.parent = norm(loc=self.mean, scale=self.sigma)

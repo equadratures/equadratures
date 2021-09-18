@@ -13,18 +13,38 @@ class Weibull(Distribution):
 		Lower bound of the support of the Weibull distribution.
     :param double scale:
 		Upper bound of the support of the Weibull distribution.
+	:param numpy.ndarray data:
+	    Data for which the distribution is to be set
     """
-    def __init__(self, scale=None, shape=None):
+    def __init__(self, scale=None, shape=None, data=None):
         if shape is None:
-            self.shape = 1.0
+            if data is None:
+                self.shape = 1.0
+                self.data  = None
+            else:
+                self.data = data
         else:
             self.shape = shape
+            self.data = None
+
         if scale is None:
-            self.scale = 1.0
+            if data is None:
+                self.scale = 1.0
+                self.data = None
+            else:
+                self.scale = None
+                self.data = data
         else:
             self.scale = scale
+            self.data = None
 
         self.bounds = np.array([0.0, np.inf])
+
+        if self.data is not None:
+            params=weibull_min.fit(self.data)
+            self.scale=params[2]
+            self.shape=params[0]
+        
         if self.shape < 0 or self.scale < 0:
             raise ValueError('Invalid parameters in Weibull distribution. Shape and Scale should be positive.')
         self.parent = weibull_min(c=self.shape, scale=self.scale)

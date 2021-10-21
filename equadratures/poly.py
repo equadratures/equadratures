@@ -97,7 +97,7 @@ class Poly(object):
             if self.method == 'numerical-integration' or self.method == 'integration':
                 self.mesh = self.basis.basis_type
                 if self.basis.basis_type != 'tensor-grid' and self.basis.basis_type != 'sparse-grid' and self.basis.basis_type != 'univariate':
-                    raise ValueError('tensor-grid or sparse-grid basis must be used with the numerical-integration Poly method') 
+                    raise ValueError('tensor-grid or sparse-grid basis must be used with the numerical-integration Poly method')
             elif self.method == 'least-squares' or self.method == 'least-absolute-residual' or self.method=='huber' or self.method=='elastic-net':
                 self.mesh = 'tensor-grid'
             elif self.method == 'least-squares-with-gradients':
@@ -149,14 +149,31 @@ class Poly(object):
                 cardinality = self.basis.get_cardinality()
                 if cardinality >= CARD_LIMIT_SOFT:
                     raise Exception('Cardinality %.1e >= soft cardinality limit %.1e. Computing polynomial coefficients may take a long time. To override this, set override_cardinality=True.'
-                        %(cardinality,CARD_LIMIT_SOFT)) 
+                        %(cardinality,CARD_LIMIT_SOFT))
 
-            # Set solver, points and weight etc 
+            # Set solver, points and weight etc
             self._set_solver()
             self._set_subsampling_algorithm()
             self._set_points_and_weights()
         else:
             print('WARNING: Method not declared.')
+
+    def __add__(self, *args):
+        """ Adds polynomials.
+
+        Returns
+        -------
+
+        poly
+            An instance of the Poly class.
+
+        """
+        polynew = deepcopy(self)
+        for other in args:
+            polynew.coefficients += other.coefficients
+            if np.all( polynew._quadrature_points - other._quadrature_points ) == 0:
+                polynew._model_evaluations += other._model_evaluations
+        return polynew
 
     def plot_polyfit_1D(self, ax=None, uncertainty=True, output_variances=None, number_of_points=200, show=True):
         """ Plots a 1D only polynomial fit to the data. See :meth:`~equadratures.plot.plot_polyfit_1D` for full description. """
@@ -258,7 +275,7 @@ class Poly(object):
         self.solver = Solver.select_solver(self.method, self.solver_args)
         if self.method.lower()=="elastic-net":
             self.solver.elements=self.basis.elements
-        
+
     def _set_points_and_weights(self):
         """ Private function that sets the quadrature points. """
         if hasattr(self, 'corr'):
@@ -413,7 +430,7 @@ class Poly(object):
         return self.statistics_object.get_conditional_kurtosis(order)
 
     def set_model(self, model=None, model_grads=None):
-        """ Computes the coefficients of the polynomial via the method selected. 
+        """ Computes the coefficients of the polynomial via the method selected.
 
         If model evaluations and/or gradients have not yet been provided to Poly via ``sample-outputs`` and/or ``sample-gradients``, they can be given here via the ``model`` and ``model_grads`` arguments.
 
@@ -449,7 +466,7 @@ class Poly(object):
             >>> poly = eq.Poly(param,basis,method='numerical-integration')
             >>> x = poly.get_points()
             >>> y = f(x)
-            >>> poly.set_model(y) 
+            >>> poly.set_model(y)
             >>> eq.datasets.score(f(xtest),poly.get_polyfit(xtest),metric='rmse')
             5.363652779335998e-15
 
@@ -581,7 +598,7 @@ class Poly(object):
 
         Returns
         -------
-        numpy.ndarray 
+        numpy.ndarray
             The coefficients with size (number_of_coefficients, 1).
         """
         return self.coefficients
@@ -591,7 +608,7 @@ class Poly(object):
 
         Returns
         -------
-        numpy.ndarray 
+        numpy.ndarray
             The sampled quadrature points with shape (number_of_samples, dimension).
         """
         return self._quadrature_points
@@ -618,7 +635,7 @@ class Poly(object):
 
     def get_polyfit(self, stack_of_points, uq=False):
         """ Evaluates the /polynomial approximation of a function (or model data) at prescribed points.
-        
+
         Parameters
         ----------
         stack_of_points : numpy.ndarray
@@ -731,7 +748,7 @@ class Poly(object):
             An ndarray with shape (number of observations, dimensions) at which the polynomial must be evaluated.
         custom_multi_index : numpy.ndarray, optional
             Array containing a custom multi-index set, in the format given by :meth:`~equadratures.basis.Basis.get_elements`.
-        
+
         Returns
         -------
         numpy.ndarray
@@ -776,7 +793,7 @@ class Poly(object):
         stack_of_points : numpy.ndarray
             An ndarray with shape (number_of_observations, dimensions) at which the gradient must be evaluated.
         dim_index : int, optional
-            Index of the dimension to evaluate the gradient for. 
+            Index of the dimension to evaluate the gradient for.
 
         Returns
         -------
@@ -885,7 +902,7 @@ class Poly(object):
 
         return H
     def get_polyscore(self,X_test=None,y_test=None,metric='adjusted_r2'):
-        """ Evaluates the accuracy of the polynomial approximation using the selected accuracy metric. 
+        """ Evaluates the accuracy of the polynomial approximation using the selected accuracy metric.
 
         Training accuracy is evaluated on the data used for fitting the polynomial. Testing accuracy is evaluated on new data if it is provided by the ``X_test`` and ``y_test`` arguments (both must be provided together).
 
@@ -975,7 +992,7 @@ def _inv(M):
 
 def evaluate_model_gradients(points, fungrad, format='matrix'):
     """ Evaluates the model gradient at given values.
-    
+
     Parameters
     ----------
     points : numpy.ndarray
@@ -1041,7 +1058,7 @@ def vector_to_2D_grid(coefficients, index_set):
     ----------
     coefficients : numpy.ndarray
         An ndarray with shape (N, 1) where N corresponds to the number of coefficient values.
-    index_set :  numpy.ndarray 
+    index_set :  numpy.ndarray
         The multi-index set of the basis.
 
     Returns

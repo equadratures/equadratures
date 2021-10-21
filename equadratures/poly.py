@@ -175,6 +175,23 @@ class Poly(object):
                 polynew._model_evaluations += other._model_evaluations
         return polynew
 
+    def __sub__(self, *args):
+        """ Subtracts polynomials.
+
+        Returns
+        -------
+
+        poly
+            An instance of the Poly class.
+
+        """
+        polynew = deepcopy(self)
+        for other in args:
+            polynew.coefficients -= other.coefficients
+            if np.all( polynew._quadrature_points - other._quadrature_points ) == 0:
+                polynew._model_evaluations -= other._model_evaluations
+        return polynew
+
     def plot_polyfit_1D(self, ax=None, uncertainty=True, output_variances=None, number_of_points=200, show=True):
         """ Plots a 1D only polynomial fit to the data. See :meth:`~equadratures.plot.plot_polyfit_1D` for full description. """
         return plot.plot_polyfit_1D(self,ax,uncertainty,output_variances,number_of_points,show)

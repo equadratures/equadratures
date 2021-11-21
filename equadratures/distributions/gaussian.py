@@ -26,7 +26,7 @@ class Gaussian(Distribution):
             self.variance = 1.0
         else:
             self.variance = variance
-
+        super
         if self.variance <= 0:
             raise ValueError('Invalid Gaussian distribution parameters. Variance should be positive.')
 

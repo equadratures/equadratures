@@ -23,7 +23,7 @@ import numpy as np
 import scipy as sc
 
 class Parameter(object):
-    """ This class defines a univariate parameter. 
+    """ This class defines a univariate parameter.
 
     Parameters
     ----------
@@ -52,7 +52,7 @@ class Parameter(object):
     endpoints : str, optional
         If set to ``both``, then the quadrature points and weights will have end-points, based on Gauss-Lobatto quadrature rules. If set to ``upper`` or ``lower`` a Gauss-Radau rule is used to compute one end-point at either the upper or lower bound.
     weight_function: Weight, optional
-        An instance of Weight, which contains a bespoke analytical or data-driven weight (probability density) function. 
+        An instance of Weight, which contains a bespoke analytical or data-driven weight (probability density) function.
 
     Examples
     --------
@@ -60,13 +60,13 @@ class Parameter(object):
         >>> param = eq.Parameter(distribution='uniform', lower=-2, upper=2., order=3)
 
     A beta parameter
-        >>> param = eq.Parameter(distribution='beta', lower=-2., upper=15., order=4, 
+        >>> param = eq.Parameter(distribution='beta', lower=-2., upper=15., order=4,
         >>>        shape_parameter_A=3.2, shape_parameter_B=1.7)
 
     A data-driven parameter
-        >>> pdf = eq.Weight( stats.gaussian_kde(data, bw_method='silverman'), 
+        >>> pdf = eq.Weight( stats.gaussian_kde(data, bw_method='silverman'),
         >>>        support=[-3, 3.2])
-        >>> param = eq.Parameter(distribution='analytical', 
+        >>> param = eq.Parameter(distribution='analytical',
         >>>        weight_function=pdf, order=2)
 
     References
@@ -139,6 +139,13 @@ class Parameter(object):
         self.mean = self.distribution.mean
         self.variance = self.distribution.variance
 
+    def __eq__(self, param):
+        """Checks whether two parameters are the same."""
+        if self.distribution == param.distribution and \
+            self.order == param.order:
+            return True 
+        else:
+            return False 
     def plot_orthogonal_polynomials(self, ax=None, order_limit=None, number_of_points=200, show=True):
         """ Plots the first few orthogonal polynomials. See :meth:`~equadratures.plot.plot_orthogonal_polynomials` for full description. """
         return plot.plot_orthogonal_polynomials(self,ax,order_limit,number_of_points,show)

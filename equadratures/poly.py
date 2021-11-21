@@ -30,7 +30,7 @@ class Poly(object):
             - **mesh** (str): Avaliable options are: ``monte-carlo``, ``sparse-grid``, ``tensor-grid``, ``induced``, or ``user-defined``. Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1] is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
             - **subsampling-algorithm** (str): The ``subsampling-algorithm`` input refers to the optimisation technique for subsampling. In the aforementioned four sampling strategies, we generate a logarithm factor of samples above the required amount and prune down the samples using an optimisation technique (see [1]). Existing optimisation strategies include: ``qr``, ``lu``, ``svd``, ``newton``. These refer to QR with column pivoting [2], LU with row pivoting [3], singular value decomposition with subset selection [2] and a convex relaxation via Newton's method for determinant maximization [4]. Note that if the ``tensor-grid`` option is selected, then subsampling will depend on whether the Basis argument is a total order index set, hyperbolic basis or a tensor order index set.
             - **sampling-ratio** (float): Denotes the extent of undersampling or oversampling required. For values equal to unity (default), the number of rows and columns of the associated Vandermonde-type matrix are equal.
-            - **sample-points** (numpy.ndarray): A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
+            - **sample-points** (numpy.ndarray): A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space. Can use ``sample-inputs`` too.
             - **sample-outputs** (numpy.ndarray): A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points. Note that if ``sample-points`` is provided as an input, then the code expects ``sample-outputs`` too.
             - **sample-gradients** (numpy.ndarray): A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample gradient values over the parameter space.
     solver_args : dict, optional
@@ -125,6 +125,10 @@ class Poly(object):
                     self.inputs = sampling_args.get('sample-points')
                     sampling_args_flag = 1
                     self.mesh = 'user-defined'
+                if 'sample-inputs' in sampling_args:
+                    self.inputs = sampling_args.get('sample-inputs')
+                    sampling_args_flag = 1
+                    self.mesh = 'user-defined'
                 if 'sample-outputs' in sampling_args:
                     self.outputs = sampling_args.get('sample-outputs')
                     sampling_args_flag = 1
@@ -158,7 +162,31 @@ class Poly(object):
         else:
             print('WARNING: Method not declared.')
 
-    def __add__(self, *args):
+    def __eq__(self, another_poly):
+        """ Verifies if two polynomial instances are the same. Two polynomials are defined to be the same if (i) they have the same
+        basis terms, and (ii) the list of parameters are identical.
+
+        
+        Parameters
+        ----------
+
+        another_poly : Poly
+            Another ``Poly`` instance against which the ``self`` object will be compared.
+        
+        Returns 
+        --------
+
+        bool
+            True or False depending on whether the arguments are deemed to be equivalent.
+        
+        """
+        if self.basis == another_poly.basis and \
+            self.parameters == self.parameters:
+            return True 
+        else:
+            return False
+
+    def __add__(self, another_poly):
         """ Adds polynomials.
 
         Returns
@@ -168,14 +196,21 @@ class Poly(object):
             An instance of the Poly class.
 
         """
-        polynew = deepcopy(self)
-        for other in args:
-            polynew.coefficients += other.coefficients
-            if np.all( polynew._quadrature_points - other._quadrature_points ) == 0:
-                polynew._model_evaluations += other._model_evaluations
-        return polynew
+        new_poly = deepcopy(self)
+        if self == another_poly:
+            if self.quadrature == another_poly.quadrature:
+                new_poly.coefficients += another_poly.coefficients
+                new_poly._model_evaluations += another_poly._model_evaluations
+            else:
+                y1 = new_poly._model_evaluations.flatten()
+                y2 = another_poly.get_polyfit(self._quadrature_points).flatten()
+                new_poly._model_evaluations = (y1 + y2)
+                new_poly._set_coefficients()
+            return new_poly
+        else:
+            raise ValueError('cannot add the two polynomials!')
 
-    def __sub__(self, *args):
+    def __sub__(self, another_poly):
         """ Subtracts polynomials.
 
         Returns
@@ -185,12 +220,19 @@ class Poly(object):
             An instance of the Poly class.
 
         """
-        polynew = deepcopy(self)
-        for other in args:
-            polynew.coefficients -= other.coefficients
-            if np.all( polynew._quadrature_points - other._quadrature_points ) == 0:
-                polynew._model_evaluations -= other._model_evaluations
-        return polynew
+        new_poly = deepcopy(self)
+        if self == another_poly:
+            if self.quadrature == another_poly.quadrature:
+                new_poly.coefficients -= another_poly.coefficients
+                new_poly._model_evaluations -= another_poly._model_evaluations
+            else:
+                y1 = new_poly._model_evaluations.flatten()
+                y2 = another_poly.get_polyfit(self._quadrature_points).flatten()
+                new_poly._model_evaluations = (y1 - y2)
+                new_poly._set_coefficients()
+            return new_poly
+        else:
+            raise ValueError('cannot subtract the two polynomials!')
 
     def plot_polyfit_1D(self, ax=None, uncertainty=True, output_variances=None, number_of_points=200, show=True):
         """ Plots a 1D only polynomial fit to the data. See :meth:`~equadratures.plot.plot_polyfit_1D` for full description. """
@@ -651,7 +693,7 @@ class Poly(object):
         return self._quadrature_points, self._quadrature_weights
 
     def get_polyfit(self, stack_of_points, uq=False):
-        """ Evaluates the /polynomial approximation of a function (or model data) at prescribed points.
+        """ Evaluates the polynomial approximation of a function (or model data) at prescribed points.
 
         Parameters
         ----------

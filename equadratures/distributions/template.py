@@ -15,7 +15,8 @@ class Distribution(object):
     :param double upper:
         Upper bound of the support of the distribution.
     """
-    def __init__(self, mean=None, variance=None, lower=None, upper=None, shape=None, scale=None, rate=None):
+    def __init__(self, name=None, mean=None, variance=None, lower=None, upper=None, shape=None, scale=None, rate=None):
+        self.name = name
         self.mean = mean
         self.variance = variance
         self.lower = lower
@@ -23,6 +24,24 @@ class Distribution(object):
         self.rate = rate
         self.scale = scale
         self.x_range_for_pdf = []
+
+    def __eq__(self, second_distribution):
+        """
+        Returns a boolean to clarify if two distributions are the same.
+
+        :param 
+        """
+        if self.name == second_distribution.name and \
+            self.mean == second_distribution.mean and \
+            self.variance == second_distribution.variance and \
+            self.lower == second_distribution.lower and \
+            self.upper == second_distribution.upper and \
+            self.rate == self.rate and \
+            self.scale == self.scale and \
+            self.x_range_for_pdf == self.x_range_for_pdf:
+            return True 
+        else:
+            False
     def get_description(self):
         """
         Returns the description of the distribution.

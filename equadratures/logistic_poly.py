@@ -24,7 +24,7 @@ class LogisticPoly(object):
     tol : optional, float
         Optimisation terminates when cost function on training data falls below ``tol``. Defaults to 1e-7.
     cauchy_tol : optional, float
-        Optimisation terminates when the average of the last ``cauchy_length`` cost function evaluations are below ``cauchy_tol`` times the new evaluation. Defaults to 1e-5.
+        Optimisation terminates when the difference between the average of the last ``cauchy_length`` cost function evaluations and the current cost is below ``cauchy_tol`` times the current evaluation. Defaults to 1e-5.
     cauchy_length : optional, int
         Length of comparison history for Cauchy convergence. Defaults to 3.
     verbosity : optional, one of (0, 1, 2)

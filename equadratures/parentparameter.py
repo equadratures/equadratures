@@ -1,28 +1,9 @@
 "Definition of a univariate parameter."
-from equadratures.distributions.gaussian import Gaussian
-from equadratures.distributions.uniform import Uniform
-from equadratures.distributions.triangular import Triangular
-from equadratures.distributions.chebyshev import Chebyshev
-from equadratures.distributions.beta import Beta
-from equadratures.distributions.cauchy import Cauchy
-from equadratures.distributions.exponential import Exponential
-from equadratures.distributions.gamma import Gamma
-from equadratures.distributions.weibull import Weibull
-from equadratures.distributions.rayleigh import Rayleigh
-from equadratures.distributions.chisquared import Chisquared
-from equadratures.distributions.truncated_gaussian import TruncatedGaussian
-from equadratures.distributions.pareto import Pareto
-from equadratures.distributions.lognormal import Lognormal
-from equadratures.distributions.studentst import Studentst
-from equadratures.distributions.logistic import Logistic
-from equadratures.distributions.gumbel import Gumbel
-from equadratures.distributions.chi import Chi
-from equadratures.distributions.analytical import Analytical
 import equadratures.plot as plot
 import numpy as np
 import scipy as sc
 
-class Parameter(object):
+class ParentParameter(object):
     """ This class defines a univariate parameter.
 
     Parameters
@@ -74,78 +55,12 @@ class Parameter(object):
         1. Xiu, D., Karniadakis, G. E., (2002) The Wiener-Askey Polynomial Chaos for Stochastic Differential Equations. SIAM Journal on Scientific Computing,  24(2), `Paper <https://epubs.siam.org/doi/abs/10.1137/S1064827501387826?journalCode=sjoce3>`__
         2. Gautschi, W., (1985) Orthogonal Polynomials-Constructive Theory and Applications. Journal of Computational and Applied Mathematics 12 (1985), pp. 61-76. `Paper <https://www.sciencedirect.com/science/article/pii/037704278590007X>`__
     """
-    def __init__(self, order=1, distribution='Uniform', endpoints=None, shape_parameter_A=None, shape_parameter_B=None, variable='parameter', lower=None, upper=None, weight_function=None):
-        self.name = distribution
+    def __init__(self, distribution, order, variable, endpoints):
+        self.distribution = distribution
         self.variable = variable
         self.order = order
-        self.shape_parameter_A = shape_parameter_A
-        self.shape_parameter_B = shape_parameter_B
-        self.lower = lower
-        self.upper = upper
         self.endpoints = endpoints
-        self.weight_function = weight_function
-        self._set_distribution()
-        self._set_bounds()
-        self._set_moments()
-        if self.endpoints is not None:
-            if (self.distribution.bounds[0] == -np.inf) and (self.distribution.bounds[1] == np.inf) and (self.endpoints.lower() == 'both'):
-                raise(ValueError, 'Parameter: The lower bound for your distribution is -infinity and the upper bound is infinity. Furthermore, you have selected the to have both endpoints. These options are incompatible!')
-            if (self.distribution.bounds[0] == -np.inf) and (self.endpoints.lower() == 'lower'):
-                raise(ValueError, 'Parameter: The lower bound for your distribution is -infinity and you have selected the lower bound option in the endpoints. These options are incompatible!')
-            if (self.distribution.bounds[1] == np.inf) and (self.endpoints.lower() == 'upper'):
-                raise(ValueError, 'Parameter: The upper bound for your distribution is infinity and you have selected the upper bound option in the endpoints. These options are incompatible!')
-    def _set_distribution(self):
-        """ Private function that sets the distribution. """
-        if self.name.lower() == 'gaussian' or self.name.lower() == 'normal':
-            self.distribution = Gaussian(self.shape_parameter_A, self.shape_parameter_B)
-        elif self.name.lower() == 'uniform':
-            self.distribution = Uniform(self.lower, self.upper)
-        elif self.name.lower() == 'triangular':
-            self.distribution = Triangular(self.lower, self.upper, self.shape_parameter_A)
-        elif self.name.lower() == 'analytical' or self.name.lower() == 'data':
-            self.distribution = Analytical(self.weight_function)
-        elif self.name.lower() == 'beta':
-            self.distribution = Beta(self.lower, self.upper, self.shape_parameter_A, self.shape_parameter_B)
-        elif self.name.lower() == 'truncated-gaussian':
-            self.distribution = TruncatedGaussian(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper)
-        elif self.name.lower() == 'cauchy':
-            self.distribution = Cauchy(self.shape_parameter_A, self.shape_parameter_B)
-        elif self.name.lower() == 'exponential':
-            self.distribution = Exponential(self.shape_parameter_A)
-        elif self.name.lower() == 'gamma':
-            self.distribution = Gamma(self.shape_parameter_A, self.shape_parameter_B)
-        elif self.name.lower() == 'weibull':
-            self.distribution = Weibull(self.shape_parameter_A, self.shape_parameter_B)
-        elif self.name.lower() == 'arcsine' or self.name.lower() == 'chebyshev':
-            self.distribution = Chebyshev(self.lower, self.upper)
-        elif self.name.lower() == 'rayleigh':
-            self.distribution = Rayleigh(self.shape_parameter_A)
-        elif self.name.lower() == 'chi-squared':
-            self.distribution = Chisquared(self.shape_parameter_A)
-        elif self.name.lower() == 'chi':
-            self.distribution = Chi(self.shape_parameter_A)
-        elif self.name.lower() == 'pareto':
-            self.distribution = Pareto(self.shape_parameter_A)
-        elif self.name.lower() == 'gumbel':
-            self.distribution = Gumbel(self.shape_parameter_A, self.shape_parameter_B)
-        elif self.name.lower() == 'logistic':
-            self.distribution = Logistic(self.shape_parameter_A, self.shape_parameter_B)
-        elif self.name.lower() == 'students-t' or self.name.lower() == 't' or self.name.lower() == 'studentt':
-            self.distribution = Studentst(self.shape_parameter_A)
-        elif self.name.lower() == 'lognormal' or self.name.lower() == 'log-normal':
-            self.distribution = Lognormal(self.shape_parameter_A)
-        else:
-            distribution_error()
-        self.mean = self.distribution.mean
-        self.variance = self.distribution.variance
 
-    def __eq__(self, param):
-        """Checks whether two parameters are the same."""
-        if self.distribution == param.distribution and \
-            self.order == param.order:
-            return True 
-        else:
-            return False 
     def plot_orthogonal_polynomials(self, ax=None, order_limit=None, number_of_points=200, show=True):
         """ Plots the first few orthogonal polynomials. See :meth:`~equadratures.plot.plot_orthogonal_polynomials` for full description. """
         return plot.plot_orthogonal_polynomials(self,ax,order_limit,number_of_points,show)
@@ -157,15 +72,6 @@ class Parameter(object):
     def plot_cdf(self, ax=None, show=True, lim_range=True):
         """ Plots the cumulative density function for a Parameter. See :meth:`~equadratures.plot.plot_cdf` for full description. """
         return plot.plot_cdf(self,ax, show, lim_range)
-
-    def _set_moments(self):
-        """ Private function that sets the mean and the variance of the distribution. """
-        self.mean = self.distribution.mean
-        self.variance = self.distribution.variance
-
-    def _set_bounds(self):
-        """ Private function that sets the bounds of the distribution. """
-        self.bounds = self.distribution.bounds
 
     def get_pdf(self, points=None):
         """ Computes the probability density function associated with the Parameter.
@@ -183,10 +89,10 @@ class Parameter(object):
             If ``points=None``. A tuple (`x`, `pdf`), where `pdf` is the probability density function evaluated at the points in `x`.
         """
         if points is None:
-            x = self.distribution.x_range_for_pdf
-            return x, self.distribution.get_pdf(x)
+            x = self.x_range_for_pdf
+            return x, self.get_pdf(x)
         else:
-            return self.distribution.get_pdf(points)
+            return self.get_pdf(points)
 
     def get_cdf(self, points=None):
         """ Computes the cumulative density function associated with the Parameter.
@@ -432,10 +338,10 @@ def get_local_quadrature(self, order=None, ab=None):
     # If statement to handle the case where order = 1
     if order == 1:
         # Check to see whether upper and lower bound are defined:
-        if not self.lower or not self.upper:
+        if not self.distribution.lower or not self.distribution.upper:
             p = np.asarray(self.distribution.mean).reshape((1,1))
         else:
-            p = np.asarray((self.upper - self.lower)/(2.0) + self.lower).reshape((1,1))
+            p = np.asarray((self.distribution.upper - self.distribution.lower)/(2.0) + self.distribution.lower).reshape((1,1))
         w = [1.0]
     else:
         # Compute eigenvalues & eigenvectors of Jacobi matrix
@@ -460,9 +366,9 @@ def get_local_quadrature(self, order=None, ab=None):
     return p, w
 def get_local_quadrature_radau(self, order=None, ab=None):
     if self.endpoints.lower() == 'lower':
-        end0 = self.lower
+        end0 = self.distribution.lower
     elif self.endpoints.lower() == 'upper':
-        end0 = self.upper
+        end0 = self.distribution.upper
     if order is None:
         order = self.order - 1
     else:
@@ -486,8 +392,8 @@ def get_local_quadrature_lobatto(self, order=None, ab=None):
     else:
         order = order - 2
     N = order
-    endl = self.lower
-    endr = self.upper
+    endl = self.distribution.lower
+    endr = self.distribution.upper
     if ab is None:
         ab = self.get_recurrence_coefficients(order+2)
     else:
@@ -507,5 +413,3 @@ def get_local_quadrature_lobatto(self, order=None, ab=None):
     ab[N+2, 0] = (endl*p1l*p0r-endr*p1r*p0l)/det
     ab[N+2, 1] = (endr - endl) * p1l * p1r/det
     return get_local_quadrature(self, order=order+2, ab=ab)
-def distribution_error():
-    raise(ValueError, 'Please select a valid distribution for your parameter; documentation can be found at www.effective-quadratures.org')

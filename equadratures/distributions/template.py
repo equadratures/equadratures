@@ -1,35 +1,39 @@
 """The Distribution template."""
-
 from equadratures.distributions.recurrence_utils import custom_recurrence_coefficients
-
+from equadratures.parentparameter import ParentParameter
 import numpy as np
 
 PDF_SAMPLES = 500000
 
-class Distribution(object):
+class Distribution(ParentParameter):
     """
     The class defines a Distribution object. It serves as a template for all distributions.
 
-    :param double lower:
-        Lower bound of the support of the distribution.
-    :param double upper:
-        Upper bound of the support of the distribution.
-    """
-    def __init__(self, name=None, mean=None, variance=None, lower=None, upper=None, shape=None, scale=None, rate=None):
-        self.name = name
-        self.mean = mean
-        self.variance = variance
-        self.lower = lower
-        self.upper = upper
-        self.rate = rate
-        self.scale = scale
-        self.x_range_for_pdf = []
 
+    """
+    def __init__(self, name, x_range_for_pdf, mean=None, variance=None, skewness=None, kurtosis=None, lower=-np.inf, upper=np.inf, rate=None, scale=None, order=2, variable='parameter'):
+        self.name = name
+        self.mean = mean 
+        self.variance = variance 
+        self.skewness = skewness
+        self.kurtosis = kurtosis
+        self.lower = lower 
+        self.upper = upper 
+        self.x_range_for_pdf = x_range_for_pdf
+        self.rate = rate 
+        self.scale = scale
+        self.bounds = [self.lower, self.upper]
+        self.order = order
+        self.variable = variable
+        super().__init__(distribution=name, order=order, variable=variable, endpoints=None)
     def __eq__(self, second_distribution):
         """
         Returns a boolean to clarify if two distributions are the same.
 
-        :param 
+        :param Distribution self:
+                An instance of the Distribution class.
+        :param Distribution second_distribution:
+                A second instance of the Distribution class.
         """
         if self.name == second_distribution.name and \
             self.mean == second_distribution.mean and \

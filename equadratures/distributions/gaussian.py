@@ -1,7 +1,5 @@
 """The Gaussian / Normal distribution."""
-
 from equadratures.distributions.template import Distribution
-
 import numpy as np
 from scipy.stats import norm
 from scipy.special import erf, erfinv, gamma, beta, betainc, gammainc
@@ -12,31 +10,30 @@ class Gaussian(Distribution):
     """
     The class defines a Gaussian object. It is the child of Distribution.
 
-    :param double mean:
+    :param double shape_parameter_A:
 		Mean of the Gaussian distribution.
-	:param double variance:
+	:param double shape_parameter_B:
 		Variance of the Gaussian distribution.
     """
-    def __init__(self, mean, variance):
-        if mean is None:
-            self.mean = 0.0
-        else:
-            self.mean = mean
-        if variance is None:
-            self.variance = 1.0
-        else:
-            self.variance = variance
-        super
+    def __init__(self, **kwargs):
+        first_arg = ['mean', 'mu', 'shape_parameter_A']
+        second_arg = ['variance', 'var', 'shape_parameter_B']
+        self.name = 'gaussian'
+        self.mean = None 
+        self.variance = None 
+        for key, value in kwargs.items():
+            if first_arg.__contains__(key):
+                self.mean = value
+            if second_arg.__contains__(key):
+                self.variance = value
+        if self.mean is None or self.variance is None:
+            raise ValueError('mean or variance have not been specified!')
         if self.variance <= 0:
-            raise ValueError('Invalid Gaussian distribution parameters. Variance should be positive.')
-
+            raise ValueError('invalid Gaussian distribution parameters; variance should be positive.')
         self.sigma = np.sqrt(self.variance)
         self.x_range_for_pdf = np.linspace(-15.0 * self.sigma, 15.0*self.sigma, RECURRENCE_PDF_SAMPLES) + self.mean
         self.parent = norm(loc=self.mean, scale=self.sigma)
-        self.skewness = 0.0
-        self.kurtosis = 0.0
-        self.bounds = np.array([-np.inf, np.inf])
-
+        super().__init__(name=self.name, mean=self.mean, variance=self.variance, x_range_for_pdf=self.x_range_for_pdf)
     def get_description(self):
         """
         A description of the Gaussian.
@@ -48,7 +45,6 @@ class Gaussian(Distribution):
         """
         text = "is a Gaussian distribution with a mean of "+str(self.mean)+" and a variance of "+str(self.variance)+"."
         return text
-
     def get_samples(self, m=None):
         """
         Generates samples from the Gaussian distribution.
@@ -64,7 +60,6 @@ class Gaussian(Distribution):
         else:
             number = 500000
         return self.parent.rvs(size=number)
-
     def get_pdf(self, points=None):
         """
         A Gaussian probability distribution.

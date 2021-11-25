@@ -551,7 +551,7 @@ class Subspaces(object):
         See :meth:`~equadratures.plot.plot_sufficient_summary` for full description. """
         return plot.plot_sufficient_summary(self, ax, X_test, y_test, show, poly, uncertainty, legend, scatter_kwargs, plot_kwargs)
 
-    def plot_2D_contour_zonotope(self, mysubspace, minmax=[- 3.5, 3.5], grid_pts=180, show=True, ax=None):
+    def plot_2D_contour_zonotope(self, minmax=[- 3.5, 3.5], grid_pts=180, show=True, ax=None):
         """ Generates a 2D contour plot of the polynomial ridge approximation.
         See :meth:`~equadratures.plot.plot_2D_contour_zonotope` for full description. """
         return plot.plot_2D_contour_zonotope(self,minmax,grid_pts,show,ax)

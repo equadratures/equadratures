@@ -14,23 +14,25 @@ class Uniform(Distribution):
 	:param double variance:
 		Variance of the Gaussian distribution.
     """
-    def __init__(self, lower, upper):
-        if lower is None:
-            self.lower = 0.0
-        else:
-            self.lower = lower
-        if upper is None:
-            self.upper = 1.0
-        else:
-            self.upper = upper
-
+    def __init__(self, **kwargs):
+        first_arg = ['lower', 'low', 'bottom']
+        second_arg = ['upper','up', 'top']
+        self.name = 'uniform'
+        self.lower = None 
+        self.upper = None 
+        for key, value in kwargs.items():
+            if first_arg.__contains__(key):
+                self.lower = value
+            if second_arg.__contains__(key):
+                self.upper = value
+        if self.lower is None or self.upper is None:
+            raise ValueError('lower or upper bounds have not been specified!')
+        if self.upper <= self.lower:
+            raise ValueError('invalid uniform distribution parameters; upper should be greater than lower.')
         self.parent = uniform(loc=(self.lower), scale=(self.upper - self.lower))
-        self.bounds = np.array([self.lower, self.upper])
         self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
-        self.shape_parameter_A = 0.
-        self.shape_parameter_B = 0.
         self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
-
+        super().__init__(name=self.name, lower=self.lower, upper=self.upper, mean=self.mean, variance=self.variance, skewness=self.skewness, kurtosis=self.kurtosis, x_range_for_pdf=self.x_range_for_pdf)
     def get_description(self):
         """
         A description of the Gaussian.
@@ -89,7 +91,7 @@ class Uniform(Distribution):
         :return:
             Recurrence coefficients associated with the uniform distribution.
         """
-        ab =  jacobi_recurrence_coefficients(self.shape_parameter_A, self.shape_parameter_B, self.lower, self.upper, order)
+        ab =  jacobi_recurrence_coefficients(0., 0., self.lower, self.upper, order)
         return ab
     def get_icdf(self, xx):
         """

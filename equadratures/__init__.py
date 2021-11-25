@@ -1,4 +1,7 @@
-from equadratures.parameter import Parameter
+from equadratures.distributions.parameter import Parameter
+from equadratures.distributions.gaussian import Gaussian
+from equadratures.distributions.gaussian import Gaussian as Normal
+from equadratures.distributions.uniform import Uniform
 from equadratures.poly import Poly
 from equadratures.stats import Statistics
 from equadratures.basis import Basis

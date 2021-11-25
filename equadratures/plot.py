@@ -774,8 +774,8 @@ def plot_orthogonal_polynomials(Parameter, ax=None, order_limit=None, number_of_
         >>> myparam = eq.Parameter(distribution='uniform', lower = -1.0, upper = 1.0, order=8, endpoints='both')
         >>> myparam.plot_orthogonal_polynomials()        
     """
-    Xi = np.linspace(Parameter.distribution.x_range_for_pdf[0], \
-                Parameter.distribution.x_range_for_pdf[-1], number_of_points).reshape(number_of_points, 1)
+    Xi = np.linspace(Parameter.x_range_for_pdf[0], \
+                Parameter.x_range_for_pdf[-1], number_of_points).reshape(number_of_points, 1)
     P, _, _ = Parameter._get_orthogonal_polynomial(Xi)
     if ax is None:
         fig,ax = plt.subplots(figsize=(8, 6),tight_layout=True)

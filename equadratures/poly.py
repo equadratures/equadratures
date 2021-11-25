@@ -1,6 +1,6 @@
 """The polynomial parent class; one of the main building blocks in Effective Quadratures."""
 from equadratures.stats import Statistics
-from equadratures.parameter import Parameter
+from equadratures.parentparameter import ParentParameter as Parameter
 from equadratures.basis import Basis
 from equadratures.solver import Solver
 from equadratures.subsampling import Subsampling

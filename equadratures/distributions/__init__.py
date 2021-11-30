@@ -15,4 +15,4 @@ import equadratures.distributions.pareto
 import equadratures.distributions.gumbel
 import equadratures.distributions.studentst
 import equadratures.distributions.lognormal
-import equadratures.distributions.param
+import equadratures.distributions.parameter

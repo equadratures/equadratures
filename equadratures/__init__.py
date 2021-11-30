@@ -6,7 +6,7 @@ from equadratures.distributions.beta import Beta
 from equadratures.poly import Poly
 from equadratures.stats import Statistics
 from equadratures.basis import Basis
-from equadratures.polynet import Polynet
+#from equadratures.polynet import Polynet
 from equadratures.correlations import Correlations
 from equadratures.optimisation import Optimisation
 from equadratures.subspaces import Subspaces

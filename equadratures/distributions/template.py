@@ -1,16 +1,16 @@
 """The Distribution template."""
 from equadratures.distributions.recurrence_utils import custom_recurrence_coefficients
 import numpy as np
-
+import scipy as sc 
 PDF_SAMPLES = 500000
 
-class Distribution():
+class Distribution(object):
     """
     The class defines a Distribution object. It serves as a template for all distributions.
 
 
     """
-    def __init__(self, name, x_range_for_pdf, mean=None, variance=None, skewness=None, kurtosis=None, lower=-np.inf, upper=np.inf, rate=None, scale=None, order=2, variable='parameter'):
+    def __init__(self, name, x_range_for_pdf, mean=None, variance=None, skewness=None, kurtosis=None, endpoints=None, lower=-np.inf, upper=np.inf, rate=None, scale=None, order=2, variable='parameter'):
         self.name = name
         self.mean = mean 
         self.variance = variance 
@@ -24,6 +24,7 @@ class Distribution():
         self.bounds = [self.lower, self.upper]
         self.order = order
         self.variable = variable
+        self.endpoints = endpoints
     def __eq__(self, second_distribution):
         """
         Returns a boolean to clarify if two distributions are the same.
@@ -91,9 +92,12 @@ class Distribution():
         :return:
             Recurrence coefficients associated with the distribution.
         """
-        w_pdf = self.get_pdf(self.x_range_for_pdf)
-        ab = custom_recurrence_coefficients(self.x_range_for_pdf, w_pdf, order)
-        return ab
+        pass
+        #w_pdf = self.get_pdf(self.x_range_for_pdf)
+        #print(ab)
+        ##ab = custom_recurrence_coefficients(self.x_range_for_pdf, w_pdf, order)
+        #print('oh no!')
+        #return ab
     def get_samples(self, m=None):
         """
         Generates samples from the distribution.
@@ -112,9 +116,6 @@ class Distribution():
         uniform_samples = np.random.random((number_of_random_samples, 1))
         yy = self.get_icdf(uniform_samples)
         return yy
-
-
-
     def get_jacobi_eigenvectors(self, order=None):
         """ Computes the eigenvectors of the Jacobi matrix.
 
@@ -134,17 +135,11 @@ class Distribution():
             if order == 1:
                 V = [1.0]
         else:
-            #D,V = np.linalg.eig(self.get_jacobi_matrix(order))
             D, V = sc.linalg.eigh(self.get_jacobi_matrix(order))
             idx = D.argsort()[::-1]
             eigs = D[idx]
             eigVecs = V[:, idx]
-            #V = np.mat(V) # convert to matrix
-            #i = np.argsort(D) # get the sorted indices
-            #i = np.array(i) # convert to array
-            #V = V[:,i]
         return eigVecs
-
     def get_jacobi_matrix(self, order=None, ab=None):
         """ Computes the Jacobi matrix---a tridiagonal matrix of the recurrence coefficients.
 
@@ -201,21 +196,6 @@ class Distribution():
             order = order + 1
         gridPoints = np.asarray(points).copy()
         ab = self.get_recurrence_coefficients(order)
-        """
-        print('Before:')
-        print(gridPoints)
-
-        for q in range(0, gridPoints.shape[0]):
-            if (gridPoints[q] < self.bounds[0]) or (gridPoints[q] > self.bounds[1]):
-                grid_flag = 1
-        if grid_flag == 1:
-            for r in range(0, gridPoints.shape[0]):
-                gridPoints[r] = (self.bounds[1] - self.bounds[0]) * ( (gridPoints[r] - self.lower) / (self.upper - self.lower) )  + self.bounds[0]
-            #print(gridPoints)
-        print('After:')
-        print(gridPoints)
-        """
-
         orthopoly = np.zeros((order, len(gridPoints)))  # create a matrix full of zeros
         derivative_orthopoly = np.zeros((order, len(gridPoints)))
         dderivative_orthopoly = np.zeros((order, len(gridPoints)))
@@ -258,7 +238,7 @@ class Distribution():
         :return:
             A 1-by-N matrix that contains the quadrature weights
         """
-        if self.endpoints is None:
+        if self.endpoints.lower() =='none':
             return get_local_quadrature(self, order, ab)
         elif self.endpoints.lower() == 'lower' or self.endpoints.lower() == 'upper':
             return get_local_quadrature_radau(self, order, ab)
@@ -292,13 +272,7 @@ def get_local_quadrature(self, order=None, ab=None):
             p = np.asarray((self.distribution.upper - self.distribution.lower)/(2.0) + self.distribution.lower).reshape((1,1))
         w = [1.0]
     else:
-        # Compute eigenvalues & eigenvectors of Jacobi matrix
-        #D,V = np.linalg.eig(JacobiMat)
         D, V = sc.linalg.eigh(JacobiMat)
-        #V = np.mat(V) # convert to matrix
-        #local_points = np.sort(D) # sort by the eigenvalues
-        #i = np.argsort(D) # get the sorted indices
-        #i = np.array(i) # convert to array
         idx = D.argsort()[::-1]
         eigs = D[idx]
         eigVecs = V[:, idx]

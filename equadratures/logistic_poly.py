@@ -6,7 +6,7 @@ try:
     manopt = True
 except ImportError as e:
     manopt = False
-if pymanopt:
+if manopt:
     from pymanopt.manifolds import Stiefel
     from pymanopt import Problem
     from pymanopt.solvers import ConjugateGradient

@@ -19,4 +19,4 @@ from equadratures.logistic_poly import LogisticPoly
 import numpy as np
 import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-__version__='10.0'
+__version__='10.0.0.1'

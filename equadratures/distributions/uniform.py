@@ -17,22 +17,32 @@ class Uniform(Distribution):
     def __init__(self, **kwargs):
         first_arg = ['lower', 'low', 'bottom']
         second_arg = ['upper','up', 'top']
+        third_arg = ['order', 'orders', 'degree', 'degrees']
+        fourth_arg = ['endpoints', 'endpoint']
         self.name = 'uniform'
         self.lower = None 
         self.upper = None 
+        self.order = 2
+        self.endpoints = 'none'
         for key, value in kwargs.items():
             if first_arg.__contains__(key):
                 self.lower = value
             if second_arg.__contains__(key):
                 self.upper = value
+            if third_arg.__contains__(key):
+                self.order = value
+            if fourth_arg.__contains__(key):
+                self.endpoints = value
         if self.lower is None or self.upper is None:
             raise ValueError('lower or upper bounds have not been specified!')
         if self.upper <= self.lower:
             raise ValueError('invalid uniform distribution parameters; upper should be greater than lower.')
+        if not( (self.endpoints.lower() == 'none') or (self.endpoints.lower() == 'lower') or (self.endpoints.lower() == 'upper') ):
+            raise ValueError('invalid selection for endpoints') 
         self.parent = uniform(loc=(self.lower), scale=(self.upper - self.lower))
         self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
         self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
-        super().__init__(name=self.name, lower=self.lower, upper=self.upper, mean=self.mean, variance=self.variance, skewness=self.skewness, kurtosis=self.kurtosis, x_range_for_pdf=self.x_range_for_pdf)
+        super().__init__(name=self.name, lower=self.lower, upper=self.upper, mean=self.mean, variance=self.variance, skewness=self.skewness, kurtosis=self.kurtosis, x_range_for_pdf=self.x_range_for_pdf, order=self.order, endpoints=self.endpoints)
     def get_description(self):
         """
         A description of the Gaussian.

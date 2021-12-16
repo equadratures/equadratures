@@ -341,6 +341,9 @@ def get_local_quadrature(self, order=None, ab=None):
         if not self.distribution.lower or not self.distribution.upper:
             p = np.asarray(self.distribution.mean).reshape((1,1))
         else:
+            print('see below!')
+            print(self.distribution.lower, self.distribution.upper)
+            print(self.distribution.lower(), self.distribution.upper())
             p = np.asarray((self.distribution.upper - self.distribution.lower)/(2.0) + self.distribution.lower).reshape((1,1))
         w = [1.0]
     else:

@@ -36,7 +36,7 @@ class Induced(Sampling):
         self.basis_entries = basis.cardinality
         self.sampling_ratio = 7 * self.dimensions
         self.samples_number = int(self.sampling_ratio * self.basis_entries)
-        print(self.samples_number)
+        print('Number of samples', str(self.samples_number))
         self.sample_count = 0
         self.points = self._set_points(orders)
         self.__set_weights()
@@ -63,6 +63,8 @@ class Induced(Sampling):
         # TODO add a total order index set with random samples
         # The above would be necessary in higher dimensions
         # Randomly sample index-set for each quadrature point
+        print('_set_points')
+        print(ray_imported)
         if ray_imported:
             ray.init()
         else:
@@ -86,6 +88,9 @@ class Induced(Sampling):
                 sampled_cdf_values,
                 max_order
                 )
+
+        print(quadrature_points)
+        print('done!')
         if ray_imported:
             ray.shutdown()
         else:
@@ -131,8 +136,13 @@ class Induced(Sampling):
                     parameter,
                     sampled_cdf_values,
                     order)
+            print('i am here!')
+            print(ray_imported)
             if ray_imported:
                 inverse_cdf_values = ray.get(inverse_cdf_values)
+                quadrature_points[variable_positions] = inverse_cdf_values
+            else:
+                print(inverse_cdf_values)
                 quadrature_points[variable_positions] = inverse_cdf_values
         quadrature_points = self._scale_support(quadrature_points)
         return quadrature_points
@@ -319,7 +329,8 @@ class Induced(Sampling):
                                                   (cdf_value),
                                                   xtol=0.00005)
                 return sampled_value
-            sampled_values = list(map(root_solve, cdf_values))
+            sampled_values = [root_solve(cdf_value)
+                              for cdf_value in cdf_values] #list(map(root_solve, cdf_values))
         return sampled_values
 
     def induced_jacobi_evaluation(self, alpha, beta, x, parameter,
@@ -363,8 +374,9 @@ class Induced(Sampling):
             x = -x
             _complementary = True
             alpha, beta = beta, alpha
-            parameter.shape_parameter_A, parameter.shape_parameter_B = \
-                parameter.shape_parameter_B, parameter.shape_parameter_A
+            # Uncommented ps 16/12/21
+            # parameter.shape_parameter_A, parameter.shape_parameter_B = \
+            #    parameter.shape_parameter_B, parameter.shape_parameter_A
 
         logfactor = 0.0  # factor to keep the modified distribution as a pdf
 

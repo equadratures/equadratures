@@ -342,7 +342,7 @@ class Poly(object):
         else:
             corr = None
         self.quadrature = Quadrature(parameters=self.parameters, basis=self.basis, \
-                        points=self.inputs, mesh=self.mesh, corr=corr)
+                        points=self.inputs, mesh=self.mesh, corr=corr, oversampling=self.sampling_ratio)
         quadrature_points, quadrature_weights = self.quadrature.get_points_and_weights()
         if self.subsampling_algorithm_name is not None:
             P = self.get_poly(quadrature_points)

@@ -37,12 +37,23 @@ class Uniform(Distribution):
             raise ValueError('lower or upper bounds have not been specified!')
         if self.upper <= self.lower:
             raise ValueError('invalid uniform distribution parameters; upper should be greater than lower.')
-        if not( (self.endpoints.lower() == 'none') or (self.endpoints.lower() == 'lower') or (self.endpoints.lower() == 'upper') ):
+        if not( (self.endpoints.lower() == 'none') or (self.endpoints.lower() == 'lower') or (self.endpoints.lower() == 'upper')  \
+            or (self.endpoints.lower() == 'both') ):
             raise ValueError('invalid selection for endpoints') 
         self.parent = uniform(loc=(self.lower), scale=(self.upper - self.lower))
         self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
         self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
-        super().__init__(name=self.name, lower=self.lower, upper=self.upper, mean=self.mean, variance=self.variance, skewness=self.skewness, kurtosis=self.kurtosis, x_range_for_pdf=self.x_range_for_pdf, order=self.order, endpoints=self.endpoints, scipyparent=self.parent)
+        super().__init__(name=self.name, \
+                        lower=self.lower, \
+                        upper=self.upper, \
+                        mean=self.mean, \
+                        variance=self.variance, \
+                        skewness=self.skewness, \
+                        kurtosis=self.kurtosis, \
+                        x_range_for_pdf=self.x_range_for_pdf, \
+                        order=self.order, \
+                        endpoints=self.endpoints, \
+                        scipyparent=self.parent)
     def get_description(self):
         """
         A description of the Gaussian.

@@ -2,6 +2,7 @@
 from equadratures.distributions.gaussian import Gaussian
 from equadratures.distributions.uniform import Uniform
 from equadratures.distributions.beta import Beta
+from equadratures.distributions.analytical import Analytical
 from equadratures.distributions.template import Distribution
 import numpy as np
 from scipy.stats import norm
@@ -19,3 +20,5 @@ class Parameter(Distribution):
             return Uniform(**kwargs)
         if distribution.lower() == 'beta':
             return Beta(**kwargs)
+        if distribution.lower() == 'analytical':
+            return Analytical(**kwargs)

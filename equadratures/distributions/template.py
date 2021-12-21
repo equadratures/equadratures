@@ -1,5 +1,6 @@
 """The Distribution template."""
 import equadratures.plot as plot
+from equadratures.distributions.recurrence_utils import custom_recurrence_coefficients
 import numpy as np
 import scipy as sc 
 PDF_SAMPLES = 500000
@@ -7,7 +8,6 @@ PDF_SAMPLES = 500000
 class Distribution(object):
     """
     The class defines a Distribution object. It serves as a template for all distributions.
-
 
     """
     def __init__(self, name, x_range_for_pdf, mean=None, variance=None, skewness=None, kurtosis=None, endpoints=None, lower=-np.inf, upper=np.inf, rate=None, scale=None, order=2, variable='parameter', scipyparent=None):
@@ -131,7 +131,9 @@ class Distribution(object):
         :return:
             Recurrence coefficients associated with the distribution.
         """
-        pass
+        w_pdf = self.get_pdf(self.x_range_for_pdf)
+        ab = custom_recurrence_coefficients(self.x_range_for_pdf, w_pdf, order)
+        return ab
     def get_jacobi_eigenvectors(self, order=None):
         """ Computes the eigenvectors of the Jacobi matrix.
 

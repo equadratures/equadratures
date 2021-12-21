@@ -25,7 +25,7 @@ class Quadrature(object):
     oversampling : float, optional
         Description needed.
     """
-    def __init__(self, parameters, basis, points, mesh, corr=None, oversampling=7.0):
+    def __init__(self, parameters, basis, points, mesh, corr=None, oversampling=14.0):
         self.parameters = parameters
         self.basis = basis
         self.points = points

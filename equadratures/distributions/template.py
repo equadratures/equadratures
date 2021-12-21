@@ -1,5 +1,5 @@
 """The Distribution template."""
-from equadratures.distributions.recurrence_utils import custom_recurrence_coefficients
+import equadratures.plot as plot
 import numpy as np
 import scipy as sc 
 PDF_SAMPLES = 500000
@@ -10,7 +10,7 @@ class Distribution(object):
 
 
     """
-    def __init__(self, name, x_range_for_pdf, mean=None, variance=None, skewness=None, kurtosis=None, endpoints=None, lower=-np.inf, upper=np.inf, rate=None, scale=None, order=2, variable='parameter'):
+    def __init__(self, name, x_range_for_pdf, mean=None, variance=None, skewness=None, kurtosis=None, endpoints=None, lower=-np.inf, upper=np.inf, rate=None, scale=None, order=2, variable='parameter', scipyparent=None):
         self.name = name
         self.mean = mean 
         self.variance = variance 
@@ -24,6 +24,7 @@ class Distribution(object):
         self.bounds = [self.lower, self.upper]
         self.order = order
         self.variable = variable
+        self.parent = scipyparent
         self.endpoints = endpoints
     def __eq__(self, second_distribution):
         """
@@ -53,34 +54,72 @@ class Distribution(object):
                 An instance of the distribution class.
         """
         pass
-    def get_pdf(self, points=None):
-        """
-        Returns the PDF of the distribution.
-
-        :param Distribution self:
-                An instance of the distribution class.
-        """
-        pass
     def get_cdf(self, points=None):
         """
-        Returns the CDF of the distribution.
-
-        :param Distribution self:
-                An instance of the distribution class.
+        A uniform cumulative density function.
+        :param points:
+                Matrix of points which have to be evaluated
+        :param double lower:
+            Lower bound of the support of the uniform distribution.
+        :param double upper:
+            Upper bound of the support of the uniform distribution.
+        :return:
+            An array of N equidistant values over the support of the distribution.
+        :return:
+            Cumulative density values along the support of the uniform distribution.
         """
-        pass
+        if points is None:
+            x = self.x_range_for_pdf
+            return x, self.parent.cdf(x)
+        else:
+            return self.parent.cdf(points)
+    def get_pdf(self, points=None):
+        """
+        A uniform probability distribution.
+        :param points:
+            Matrix of points which have to be evaluated
+        :param double lower:
+            Lower bound of the support of the uniform distribution.
+        :param double upper:
+            Upper bound of the support of the uniform distribution.
+        :return:
+            An array of N equidistant values over the support of the distribution.
+        :return:
+            Probability density values along the support of the uniform distribution.
+        """
+        if points is None:
+            x = self.x_range_for_pdf
+            return x, self.parent.pdf(x)
+        else:
+            return self.parent.pdf(points)
     def get_icdf(self, xx):
         """
-        An inverse cumulative density function.
+        A Uniform inverse cumulative density function.
 
-        :param Distribution self:
-                An instance of the distribution class.
-        :param xx:
-                A numpy array of uniformly distributed samples between [0,1].
+        :param: Uniform self:
+            An instance of Uniform class
+        :param array xx:
+            Points at which the inverse cumulative density function need to be evaluated.
         :return:
-                Inverse CDF samples associated with the gamma distribution.
+            Inverse cumulative density function values of the Uniform distribution.
         """
-        pass
+        return self.parent.ppf(xx)
+    def get_samples(self, m = None):
+        """
+        Generates samples from the Uniform distribution.
+
+        :param: uniform self:
+            An instance of Uniform class
+        :param: integer m:
+            NUmber of random samples. If no provided, a default number of 5e5 is assumed.
+        :return:
+            A N-by-1 vector that contains the samples.
+        """
+        if m is not None:
+            number = m
+        else:
+            number = 500000
+        return self.parent.rvs(size=number)
     def get_recurrence_coefficients(self, order):
         """
         Recurrence coefficients for the distribution
@@ -93,29 +132,6 @@ class Distribution(object):
             Recurrence coefficients associated with the distribution.
         """
         pass
-        #w_pdf = self.get_pdf(self.x_range_for_pdf)
-        #print(ab)
-        ##ab = custom_recurrence_coefficients(self.x_range_for_pdf, w_pdf, order)
-        #print('oh no!')
-        #return ab
-    def get_samples(self, m=None):
-        """
-        Generates samples from the distribution.
-
-        :param Distribution self:
-            An instance of the distribution class.
-        :param integer m:
-            Number of random samples. If no value is provided, a default of 5e5 is assumed.
-        :return:
-            A N-by-1 vector that contains the samples.
-        """
-        if m is None:
-            number_of_random_samples = PDF_SAMPLES
-        else:
-            number_of_random_samples = m
-        uniform_samples = np.random.random((number_of_random_samples, 1))
-        yy = self.get_icdf(uniform_samples)
-        return yy
     def get_jacobi_eigenvectors(self, order=None):
         """ Computes the eigenvectors of the Jacobi matrix.
 
@@ -246,13 +262,21 @@ class Distribution(object):
             return get_local_quadrature_lobatto(self, order, ab)
         else:
             raise(ValueError, 'Error in endpoints specification.')
+    def plot_orthogonal_polynomials(self, ax=None, order_limit=None, number_of_points=200, show=True):
+        """ Plots the first few orthogonal polynomials. See :meth:`~equadratures.plot.plot_orthogonal_polynomials` for full description. """
+        return plot.plot_orthogonal_polynomials(self,ax,order_limit,number_of_points,show)
+    def plot_pdf(self, ax=None, data=None, show=True, lim_range=True):
+        """ Plots the probability density function for a Parameter. See :meth:`~equadratures.plot.plot_pdf` for full description. """
+        return plot.plot_pdf(self,ax, data, show, lim_range)
+    def plot_cdf(self, ax=None, show=True, lim_range=True):
+        """ Plots the cumulative density function for a Parameter. See :meth:`~equadratures.plot.plot_cdf` for full description. """
+        return plot.plot_cdf(self,ax, show, lim_range)
 def get_local_quadrature(self, order=None, ab=None):
     # Check for extra input argument!
     if order is None:
         order = self.order + 1
     else:
         order = order + 1
-
     if ab is None:
         # Get the recurrence coefficients & the jacobi matrix
         JacobiMat = self.get_jacobi_matrix(order)
@@ -263,13 +287,12 @@ def get_local_quadrature(self, order=None, ab=None):
     # If statement to handle the case where order = 1
     if order == 1:
         # Check to see whether upper and lower bound are defined:
-        if not self.distribution.lower or not self.distribution.upper:
-            p = np.asarray(self.distribution.mean).reshape((1,1))
+        if not self.lower or not self.upper:
+            p = np.asarray(self.mean).reshape((1,1))
         else:
-            print('see below!')
-            print(self.distribution.lower, self.distribution.upper)
-            print(self.distribution.lower(), self.distribution.upper())
-            p = np.asarray((self.distribution.upper - self.distribution.lower)/(2.0) + self.distribution.lower).reshape((1,1))
+            #print('see below!')
+            #print(self.lower, self.upper)
+            p = np.asarray((self.upper - self.lower)/(2.0) + self.lower).reshape((1,1))
         w = [1.0]
     else:
         D, V = sc.linalg.eigh(JacobiMat)
@@ -288,9 +311,9 @@ def get_local_quadrature(self, order=None, ab=None):
     return p, w
 def get_local_quadrature_radau(self, order=None, ab=None):
     if self.endpoints.lower() == 'lower':
-        end0 = self.distribution.lower
+        end0 = self.lower
     elif self.endpoints.lower() == 'upper':
-        end0 = self.distribution.upper
+        end0 = self.upper
     if order is None:
         order = self.order - 1
     else:
@@ -314,8 +337,8 @@ def get_local_quadrature_lobatto(self, order=None, ab=None):
     else:
         order = order - 2
     N = order
-    endl = self.distribution.lower
-    endr = self.distribution.upper
+    endl = self.lower
+    endr = self.upper
     if ab is None:
         ab = self.get_recurrence_coefficients(order+2)
     else:

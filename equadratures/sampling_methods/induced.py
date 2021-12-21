@@ -88,8 +88,7 @@ class Induced(Sampling):
                 sampled_cdf_values,
                 max_order
                 )
-
-        print(quadrature_points)
+        #print(quadrature_points)
         print('done!')
         if ray_imported:
             ray.shutdown()
@@ -142,7 +141,6 @@ class Induced(Sampling):
                 inverse_cdf_values = ray.get(inverse_cdf_values)
                 quadrature_points[variable_positions] = inverse_cdf_values
             else:
-                print(inverse_cdf_values)
                 quadrature_points[variable_positions] = inverse_cdf_values
         quadrature_points = self._scale_support(quadrature_points)
         return quadrature_points

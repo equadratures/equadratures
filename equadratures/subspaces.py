@@ -1,4 +1,4 @@
-from equadratures.parameter import Parameter
+from equadratures.parentparameter import ParentParameter as Parameter
 from equadratures.poly import Poly
 from equadratures.basis import Basis
 from equadratures.scalers import scaler_minmax, scaler_meanvar, scaler_custom

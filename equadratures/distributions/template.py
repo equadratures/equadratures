@@ -111,7 +111,7 @@ class Distribution(object):
         :param: uniform self:
             An instance of Uniform class
         :param: integer m:
-            NUmber of random samples. If no provided, a default number of 5e5 is assumed.
+            Number of random samples. If no provided, a default number of 5e5 is assumed.
         :return:
             A N-by-1 vector that contains the samples.
         """

@@ -1,5 +1,5 @@
 """ Utilities for dealing with correlated inputs."""
-from equadratures.parameter import Parameter
+from equadratures.parentparameter import ParentParameter as Parameter
 from equadratures.poly import Poly, evaluate_model, evaluate_model_gradients
 from equadratures.basis import Basis
 import numpy as np

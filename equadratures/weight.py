@@ -1,4 +1,4 @@
-from equadratures.parameter import Parameter
+from equadratures.parentparameter import ParentParameter as Parameter
 from equadratures.basis import Basis
 from equadratures.poly import Poly, evaluate_model
 from scipy import stats

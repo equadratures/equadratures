@@ -1,7 +1,7 @@
 """ The Analytical distribution"""
 from equadratures.distributions.template import Distribution
 from equadratures.distributions.uniform import Uniform 
-from equadratures import Poly, Basis
+# from equadratures import Poly, Basis
 import numpy as np
 import scipy.stats as stats
 RECURRENCE_PDF_SAMPLES = 50000

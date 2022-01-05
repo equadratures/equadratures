@@ -2,7 +2,7 @@ from unittest import TestCase
 import unittest
 from equadratures.poly import Poly
 from equadratures.sampling_methods.induced import Induced
-from equadratures.parameter import Parameter
+from equadratures.parentparameter import ParentParameter as Parameter
 from equadratures.basis import Basis
 
 

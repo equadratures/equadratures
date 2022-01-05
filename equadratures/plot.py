@@ -584,6 +584,7 @@ def plot_pdf(Parameter, ax=None, data=None, show=True, lim_range=True):
         ax.hist(data, 50, density=True, facecolor='dodgerblue', alpha=0.7, label='Data', edgecolor='white')
     # Adjust xrange
     if lim_range:
+        pdf = pdf[np.isfinite(pdf)]
         idx = np.argwhere(pdf/pdf.max() >= 1e-5)
         ax.set_xlim([s_values[idx].min(),s_values[idx].max()])
     ax.legend()

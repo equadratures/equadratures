@@ -48,8 +48,7 @@ class Beta(Distribution):
         loc = self.lower
         scale = self.upper - self.lower
         self.parent = beta(self.shape_A, self.shape_B, loc=loc, scale=scale)
-        self.mean, self.variance, self.skewness, self.kurtosis = beta.stats(self.shape_A, self.shape_B, loc=loc,
-                                                                            scale=scale, moments='mvsk')
+        self.mean, self.variance, self.skewness, self.kurtosis = beta.stats(self.shape_A, self.shape_B, loc=loc, scale=scale, moments='mvsk')
         self.x_range_for_pdf = np.linspace(self.lower, self.upper, RECURRENCE_PDF_SAMPLES)
         super().__init__(name=self.name, \
                         lower=self.lower, \

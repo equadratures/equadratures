@@ -17,11 +17,13 @@ class Gaussian(Distribution):
         second_arg = ['variance', 'var', 'shape_parameter_B']
         third_arg = ['order', 'orders', 'degree', 'degrees']
         fourth_arg = ['endpoints', 'endpoint']
+        fifth_arg = ['variable']
         self.name = 'gaussian'
         self.mean = None 
         self.variance = None 
         self.order = 2
         self.endpoints = 'none'
+        self.variable = 'parameter'
         for key, value in kwargs.items():
             if first_arg.__contains__(key):
                 self.mean = value
@@ -31,6 +33,9 @@ class Gaussian(Distribution):
                 self.order = value
             if fourth_arg.__contains__(key):
                 self.endpoints = value
+            if fifth_arg.__contains__(key):
+                self.variable = value
+
         if self.mean is None or self.variance is None:
             raise ValueError('mean or variance have not been specified!')
         if self.variance <= 0:
@@ -49,6 +54,7 @@ class Gaussian(Distribution):
                         x_range_for_pdf=self.x_range_for_pdf, \
                         order=self.order, \
                         endpoints=self.endpoints, \
+                        variable=self.variable, \
                         scipyparent=self.parent)
     def get_description(self):
         """
@@ -59,6 +65,7 @@ class Gaussian(Distribution):
         :return:
             A string describing the Gaussian.
         """
-        text = "is a Gaussian distribution with a mean of "+str(self.mean)+" and a variance of "+str(self.variance)+"."
+        text = ("is a Gaussian distribution with a mean of " + str(self.mean) + " and a variance of " + str(self.variance) \
+                + ".")
         return text
 

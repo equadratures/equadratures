@@ -18,11 +18,13 @@ class Beta(Distribution):
         fourth_arg = ['upper','up', 'top']  
         fifth_arg = ['order', 'orders', 'degree', 'degrees']
         sixth_arg = ['endpoints', 'endpoint']
+        seventh_arg = ['variable']
         self.name = 'beta'
-        self.lower = None 
+        self.lower = None
         self.upper = None
         self.order = 2
         self.endpoints = 'none'
+        self.variable = 'parameter'
         for key, value in kwargs.items():
             if first_arg.__contains__(key):
                 self.shape_A = value 
@@ -36,6 +38,9 @@ class Beta(Distribution):
                 self.order = value
             if sixth_arg.__contains__(key):
                 self.endpoints = value
+            if seventh_arg.__contains__(key):
+                self.variable = value
+
         if self.lower is None and self.upper is None:
             self.lower = -1. # Standard beta distribution defn'
             self.upper = 1.
@@ -60,6 +65,7 @@ class Beta(Distribution):
                         x_range_for_pdf=self.x_range_for_pdf, \
                         order=self.order, \
                         endpoints=self.endpoints, \
+                        variable=self.variable, \
                         scipyparent=self.parent)
     def get_description(self):
         """
@@ -70,7 +76,8 @@ class Beta(Distribution):
         :return:
             A string describing the beta distribution.
         """
-        text = "is a beta distribution is defined over a support; given here as "+str(self.lower)+", to "+str(self.upper)+". It has two shape parameters, given here to be "+str(self.shape_A)+" and "+str(self.shape_B)+"."
+        text = ("is a beta distribution is defined over a support; given here as " + str(self.lower) + ", to " + str(self.upper) + \
+                ". It has two shape parameters, given here to be " + str(self.shape_A) + " and " + str(self.shape_B) + ".")
         return text
     def get_recurrence_coefficients(self, order):
         """

@@ -1,8 +1,23 @@
 from equadratures.distributions.parameter import Parameter
-from equadratures.distributions.gaussian import Gaussian
-from equadratures.distributions.gaussian import Gaussian as Normal
 from equadratures.distributions.uniform import Uniform
 from equadratures.distributions.beta import Beta
+from equadratures.distributions.cauchy import Cauchy
+from equadratures.distributions.chebyshev import Chebyshev
+from equadratures.distributions.chi import Chi
+from equadratures.distributions.chisquared import Chisquared
+from equadratures.distributions.exponential import Exponential
+from equadratures.distributions.gamma import Gamma
+from equadratures.distributions.gaussian import Gaussian
+from equadratures.distributions.gaussian import Gaussian as Normal
+from equadratures.distributions.gumbel import Gumbel
+from equadratures.distributions.logistic import Logistic
+from equadratures.distributions.lognormal import Lognormal
+from equadratures.distributions.pareto import Pareto
+from equadratures.distributions.rayleigh import Rayleigh
+from equadratures.distributions.studentst import Studentst
+from equadratures.distributions.triangular import Triangular
+from equadratures.distributions.truncated_gaussian import TruncatedGaussian
+from equadratures.distributions.weibull import Weibull
 from equadratures.poly import Poly
 from equadratures.stats import Statistics
 from equadratures.basis import Basis

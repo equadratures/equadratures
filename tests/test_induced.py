@@ -2,7 +2,7 @@ from unittest import TestCase
 import unittest
 from equadratures.poly import Poly
 from equadratures.sampling_methods.induced import Induced
-from equadratures.parentparameter import ParentParameter as Parameter
+from equadratures import Parameter
 from equadratures.basis import Basis
 
 
@@ -28,7 +28,7 @@ class TestSamplingGeneration(TestCase):
         An integration test for the whole routine
         """
         dimension = 3
-        parameters = [Parameter(3, "Uniform", upper=1, lower=-1)]*dimension
+        parameters = [Parameter(order=3, distribution="Uniform", upper=1, lower=-1)]*dimension
         basis = Basis("total-order", [3]*dimension)
 
         induced_sampling = Induced(parameters, basis)

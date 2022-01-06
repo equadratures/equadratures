@@ -1,6 +1,6 @@
 import numpy as np
 from copy import deepcopy
-from equadratures.parentparameter import ParentParameter as Parameter
+from equadratures import Parameter
 from equadratures import Weight
 from equadratures.poly import Poly
 from equadratures.basis import Basis

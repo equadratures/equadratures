@@ -21,27 +21,35 @@ class Test_Distributions(TestCase):
        for i in range(0,len(x)):
            f_X[i] = (1/c_1)*(1/theta**k)*((x[i])**(k-1))*np.exp(-x[i]/theta)
 
-       xo = Parameter(order=1, distribution='Gamma',shape_parameter_A = 2.0, shape_parameter_B = 0.9 )
-       myBasis = Basis('univariate')
-       myPoly = Poly(xo, myBasis, method='numerical-integration')
-       myPoly.set_model(blackbox)
-       mean, variance = myPoly.get_mean_and_variance()
-       xo.get_description()
-       s_values, pdf = xo.get_pdf()
-       s_values, cdf = xo.get_cdf()
-       s_samples = xo.get_samples(6000)
-       xo.get_description()
-       s_samples = xo.get_icdf(np.linspace(0., 1., 30))
-       samples = xo.get_samples(1000)
-       std_dev = np.std(samples)
-       xi = np.random.gamma(k,theta, (N,1))
-       yi = evaluate_model(np.reshape(xi, (N, 1) ), blackbox)
-       eq_m = float('%.4f' %mean)
-       mc_m = float('%.4f' %np.mean(yi))
-       error_mean = np.testing.assert_almost_equal(eq_m, mc_m, decimal=2, err_msg="difference greater than imposed tolerance for mean value")
-       eq_v = float('%.4f' %variance)
-       mc_v = float('%.4f' %np.var(yi))
-       error_var = np.testing.assert_almost_equal(eq_v, mc_v, decimal=1, err_msg="difference greater than imposed tolerance for variance value")
+       params = [
+        Parameter(order=1, distribution='Gamma', shape_parameter_A = 2.0, shape_parameter_B = 0.9 ),
+        Parameter(order=1, distribution='Gamma', shape = 2.0, scale = 0.9 ),
+        Parameter(order=1, distribution='Gamma', k = 2.0, theta = 0.9 ),
+        Gamma(order=1, shape_parameter_A = 2.0, shape_parameter_B = 0.9 ),
+        Gamma(order=1, shape = 2.0, scale = 0.9 ),
+        Gamma(order=1, k = 2.0, theta = 0.9 ),
+       ]
+       for param in params:
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        param.get_description()
+        s_values, pdf = param.get_pdf()
+        s_values, cdf = param.get_cdf()
+        s_samples = param.get_samples(6000)
+        param.get_description()
+        s_samples = param.get_icdf(np.linspace(0., 1., 30))
+        samples = param.get_samples(1000)
+        std_dev = np.std(samples)
+        xi = np.random.gamma(k,theta, (N,1))
+        yi = evaluate_model(np.reshape(xi, (N, 1) ), blackbox)
+        eq_m = float('%.4f' %mean)
+        mc_m = float('%.4f' %np.mean(yi))
+        error_mean = np.testing.assert_almost_equal(eq_m, mc_m, decimal=2, err_msg="difference greater than imposed tolerance for mean value")
+        eq_v = float('%.4f' %variance)
+        mc_v = float('%.4f' %np.var(yi))
+        error_var = np.testing.assert_almost_equal(eq_v, mc_v, decimal=1, err_msg="difference greater than imposed tolerance for variance value")
     def test_beta(self):
        shape_A = 2.0 # alpha
        shape_B = 3.0 # beta
@@ -53,7 +61,7 @@ class Test_Distributions(TestCase):
        f_X = np.zeros(len(x))
        for i in range(0,len(x)):
            f_X[i] = (1.0/c_1)* ((x[i])**(shape_A-1))*(1-x[i])**(shape_B-1)
-       xo = Parameter(order=1, distribution='Beta',lower =0.0, upper=1.0, shape_parameter_A = shape_A, shape_parameter_B = shape_B )
+       xo = Parameter(order=2, distribution='Beta', lower=0.0, upper=1.0, shape_parameter_A=shape_A, shape_parameter_B=shape_B )
        myBasis = Basis('univariate')
        myPoly = Poly(xo, myBasis, method='numerical-integration')
        myPoly.set_model(blackbox)
@@ -69,27 +77,35 @@ class Test_Distributions(TestCase):
        error_var = np.testing.assert_almost_equal(eq_v, mc_v, decimal=1, err_msg="difference greater than imposed tolerance for variance value")
     def test_weibull(self):
        x = np.linspace(10**(-10),30,100)
-       lambdaa = 2.0 # SCALE OF DISTRIBUTION
+       lamda = 2.0 # SCALE OF DISTRIBUTION
        k = 5.0 # SHAPE OF DISTRIBUTION
        f_X = np.zeros(len(x))
        for i in range(0,len(x)):
-           f_X[i] = (k/lambdaa)*((x[i]/lambdaa)**(k-1))* np.exp(-(x[i]/lambdaa)**k)
+           f_X[i] = (k/lamda)*((x[i]/lamda)**(k-1))* np.exp(-(x[i]/lamda)**k)
 
-       xo = Parameter(order=1, distribution='Weibull', shape_parameter_A =lambdaa , shape_parameter_B = k)
-       myBasis = Basis('univariate')
-       myPoly = Poly(xo, myBasis, method='numerical-integration')
-       myPoly.set_model(blackbox)
-       mean, variance = myPoly.get_mean_and_variance()
-       xi_o = np.random.rand(N,1)
-       xi = lambdaa * (-np.log(xi_o))**(1.0/k)
-       yi = evaluate_model(np.reshape(xi, (N, 1) ), blackbox)
-       samples = xo.get_samples(1000)
-       eq_m = float('%.4f' %mean)
-       mc_m = float('%.4f' %np.mean(yi))
-       error_mean = np.testing.assert_almost_equal(eq_m, mc_m, decimal=2, err_msg="difference greater than imposed tolerance for mean value")
-       eq_v = float('%.4f' %variance)
-       mc_v = float('%.4f' %np.var(yi))
-       error_var = np.testing.assert_almost_equal(eq_v, mc_v, decimal=1, err_msg="difference greater than imposed tolerance for variance value")
+       params = [
+        Parameter(order=1, distribution='Weibull', shape_parameter_A=lamda, shape_parameter_B=k),
+        Parameter(order=1, distribution='Weibull', scale=lamda, shape=k),
+        Parameter(order=1, distribution='Weibull', lamda=lamda, k=k),
+        Weibull(order=1, shape_parameter_A=lamda, shape_parameter_B=k),
+        Weibull(order=1, scale=lamda, shape=k),
+        Weibull(order=1, lamda=lamda, k=k)
+       ]
+       for param in params:
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        xi_o = np.random.rand(N,1)
+        xi = lamda * (-np.log(xi_o))**(1.0/k)
+        yi = evaluate_model(np.reshape(xi, (N, 1) ), blackbox)
+        samples = param.get_samples(1000)
+        eq_m = float('%.4f' %mean)
+        mc_m = float('%.4f' %np.mean(yi))
+        error_mean = np.testing.assert_almost_equal(eq_m, mc_m, decimal=2, err_msg="difference greater than imposed tolerance for mean value")
+        eq_v = float('%.4f' %variance)
+        mc_v = float('%.4f' %np.var(yi))
+        error_var = np.testing.assert_almost_equal(eq_v, mc_v, decimal=1, err_msg="difference greater than imposed tolerance for variance value")
     def test_truncated_gauss(self):
       mu = 1.0  # mean'
       sigma = 0.5 # std deviation'
@@ -118,21 +134,30 @@ class Test_Distributions(TestCase):
       variance = sigma**2
       shape_A = mu
       shape_B = sigma**2
-      xo = Parameter(order=1, distribution='truncated-gaussian',lower =a, upper=b, shape_parameter_A = shape_A, shape_parameter_B = shape_B )
-      myBasis = Basis('univariate')
-      myPoly = Poly(xo, myBasis, method='numerical-integration')
-      myPoly.set_model(blackbox)
-      mean, variance = myPoly.get_mean_and_variance()
-      a = x
-      b = xo.get_pdf(a) # analytical!
-      samples = xo.get_samples(3000)
-      yi = samples
-      eq_m = float('%.4f' %mean)
-      mc_m = float('%.4f' %np.mean(yi))
-      error_mean = np.testing.assert_almost_equal(eq_m, xo.mean, decimal=1, err_msg="difference greater than imposed tolerance for mean value")
-      eq_v = float('%.4f' %variance)
-      mc_v = float('%.4f' %np.var(yi))
-      error_var = np.testing.assert_almost_equal(eq_v, xo.variance, decimal=1, err_msg="difference greater than imposed tolerance for variance value")
+
+      params = [
+        Parameter(order=1, distribution='truncated-gaussian', lower=a, upper=b, shape_parameter_A=shape_A, shape_parameter_B=shape_B),
+        Parameter(order=1, distribution='truncated-gaussian', low=a, up=b, mean=shape_A, variance=shape_B),
+        Parameter(order=1, distribution='truncated-gaussian', lower=a, upper=b, mu=shape_A, var=shape_B),
+        TruncatedGaussian(order=1, lower=a, upper=b, shape_parameter_A=shape_A, shape_parameter_B=shape_B),
+        TruncatedGaussian(order=1, low=a, up=b, mean=shape_A, variance=shape_B),
+        TruncatedGaussian(order=1, lower=a, upper=b, mu=shape_A, var=shape_B)
+      ]
+      for param in params:
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        a = x
+        b = param.get_pdf(a) # analytical!
+        samples = param.get_samples(3000)
+        yi = samples
+        eq_m = float('%.4f' %mean)
+        mc_m = float('%.4f' %np.mean(yi))
+        error_mean = np.testing.assert_almost_equal(eq_m, param.mean, decimal=1, err_msg="difference greater than imposed tolerance for mean value")
+        eq_v = float('%.4f' %variance)
+        mc_v = float('%.4f' %np.var(yi))
+        error_var = np.testing.assert_almost_equal(eq_v, param.variance, decimal=1, err_msg="difference greater than imposed tolerance for variance value")
     def test_arcsine(self):
       a = 0.0#0.001
       b = 1.0#0.99
@@ -147,21 +172,28 @@ class Test_Distributions(TestCase):
            f_X[i] =  1.0/(np.pi* np.sqrt(((x[i]+0.000000001 )- a)*(b - (x[i]-0.000000001)) ))
         else:
            f_X[i] = 1.0/(np.pi* np.sqrt((x[i] - a)*(b - x[i])) )
-      xo = Parameter(order=1, distribution='Chebyshev',lower =0.001, upper=0.99)
-      myBasis = Basis('univariate')
-      myPoly = Poly(xo, myBasis, method='numerical-integration')
-      myPoly.set_model(blackbox)
-      mean, variance = myPoly.get_mean_and_variance()
-      a = x
-      b = xo.get_pdf(a) # analytical!
-      samples = xo.get_samples(3000)
-      yi = samples
-      eq_m = float('%.4f' %mean)
-      mc_m = float('%.4f' %np.mean(yi))
-      error_mean = np.testing.assert_almost_equal(eq_m, xo.mean, decimal=1, err_msg="difference greater than imposed tolerance for mean value")
-      eq_v = float('%.4f' %variance)
-      mc_v = float('%.4f' %np.var(yi))
-      error_var = np.testing.assert_almost_equal(eq_v, xo.variance, decimal=1, err_msg="difference greater than imposed tolerance for variance value")
+      
+      params = [
+        Parameter(order=1, distribution='Chebyshev', lower=0.001, upper=0.99),
+        Parameter(order=1, distribution='Chebyshev', low=0.001, up=0.99),
+        Chebyshev(order=1, lower=0.001, upper=0.99),
+        Chebyshev(order=1, low=0.001, up=0.99)
+      ]
+      for param in params:
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        a = x
+        b = param.get_pdf(a) # analytical!
+        samples = param.get_samples(3000)
+        yi = samples
+        eq_m = float('%.4f' %mean)
+        mc_m = float('%.4f' %np.mean(yi))
+        error_mean = np.testing.assert_almost_equal(eq_m, param.mean, decimal=1, err_msg="difference greater than imposed tolerance for mean value")
+        eq_v = float('%.4f' %variance)
+        mc_v = float('%.4f' %np.var(yi))
+        error_var = np.testing.assert_almost_equal(eq_v, param.variance, decimal=1, err_msg="difference greater than imposed tolerance for variance value")
     def test_cauchy(self):
       x0 = 0.0
       gamma = 0.5
@@ -170,157 +202,260 @@ class Test_Distributions(TestCase):
       for i in range(0,len(x)):
         f_X[i] = 1.0/(np.pi*gamma*(1+(((x[i]-x0)/gamma)**2)))
 
-      xo = Parameter(order=1, distribution='Cauchy', shape_parameter_A = x0, shape_parameter_B = gamma )
-      myBasis = Basis('univariate')
-      myPoly = Poly(xo, myBasis, method='numerical-integration')
-      myPoly.set_model(blackbox)
-      mean, variance = myPoly.get_mean_and_variance()
-      a = x
-      b = xo.get_pdf(a)
-      samples = xo.get_samples(1000)
-      yi = samples
+      params = [
+        Parameter(order=1, distribution='Cauchy', shape_parameter_A=x0, shape_parameter_B=gamma),
+        Parameter(order=1, distribution='Cauchy', location=x0, scale=gamma),
+        Parameter(order=1, distribution='Cauchy', loc=x0, scale=gamma),
+        Cauchy(order=1, shape_parameter_A=x0, shape_parameter_B=gamma),
+        Cauchy(order=1, location=x0, scale=gamma),
+        Cauchy(order=1, loc=x0, scale=gamma)
+      ]
+      for param in params:
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        a = x
+        b = param.get_pdf(a)
+        samples = param.get_samples(1000)
+        yi = samples
     def test_exponential(self):
-      param = Parameter(order=1, distribution='exponential', shape_parameter_A=2.0)
-      print(param.mean)
-      s_values, pdf = param.get_pdf()
-      s_values, cdf = param.get_cdf()
-      s_samples = param.get_samples(6000)
-      param.get_description()
-      s_samples = param.get_icdf(np.linspace(0., 1., 30))
-      myBasis = Basis('univariate')
-      myPoly = Poly(param, myBasis, method='numerical-integration')
-      myPoly.set_model(blackbox)
-      mean, variance = myPoly.get_mean_and_variance()
-      np.testing.assert_almost_equal(mean, 1/param.shape_parameter_A, decimal=1)
-      np.testing.assert_almost_equal(variance, 1/(param.shape_parameter_A)**2, decimal=1)
+      params = [
+        Parameter(order=1, distribution='exponential', shape_parameter_A=2.0),
+        Parameter(order=1, distribution='exponential', rate=2.0),
+        Parameter(order=1, distribution='exponential', lamda=2.0),
+        Exponential(order=1, shape_parameter_A=2.0),
+        Exponential(order=1, rate=2.0),
+        Exponential(order=1, lamda=2.0)
+      ]
+      for param in params:
+        print(param.mean)
+        s_values, pdf = param.get_pdf()
+        s_values, cdf = param.get_cdf()
+        s_samples = param.get_samples(6000)
+        param.get_description()
+        s_samples = param.get_icdf(np.linspace(0., 1., 30))
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        np.testing.assert_almost_equal(mean, 1/param.shape_parameter_A, decimal=1)
+        np.testing.assert_almost_equal(variance, 1/(param.shape_parameter_A)**2, decimal=1)
     def test_chisquared(self):
-      param = Parameter(order=1, distribution='chi-squared', shape_parameter_A=2.0)
-      s_values, pdf = param.get_pdf()
-      s_values, cdf = param.get_cdf()
-      s_samples = param.get_samples(6000)
-      param.get_description()
-      s_samples = param.get_icdf(np.linspace(0., 1., 30))
-      myBasis = Basis('univariate')
-      myPoly = Poly(param, myBasis, method='numerical-integration')
-      myPoly.set_model(blackbox)
-      mean, variance = myPoly.get_mean_and_variance()
-      np.testing.assert_almost_equal(mean, param.shape_parameter_A, decimal=1)
-      np.testing.assert_almost_equal(variance, 2.0 * param.shape_parameter_A, decimal=1)
+      params = [
+        Parameter(order=1, distribution='chi-squared', shape_parameter_A=2.0),
+        Parameter(order=1, distribution='chi-squared', dofs=2.0),
+        Parameter(order=1, distribution='chi-squared', k=2.0),
+        Chisquared(order=1, shape_parameter_A=2.0),
+        Chisquared(order=1, dofs=2.0),
+        Chisquared(order=1, k=2.0)
+      ]
+      for param in params:
+        s_values, pdf = param.get_pdf()
+        s_values, cdf = param.get_cdf()
+        s_samples = param.get_samples(6000)
+        param.get_description()
+        s_samples = param.get_icdf(np.linspace(0., 1., 30))
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        np.testing.assert_almost_equal(mean, param.shape_parameter_A, decimal=1)
+        np.testing.assert_almost_equal(variance, 2.0 * param.shape_parameter_A, decimal=1)
     def test_chi(self):
-      param = Parameter(order=1, distribution='chi', shape_parameter_A=2.0)
-      s_values, pdf = param.get_pdf()
-      s_values, cdf = param.get_cdf()
-      s_samples = param.get_samples(6000)
-      param.get_description()
-      s_samples = param.get_icdf(np.linspace(0., 1., 30))
-      myBasis = Basis('univariate')
-      myPoly = Poly(param, myBasis, method='numerical-integration')
-      myPoly.set_model(blackbox)
-      mean, variance = myPoly.get_mean_and_variance()
-      np.testing.assert_almost_equal(mean, param.mean, decimal=2)
-      np.testing.assert_almost_equal(variance, param.variance, decimal=2)
+      params = [
+        Parameter(order=1, distribution='chi', shape_parameter_A=2.0),
+        Parameter(order=1, distribution='chi', dofs=2.0),
+        Parameter(order=1, distribution='chi', k=2.0),
+        Chi(order=1, shape_parameter_A=2.0),
+        Chi(order=1, dofs=2.0),
+        Chi(order=1, k=2.0)
+      ]
+      for param in params:
+        s_values, pdf = param.get_pdf()
+        s_values, cdf = param.get_cdf()
+        s_samples = param.get_samples(6000)
+        param.get_description()
+        s_samples = param.get_icdf(np.linspace(0., 1., 30))
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        np.testing.assert_almost_equal(mean, param.mean, decimal=2)
+        np.testing.assert_almost_equal(variance, param.variance, decimal=2)
     def test_pareto(self):
-      param = Parameter(order=1, distribution='pareto', shape_parameter_A=2.0)
-      s_values, pdf = param.get_pdf()
-      s_values, cdf = param.get_cdf()
-      s_samples = param.get_samples(6000)
-      param.get_description()
-      s_samples = param.get_icdf(np.linspace(0., 1., 30))
-      myBasis = Basis('univariate')
-      myPoly = Poly(param, myBasis, method='numerical-integration')
-      myPoly.set_model(blackbox)
-      mean, variance = myPoly.get_mean_and_variance()
-      np.testing.assert_almost_equal(mean, param.mean, decimal=1)
+      params = [
+        Parameter(order=1, distribution='pareto', shape_parameter_A=2.0, shape_parameter_B=1.0),
+        Parameter(order=1, distribution='pareto', shape=2.0, scale=1.0),
+        Parameter(order=1, distribution='pareto', alpha=2.0, xm=1.0),
+        Pareto(order=1, shape_parameter_A=2.0, shape_parameter_B=1.0),
+        Pareto(order=1, shape=2.0, scale=1.0),
+        Pareto(order=1, alpha=2.0, xm=1.0)
+      ]
+      for param in params:
+        s_values, pdf = param.get_pdf()
+        s_values, cdf = param.get_cdf()
+        s_samples = param.get_samples(6000)
+        param.get_description()
+        s_samples = param.get_icdf(np.linspace(0., 1., 30))
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        np.testing.assert_almost_equal(mean, param.mean, decimal=1)
     def test_gumbel(self):
-      param = Parameter(order=1, distribution='gumbel', shape_parameter_A=2.0, shape_parameter_B=3.2)
-      s_values, pdf = param.get_pdf()
-      s_values, cdf = param.get_cdf()
-      s_samples = param.get_samples(6000)
-      param.get_description()
-      s_samples = param.get_icdf(np.linspace(0., 1., 30))
-      myBasis = Basis('univariate')
-      myPoly = Poly(param, myBasis, method='numerical-integration')
-      myPoly.set_model(blackbox)
-      mean, variance = myPoly.get_mean_and_variance()
-      np.testing.assert_almost_equal(mean, param.mean, decimal=1)
+      params = [
+        Parameter(order=1, distribution='gumbel', shape_parameter_A=2.0, shape_parameter_B=3.2),
+        Parameter(order=1, distribution='gumbel', location=2.0, scale=3.2),
+        Parameter(order=1, distribution='gumbel', loc=2.0, scale=3.2),
+        Parameter(order=1, distribution='gumbel', mu=2.0, beta=3.2),
+        Gumbel(order=1, shape_parameter_A=2.0, shape_parameter_B=3.2),
+        Gumbel(order=1, location=2.0, scale=3.2),
+        Gumbel(order=1, loc=2.0, scale=3.2),
+        Gumbel(order=1, mu=2.0, beta=3.2)
+      ]
+      for param in params:
+        s_values, pdf = param.get_pdf()
+        s_values, cdf = param.get_cdf()
+        s_samples = param.get_samples(6000)
+        param.get_description()
+        s_samples = param.get_icdf(np.linspace(0., 1., 30))
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        np.testing.assert_almost_equal(mean, param.mean, decimal=1)
     def test_logistic(self):
-      param = Parameter(order=1, distribution='logistic', shape_parameter_A=3.5, shape_parameter_B=2.2)
-      s_values, pdf = param.get_pdf()
-      s_values, cdf = param.get_cdf()
-      s_samples = param.get_samples(6000)
-      param.get_description()
-      s_samples = param.get_icdf(np.linspace(0., 1., 30))
-      myBasis = Basis('univariate')
-      myPoly = Poly(param, myBasis, method='numerical-integration')
-      myPoly.set_model(blackbox)
-      mean, variance = myPoly.get_mean_and_variance()
-      np.testing.assert_almost_equal(mean, param.mean, decimal=1)
+      params = [
+        Parameter(order=1, distribution='logistic', shape_parameter_A=3.5, shape_parameter_B=2.2),
+        Parameter(order=1, distribution='logistic', location=3.5, scale=2.2),
+        Parameter(order=1, distribution='logistic', loc=3.5, s=2.2),
+        Parameter(order=1, distribution='logistic', mu=3.5, s=2.2),
+        Logistic(order=1, shape_parameter_A=3.5, shape_parameter_B=2.2),
+        Logistic(order=1, location=3.5, scale=2.2),
+        Logistic(order=1, loc=3.5, s=2.2),
+        Logistic(order=1, mu=3.5, s=2.2)
+      ]
+      for param in params:
+        s_values, pdf = param.get_pdf()
+        s_values, cdf = param.get_cdf()
+        s_samples = param.get_samples(6000)
+        param.get_description()
+        s_samples = param.get_icdf(np.linspace(0., 1., 30))
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        np.testing.assert_almost_equal(mean, param.mean, decimal=1)
     def test_studentt(self):
-      param = Parameter(order=1, distribution='t', shape_parameter_A=3.5)
-      s_values, pdf = param.get_pdf()
-      s_values, cdf = param.get_cdf()
-      s_samples = param.get_samples(6000)
-      param.get_description()
-      s_samples = param.get_icdf(np.linspace(0., 1., 30))
-      myBasis = Basis('univariate')
-      myPoly = Poly(param, myBasis, method='numerical-integration')
-      myPoly.set_model(blackbox)
-      mean, variance = myPoly.get_mean_and_variance()
-      np.testing.assert_almost_equal(mean, param.mean, decimal=1)
+      params = [
+        Parameter(order=1, distribution='t', shape_parameter_A=3.5),
+        Parameter(order=1, distribution='t', dofs=3.5),
+        Parameter(order=1, distribution='t', nu=3.5),
+        Studentst(order=1, distribution='t', shape_parameter_A=3.5),
+        Studentst(order=1, distribution='t', dofs=3.5),
+        Studentst(order=1, distribution='t', nu=3.5)
+      ]
+      for param in params:
+        s_values, pdf = param.get_pdf()
+        s_values, cdf = param.get_cdf()
+        s_samples = param.get_samples(6000)
+        param.get_description()
+        s_samples = param.get_icdf(np.linspace(0., 1., 30))
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        np.testing.assert_almost_equal(mean, param.mean, decimal=1)
     def test_lognormal(self):
-      param = Parameter(order=1, distribution='lognormal', shape_parameter_A=0.5)
-      s_values, pdf = param.get_pdf()
-      s_values, cdf = param.get_cdf()
-      s_samples = param.get_samples(6000)
-      param.get_description()
-      s_samples = param.get_icdf(np.linspace(0., 1., 30))
-      myBasis = Basis('univariate')
-      myPoly = Poly(param, myBasis, method='numerical-integration')
-      myPoly.set_model(blackbox)
-      mean, variance = myPoly.get_mean_and_variance()
-      np.testing.assert_almost_equal(mean, param.mean, decimal=1)
+      params = [
+        Parameter(order=1, distribution='lognormal', shape_parameter_A=0.0, shape_parameter_B=0.25),
+        Parameter(order=1, distribution='lognormal', mean=0.0, standard_deviation=0.25),
+        Parameter(order=1, distribution='lognormal', mu=0.0, std=0.25),
+        Parameter(order=1, distribution='lognormal', mu=0.0, sigma=0.25),
+        Lognormal(order=1, shape_parameter_A=0.0, shape_parameter_B=0.25),
+        Lognormal(order=1, mean=0.0, standard_deviation=0.25),
+        Lognormal(order=1, mu=0.0, std=0.25),
+        Lognormal(order=1, mu=0.0, sigma=0.25)
+      ]
+      for param in params:
+        s_values, pdf = param.get_pdf()
+        s_values, cdf = param.get_cdf()
+        s_samples = param.get_samples(6000)
+        param.get_description()
+        s_samples = param.get_icdf(np.linspace(0., 1., 30))
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        np.testing.assert_almost_equal(mean, param.mean, decimal=1)
+        np.testing.assert_almost_equal(variance, param.variance, decimal=1)
     def test_rayleigh(self):
-      param = Parameter(order=1, distribution='rayleigh', shape_parameter_A=2.0)
-      s_values, pdf = param.get_pdf()
-      s_values, cdf = param.get_cdf()
-      s_samples = param.get_samples(6000)
-      param.get_description()
-      s_samples = param.get_icdf(np.linspace(0., 1., 30))
-      myBasis = Basis('univariate')
-      myPoly = Poly(param, myBasis, method='numerical-integration')
-      myPoly.set_model(blackbox)
-      mean, variance = myPoly.get_mean_and_variance()
-      np.testing.assert_almost_equal(mean, param.mean, decimal=2)
-      np.testing.assert_almost_equal(variance, param.variance, decimal=2)
-      myPoly.get_summary()
+      params = [
+        Parameter(order=1, distribution='rayleigh', shape_parameter_A=2.0),
+        Parameter(order=1, distribution='rayleigh', scale=2.0),
+        Parameter(order=1, distribution='rayleigh', sigma=2.0),
+        Rayleigh(order=1, shape_parameter_A=2.0),
+        Rayleigh(order=1, scale=2.0),
+        Rayleigh(order=1, sigma=2.0)
+      ]
+      for param in params:
+        s_values, pdf = param.get_pdf()
+        s_values, cdf = param.get_cdf()
+        s_samples = param.get_samples(6000)
+        param.get_description()
+        s_samples = param.get_icdf(np.linspace(0., 1., 30))
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        np.testing.assert_almost_equal(mean, param.mean, decimal=2)
+        np.testing.assert_almost_equal(variance, param.variance, decimal=2)
+        myPoly.get_summary()
     def test_uniform(self):
-      param = Parameter(order=5, distribution='uniform', lower=-1., upper=15.)
-      s_values, pdf = param.get_pdf()
-      s_values, cdf = param.get_cdf()
-      s_samples = param.get_samples(6000)
-      param.get_description()
-      s_samples = param.get_icdf(np.linspace(0., 1., 30))
-      myBasis = Basis('univariate')
-      myPoly = Poly(param, myBasis, method='numerical-integration')
-      myPoly.set_model(blackbox)
-      mean, variance = myPoly.get_mean_and_variance()
-      np.testing.assert_almost_equal(mean, param.mean, decimal=2)
-      np.testing.assert_almost_equal(variance, param.variance, decimal=2)
-      myPoly.get_summary()
+      params = [
+        Parameter(order=5, distribution='uniform', lower=-1., upper=15.),
+        Parameter(order=5, distribution='uniform', low=-1., up=15.),
+        Parameter(order=5, distribution='uniform', bottom=-1., top=15.),
+        Uniform(order=5, lower=-1., upper=15.),
+        Uniform(order=5, low=-1., up=15.),
+        Uniform(order=5, bottom=-1., top=15.),
+      ]
+      for param in params:
+        s_values, pdf = param.get_pdf()
+        s_values, cdf = param.get_cdf()
+        s_samples = param.get_samples(6000)
+        param.get_description()
+        s_samples = param.get_icdf(np.linspace(0., 1., 30))
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        np.testing.assert_almost_equal(mean, param.mean, decimal=2)
+        np.testing.assert_almost_equal(variance, param.variance, decimal=2)
+        myPoly.get_summary()
     def test_triangular(self):
-      param = Parameter(order=5, distribution='triangular', lower=-1., upper=15.,shape_parameter_A=5)
-      s_values, pdf = param.get_pdf()
-      s_values, cdf = param.get_cdf()
-      s_samples = param.get_samples(6000)
-      param.get_description()
-      s_samples = param.get_icdf(np.linspace(0., 1., 30))
-      myBasis = Basis('univariate')
-      myPoly = Poly(param, myBasis, method='numerical-integration')
-      myPoly.set_model(blackbox)
-      mean, variance = myPoly.get_mean_and_variance()
-      np.testing.assert_almost_equal(mean, param.mean, decimal=2)
-      np.testing.assert_almost_equal(variance, param.variance, decimal=2)
-      myPoly.get_summary()
+      params = [
+        Parameter(order=5, distribution='triangular', lower=-1., upper=15., shape_parameter_A=5),
+        Parameter(order=5, distribution='triangular', a=-1., b=15., c=5),
+        Parameter(order=5, distribution='triangular', a=-1., b=15., mode=5),
+        Triangular(order=5, lower=-1., upper=15., shape_parameter_A=5),
+        Triangular(order=5, a=-1., b=15., c=5),
+        Triangular(order=5, a=-1., b=15., mode=5)
+      ]
+      for param in params:
+        s_values, pdf = param.get_pdf()
+        s_values, cdf = param.get_cdf()
+        s_samples = param.get_samples(6000)
+        param.get_description()
+        s_samples = param.get_icdf(np.linspace(0., 1., 30))
+        myBasis = Basis('univariate')
+        myPoly = Poly(param, myBasis, method='numerical-integration')
+        myPoly.set_model(blackbox)
+        mean, variance = myPoly.get_mean_and_variance()
+        np.testing.assert_almost_equal(mean, param.mean, decimal=2)
+        np.testing.assert_almost_equal(variance, param.variance, decimal=2)
+        myPoly.get_summary()
     def test_custom(self):
       paramtest = Parameter(order=1, distribution='gaussian', shape_parameter_A=3, shape_parameter_B=0.5)
       stest_samples = paramtest.get_samples(6000)

@@ -22,7 +22,7 @@ class TestPolynet(TestCase):
         N = 1000
         X = np.random.uniform(-1,1,(N,num_vars))
         Y = np.squeeze(evaluate_model(X, nice_func))
-
+    
         net = Polynet(X,Y,num_ridges,max_iters=20000, learning_rate=1e-4, momentum_rate=.001, opt='adapt')
         net.fit()
 

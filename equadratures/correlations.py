@@ -1,5 +1,5 @@
 """ Utilities for dealing with correlated inputs."""
-from equadratures.parentparameter import ParentParameter as Parameter
+from equadratures import Parameter
 from equadratures.poly import Poly, evaluate_model, evaluate_model_gradients
 from equadratures.basis import Basis
 import numpy as np
@@ -63,7 +63,7 @@ class Correlations(object):
             raise ValueError('Need to specify either poly or parameters.')
         self.D = D
         self.R = correlation_matrix
-        self.std = Parameter(order=5, distribution='normal',shape_parameter_A = 0.0, shape_parameter_B = 1.0)
+        self.std = Parameter(order=5, distribution='normal', shape_parameter_A = 0.0, shape_parameter_B = 1.0)
         inf_lim = -8.0
         sup_lim = - inf_lim
         p1 = Parameter(distribution = 'uniform', lower = inf_lim, upper = sup_lim, order = 31)

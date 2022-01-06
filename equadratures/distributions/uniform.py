@@ -19,11 +19,13 @@ class Uniform(Distribution):
         second_arg = ['upper','up', 'top']
         third_arg = ['order', 'orders', 'degree', 'degrees']
         fourth_arg = ['endpoints', 'endpoint']
+        fifth_arg = ['variable']
         self.name = 'uniform'
         self.lower = None 
         self.upper = None 
-        self.order = 2
+        self.order = 1
         self.endpoints = 'none'
+        self.variable = 'parameter'
         for key, value in kwargs.items():
             if first_arg.__contains__(key):
                 self.lower = value
@@ -33,6 +35,9 @@ class Uniform(Distribution):
                 self.order = value
             if fourth_arg.__contains__(key):
                 self.endpoints = value
+            if fifth_arg.__contains__(key):
+                self.variable = value
+
         if self.lower is None or self.upper is None:
             raise ValueError('lower or upper bounds have not been specified!')
         if self.upper <= self.lower:
@@ -53,6 +58,7 @@ class Uniform(Distribution):
                         x_range_for_pdf=self.x_range_for_pdf, \
                         order=self.order, \
                         endpoints=self.endpoints, \
+                        variable=self.variable, \
                         scipyparent=self.parent)
     def get_description(self):
         """

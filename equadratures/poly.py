@@ -6,6 +6,7 @@ from equadratures.solver import Solver
 from equadratures.subsampling import Subsampling
 from equadratures.quadrature import Quadrature
 from equadratures.datasets import score
+from equadratures.roots import colleague
 import equadratures.plot as plot
 import scipy.stats as st
 import numpy as np
@@ -960,6 +961,7 @@ class Poly(object):
                 H.append(polynomialhessian)
 
         return H
+
     def get_polyscore(self,X_test=None,y_test=None,metric='adjusted_r2'):
         """ Evaluates the accuracy of the polynomial approximation using the selected accuracy metric.
 
@@ -990,6 +992,23 @@ class Poly(object):
             return train_score, test_score
         else:
             return train_score
+
+    def get_poly_roots(self):
+        """ Evaluates the roots of the polynomial.
+
+        Requires "set_model" to be called first.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array of shape (number_of_roots,1) corresponding to the location the roots were found at.
+        """
+        if (self.basis.basis_type == "univariate") and (self.parameters[0].name.lower() in ['chebyshev', 'arcsine']):
+            coeffs = self.coefficients
+            roots = colleague( coeffs, self.parameters[0])
+            return roots
+        else:
+            raise NotImplementedError( 'get_poly_roots(): Currently limited to univariate chebyshev parameter!')
 
     def _get_polystd(self, stack_of_points):
         """ Private function to evaluate the uncertainty of the polynomial approximation at prescribed points, following the approach from [5].

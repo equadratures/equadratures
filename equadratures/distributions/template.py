@@ -223,7 +223,6 @@ class Distribution(object):
         derivative_orthopoly = np.zeros((order, len(gridPoints))) if (grad or hess) else None
         dderivative_orthopoly = np.zeros((order, len(gridPoints))) if hess else None
 
-        # Convert the grid points to a numpy array -- simplfy life!
         orthopoly[0, :] = 1.0
 
         # Cases

@@ -1,3 +1,4 @@
+import scipy
 import numpy as np
 
 def colleague( c, parameter, tol=1E-12 ):
@@ -33,7 +34,7 @@ def colleague( c, parameter, tol=1E-12 ):
     C = mat1 - mat2
 
     # Compute eigenvalues of colleague matrix
-    eigenvalues = np.linalg.eigvals(C)
+    eigenvalues = scipy.linalg.eigvals(C)
 
     # Discard values with large imaginary parts
     roots = np.asarray(

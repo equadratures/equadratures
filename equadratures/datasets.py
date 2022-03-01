@@ -282,7 +282,7 @@ Fitting scaler implicitly during transform
     >>> (2.0354552465705806, 0.5107113843479977)
     >>>
     >>> # Scale to zero mean and unit variance
-    >>> X = eq.scalers.scaler_meanvar().transform(X)
+    >>> X = eq.datasets.scaler_meanvar().transform(X)
     >>> (X.mean(),X.std())
     >>> (2.886579864025407e-17, 1.0)
 
@@ -296,7 +296,7 @@ Using the same scaling to transform train and test data
     >>> (-9.906090476149059, 9.767476761184525)
     >>>
     >>> # Define a scaler and fit to training split
-    >>> scaler = eq.scalers.scaler_minmax()
+    >>> scaler = eq.datasets.scaler_minmax()
     >>> scaler.fit(X_train)
     >>>
     >>> # Transform train and test data with same scaler

@@ -1,7 +1,7 @@
 from equadratures import Parameter
 from equadratures.poly import Poly
 from equadratures.basis import Basis
-from equadratures.scalers import scaler_minmax, scaler_meanvar, scaler_custom
+from equadratures.datasets import scaler_minmax, scaler_meanvar, scaler_custom
 import equadratures.plot as plot
 import numpy as np
 import scipy

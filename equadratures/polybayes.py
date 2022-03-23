@@ -139,7 +139,6 @@ class Polybayes(object):
         std_samples = np.sqrt(np.sum(coeff_samples[:, 1:]**2, axis=1))
         std_hist = np.histogram(std_samples, bins=N_bins)
         std_mode = std_hist[1][np.argmax(std_hist[0])]
-        print(np.mean(std_samples), std_mode)
         return (np.mean(mean_samples), np.std(mean_samples)), \
                (std_mode, np.std(std_samples))
 

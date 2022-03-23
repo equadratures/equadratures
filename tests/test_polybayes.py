@@ -52,7 +52,6 @@ class TestPolybayes(TestCase):
         self.my_polybayes.compute_posterior_coefficients(input_training_data, output_training_data)
 
         est_output_mean, est_output_std = self.my_polybayes.get_posterior_output_moments()
-        print(est_output_mean, est_output_std)
         np.testing.assert_almost_equal(est_output_mean[0], 1.37, decimal=np.log10(est_output_mean[1]))
         np.testing.assert_almost_equal(est_output_std[0], 1.17, decimal=np.log10(est_output_std[1]))
 

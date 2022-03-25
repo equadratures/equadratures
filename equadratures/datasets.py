@@ -118,7 +118,7 @@ def load_eq_dataset(dataset,data_dir=None,verbose=True):
     Parameters
     ----------
     dataset : str
-        The dataset to download. Options are ```naca0012```, ```blade_envelopes```, ```probes```, ```3Dfan_blades```.
+        The dataset to download. Options are ```naca0012```, ```blade_envelopes```, ```probes```, ```3Dfan_blades```, ```LS89_turbine```.
     data_dir : str, optional
         Directory name where a local clone of the data-sets repo is located. If given, the dataset will be loaded from here 
         instead of downloading from the remote repo.
@@ -146,7 +146,7 @@ def load_eq_dataset(dataset,data_dir=None,verbose=True):
         >>> data = eq.datasets.load_eq_dataset('naca0012', data_dir='/Users/user/Documents/data-sets')
     """
     # Check if valid dataset
-    datasets = ['naca0012','blade_envelopes','probes', '3Dfan_blades']
+    datasets = ['naca0012','blade_envelopes','probes', '3Dfan_blades', 'LS89_turbine']
     if dataset not in datasets:
         raise ValueError('dataset specified in load_eq_dataset not recognised, avaiable datasets: ', datasets)
 

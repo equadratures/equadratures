@@ -827,8 +827,8 @@ def plot_polyfit_1D(Polynomial, ax=None, uncertainty=True, output_variances=None
         fig = ax.figure
     if Polynomial.dimensions != 1:
         raise(ValueError, 'plot_polyfit_1D is only meant for univariate polynomials.')
-    Xi = np.linspace(Polynomial.parameters[0].distribution.x_range_for_pdf[0], \
-                Polynomial.parameters[0].distribution.x_range_for_pdf[-1], number_of_points).reshape(number_of_points, 1)
+    Xi = np.linspace(Polynomial.parameters[0].x_range_for_pdf[0], \
+                Polynomial.parameters[0].x_range_for_pdf[-1], number_of_points).reshape(number_of_points, 1)
     if uncertainty:
         if output_variances is None:
             y, ystd = Polynomial.get_polyfit(Xi,uq=True)

@@ -1,15 +1,15 @@
 # equadratures
 
-*equadratures* is an open-source library for *uncertainty quantification*, *machine learning*, *optimisation*, *numerical integration* and *dimension reduction* -- all using orthogonal polynomials. It is particularly useful for models / problems where output quantities of interest are smooth and continuous; to this extent it has found widespread applications in computational engineering models (finite elements, computational fluid dynamics, etc). It is built on the latest research within these areas and has both deterministic and randomized algorithms. Effective Quadratures is actively being developed by researchers at the [University of Cambridge](https://www.cam.ac.uk), [Imperial College London](https://www.imperial.ac.uk), [Stanford University](https://www.stanford.edu), [The University of Utah](https://www.utah.edu), [The Alan Turing Institute](https://www.turing.ac.uk) and the [University of Cagliari](https://www.unica.it/unica/). *equadratures* is a NumFOCUS affiliated project.
+*equadratures* is an open-source library for *uncertainty quantification*, *machine learning*, *optimisation*, *numerical integration* and *dimension reduction* -- all using orthogonal polynomials. It is particularly useful for models / problems where output quantities of interest are smooth and continuous; to this extent it has found widespread applications in computational engineering models (finite elements, computational fluid dynamics, etc). It is built on the latest research within these areas and has both deterministic and randomised algorithms. 
 
 **Key words associated with this code**: polynomial surrogates, polynomial chaos, polynomial variable projection, Gaussian quadrature, Clenshaw Curtis, polynomial least squares, compressed sensing, gradient-enhanced surrogates, supervised learning.
 
 ## Code
 
-The latest version of the code is v9.1.0 *Narwhal*, released June 2021. 
+The latest version of the code is v10 *Baby Blue*, released March 2022. 
 
 ![](https://travis-ci.com/equadratures/equadratures.svg?branch=master)
-[![](https://coveralls.io/repos/github/Effective-Quadratures/Effective-Quadratures/badge.svg?branch=master)](https://coveralls.io/github/Effective-Quadratures/Effective-Quadratures)
+[![](https://coveralls.io/repos/github/equadratures/equadratures/badge.svg?branch=master)](https://coveralls.io/github/Effective-Quadratures/Effective-Quadratures)
 [![](https://badge.fury.io/py/equadratures.svg)](https://pypi.org/project/equadratures/)
 [![](https://joss.theoj.org/papers/10.21105/joss.00166/status.svg)](https://joss.theoj.org/papers/10.21105/joss.00166)
 [![](https://img.shields.io/pypi/pyversions/equadratures.svg)](https://pypi.python.org/pypi/equadratures)
@@ -48,12 +48,12 @@ Specific goals of this code include:
 * computing moments from models and data-sets
 * sensitivity analysis and Sobol' indices
 * data-driven dimension reduction
-* ridge approximations and neural networks
+* ridge approximations 
 * surrogate-based design optimisation 
 
 ## Get in touch
 
-Feel free to follow us via [Twitter](https://twitter.com/EQuadratures) or email us at contact@effective-quadratures.org. 
+Feel free to follow us via [Twitter](https://twitter.com/EQuadratures) or email us at mail@equadratures.org. 
 
 
 ## Community guidelines

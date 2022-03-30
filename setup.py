@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='equadratures',
-      version='9.1.0.2',
+      version='10',
       description='Polynomial approximations',
       long_description=readme(),
       classifiers=[
@@ -20,7 +20,7 @@ setup(name='equadratures',
       keywords='polynomial chaos effective quadratures polynomial approximations gradients',
       url='https://github.com/Effective-Quadratures/equadratures',
       author='Developers',
-      license='LPGL-2.1',
+      license='MIT',
       packages=['equadratures', 'equadratures.distributions', 'equadratures.sampling_methods'],
       install_requires=[
           'numpy',
@@ -32,6 +32,8 @@ setup(name='equadratures',
       ],
       extras_require={
           "cvxpy":  ['cvxpy>=1.1'],
+          "networkx":  ['networkx==2.6.3'],
+          "torch" : ['torch>=1.7.0']
           },
       test_suite='nose.collector',
       tests_require=['nose'],

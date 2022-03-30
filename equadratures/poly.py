@@ -962,6 +962,280 @@ class Poly(object):
         std_F = np.sqrt( np.diag(Sigma_F) )
         return std_F.reshape(-1,1)
 
+class Graphpolys(object):
+    """
+    
+    Constructor for generating polynomials over graphs.
+    
+    """
+    def __init__(self, Graph, data_train, poly, edge_weight=15):
+        self.Graph = Graph 
+        self.data_train = data_train 
+        self.poly = poly 
+        self.edge_weight = edge_weight
+        for _, _, e in Graph.edges(data=True):
+            e["weight"] = edge_weight
+    def _stratified_model_admm(self, shape, Lap, loss_proximal_func, regulariser_proximal_func, graph_data=dict(), \
+                         relative_tolerance=1e-5, absolute_tolerance=1e-5, num_jobs=4, \
+                         max_cg_iters=10, max_iters=1000, rho=1, tau_decrement=2, tau_increment=2, mu=10, \
+                         rho_min=0.1, rho_max=1.0):
+        """
+        Fits a Laplacian regularised stratified model using ADMM.
+        
+        This code is based on the implementation in cvxgrp/strat_models.
+        
+        @article{strat_models,
+        author       = {Jonathan Tuck and Shane Barratt and Stephen Boyd},
+        title        = {A Distributed Method for Fitting {L}aplacian Regularized Stratified Models},
+        journal      = {Journal of Machine Learning Research},
+        year         = {2021},
+        note         = {To appear}
+        }
+        
+        """
+        import multiprocessing as mp
+        import scipy as sc
+        optimal_solution = False
+        n = np.prod(shape)
+        m = Lap.shape[0]
+
+        # Retrieve data from ``graph_data``
+        # alpha_init
+        if 'alpha_init' in graph_data:
+            alpha = graph_data['alpha_init'].copy()
+        else:
+            alpha = np.zeros((m,) + shape)
+
+        primal_residual = np.zeros(alpha.shape)
+        primal_residual_tilde = np.zeros(alpha.shape)
+        dual_residual = np.zeros(alpha.shape)
+        dual_residual_tilde = np.zeros(alpha.shape)
+
+        # alpha_tilde
+        if 'alpha_tilde' in graph_data:
+            alpha = graph_data['alpha_tilde'].copy()
+        else:
+            alpha_tilde = alpha.copy()
+        # alpha_hat
+        if 'alpha_hat' in graph_data:
+            alpha_hat = graph_data['alpha_hat'].copy()
+        else:
+            alpha_hat = alpha.copy()
+        # u
+        if 'u' in graph_data:
+            u = graph_data['u'].copy()
+        else:
+            u = np.zeros(alpha.shape)
+        # u_tilde
+        if 'u_tilde' in graph_data:
+            u_tilde = graph_data['u_tilde'].copy()
+        else:
+            u_tilde = np.zeros(alpha.shape)
+
+        # Multiprocessing
+        if m <= num_jobs:
+            num_jobs = m
+        proximal_pool = mp.Pool(num_jobs)
+
+        for iter_j in range(1, max_iters):
+
+            # Update alpha
+            alpha = loss_proximal_func(t=1./rho, nu=alpha_hat-u, warm_start=alpha, pool=proximal_pool)
+
+            # Update alpha_tilde
+            alpha_tilde = regulariser_proximal_func(t=1./rho, nu=alpha_hat-u_tilde, warm_start=alpha_tilde, \
+                                                        pool=proximal_pool)
+
+            # Update alpha_hat
+
+            S = Lap + 2.0 * rho * sc.sparse.eye(m)
+            M = sc.sparse.diags(1./S.diagonal() )
+            indices = np.ndindex(shape)
+            equ_rhs = rho * (alpha.T + alpha_tilde.T + u.T + u_tilde.T)
+
+            for j, index in enumerate(indices):
+                    index_value = index[::-1]
+                    solution = sc.sparse.linalg.cg(S, equ_rhs[index_value], \
+                                                M=M, x0=alpha_hat.T[index_value], \
+                                        maxiter=max_cg_iters)
+                    solution = solution[0]
+                    dual_residual.T[index_value] = -rho * (solution - alpha_hat.T[index_value])
+                    dual_residual_tilde.T[index_value] = dual_residual.T[index_value]
+                    alpha_hat.T[index_value] = solution
+
+            # Updates
+            primal_residual = alpha - alpha_hat
+            primal_residual_tilde = alpha_tilde - alpha_hat
+            u += alpha - alpha_hat
+            u_tilde += alpha_tilde - alpha_hat
+
+            # Calculation of residual norms and epsilon values
+            primal_residual_norm = np.linalg.norm(np.append(primal_residual, primal_residual_tilde), 2)
+            dual_residual_norm = np.linalg.norm(np.append(dual_residual, dual_residual_tilde), 2)
+            primal_eps = np.sqrt(2. * m * n) * absolute_tolerance + relative_tolerance * \
+                        np.max([primal_residual_norm, dual_residual_norm])
+            dual_eps = np.sqrt(2. * m * n) * absolute_tolerance + relative_tolerance  * \
+                        np.linalg.norm(rho * np.append(u, u_tilde))
+
+            # Breaking condition!
+            if primal_residual_norm <= primal_eps and \
+                            dual_residual_norm <= dual_eps:
+                optimal_solution = True
+                break
+
+            rho_update = rho
+            if primal_residual_norm > mu * dual_residual_norm:
+                rho_update = tau_increment * rho
+            elif dual_residual_norm > mu * primal_residual_norm:
+                rho_update = rho / tau_decrement
+            rho_update = np.clip(rho_update, rho_min, rho_max)
+            u *= rho / rho_update
+            u_tilde *= rho / rho_update
+            rho = rho_update
+
+        proximal_pool.close()
+        proximal_pool.join()
+        output = {'alpha': alpha, \
+                'alpha_tilde': alpha_tilde, \
+                'alpha_hat': alpha_hat, \
+                'u': u, \
+                'u_tilde': u_tilde}
+
+        # Complete later!
+        result = {'iterations': iter_j, \
+                'optimal' :optimal_solution}
+        return output, result
+    def predict(self, data, score=True):
+        """
+        Predict. 
+        """
+        import torch
+        X = torch.from_numpy(data['X'])
+        X = torch.tensor(self.poly.get_poly(X)).double().t()
+        alpha = torch.tensor(([self.Graph._node[z]['alpha_tilde'] for z in data["Z"] ]))
+        Y_pred = (X.unsqueeze(-1) * alpha).sum(1).numpy()
+        if score:
+            residuals = (data['Y'] - Y_pred)**2
+            mean_error = np.sqrt(np.mean(residuals))
+            return Y_pred, mean_error
+        else:
+            return Y_pred
+    def _graph_to_data(self, shape):
+        """
+        Vectorises the variables in G --> returning a dict.
+        """
+        alpha_init = np.zeros(shape)
+        alpha_tilde_init = np.zeros(shape)
+        alpha_hat_init = np.zeros(shape)
+        u_init = np.zeros(shape)
+        u_tilde_init = np.zeros(shape)
+        
+        for i, node in enumerate(self.Graph.nodes()):
+            vertex = self.Graph._node[node]
+            if 'alpha' in vertex:
+                alpha_init[i] = vertex['alpha']
+            if 'alpha_tilde' in vertex:
+                alpha_tilde_init[i] = vertex['alpha_tilde']
+            if 'alpha_hat' in vertex:
+                alpha_hat_init[i] = vertex['alpha_hat']
+            if 'u' in vertex:
+                u_init[i] = vertex['u']
+            if 'u_tilde' in vertex:
+                u_tilde_init[i] = vertex['u_tilde']
+        data = {
+            'alpha_init': alpha_init,
+            'alpha_tilde_init': alpha_tilde_init,
+            'u_init': u_init,
+            'u_tilde_init': u_tilde_init
+        }
+        return data
+    def fit(self):
+        import networkx as nx
+        import torch
+        # Step 1. Calculate the Laplacian matrix
+        L = nx.laplacian_matrix(self.Graph)
+        nodelist = self.Graph.nodes()
+        K = L.shape[0]
+
+        # Step 2. Get the data in the right format 
+        cache = self.loss_function(self.data_train)
+        
+        # Step 3. Compute the proximal loss
+        def proximal_loss(t, nu, warm_start, pool, cache=cache):
+            XtX = cache['XtX']
+            XtY = cache['XtY']
+            n = cache['n']
+            # LU = X'X + 0.5 * t * I
+            Alu = torch.lu(XtX + 1./(2 * t) * torch.eye(n).unsqueeze(0).double())
+            b = XtY + 1./(2 * t) * torch.from_numpy(nu)
+            x = torch.lu_solve(b, *Alu).numpy()
+            return x
+
+        def proximal_residual(t, nu, warm_start, pool, lambda_val=1e-4):
+            return nu / (1. + t * lambda_val)
+
+        G_to_data = self._graph_to_data(cache['alpha_shape'])
+        result, info = self._stratified_model_admm(shape=cache['shape'], \
+                                            Lap=L, \
+                                            loss_proximal_func=proximal_loss, \
+                                            regulariser_proximal_func=proximal_residual, \
+                                            graph_data=G_to_data)
+        print(info)
+        return self._output_to_graph(result)
+    def loss_function(self, data):
+        import torch
+        X = data['X']
+        Y = data['Y']
+        Z = data['Z']
+        if X.ndim == 1:
+            X = X.reshape(-1, 1)         
+        N, _ = X.shape
+        _, m = Y.shape
+        n = self.poly.basis.cardinality # verify!
+        K = len(self.Graph.nodes())
+        shape = (n, m)
+        alpha_shape = (K, ) + shape 
+        for x, y, z in zip(X, Y, Z):
+            vertex = self.Graph._node[z]
+            if 'X' in vertex:
+                vertex['X'] += [x]
+                vertex['Y'] += [y]
+            else:
+                vertex['X'] = [x]
+                vertex['Y'] = [y] 
+        XtX = torch.zeros(K, n, n).double()
+        XtY = torch.zeros(K, n, m).double()
+        # Filter out empty nodes
+        nodes = [[i, node] for i, node in enumerate(self.Graph.nodes()) if self.Graph._node[node] != {}]
+        for i, node in nodes:
+            vertex = self.Graph._node[node]
+            X = torch.tensor(vertex['X']).double()
+            Y = torch.tensor(vertex['Y']).double()
+            X = torch.tensor(self.poly.get_poly(X)).double()
+            XtX[i] = X @ X.t()
+            XtY[i] = X @ Y
+            del vertex
+        cache = {'XtX': XtX, \
+                'XtY': XtY, 
+                'n': n, \
+                'alpha_shape': alpha_shape, \
+                'shape': shape}
+        return cache
+    def _output_to_graph(self, output):
+        alpha = output['alpha']
+        alpha_tilde = output['alpha_tilde']
+        alpha_hat = output['alpha_hat']
+        u = output['u']
+        u_tilde = output['u_tilde']
+        for k, node in enumerate(self.Graph.nodes()):
+            vertex = self.Graph._node[node]
+            vertex['alpha'] = alpha[k]
+            vertex['alpha_tilde'] = alpha_tilde[k]
+            vertex['alpha_hat'] = alpha_hat[k]
+            vertex['u'] = u[k]
+            vertex['u_tilde'] = u_tilde[k]
+        return self.Graph
+
 def _inv(M):
     """
     Private function to compute inverse of matrix M, where M is a numpy.ndarray.

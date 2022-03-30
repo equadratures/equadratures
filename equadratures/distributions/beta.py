@@ -41,8 +41,12 @@ class Beta(Distribution):
             if seventh_arg.__contains__(key):
                 self.variable = value
 
+        tmp = self.shape_A
+        self.shape_A = self.shape_B
+        self.shape_B = tmp
+
         if self.lower is None and self.upper is None:
-            self.lower = -1. # Standard beta distribution defn'
+            self.lower = 0. # Standard beta distribution defn'
             self.upper = 1.
         if self.lower is None or self.upper is None:
             raise ValueError('lower or upper bounds have not been specified!')

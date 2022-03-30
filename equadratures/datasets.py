@@ -1,12 +1,12 @@
 """ 
-Utilities for downloading or generating datasets, splitting data, and computing accuracy metrics.
+Utilities for downloading or generating datasets, splitting data, computing accuracy metrics, and scaling data.
 """
 import os
 import numpy as np
 import scipy.stats as st
 import requests
+import posixpath
 from io import BytesIO
-from equadratures.scalers import scaler_minmax 
 
 def gen_linear(n_observations=100, n_dim=5, n_relevent=5,bias=0.0, noise=0.0, random_seed=None):
     """ Generate a synthetic linear dataset for regression. 
@@ -118,7 +118,7 @@ def load_eq_dataset(dataset,data_dir=None,verbose=True):
     Parameters
     ----------
     dataset : str
-        The dataset to download. Options are ```naca0012```, ```blade_envelopes```, ```probes```, ```3Dfan_blades```.
+        The dataset to download. Options are ```naca0012```, ```blade_envelopes```, ```probes```, ```3Dfan_blades```, ```LS89_turbine```.
     data_dir : str, optional
         Directory name where a local clone of the data-sets repo is located. If given, the dataset will be loaded from here 
         instead of downloading from the remote repo.
@@ -146,7 +146,7 @@ def load_eq_dataset(dataset,data_dir=None,verbose=True):
         >>> data = eq.datasets.load_eq_dataset('naca0012', data_dir='/Users/user/Documents/data-sets')
     """
     # Check if valid dataset
-    datasets = ['naca0012','blade_envelopes','probes', '3Dfan_blades']
+    datasets = ['naca0012','blade_envelopes','probes', '3Dfan_blades', 'LS89_turbine']
     if dataset not in datasets:
         raise ValueError('dataset specified in load_eq_dataset not recognised, avaiable datasets: ', datasets)
 
@@ -154,7 +154,7 @@ def load_eq_dataset(dataset,data_dir=None,verbose=True):
     if data_dir is None:
         print('Downloading the ' + dataset + ' dataset from github...') 
         # .npz file
-        git_url = os.path.join('https://github.com/Effective-Quadratures/data-sets/raw/main/',dataset,dataset+'.npz')
+        git_url = posixpath.join('https://github.com/Effective-Quadratures/data-sets/raw/main/',dataset,dataset+'.npz')
         try:
             r = requests.get(git_url,stream=True)
             r.raise_for_status()
@@ -162,7 +162,7 @@ def load_eq_dataset(dataset,data_dir=None,verbose=True):
         except requests.exceptions.RequestException as e:  
             raise SystemExit(e)
         # .md file
-        git_url = os.path.join('https://raw.githubusercontent.com/Effective-Quadratures/data-sets/main',dataset,'README.md')
+        git_url = posixpath.join('https://raw.githubusercontent.com/Effective-Quadratures/data-sets/main',dataset,'README.md')
         try:
             r = requests.get(git_url)
             r.raise_for_status()
@@ -173,8 +173,8 @@ def load_eq_dataset(dataset,data_dir=None,verbose=True):
     # If the user has cloned the data-sets repo and provided its location in data_dir
     else:
         print('Loading the dataset from ', data_dir)
-        data = np.load(os.path.join(data_dir,dataset,dataset+'.npz'))
-        f = open(os.path.join(data_dir,dataset,'README.md'))
+        data = np.load(posixpath.join(data_dir,dataset,dataset+'.npz'))
+        f = open(posixpath.join(data_dir,dataset,'README.md'))
         if verbose: print(f.read())
 
     return data
@@ -265,3 +265,224 @@ def score(y_true,y_pred,metric='r2',X=None):
     else:
         raise ValueError('Only r2, adjusted_r2, mae, normalised_mae, rmse scoring metrics currently supported')
     return score
+
+"""
+Classes to scale data. 
+
+Some of these classes are called internally by other modules, but they can also be used independently as a pre-processing stage.
+
+Scalers can fit to one set of data, and used to transform other data sets with the same number of dimensions.
+
+Examples
+--------
+Fitting scaler implicitly during transform
+    >>> # Define some 1D sample data
+    >>> X = np.random.RandomState(0).normal(2,0.5,200)
+    >>> (X.mean(),X.std())
+    >>> (2.0354552465705806, 0.5107113843479977)
+    >>>
+    >>> # Scale to zero mean and unit variance
+    >>> X = eq.datasets.scaler_meanvar().transform(X)
+    >>> (X.mean(),X.std())
+    >>> (2.886579864025407e-17, 1.0)
+
+Using the same scaling to transform train and test data
+    >>> # Define some 5D example data
+    >>> X = np.random.RandomState(0).uniform(-10,10,size=(50,5))
+    >>> y = X[:,0]**2 - X[:,4]
+    >>> # Split into train/test
+    >>> X_train, X_test,y_train,y_test = eq.datasets.train_test_split(X,y,train=0.7,random_seed=0)
+    >>> (X_train.min(),X_train.max())
+    >>> (-9.906090476149059, 9.767476761184525)
+    >>>
+    >>> # Define a scaler and fit to training split
+    >>> scaler = eq.datasets.scaler_minmax()
+    >>> scaler.fit(X_train)
+    >>>
+    >>> # Transform train and test data with same scaler
+    >>> X_train = scaler.transform(X_train)
+    >>> X_test = scaler.transform(X_test)
+    >>> (X_train.min(),X_train.max())
+    >>> (-1.0, 1.0)
+    >>>
+    >>> # Finally, e.g. of transforming data back again
+    >>> X_train = scaler.untransform(X_train)
+    >>> (X_train.min(),X_train.max())
+    >>> (-9.906090476149059, 9.767476761184525)
+"""
+
+class scaler_minmax(object):
+    """ Scale the data to have a min/max of -1 to 1. """
+    def __init__(self):
+        self.fitted = False
+
+    def fit(self,X):
+        """ Fit scaler to data.
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+            Array with shape (number_of_samples, number_of_dimensions) containing data to fit scaler to.
+        """
+        if X.ndim == 1: X = X.reshape(-1,1)
+        self.Xmin = np.min(X,axis=0)
+        self.Xmax = np.max(X,axis=0)
+        self.fitted = True
+
+    def transform(self,X):
+        """ Transforms data. Calls :meth:`~equadratures.scalers.scaler_minmax.fit` fit internally if scaler not already fitted.
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+            Array with shape (number_of_samples, number_of_dimensions) containing data to transform.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array with shape (number_of_samples, number_of_dimensions) containing transformed data.
+        """
+        if X.ndim == 1: X = X.reshape(-1,1)
+        if not self.fitted: self.fit(X)
+        Xtrans = 2.0 * ( (X[:,:]-self.Xmin)/(self.Xmax - self.Xmin) ) - 1.0
+        return Xtrans 
+
+    def untransform(self,X):
+        """ Untransforms data.
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+            Array with shape (number_of_samples, number_of_dimensions) containing data to untransform.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array with shape (number_of_samples, number_of_dimensions) containing untransformed data.
+
+        Raises
+        ------
+        Exception 
+            scaler has not been fitted
+        """
+        if X.ndim == 1: X = X.reshape(-1,1)
+        if not self.fitted:
+            raise Exception('scaler has not been fitted')
+        Xuntrans = 0.5*(X[:,:]+1)*(self.Xmax - self.Xmin) + self.Xmin
+        return Xuntrans
+
+class scaler_meanvar(object):
+    """ 
+    Scale the data to have a mean of 0 and variance of 1.
+    """
+    def __init__(self):
+        self.fitted = False
+
+    def fit(self,X):
+        """ Fit scaler to data.
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+            Array with shape (number_of_samples, number_of_dimensions) containing data to fit scaler to.
+        """
+        if X.ndim == 1: X = X.reshape(-1,1)
+        self.Xmean = np.mean(X,axis=0)
+        self.Xstd  = np.std(X,axis=0)
+        self.fitted = True
+
+    def transform(self,X):
+        """ Transforms data. Calls :meth:`~equadratures.scalers.scaler_meanvar.fit` fit internally if scaler not already fitted.
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+            Array with shape (number_of_samples, number_of_dimensions) containing data to transform.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array with shape (number_of_samples, number_of_dimensions) containing transformed data.
+        """
+        if X.ndim == 1: X = X.reshape(-1,1)
+        if not self.fitted: self.fit(X)
+        eps = np.finfo(np.float64).tiny
+        Xtrans = (X[:,:]-self.Xmean)/(self.Xstd+eps)
+        return Xtrans 
+
+    def untransform(self,X):
+        """ Untransforms data.
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+            Array with shape (number_of_samples, number_of_dimensions) containing data to untransform.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array with shape (number_of_samples, number_of_dimensions) containing untransformed data.
+
+        Raises
+        ------
+        Exception 
+            scaler has not been fitted
+        """
+        if X.ndim == 1: X = X.reshape(-1,1)
+        if not self.fitted:
+            raise Exception('scaler has not been fitted')
+        eps = np.finfo(np.float64).tiny
+        Xuntrans = X[:,:]*(self.Xstd+eps) + self.Xmean
+        return Xuntrans
+
+class scaler_custom(object):
+    """ Scale the data by the provided offset and divisor.
+    
+    Parameters
+    ----------
+    offset : float, numpy.ndarray
+        Offset to subtract from data. Either a float, or array with shape (number_of_samples, number_of_dimensions).
+    div : float, numpy.ndarray
+        Divisor to divide data with. Either a float, or array with shape (number_of_samples, number_of_dimensions).
+    """
+    def __init__(self, offset, div):
+        self.offset = offset
+        self.div = div
+        self.fitted = True
+
+    def transform(self,X):
+        """ Transforms data. 
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+            Array with shape (number_of_samples, number_of_dimensions) containing data to transform.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array with shape (number_of_samples, number_of_dimensions) containing transformed data.
+        """
+        if X.ndim == 1: X = X.reshape(-1,1)
+        eps = np.finfo(np.float64).tiny
+        Xtrans = (X - self.offset)/(self.div + eps)
+        return Xtrans
+
+    def untransform(self,X):
+        """ Untransforms data.
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+            Array with shape (number_of_samples, number_of_dimensions) containing data to untransform.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array with shape (number_of_samples, number_of_dimensions) containing untransformed data.
+        """
+
+        if X.ndim == 1: X = X.reshape(-1,1)
+        eps = np.finfo(np.float64).tiny
+        Xuntrans = X * (self.div + eps) + self.offset
+        return Xuntrans

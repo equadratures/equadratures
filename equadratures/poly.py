@@ -970,7 +970,7 @@ class Graphpolys(object):
     Parameters
     ----------
     Graph : networkx.Graph
-        A networkx Graph initiated object.
+        A networkx Graph object.
     data_train : dict
         A dictionary with training data.
     poly : Poly
@@ -1118,6 +1118,20 @@ class Graphpolys(object):
     def predict(self, data, score=True):
         """
         Predict. 
+
+        Parameters
+        ----------
+        data : dict
+            A dictionary with test data.
+        score : bool, optional
+            returns mean error along with prediction if true.
+
+        Returns
+        -------
+        Y_pred : numpy.nparray
+            Predicted data.
+        mean_error: numpy.ndarray
+            Mean error in prediction.
         """
         import torch
         X = torch.from_numpy(data['X'])
@@ -1160,6 +1174,9 @@ class Graphpolys(object):
         }
         return data
     def fit(self):
+        """
+        Fit polynomial to data.
+        """
         import networkx as nx
         import torch
         # Step 1. Calculate the Laplacian matrix

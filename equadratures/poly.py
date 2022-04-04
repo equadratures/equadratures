@@ -966,7 +966,17 @@ class Graphpolys(object):
     """
     
     Constructor for generating polynomials over graphs.
-    
+
+    Parameters
+    ----------
+    Graph : networkx.Graph
+        A networkx Graph initiated object.
+    data_train : dict
+        A dictionary with training data.
+    poly : Poly
+        A Poly object that defines a polynomial over the subspace.
+    edge_weight : float, optional
+        Edge weight for Graph edges, default=15.
     """
     def __init__(self, Graph, data_train, poly, edge_weight=15):
         self.Graph = Graph 

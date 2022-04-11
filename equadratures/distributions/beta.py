@@ -41,10 +41,6 @@ class Beta(Distribution):
             if seventh_arg.__contains__(key):
                 self.variable = value
 
-        tmp = self.shape_A
-        self.shape_A = self.shape_B
-        self.shape_B = tmp
-
         if self.lower is None and self.upper is None:
             self.lower = 0. # Standard beta distribution defn'
             self.upper = 1.
@@ -94,7 +90,7 @@ class Beta(Distribution):
         :return:
             Recurrence coefficients associated with the beta distribution.
         """
-        ab = jacobi_recurrence_coefficients(self.shape_A - 1.0
-                                            , self.shape_B - 1.0
+        ab = jacobi_recurrence_coefficients(self.shape_B - 1.0
+                                            , self.shape_A - 1.0
                                             , self.lower, self.upper, order)
         return ab

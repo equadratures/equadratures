@@ -338,7 +338,7 @@ def get_local_quadrature(self, order=None, ab=None):
     # If statement to handle the case where order = 1
     if order == 1:
         # Check to see whether upper and lower bound are defined:
-        if not self.distribution.lower or not self.distribution.upper:
+        if np.isinf(self.distribution.lower) or np.isinf(self.distribution.upper):
             p = np.asarray(self.distribution.mean).reshape((1,1))
         else:
             print('see below!')

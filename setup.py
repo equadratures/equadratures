@@ -33,7 +33,9 @@ setup(name='equadratures',
       extras_require={
           "cvxpy":  ['cvxpy>=1.1'],
           "networkx":  ['networkx==2.6.3'],
-          "torch" : ['torch>=1.7.0']
+          "torch" : ['torch>=1.7.0'],
+          "tensorflow": ['tensorflow==1.15.2'],
+          "pymanopt": ['pymanopt']
           },
       test_suite='nose.collector',
       tests_require=['nose'],

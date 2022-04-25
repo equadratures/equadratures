@@ -99,6 +99,13 @@ class Basis(object):
         self.elements = basis
         self.cardinality = len(basis)
 
+    def __eq__(self, another_basis):
+        """Checks whether two basis are the same."""
+        if self.basis_type.lower() == another_basis.basis_type.lower() and \
+            np.array_equiv(self.elements, another_basis.elements):
+            return True 
+        else:
+            return False
     def get_cardinality(self):
         """ Returns the number of elements of an index set.
 

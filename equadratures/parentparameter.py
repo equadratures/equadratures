@@ -1,29 +1,10 @@
 "Definition of a univariate parameter."
-from equadratures.distributions.gaussian import Gaussian
-from equadratures.distributions.uniform import Uniform
-from equadratures.distributions.triangular import Triangular
-from equadratures.distributions.chebyshev import Chebyshev
-from equadratures.distributions.beta import Beta
-from equadratures.distributions.cauchy import Cauchy
-from equadratures.distributions.exponential import Exponential
-from equadratures.distributions.gamma import Gamma
-from equadratures.distributions.weibull import Weibull
-from equadratures.distributions.rayleigh import Rayleigh
-from equadratures.distributions.chisquared import Chisquared
-from equadratures.distributions.truncated_gaussian import TruncatedGaussian
-from equadratures.distributions.pareto import Pareto
-from equadratures.distributions.lognormal import Lognormal
-from equadratures.distributions.studentst import Studentst
-from equadratures.distributions.logistic import Logistic
-from equadratures.distributions.gumbel import Gumbel
-from equadratures.distributions.chi import Chi
-from equadratures.distributions.analytical import Analytical
 import equadratures.plot as plot
 import numpy as np
 import scipy as sc
 
-class Parameter(object):
-    """ This class defines a univariate parameter. 
+class ParentParameter(object):
+    """ This class defines a univariate parameter.
 
     Parameters
     ----------
@@ -52,7 +33,7 @@ class Parameter(object):
     endpoints : str, optional
         If set to ``both``, then the quadrature points and weights will have end-points, based on Gauss-Lobatto quadrature rules. If set to ``upper`` or ``lower`` a Gauss-Radau rule is used to compute one end-point at either the upper or lower bound.
     weight_function: Weight, optional
-        An instance of Weight, which contains a bespoke analytical or data-driven weight (probability density) function. 
+        An instance of Weight, which contains a bespoke analytical or data-driven weight (probability density) function.
 
     Examples
     --------
@@ -60,13 +41,13 @@ class Parameter(object):
         >>> param = eq.Parameter(distribution='uniform', lower=-2, upper=2., order=3)
 
     A beta parameter
-        >>> param = eq.Parameter(distribution='beta', lower=-2., upper=15., order=4, 
+        >>> param = eq.Parameter(distribution='beta', lower=-2., upper=15., order=4,
         >>>        shape_parameter_A=3.2, shape_parameter_B=1.7)
 
     A data-driven parameter
-        >>> pdf = eq.Weight( stats.gaussian_kde(data, bw_method='silverman'), 
+        >>> pdf = eq.Weight( stats.gaussian_kde(data, bw_method='silverman'),
         >>>        support=[-3, 3.2])
-        >>> param = eq.Parameter(distribution='analytical', 
+        >>> param = eq.Parameter(distribution='analytical',
         >>>        weight_function=pdf, order=2)
 
     References
@@ -74,17 +55,12 @@ class Parameter(object):
         1. Xiu, D., Karniadakis, G. E., (2002) The Wiener-Askey Polynomial Chaos for Stochastic Differential Equations. SIAM Journal on Scientific Computing,  24(2), `Paper <https://epubs.siam.org/doi/abs/10.1137/S1064827501387826?journalCode=sjoce3>`__
         2. Gautschi, W., (1985) Orthogonal Polynomials-Constructive Theory and Applications. Journal of Computational and Applied Mathematics 12 (1985), pp. 61-76. `Paper <https://www.sciencedirect.com/science/article/pii/037704278590007X>`__
     """
-    def __init__(self, order=1, distribution='Uniform', endpoints=None, shape_parameter_A=None, shape_parameter_B=None, variable='parameter', lower=None, upper=None, weight_function=None):
-        self.name = distribution
+    def __init__(self, distribution, order, variable, endpoints):
+        self.distribution = distribution
         self.variable = variable
         self.order = order
-        self.shape_parameter_A = shape_parameter_A
-        self.shape_parameter_B = shape_parameter_B
-        self.lower = lower
-        self.upper = upper
         self.endpoints = endpoints
         self.weight_function = weight_function
-        self.ab = None
         self._set_distribution()
         self._set_bounds()
         self._set_moments()
@@ -152,15 +128,6 @@ class Parameter(object):
         """ Plots the cumulative density function for a Parameter. See :meth:`~equadratures.plot.plot_cdf` for full description. """
         return plot.plot_cdf(self,ax, show, lim_range)
 
-    def _set_moments(self):
-        """ Private function that sets the mean and the variance of the distribution. """
-        self.mean = self.distribution.mean
-        self.variance = self.distribution.variance
-
-    def _set_bounds(self):
-        """ Private function that sets the bounds of the distribution. """
-        self.bounds = self.distribution.bounds
-
     def get_pdf(self, points=None):
         """ Computes the probability density function associated with the Parameter.
 
@@ -177,10 +144,10 @@ class Parameter(object):
             If ``points=None``. A tuple (`x`, `pdf`), where `pdf` is the probability density function evaluated at the points in `x`.
         """
         if points is None:
-            x = self.distribution.x_range_for_pdf
-            return x, self.distribution.get_pdf(x)
+            x = self.x_range_for_pdf
+            return x, self.get_pdf(x)
         else:
-            return self.distribution.get_pdf(points)
+            return self.get_pdf(points)
 
     def get_cdf(self, points=None):
         """ Computes the cumulative density function associated with the Parameter.
@@ -327,7 +294,7 @@ class Parameter(object):
             JacobiMatrix[order-1, order-1] = ab[order-1,0]
             JacobiMatrix[order-1, order-2] = np.sqrt(ab[order-1,1])
         return JacobiMatrix
-    def _get_orthogonal_polynomial(self, points, order=None, grad=False, hess=False):
+    def _get_orthogonal_polynomial(self, points, order=None):
         """
         Private function that evaluates the univariate orthogonal polynomial at quadrature points.
 
@@ -342,10 +309,8 @@ class Parameter(object):
             order = self.order + 1
         else:
             order = order + 1
-        gridPoints = np.asarray(points).copy().ravel()
-        if (self.ab is None):
-            self.ab = self.get_recurrence_coefficients(order)
-        ab = self.ab
+        gridPoints = np.asarray(points).copy()
+        ab = self.get_recurrence_coefficients(order)
         """
         print('Before:')
         print(gridPoints)
@@ -362,32 +327,32 @@ class Parameter(object):
         """
 
         orthopoly = np.zeros((order, len(gridPoints)))  # create a matrix full of zeros
-        derivative_orthopoly = np.zeros((order, len(gridPoints))) if (grad or hess) else None
-        dderivative_orthopoly = np.zeros((order, len(gridPoints))) if hess else None
+        derivative_orthopoly = np.zeros((order, len(gridPoints)))
+        dderivative_orthopoly = np.zeros((order, len(gridPoints)))
 
+        # Convert the grid points to a numpy array -- simplfy life!
+        gridPointsII = gridPoints.reshape((-1, 1))
         orthopoly[0, :] = 1.0
 
         # Cases
         if order == 1:  # CHANGED 2/2/18
             return orthopoly, derivative_orthopoly, dderivative_orthopoly
-        orthopoly[1, :] = ((gridPoints - ab[0, 0]) * orthopoly[0, :])  * (1.0) / (1.0 * np.sqrt(ab[1, 1]))
-        if (grad or hess) : derivative_orthopoly[1, :] = orthopoly[0, :] / (np.sqrt(ab[1, 1]))
+        orthopoly[1, :] = ((gridPointsII[:, 0] - ab[0, 0]) * orthopoly[0, :])  * (1.0) / (1.0 * np.sqrt(ab[1, 1]))
+        derivative_orthopoly[1, :] = orthopoly[0, :] / (np.sqrt(ab[1, 1]))
         if order == 2:  # CHANGED 2/2/18
             return orthopoly, derivative_orthopoly, dderivative_orthopoly
 
         if order >= 3:  # CHANGED 2/2/18
             for u in range(2, order):  # CHANGED 2/2/18
                 # Three-term recurrence rule in action!
-                orthopoly[u, :] = (((gridPoints - ab[u - 1, 0]) * orthopoly[u - 1, :]) - np.sqrt(
+                orthopoly[u, :] = (((gridPointsII[:, 0] - ab[u - 1, 0]) * orthopoly[u - 1, :]) - np.sqrt(
                     ab[u - 1, 1]) * orthopoly[u - 2, :]) / (1.0 * np.sqrt(ab[u, 1]))
-            if (grad or hess):
-                for u in range(2, order):  # CHANGED 2/2/18
-                    # Four-term recurrence formula for derivatives of orthogonal polynomials!
-                    derivative_orthopoly[u,:] = ( ((gridPoints - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
-            if hess:
-                for u in range(2, order):
-                    # Four-term recurrence formula for second derivatives of orthogonal polynomials!
-                    dderivative_orthopoly[u,:] = ( ((gridPoints - ab[u-1,0]) * dderivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * dderivative_orthopoly[u-2,:] ) +  2.0 * derivative_orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
+            for u in range(2, order):  # CHANGED 2/2/18
+                # Four-term recurrence formula for derivatives of orthogonal polynomials!
+                derivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * derivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * derivative_orthopoly[u-2,:] ) +  orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
+            for u in range(2,order):
+                # Four-term recurrence formula for second derivatives of orthogonal polynomials!
+                dderivative_orthopoly[u,:] = ( ((gridPointsII[:,0] - ab[u-1,0]) * dderivative_orthopoly[u-1,:]) - ( np.sqrt(ab[u-1,1]) * dderivative_orthopoly[u-2,:] ) +  2.0 * derivative_orthopoly[u-1,:]   )/(1.0 * np.sqrt(ab[u,1]))
 
         return orthopoly, derivative_orthopoly, dderivative_orthopoly
     def _get_local_quadrature(self, order=None, ab=None):
@@ -428,10 +393,13 @@ def get_local_quadrature(self, order=None, ab=None):
     # If statement to handle the case where order = 1
     if order == 1:
         # Check to see whether upper and lower bound are defined:
-        if not self.lower or not self.upper:
+        if np.isinf(self.distribution.lower) or np.isinf(self.distribution.upper):
             p = np.asarray(self.distribution.mean).reshape((1,1))
         else:
-            p = np.asarray((self.upper - self.lower)/(2.0) + self.lower).reshape((1,1))
+            print('see below!')
+            print(self.distribution.lower, self.distribution.upper)
+            print(self.distribution.lower(), self.distribution.upper())
+            p = np.asarray((self.distribution.upper - self.distribution.lower)/(2.0) + self.distribution.lower).reshape((1,1))
         w = [1.0]
     else:
         # Compute eigenvalues & eigenvectors of Jacobi matrix
@@ -456,9 +424,9 @@ def get_local_quadrature(self, order=None, ab=None):
     return p, w
 def get_local_quadrature_radau(self, order=None, ab=None):
     if self.endpoints.lower() == 'lower':
-        end0 = self.lower
+        end0 = self.distribution.lower
     elif self.endpoints.lower() == 'upper':
-        end0 = self.upper
+        end0 = self.distribution.upper
     if order is None:
         order = self.order - 1
     else:
@@ -482,8 +450,8 @@ def get_local_quadrature_lobatto(self, order=None, ab=None):
     else:
         order = order - 2
     N = order
-    endl = self.lower
-    endr = self.upper
+    endl = self.distribution.lower
+    endr = self.distribution.upper
     if ab is None:
         ab = self.get_recurrence_coefficients(order+2)
     else:
@@ -503,5 +471,3 @@ def get_local_quadrature_lobatto(self, order=None, ab=None):
     ab[N+2, 0] = (endl*p1l*p0r-endr*p1r*p0l)/det
     ab[N+2, 1] = (endr - endl) * p1l * p1r/det
     return get_local_quadrature(self, order=order+2, ab=ab)
-def distribution_error():
-    raise(ValueError, 'Please select a valid distribution for your parameter; documentation can be found at www.effective-quadratures.org')

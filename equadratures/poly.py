@@ -1,11 +1,12 @@
 """The polynomial parent class; one of the main building blocks in Effective Quadratures."""
 from equadratures.stats import Statistics
-from equadratures.parameter import Parameter
+from equadratures import Parameter
 from equadratures.basis import Basis
 from equadratures.solver import Solver
 from equadratures.subsampling import Subsampling
 from equadratures.quadrature import Quadrature
 from equadratures.datasets import score
+from equadratures.roots import colleague
 import equadratures.plot as plot
 import scipy.stats as st
 import numpy as np
@@ -30,7 +31,7 @@ class Poly(object):
             - **mesh** (str): Avaliable options are: ``monte-carlo``, ``sparse-grid``, ``tensor-grid``, ``induced``, or ``user-defined``. Note that when the ``sparse-grid`` option is invoked, the sparse pseudospectral approximation method [1] is the adopted. One can think of this as being the correct way to use sparse grids in the context of polynomial chaos [2] techniques.
             - **subsampling-algorithm** (str): The ``subsampling-algorithm`` input refers to the optimisation technique for subsampling. In the aforementioned four sampling strategies, we generate a logarithm factor of samples above the required amount and prune down the samples using an optimisation technique (see [1]). Existing optimisation strategies include: ``qr``, ``lu``, ``svd``, ``newton``. These refer to QR with column pivoting [2], LU with row pivoting [3], singular value decomposition with subset selection [2] and a convex relaxation via Newton's method for determinant maximization [4]. Note that if the ``tensor-grid`` option is selected, then subsampling will depend on whether the Basis argument is a total order index set, hyperbolic basis or a tensor order index set.
             - **sampling-ratio** (float): Denotes the extent of undersampling or oversampling required. For values equal to unity (default), the number of rows and columns of the associated Vandermonde-type matrix are equal.
-            - **sample-points** (numpy.ndarray): A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space.
+            - **sample-points** (numpy.ndarray): A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample points over the parameter space. Can use ``sample-inputs`` too.
             - **sample-outputs** (numpy.ndarray): A numpy ndarray with shape (number_of_observations, 1) that corresponds to model evaluations at the sample points. Note that if ``sample-points`` is provided as an input, then the code expects ``sample-outputs`` too.
             - **sample-gradients** (numpy.ndarray): A numpy ndarray with shape (number_of_observations, dimensions) that corresponds to a set of sample gradient values over the parameter space.
     solver_args : dict, optional
@@ -97,7 +98,7 @@ class Poly(object):
             if self.method == 'numerical-integration' or self.method == 'integration':
                 self.mesh = self.basis.basis_type
                 if self.basis.basis_type != 'tensor-grid' and self.basis.basis_type != 'sparse-grid' and self.basis.basis_type != 'univariate':
-                    raise ValueError('tensor-grid or sparse-grid basis must be used with the numerical-integration Poly method') 
+                    raise ValueError('tensor-grid or sparse-grid basis must be used with the numerical-integration Poly method')
             elif self.method == 'least-squares' or self.method == 'least-absolute-residual' or self.method=='huber' or self.method=='elastic-net':
                 self.mesh = 'tensor-grid'
             elif self.method == 'least-squares-with-gradients':
@@ -125,6 +126,10 @@ class Poly(object):
                     self.inputs = sampling_args.get('sample-points')
                     sampling_args_flag = 1
                     self.mesh = 'user-defined'
+                if 'sample-inputs' in sampling_args:
+                    self.inputs = sampling_args.get('sample-inputs')
+                    sampling_args_flag = 1
+                    self.mesh = 'user-defined'
                 if 'sample-outputs' in sampling_args:
                     self.outputs = sampling_args.get('sample-outputs')
                     sampling_args_flag = 1
@@ -149,14 +154,86 @@ class Poly(object):
                 cardinality = self.basis.get_cardinality()
                 if cardinality >= CARD_LIMIT_SOFT:
                     raise Exception('Cardinality %.1e >= soft cardinality limit %.1e. Computing polynomial coefficients may take a long time. To override this, set override_cardinality=True.'
-                        %(cardinality,CARD_LIMIT_SOFT)) 
+                        %(cardinality,CARD_LIMIT_SOFT))
 
-            # Set solver, points and weight etc 
+            # Set solver, points and weight etc
             self._set_solver()
             self._set_subsampling_algorithm()
             self._set_points_and_weights()
         else:
             print('WARNING: Method not declared.')
+
+    def __eq__(self, another_poly):
+        """ Verifies if two polynomial instances are the same. Two polynomials are defined to be the same if (i) they have the same
+        basis terms, and (ii) the list of parameters are identical.
+
+
+        Parameters
+        ----------
+
+        another_poly : Poly
+            Another ``Poly`` instance against which the ``self`` object will be compared.
+
+        Returns
+        --------
+
+        bool
+            True or False depending on whether the arguments are deemed to be equivalent.
+
+        """
+        if self.basis == another_poly.basis and \
+            self.parameters == self.parameters:
+            return True
+        else:
+            return False
+
+    def __add__(self, another_poly):
+        """ Adds polynomials.
+
+        Returns
+        -------
+
+        poly
+            An instance of the Poly class.
+
+        """
+        new_poly = deepcopy(self)
+        if self == another_poly:
+            if self.quadrature == another_poly.quadrature:
+                new_poly.coefficients += another_poly.coefficients
+                new_poly._model_evaluations += another_poly._model_evaluations
+            else:
+                y1 = new_poly._model_evaluations.flatten()
+                y2 = another_poly.get_polyfit(self._quadrature_points).flatten()
+                new_poly._model_evaluations = (y1 + y2)
+                new_poly._set_coefficients()
+            return new_poly
+        else:
+            raise ValueError('cannot add the two polynomials!')
+
+    def __sub__(self, another_poly):
+        """ Subtracts polynomials.
+
+        Returns
+        -------
+
+        poly
+            An instance of the Poly class.
+
+        """
+        new_poly = deepcopy(self)
+        if self == another_poly:
+            if self.quadrature == another_poly.quadrature:
+                new_poly.coefficients -= another_poly.coefficients
+                new_poly._model_evaluations -= another_poly._model_evaluations
+            else:
+                y1 = new_poly._model_evaluations.flatten()
+                y2 = another_poly.get_polyfit(self._quadrature_points).flatten()
+                new_poly._model_evaluations = (y1 - y2)
+                new_poly._set_coefficients()
+            return new_poly
+        else:
+            raise ValueError('cannot subtract the two polynomials!')
 
     def plot_polyfit_1D(self, ax=None, uncertainty=True, output_variances=None, number_of_points=200, show=True):
         """ Plots a 1D only polynomial fit to the data. See :meth:`~equadratures.plot.plot_polyfit_1D` for full description. """
@@ -258,7 +335,7 @@ class Poly(object):
         self.solver = Solver.select_solver(self.method, self.solver_args)
         if self.method.lower()=="elastic-net":
             self.solver.elements=self.basis.elements
-        
+
     def _set_points_and_weights(self):
         """ Private function that sets the quadrature points. """
         if hasattr(self, 'corr'):
@@ -266,7 +343,7 @@ class Poly(object):
         else:
             corr = None
         self.quadrature = Quadrature(parameters=self.parameters, basis=self.basis, \
-                        points=self.inputs, mesh=self.mesh, corr=corr, oversampling=self.sampling_ratio)
+                        points=self.inputs, mesh=self.mesh, corr=corr)
         quadrature_points, quadrature_weights = self.quadrature.get_points_and_weights()
         if self.subsampling_algorithm_name is not None:
             P = self.get_poly(quadrature_points)
@@ -413,7 +490,7 @@ class Poly(object):
         return self.statistics_object.get_conditional_kurtosis(order)
 
     def set_model(self, model=None, model_grads=None):
-        """ Computes the coefficients of the polynomial via the method selected. 
+        """ Computes the coefficients of the polynomial via the method selected.
 
         If model evaluations and/or gradients have not yet been provided to Poly via ``sample-outputs`` and/or ``sample-gradients``, they can be given here via the ``model`` and ``model_grads`` arguments.
 
@@ -449,7 +526,7 @@ class Poly(object):
             >>> poly = eq.Poly(param,basis,method='numerical-integration')
             >>> x = poly.get_points()
             >>> y = f(x)
-            >>> poly.set_model(y) 
+            >>> poly.set_model(y)
             >>> eq.datasets.score(f(xtest),poly.get_polyfit(xtest),metric='rmse')
             5.363652779335998e-15
 
@@ -581,7 +658,7 @@ class Poly(object):
 
         Returns
         -------
-        numpy.ndarray 
+        numpy.ndarray
             The coefficients with size (number_of_coefficients, 1).
         """
         return self.coefficients
@@ -591,7 +668,7 @@ class Poly(object):
 
         Returns
         -------
-        numpy.ndarray 
+        numpy.ndarray
             The sampled quadrature points with shape (number_of_samples, dimension).
         """
         return self._quadrature_points
@@ -617,8 +694,8 @@ class Poly(object):
         return self._quadrature_points, self._quadrature_weights
 
     def get_polyfit(self, stack_of_points, uq=False):
-        """ Evaluates the /polynomial approximation of a function (or model data) at prescribed points.
-        
+        """ Evaluates the polynomial approximation of a function (or model data) at prescribed points.
+
         Parameters
         ----------
         stack_of_points : numpy.ndarray
@@ -731,7 +808,7 @@ class Poly(object):
             An ndarray with shape (number of observations, dimensions) at which the polynomial must be evaluated.
         custom_multi_index : numpy.ndarray, optional
             Array containing a custom multi-index set, in the format given by :meth:`~equadratures.basis.Basis.get_elements`.
-        
+
         Returns
         -------
         numpy.ndarray
@@ -751,13 +828,13 @@ class Poly(object):
 
         # Save time by returning if univariate!
         if dimensions == 1:
-            poly , _ , _ =  self.parameters[0]._get_orthogonal_polynomial(stack_of_points, int(np.max(basis)), grad=False, hess=False)
+            poly , _ , _ =  self.parameters[0]._get_orthogonal_polynomial(stack_of_points, int(np.max(basis)))
             return poly
         else:
             for i in range(0, dimensions):
                 if len(stack_of_points.shape) == 1:
                     stack_of_points = np.array([stack_of_points])
-                p[i] , _ , _ = self.parameters[i]._get_orthogonal_polynomial(stack_of_points[:,i], int(np.max(basis[:,i])), grad=False, hess=False )
+                p[i] , _ , _ = self.parameters[i]._get_orthogonal_polynomial(stack_of_points[:,i], int(np.max(basis[:,i])) )
 
         # One loop for polynomials
         polynomial = np.ones((basis_entries, no_of_points))
@@ -776,7 +853,7 @@ class Poly(object):
         stack_of_points : numpy.ndarray
             An ndarray with shape (number_of_observations, dimensions) at which the gradient must be evaluated.
         dim_index : int, optional
-            Index of the dimension to evaluate the gradient for. 
+            Index of the dimension to evaluate the gradient for.
 
         Returns
         -------
@@ -799,13 +876,13 @@ class Poly(object):
 
         # Save time by returning if univariate!
         if dimensions == 1:
-            _ , dpoly, _ =  self.parameters[0]._get_orthogonal_polynomial(stack_of_points, int(np.max(basis) ), grad=True, hess=False )
+            _ , dpoly, _ =  self.parameters[0]._get_orthogonal_polynomial(stack_of_points, int(np.max(basis) ) )
             return dpoly
         else:
             for i in range(0, dimensions):
                 if len(stack_of_points.shape) == 1:
                     stack_of_points = np.array([stack_of_points])
-                p[i] , dp[i], _ = self.parameters[i]._get_orthogonal_polynomial(stack_of_points[:,i], int(np.max(basis[:,i])), grad=True, hess=False )
+                p[i] , dp[i], _ = self.parameters[i]._get_orthogonal_polynomial(stack_of_points[:,i], int(np.max(basis[:,i])) )
 
         # One loop for polynomials
         R = []
@@ -853,14 +930,14 @@ class Poly(object):
 
         # Save time by returning if univariate!
         if dimensions == 1:
-            _, _, d2poly = self.parameters[0]._get_orthogonal_polynomial(stack_of_points, int(np.max(basis)), grad=True, hess=True)
+            _, _, d2poly = self.parameters[0]._get_orthogonal_polynomial(stack_of_points, int(np.max(basis)))
             return d2poly
         else:
             for i in range(0, dimensions):
                 if len(stack_of_points.shape) == 1:
                     stack_of_points = np.array([stack_of_points])
                 p[i], dp[i], d2p[i] = self.parameters[i]._get_orthogonal_polynomial(stack_of_points[:, i],
-                                                                       int(np.max(basis[:, i]) + 1), grad=True, hess=True)
+                                                                       int(np.max(basis[:, i]) + 1))
         H = []
         for w in range(0, dimensions):
             gradDirection1 = w
@@ -884,8 +961,9 @@ class Poly(object):
                 H.append(polynomialhessian)
 
         return H
+
     def get_polyscore(self,X_test=None,y_test=None,metric='adjusted_r2'):
-        """ Evaluates the accuracy of the polynomial approximation using the selected accuracy metric. 
+        """ Evaluates the accuracy of the polynomial approximation using the selected accuracy metric.
 
         Training accuracy is evaluated on the data used for fitting the polynomial. Testing accuracy is evaluated on new data if it is provided by the ``X_test`` and ``y_test`` arguments (both must be provided together).
 
@@ -914,6 +992,23 @@ class Poly(object):
             return train_score, test_score
         else:
             return train_score
+
+    def get_poly_roots(self):
+        """ Evaluates the roots of the polynomial.
+
+        Requires "set_model" to be called first.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array of shape (number_of_roots,1) corresponding to the location the roots were found at.
+        """
+        if (self.basis.basis_type == "univariate") and (self.parameters[0].name.lower() in ['chebyshev', 'arcsine']):
+            coeffs = self.coefficients
+            roots = colleague( coeffs, self.parameters[0])
+            return roots
+        else:
+            raise NotImplementedError( 'get_poly_roots(): Currently limited to univariate chebyshev parameter!')
 
     def _get_polystd(self, stack_of_points):
         """ Private function to evaluate the uncertainty of the polynomial approximation at prescribed points, following the approach from [5].
@@ -962,307 +1057,6 @@ class Poly(object):
         std_F = np.sqrt( np.diag(Sigma_F) )
         return std_F.reshape(-1,1)
 
-class Graphpolys(object):
-    """
-    
-    Constructor for generating polynomials over graphs.
-
-    Parameters
-    ----------
-    Graph : networkx.Graph
-        A networkx Graph object.
-    data_train : dict
-        A dictionary with training data.
-    poly : Poly
-        A Poly object that defines a polynomial over the subspace.
-    edge_weight : float, optional
-        Edge weight for Graph edges, default=15.
-    """
-    def __init__(self, Graph, data_train, poly, edge_weight=15):
-        self.Graph = Graph 
-        self.data_train = data_train 
-        self.poly = poly 
-        self.edge_weight = edge_weight
-        for _, _, e in Graph.edges(data=True):
-            e["weight"] = edge_weight
-    def _stratified_model_admm(self, shape, Lap, loss_proximal_func, regulariser_proximal_func, graph_data=dict(), \
-                         relative_tolerance=1e-5, absolute_tolerance=1e-5, num_jobs=4, \
-                         max_cg_iters=10, max_iters=1000, rho=1, tau_decrement=2, tau_increment=2, mu=10, \
-                         rho_min=0.1, rho_max=1.0):
-        """
-        Fits a Laplacian regularised stratified model using ADMM.
-        
-        This code is based on the implementation in cvxgrp/strat_models.
-        
-        @article{strat_models,
-        author       = {Jonathan Tuck and Shane Barratt and Stephen Boyd},
-        title        = {A Distributed Method for Fitting {L}aplacian Regularized Stratified Models},
-        journal      = {Journal of Machine Learning Research},
-        year         = {2021},
-        note         = {To appear}
-        }
-        
-        """
-        import multiprocessing as mp
-        import scipy as sc
-        optimal_solution = False
-        n = np.prod(shape)
-        m = Lap.shape[0]
-
-        # Retrieve data from ``graph_data``
-        # alpha_init
-        if 'alpha_init' in graph_data:
-            alpha = graph_data['alpha_init'].copy()
-        else:
-            alpha = np.zeros((m,) + shape)
-
-        primal_residual = np.zeros(alpha.shape)
-        primal_residual_tilde = np.zeros(alpha.shape)
-        dual_residual = np.zeros(alpha.shape)
-        dual_residual_tilde = np.zeros(alpha.shape)
-
-        # alpha_tilde
-        if 'alpha_tilde' in graph_data:
-            alpha = graph_data['alpha_tilde'].copy()
-        else:
-            alpha_tilde = alpha.copy()
-        # alpha_hat
-        if 'alpha_hat' in graph_data:
-            alpha_hat = graph_data['alpha_hat'].copy()
-        else:
-            alpha_hat = alpha.copy()
-        # u
-        if 'u' in graph_data:
-            u = graph_data['u'].copy()
-        else:
-            u = np.zeros(alpha.shape)
-        # u_tilde
-        if 'u_tilde' in graph_data:
-            u_tilde = graph_data['u_tilde'].copy()
-        else:
-            u_tilde = np.zeros(alpha.shape)
-
-        # Multiprocessing
-        if m <= num_jobs:
-            num_jobs = m
-        proximal_pool = mp.Pool(num_jobs)
-
-        for iter_j in range(1, max_iters):
-
-            # Update alpha
-            alpha = loss_proximal_func(t=1./rho, nu=alpha_hat-u, warm_start=alpha, pool=proximal_pool)
-
-            # Update alpha_tilde
-            alpha_tilde = regulariser_proximal_func(t=1./rho, nu=alpha_hat-u_tilde, warm_start=alpha_tilde, \
-                                                        pool=proximal_pool)
-
-            # Update alpha_hat
-
-            S = Lap + 2.0 * rho * sc.sparse.eye(m)
-            M = sc.sparse.diags(1./S.diagonal() )
-            indices = np.ndindex(shape)
-            equ_rhs = rho * (alpha.T + alpha_tilde.T + u.T + u_tilde.T)
-
-            for j, index in enumerate(indices):
-                    index_value = index[::-1]
-                    solution = sc.sparse.linalg.cg(S, equ_rhs[index_value], \
-                                                M=M, x0=alpha_hat.T[index_value], \
-                                        maxiter=max_cg_iters)
-                    solution = solution[0]
-                    dual_residual.T[index_value] = -rho * (solution - alpha_hat.T[index_value])
-                    dual_residual_tilde.T[index_value] = dual_residual.T[index_value]
-                    alpha_hat.T[index_value] = solution
-
-            # Updates
-            primal_residual = alpha - alpha_hat
-            primal_residual_tilde = alpha_tilde - alpha_hat
-            u += alpha - alpha_hat
-            u_tilde += alpha_tilde - alpha_hat
-
-            # Calculation of residual norms and epsilon values
-            primal_residual_norm = np.linalg.norm(np.append(primal_residual, primal_residual_tilde), 2)
-            dual_residual_norm = np.linalg.norm(np.append(dual_residual, dual_residual_tilde), 2)
-            primal_eps = np.sqrt(2. * m * n) * absolute_tolerance + relative_tolerance * \
-                        np.max([primal_residual_norm, dual_residual_norm])
-            dual_eps = np.sqrt(2. * m * n) * absolute_tolerance + relative_tolerance  * \
-                        np.linalg.norm(rho * np.append(u, u_tilde))
-
-            # Breaking condition!
-            if primal_residual_norm <= primal_eps and \
-                            dual_residual_norm <= dual_eps:
-                optimal_solution = True
-                break
-
-            rho_update = rho
-            if primal_residual_norm > mu * dual_residual_norm:
-                rho_update = tau_increment * rho
-            elif dual_residual_norm > mu * primal_residual_norm:
-                rho_update = rho / tau_decrement
-            rho_update = np.clip(rho_update, rho_min, rho_max)
-            u *= rho / rho_update
-            u_tilde *= rho / rho_update
-            rho = rho_update
-
-        proximal_pool.close()
-        proximal_pool.join()
-        output = {'alpha': alpha, \
-                'alpha_tilde': alpha_tilde, \
-                'alpha_hat': alpha_hat, \
-                'u': u, \
-                'u_tilde': u_tilde}
-
-        # Complete later!
-        result = {'iterations': iter_j, \
-                'optimal' :optimal_solution}
-        return output, result
-    def predict(self, data, score=True):
-        """
-        Predict. 
-
-        Parameters
-        ----------
-        data : dict
-            A dictionary with test data.
-        score : bool, optional
-            returns mean error along with prediction if true.
-
-        Returns
-        -------
-        Y_pred : numpy.nparray
-            Predicted data.
-        mean_error: numpy.ndarray
-            Mean error in prediction.
-        """
-        import torch
-        X = torch.from_numpy(data['X'])
-        X = torch.tensor(self.poly.get_poly(X)).double().t()
-        alpha = torch.tensor(([self.Graph._node[z]['alpha_tilde'] for z in data["Z"] ]))
-        Y_pred = (X.unsqueeze(-1) * alpha).sum(1).numpy()
-        if score:
-            residuals = (data['Y'] - Y_pred)**2
-            mean_error = np.sqrt(np.mean(residuals))
-            return Y_pred, mean_error
-        else:
-            return Y_pred
-    def _graph_to_data(self, shape):
-        """
-        Vectorises the variables in G --> returning a dict.
-        """
-        alpha_init = np.zeros(shape)
-        alpha_tilde_init = np.zeros(shape)
-        alpha_hat_init = np.zeros(shape)
-        u_init = np.zeros(shape)
-        u_tilde_init = np.zeros(shape)
-        
-        for i, node in enumerate(self.Graph.nodes()):
-            vertex = self.Graph._node[node]
-            if 'alpha' in vertex:
-                alpha_init[i] = vertex['alpha']
-            if 'alpha_tilde' in vertex:
-                alpha_tilde_init[i] = vertex['alpha_tilde']
-            if 'alpha_hat' in vertex:
-                alpha_hat_init[i] = vertex['alpha_hat']
-            if 'u' in vertex:
-                u_init[i] = vertex['u']
-            if 'u_tilde' in vertex:
-                u_tilde_init[i] = vertex['u_tilde']
-        data = {
-            'alpha_init': alpha_init,
-            'alpha_tilde_init': alpha_tilde_init,
-            'u_init': u_init,
-            'u_tilde_init': u_tilde_init
-        }
-        return data
-    def fit(self):
-        """
-        Fit polynomial to data.
-        """
-        import networkx as nx
-        import torch
-        # Step 1. Calculate the Laplacian matrix
-        L = nx.laplacian_matrix(self.Graph)
-        nodelist = self.Graph.nodes()
-        K = L.shape[0]
-
-        # Step 2. Get the data in the right format 
-        cache = self.loss_function(self.data_train)
-        
-        # Step 3. Compute the proximal loss
-        def proximal_loss(t, nu, warm_start, pool, cache=cache):
-            XtX = cache['XtX']
-            XtY = cache['XtY']
-            n = cache['n']
-            # LU = X'X + 0.5 * t * I
-            Alu = torch.lu(XtX + 1./(2 * t) * torch.eye(n).unsqueeze(0).double())
-            b = XtY + 1./(2 * t) * torch.from_numpy(nu)
-            x = torch.lu_solve(b, *Alu).numpy()
-            return x
-
-        def proximal_residual(t, nu, warm_start, pool, lambda_val=1e-4):
-            return nu / (1. + t * lambda_val)
-
-        G_to_data = self._graph_to_data(cache['alpha_shape'])
-        result, info = self._stratified_model_admm(shape=cache['shape'], \
-                                            Lap=L, \
-                                            loss_proximal_func=proximal_loss, \
-                                            regulariser_proximal_func=proximal_residual, \
-                                            graph_data=G_to_data)
-        print(info)
-        return self._output_to_graph(result)
-    def loss_function(self, data):
-        import torch
-        X = data['X']
-        Y = data['Y']
-        Z = data['Z']
-        if X.ndim == 1:
-            X = X.reshape(-1, 1)         
-        N, _ = X.shape
-        _, m = Y.shape
-        n = self.poly.basis.cardinality # verify!
-        K = len(self.Graph.nodes())
-        shape = (n, m)
-        alpha_shape = (K, ) + shape 
-        for x, y, z in zip(X, Y, Z):
-            vertex = self.Graph._node[z]
-            if 'X' in vertex:
-                vertex['X'] += [x]
-                vertex['Y'] += [y]
-            else:
-                vertex['X'] = [x]
-                vertex['Y'] = [y] 
-        XtX = torch.zeros(K, n, n).double()
-        XtY = torch.zeros(K, n, m).double()
-        # Filter out empty nodes
-        nodes = [[i, node] for i, node in enumerate(self.Graph.nodes()) if self.Graph._node[node] != {}]
-        for i, node in nodes:
-            vertex = self.Graph._node[node]
-            X = torch.tensor(vertex['X']).double()
-            Y = torch.tensor(vertex['Y']).double()
-            X = torch.tensor(self.poly.get_poly(X)).double()
-            XtX[i] = X @ X.t()
-            XtY[i] = X @ Y
-            del vertex
-        cache = {'XtX': XtX, \
-                'XtY': XtY, 
-                'n': n, \
-                'alpha_shape': alpha_shape, \
-                'shape': shape}
-        return cache
-    def _output_to_graph(self, output):
-        alpha = output['alpha']
-        alpha_tilde = output['alpha_tilde']
-        alpha_hat = output['alpha_hat']
-        u = output['u']
-        u_tilde = output['u_tilde']
-        for k, node in enumerate(self.Graph.nodes()):
-            vertex = self.Graph._node[node]
-            vertex['alpha'] = alpha[k]
-            vertex['alpha_tilde'] = alpha_tilde[k]
-            vertex['alpha_hat'] = alpha_hat[k]
-            vertex['u'] = u[k]
-            vertex['u_tilde'] = u_tilde[k]
-        return self.Graph
-
 def _inv(M):
     """
     Private function to compute inverse of matrix M, where M is a numpy.ndarray.
@@ -1276,7 +1070,7 @@ def _inv(M):
 
 def evaluate_model_gradients(points, fungrad, format='matrix'):
     """ Evaluates the model gradient at given values.
-    
+
     Parameters
     ----------
     points : numpy.ndarray
@@ -1342,7 +1136,7 @@ def vector_to_2D_grid(coefficients, index_set):
     ----------
     coefficients : numpy.ndarray
         An ndarray with shape (N, 1) where N corresponds to the number of coefficient values.
-    index_set :  numpy.ndarray 
+    index_set :  numpy.ndarray
         The multi-index set of the basis.
 
     Returns

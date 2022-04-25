@@ -76,7 +76,7 @@ class TestC(TestCase):
         Tests elastic-net regularisation on linear (1st order) synthetic data with irrelevent features. (using cvxpy LP solve here).
         """
         # Load linear dataset with n_observations=500,n_dim=10,bias=0.5,n_relevent=2,noise=0.2,train/test split = 0.8
-        data = np.load('./tests/test_data/linear_data.npz')
+        data = np.load('./test_data/linear_data.npz')
         X_train = data['X_train']; y_train = data['y_train']; X_test = data['X_test']; y_test = data['y_test']
 
         # Define param and basis
@@ -118,7 +118,8 @@ class TestC(TestCase):
         Tests elastic-net regularisation on quadratic (2nd order) synthetic data with irrelevent features. (using coord descent here).
         """
         # Generate friedman dataset with n_observations=200,n_dim=10,noise=0.2,normalise=False,train/test split of 0.8
-        data = np.load('./tests/test_data/friedman_data.npz')
+        print(os.getcwd())
+        data = np.load('./test_data/friedman_data.npz')
         X_train = data['X_train']; y_train = data['y_train']; X_test = data['X_test']; y_test = data['y_test']
 
         # Define param and basis
@@ -158,7 +159,7 @@ class TestC(TestCase):
 #        # Generate data
         n = 1
        # Load linear dataset with n_observations=500,n_dim=10,bias=0.5,n_relevent=2,noise=0.2,train/test split = 0.8
-        data = np.load('./tests/test_data/linear_data.npz')
+        data = np.load('./test_data/linear_data.npz')
         X_train = data['X_train']; y_train = data['y_train']
         N,dim = X_train.shape
 

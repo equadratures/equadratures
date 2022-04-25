@@ -29,8 +29,6 @@ For issues with the code, please do *raise an issue* on our Github page; do make
 
 Our code is designed to require minimal dependencies; current package requirements include ``numpy``, ``scipy`` and ``matplotlib``.
 
-If, and only **if** using the ``GraphPolys`` class, additional requirements would include the ``networkx``, and ``torch`` modules.
-
 ## Documentation, tutorials, Discourse
 
 Code documentation and details on the syntax can be found [here](https://equadratures.org/index.html).

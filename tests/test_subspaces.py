@@ -1,7 +1,7 @@
 from unittest import TestCase
 import unittest
 from equadratures import *
-from equadratures.scalers import scaler_minmax 
+from equadratures.datasets import scaler_minmax 
 import numpy as np
 import scipy.stats as st
 import os

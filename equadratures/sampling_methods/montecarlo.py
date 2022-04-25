@@ -13,7 +13,7 @@ class Montecarlo(Sampling):
         self.parameters = parameters
         self.basis = basis
         self.dimensions = len(self.parameters)
-        number_of_samples = int(self.basis.cardinality * len(self.parameters) * oversampling)
+        number_of_samples = int(self.basis.cardinality * oversampling)
         self.points = self._set_points(number_of_samples, corr)
         super(Montecarlo, self).__init__(self.parameters, self.basis, self.points)
 

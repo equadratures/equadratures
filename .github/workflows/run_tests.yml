@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install numpy scipy matplotlib seaborn pip nose cvxpy setuptools coveralls tensorflow=1.15.2 pymanopt
+          python -m pip install numpy scipy matplotlib seaborn pip nose cvxpy setuptools coveralls tensorflow==1.15.2 pymanopt
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           python setup.py install
       - name: Test

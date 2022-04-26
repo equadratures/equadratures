@@ -41,4 +41,4 @@ jobs:
       - name: Test
         run: |
           coverage run test.py tests/*
-          coveralls
+          coveralls --service=github

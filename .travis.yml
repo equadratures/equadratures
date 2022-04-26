@@ -33,23 +33,27 @@ branches:
   - master
   - develop
 
-before_install:
- - travis_retry wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
- - chmod +x miniconda.sh
- - bash miniconda.sh -b -p $HOME/miniconda
- - export PATH=/home/travis/miniconda/bin:$PATH
- - conda update --yes conda
+#before_install:
+# - travis_retry wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+# - chmod +x miniconda.sh
+# - bash miniconda.sh -b -p $HOME/miniconda
+# - export PATH=/home/travis/miniconda/bin:$PATH
+# - conda update --yes conda
 
 install:
- - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
- - source activate test
- - if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then conda install --yes nomkl; fi
- - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib seaborn pip nose
- - conda install --yes -c conda-forge python=$TRAVIS_PYTHON_VERSION cvxpy
- - conda install --yes tensorflow=1.15.2 pymanopt
- - if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then pip install -U numpy; fi
- - pip install setuptools coveralls
- - python setup.py install
+  - pip install numpy scipy matplotlib seaborn pip nose
+  - pip install cvxpy
+  - pip install tensorflow=1.15.2 pymanopt
+  - python setup.py install
+# - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
+# - source activate test
+# - if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then conda install --yes nomkl; fi
+# - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib seaborn pip nose
+# - conda install --yes -c conda-forge python=$TRAVIS_PYTHON_VERSION cvxpy
+# - conda install --yes tensorflow=1.15.2 pymanopt
+# - if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then pip install -U numpy; fi
+# - pip install setuptools coveralls
+# - python setup.py install
 
 script: coverage run test.py tests/*
 

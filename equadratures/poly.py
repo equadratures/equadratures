@@ -876,13 +876,13 @@ class Poly(object):
 
         # Save time by returning if univariate!
         if dimensions == 1:
-            _ , dpoly, _ =  self.parameters[0]._get_orthogonal_polynomial(stack_of_points, int(np.max(basis) ) )
+            _ , dpoly, _ =  self.parameters[0]._get_orthogonal_polynomial(stack_of_points, int(np.max(basis) ), grad=True )
             return dpoly
         else:
             for i in range(0, dimensions):
                 if len(stack_of_points.shape) == 1:
                     stack_of_points = np.array([stack_of_points])
-                p[i] , dp[i], _ = self.parameters[i]._get_orthogonal_polynomial(stack_of_points[:,i], int(np.max(basis[:,i])) )
+                p[i] , dp[i], _ = self.parameters[i]._get_orthogonal_polynomial(stack_of_points[:,i], int(np.max(basis[:,i])), grad=True )
 
         # One loop for polynomials
         R = []
@@ -930,14 +930,14 @@ class Poly(object):
 
         # Save time by returning if univariate!
         if dimensions == 1:
-            _, _, d2poly = self.parameters[0]._get_orthogonal_polynomial(stack_of_points, int(np.max(basis)))
+            _, _, d2poly = self.parameters[0]._get_orthogonal_polynomial(stack_of_points, int(np.max(basis)), hess=True)
             return d2poly
         else:
             for i in range(0, dimensions):
                 if len(stack_of_points.shape) == 1:
                     stack_of_points = np.array([stack_of_points])
                 p[i], dp[i], d2p[i] = self.parameters[i]._get_orthogonal_polynomial(stack_of_points[:, i],
-                                                                       int(np.max(basis[:, i]) + 1))
+                                                                       int(np.max(basis[:, i]) + 1), hess=True)
         H = []
         for w in range(0, dimensions):
             gradDirection1 = w

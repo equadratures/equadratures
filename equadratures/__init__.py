@@ -19,7 +19,7 @@ from equadratures.distributions.triangular import Triangular
 from equadratures.distributions.truncated_gaussian import TruncatedGaussian
 from equadratures.distributions.weibull import Weibull
 from equadratures.poly import Poly
-from equadratures.poly import Graphpolys
+# from equadratures.poly import Graphpolys
 from equadratures.stats import Statistics
 from equadratures.basis import Basis
 #from equadratures.polynet import Polynet

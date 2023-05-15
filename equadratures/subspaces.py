@@ -526,11 +526,11 @@ class Subspaces(object):
             f, g = b - np.dot(A, z0), np.dot(A, d)
 
             # find an upper bound on the step
-            min_ind = np.logical_and(g <= 0, f < -np.sqrt(np.finfo(np.float).eps))
+            min_ind = np.logical_and(g <= 0, f < -np.sqrt(np.finfo(np.float64).eps))
             eps_max = np.amin(f[min_ind] / g[min_ind])
 
             # find a lower bound on the step
-            max_ind = np.logical_and(g > 0, f < -np.sqrt(np.finfo(np.float).eps))
+            max_ind = np.logical_and(g > 0, f < -np.sqrt(np.finfo(np.float64).eps))
             eps_min = np.amax(f[max_ind] / g[max_ind])
 
             # randomly sample eps
@@ -662,7 +662,7 @@ def jacobian_vp(V, V_plus, U, f, Polybasis, eta, minmax, X):
             current = Gradient[l].T
             if n == 1:
                 current = Gradient.T
-            dV[:,l,:,j] = np.ndarray.item(vectord[l])*(X.T*current[:,j])
+            dV[:,l,:,j] = vectord[l].item()*(X.T*current[:,j])
 
     # Get the P matrix
     P = np.identity(M)-np.matmul(V,V_plus)

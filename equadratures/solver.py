@@ -490,7 +490,7 @@ class compressed_sensing(Solver):
         r = np.dot(A, x).flatten() - b.flatten()
         fu1 = x - u
         fu2 = -x - u
-        fe = 0.5*(np.asscalar(np.dot(r.T,r)) - epsilon**2)
+        fe = 0.5*(np.ndarray.item(np.dot(r.T,r)) - epsilon**2)
         f = np.sum(u) - (1.0/tau) * (np.sum(np.log(-fu1)) + np.sum(np.log(-fu2)) + np.log(-fe))
     
         niter = 0
@@ -531,7 +531,7 @@ class compressed_sensing(Solver):
           # minimum step size that stays in the interior
           aqe = np.dot(Adx.T, Adx)
           bqe = 2.0*np.dot(r.T, Adx)
-          cqe = np.asscalar(np.dot(r.T,r)) - epsilon**2
+          cqe = np.ndarray.item(np.dot(r.T,r)) - epsilon**2
     
           smax = np.min(np.hstack([ 1.0,np.min(np.hstack([-fu1[(dx-du) > 0] / (dx[(dx-du) > 0] - du[(dx-du) > 0]),\
             -fu2[(-dx-du) > 0] / (-dx[(-dx-du) > 0] - du[(-dx-du) > 0]), \

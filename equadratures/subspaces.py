@@ -662,7 +662,7 @@ def jacobian_vp(V, V_plus, U, f, Polybasis, eta, minmax, X):
             current = Gradient[l].T
             if n == 1:
                 current = Gradient.T
-            dV[:,l,:,j] = np.asscalar(vectord[l])*(X.T*current[:,j])
+            dV[:,l,:,j] = np.ndarray.item(vectord[l])*(X.T*current[:,j])
 
     # Get the P matrix
     P = np.identity(M)-np.matmul(V,V_plus)

@@ -59,7 +59,7 @@ class Optimisation:
             f = poly.get_polyfit_function()
             jac = poly.get_polyfit_grad_function()
             hess = poly.get_polyfit_hess_function()
-            objective = lambda x: k*np.asscalar(f(x))
+            objective = lambda x: k*np.ndarray.item(f(x))
             objective_deriv = lambda x: k*jac(x)[:,0]
             objective_hess = lambda x: k*hess(x)[:,:,0]
         elif custom is not None:
@@ -247,7 +247,7 @@ class Optimisation:
             g = poly.get_polyfit_function()
             jac = poly.get_polyfit_grad_function()
             hess = poly.get_polyfit_hess_function()
-            constraint = lambda x: np.asscalar(g(x))
+            constraint = lambda x: np.ndarray.item(g(x))
             constraint_deriv = lambda x: jac(x)[:,0]
             constraint_hess = lambda x, v: hess(x)[:,:,0]
             if self.method == 'trust-constr':
@@ -341,7 +341,7 @@ class Optimisation:
     def _set_iterate(self):
         ind_min = np.argmin(self.f)
         self.s_old = self.S[ind_min,:]
-        self.f_old = np.asscalar(self.f[ind_min])
+        self.f_old = np.ndarray.item(self.f[ind_min])
         self._update_bounds()
 
     def _set_del_k(self, value):
@@ -406,7 +406,7 @@ class Optimisation:
             else:
                 self.S = np.vstack((self.S, s))
                 self.f = np.vstack((self.f, f))
-        return np.asscalar(f)
+        return np.ndarray.item(f)
 
     def _update_bounds(self):
         if self.bounds is not None:
@@ -842,10 +842,10 @@ class Optimisation:
         for i in range(self.n):
             bounds.append((self.bounds_l[i], self.bounds_u[i]))
         if self.method == 'trust-region':
-            res = optimize.minimize(lambda x: np.asscalar(my_poly.get_polyfit(x)), self.s_old, method='TNC', \
+            res = optimize.minimize(lambda x: np.ndarray.item(my_poly.get_polyfit(x)), self.s_old, method='TNC', \
                     jac=lambda x: my_poly.get_polyfit_grad(x).flatten(), bounds=bounds, options={'disp': False})
         elif self.method == 'omorf':
-            res = optimize.minimize(lambda x: np.asscalar(my_poly.get_polyfit(np.dot(x,self.U))), self.s_old, \
+            res = optimize.minimize(lambda x: np.ndarray.item(my_poly.get_polyfit(np.dot(x,self.U))), self.s_old, \
                     method='TNC', jac=lambda x: np.dot(self.U, my_poly.get_polyfit_grad(np.dot(x,self.U))).flatten(), \
                     bounds=bounds, options={'disp': False})
         s_new = res.x
@@ -932,7 +932,7 @@ class Optimisation:
             S, f = self._sample_set('replace', S, f, s_new, f_new)
             # Calculate trust-region factor
             del_f = self.f_old - f_new
-            del_m = np.asscalar(my_poly.get_polyfit(self.s_old)) - m_new
+            del_m = np.ndarray.item(my_poly.get_polyfit(self.s_old)) - m_new
             if abs(del_m) < 100*np.finfo(float).eps:
                 self._set_ratio(1.0)
             else:
@@ -994,7 +994,7 @@ class Optimisation:
                 return
             # Calculate trust-region factor
             del_f = self.f_old - f_new
-            del_m = np.asscalar(my_poly.get_polyfit(np.dot(self.s_old,self.U))) - m_new
+            del_m = np.ndarray.item(my_poly.get_polyfit(np.dot(self.s_old,self.U))) - m_new
             if abs(del_m) < 100*np.finfo(float).eps:
                 self._set_ratio(1.0)
             else:

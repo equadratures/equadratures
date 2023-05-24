@@ -409,7 +409,7 @@ class Induced(Sampling):
                    alpha*np.log(2.0) -
                    betaln(beta+1.0, alpha+1.0) -
                    np.log(beta+1.0)+(beta+1)*np.log((x+1.0)/2.0))*integral
-        F = np.asscalar(F)
+        F = F.item()
 
         if _complementary:
             F = 1-F

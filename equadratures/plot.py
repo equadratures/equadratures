@@ -7,7 +7,7 @@ from scipy.spatial import ConvexHull, convex_hull_plot_2d
 from equadratures.datasets import score
 import numpy as np
 # seaborn defaults
-sns.set(font_scale=1.5)
+sns.set(font_scale=1.0)
 sns.set_style("white")
 sns.set_style("ticks")
 palette = sns.color_palette('deep')

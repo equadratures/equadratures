@@ -547,23 +547,24 @@ class Poly(object):
             if y.shape[1] != 1:
                 raise ValueError( 'model values should be a column vector.')
             self._model_evaluations = y
-            if self.gradient_flag:
-                if (model_grads is None) and (self.gradients is not None):
-                    grad_values = self.gradients
+
+        if self.gradient_flag:
+            if (model_grads is None) and (self.gradients is not None):
+                grad_values = self.gradients
+            else:
+                if callable(model_grads):
+                    grad_values = evaluate_model_gradients(self._quadrature_points, model_grads, 'matrix')
                 else:
-                    if callable(model_grads):
-                        grad_values = evaluate_model_gradients(self._quadrature_points, model_grads, 'matrix')
-                    else:
-                        grad_values = model_grads
-                p, q = grad_values.shape
-                self._gradient_evaluations = np.zeros((p*q,1))
-                W = np.diag(np.sqrt(self._quadrature_weights))
-                counter = 0
-                for j in range(0,q):
-                    for i in range(0,p):
-                        self._gradient_evaluations[counter] = W[i,i] * grad_values[i,j]
-                        counter = counter + 1
-                del grad_values
+                    grad_values = model_grads
+            p, q = grad_values.shape
+            self._gradient_evaluations = np.zeros((p*q,1))
+            W = np.diag(np.sqrt(self._quadrature_weights))
+            counter = 0
+            for j in range(0,q):
+                for i in range(0,p):
+                    self._gradient_evaluations[counter] = W[i,i] * grad_values[i,j]
+                    counter = counter + 1
+            del grad_values
         self.statistics_object = None
         self._set_coefficients()
 

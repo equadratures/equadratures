@@ -103,10 +103,6 @@ class Uniform(Distribution):
             Nodes and weights associated with passed parameter.
         """
 
-        u3, a3 = [], []
-        u4, a4 = [], []
-        u5, a5 = [], []
-        u6, a6 = [], []
         # Compute roots of BesselJ(0, x)
         m = np.ceil(order / 2)
         jk = jn_zeros(0, int(m))
@@ -126,7 +122,7 @@ class Uniform(Distribution):
         w = c * w
         v = v / np.sqrt(2 * w[-1])
         x = x.reshape(order, 1);
-        return x, w, v, t
+        return x, w
 
     def _asy1(self, n, nout):
         """
@@ -153,22 +149,17 @@ class Uniform(Distribution):
         u2 = u ** 2
         a2 = a ** 2
         U = np.array([1, u, u2, u ** 3, u2 ** 2, u ** 5, u2 ** 3, u ** 7, u2 ** 4]);
-        A = np.array([1, a, a2, a ** 3, a2 ** 2, a ** 5, a2 ** 3, a ** 7, a3 ** 4])
-
-        # Initialise for storage (so as to only compute once)
-        Jk2 = []
-        u3, a3 = [], []
-        u4, a4 = [], []
-        u5, a5 = [], []
-        u6, a6 = [], []
+        A = np.array([1, a, a2, a ** 3, a2 ** 2, a ** 5, a2 ** 3, a ** 7, a2 ** 4])
 
         # Compute nodes and weights
-        #     x, t = legpts_nodes(a, u, a2, u2, n, vn)
-        #     w = legpts_weights(ua, a, a2, u, u2, n, vn, m) if nout > 1 else []
         x, t = self._legNodes(A, U, n)
         w = self._legWeights(A, U, n, m)
 
-        v = np.sin(t) / np.sqrt(2. / w) / v[-1] if nout > 2 else []
+        if nout > 2:
+            v = np.sin(t) / np.sqrt(2. / w)
+            v = v / v[-1]
+        else:
+            v =[]
 
         # Use symmetry
         if n % 2 == 0:

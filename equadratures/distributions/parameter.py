@@ -1,7 +1,6 @@
 """Parameter v2.0."""
 from numpy.random import uniform
 from equadratures.distributions.template import Distribution
-
 from equadratures.distributions.analytical import Analytical
 from equadratures.distributions.beta import Beta
 from equadratures.distributions.cauchy import Cauchy
@@ -21,6 +20,7 @@ from equadratures.distributions.triangular import Triangular
 from equadratures.distributions.truncated_gaussian import TruncatedGaussian
 from equadratures.distributions.uniform import Uniform
 from equadratures.distributions.weibull import Weibull
+from equadratures.distributions.data import Data
 
 class Parameter(Distribution):
     """
@@ -66,5 +66,7 @@ class Parameter(Distribution):
             return Weibull(**kwargs)
         if distribution.lower() == 'uniform' :
             return Uniform(**kwargs)
+        if distribution.lower() == 'data' :
+            return Data(**kwargs)
         else:
             raise ValueError('Unknown distribution specified:', distribution.lower())

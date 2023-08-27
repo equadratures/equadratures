@@ -82,10 +82,10 @@ class Analytical(Distribution):
                 self.endpoints = value
 
        
-        self.mean = weight_function.mean
-        self.variance = weight_function.variance
-        self.bounds = weight_function.support
-        self.x_range_for_pdf = weight_function.x_range_for_pdf
+        self.mean = self.weight_function.mean
+        self.variance = self.weight_function.variance
+        self.bounds = self.weight_function.support
+        self.x_range_for_pdf = self.weight_function.x_range_for_pdf
 
         analytical = stats.rv_discrete(name='analytical', values=(self.x_range_for_pdf, p))
         

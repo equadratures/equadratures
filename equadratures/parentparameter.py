@@ -3,9 +3,6 @@ import equadratures.plot as plot
 import numpy as np
 import scipy as sc
 
-from equadraturesFork.equadratures.distributions.uniform import Uniform
-
-
 class ParentParameter(object):
     """ This class defines a univariate parameter.
 
@@ -372,8 +369,6 @@ class ParentParameter(object):
             A 1-by-N matrix that contains the quadrature weights
         """
         if self.endpoints is None:
-            if isinstance(self.distribution, Uniform):
-                return Uniform.get_fast_quadrature(order=order, lowerBound=self.distribution.bounds[0], upperBound=self.distribution.bounds[1])
             return get_local_quadrature(self, order, ab)
         elif self.endpoints.lower() == 'lower' or self.endpoints.lower() == 'upper':
             return get_local_quadrature_radau(self, order, ab)

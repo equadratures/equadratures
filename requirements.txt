@@ -1,0 +1,12 @@
+Sphinx==5.0
+sphinxcontrib-mermaid
+sphinx-panels
+sphinx-copybutton
+nbsphinx
+pandoc
+pydata-sphinx-theme==0.8.0
+pymanopt
+sphinx-gallery
+sphinxcontrib-applehelp==1.0.2
+sphinxcontrib-bibtex
+sphinxcontrib-devhelp==1.0.2

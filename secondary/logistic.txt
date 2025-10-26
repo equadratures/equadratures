@@ -1,0 +1,5 @@
+Logistic regression
+===========================================
+
+.. automodule:: equadratures.logistic_poly
+    :members:

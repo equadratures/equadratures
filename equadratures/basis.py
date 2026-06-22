@@ -99,6 +99,13 @@ class Basis(object):
         self.elements = basis
         self.cardinality = len(basis)
 
+    def __eq__(self, another_basis):
+        """Checks whether two basis are the same."""
+        if self.basis_type.lower() == another_basis.basis_type.lower() and \
+            np.array_equiv(self.elements, another_basis.elements):
+            return True 
+        else:
+            return False
     def get_cardinality(self):
         """ Returns the number of elements of an index set.
 
@@ -226,8 +233,6 @@ def euclidean_degree_basis(orders):
             euclidean_set[i,j] = r[j]
 
     return euclidean_set
-
-
 def getIndexLocation(small_index, large_index):
     index_values = []
     i = 0
@@ -236,9 +241,7 @@ def getIndexLocation(small_index, large_index):
             if np.array_equal(small_index[i,:] , large_index[j,:] ):
                 index_values.append(j)
         i = i + 1
-
     return index_values
-
 def hyperbolic_basis(orders, q):
 
     # Initialize a few parameters for the setup
@@ -263,7 +266,6 @@ def hyperbolic_basis(orders, q):
             hyperbolic_set[i,j] = r[j]
 
     return hyperbolic_set
-
 # Double checked April 7th, 2016 --> Works!
 def getTotalOrderBasisRecursion(highest_order, dimensions):
    if dimensions == 1:
@@ -287,13 +289,12 @@ def getTotalOrderBasisRecursion(highest_order, dimensions):
                I = Itemp
            del T
    return I
-
 def total_order_basis(orders):
     # init
     dimensions = len(orders)
     highest_order = np.max(orders)
     # Check what the cardinality will be, stop if too large!
-    L = int(np.math.factorial(highest_order+dimensions)/(np.math.factorial(highest_order)*np.math.factorial(dimensions)))
+    L = int(mt.factorial(highest_order+dimensions)/(mt.factorial(highest_order)*mt.factorial(dimensions)))
     # Check cardinality
     if L >= CARD_LIMIT_HARD:
         raise Exception('Cardinality %.1e is >= hard cardinality limit %.1e' %(L,CARD_LIMIT_HARD))
@@ -302,6 +303,9 @@ def total_order_basis(orders):
     for i in range(1, highest_order+1):
         R = getTotalOrderBasisRecursion(i, dimensions)
         total_order = np.vstack((total_order, R))
+    
+    # Now, as we expect the order to be 
+    total_order = total_order[np.sum(total_order, axis=1) <= highest_order]
     return total_order
 
 def sparse_grid_basis(level, growth_rule, dimensions):

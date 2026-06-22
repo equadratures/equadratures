@@ -7,7 +7,7 @@ from scipy.spatial import ConvexHull, convex_hull_plot_2d
 from equadratures.datasets import score
 import numpy as np
 # seaborn defaults
-sns.set(font_scale=1.5)
+sns.set(font_scale=1.0)
 sns.set_style("white")
 sns.set_style("ticks")
 palette = sns.color_palette('deep')
@@ -584,6 +584,7 @@ def plot_pdf(Parameter, ax=None, data=None, show=True, lim_range=True):
         ax.hist(data, 50, density=True, facecolor='dodgerblue', alpha=0.7, label='Data', edgecolor='white')
     # Adjust xrange
     if lim_range:
+        pdf = pdf[np.isfinite(pdf)]
         idx = np.argwhere(pdf/pdf.max() >= 1e-5)
         ax.set_xlim([s_values[idx].min(),s_values[idx].max()])
     ax.legend()
@@ -774,8 +775,8 @@ def plot_orthogonal_polynomials(Parameter, ax=None, order_limit=None, number_of_
         >>> myparam = eq.Parameter(distribution='uniform', lower = -1.0, upper = 1.0, order=8, endpoints='both')
         >>> myparam.plot_orthogonal_polynomials()        
     """
-    Xi = np.linspace(Parameter.distribution.x_range_for_pdf[0], \
-                Parameter.distribution.x_range_for_pdf[-1], number_of_points).reshape(number_of_points, 1)
+    Xi = np.linspace(Parameter.x_range_for_pdf[0], \
+                Parameter.x_range_for_pdf[-1], number_of_points).reshape(number_of_points, 1)
     P, _, _ = Parameter._get_orthogonal_polynomial(Xi)
     if ax is None:
         fig,ax = plt.subplots(figsize=(8, 6),tight_layout=True)
@@ -826,8 +827,8 @@ def plot_polyfit_1D(Polynomial, ax=None, uncertainty=True, output_variances=None
         fig = ax.figure
     if Polynomial.dimensions != 1:
         raise(ValueError, 'plot_polyfit_1D is only meant for univariate polynomials.')
-    Xi = np.linspace(Polynomial.parameters[0].distribution.x_range_for_pdf[0], \
-                Polynomial.parameters[0].distribution.x_range_for_pdf[-1], number_of_points).reshape(number_of_points, 1)
+    Xi = np.linspace(Polynomial.parameters[0].x_range_for_pdf[0], \
+                Polynomial.parameters[0].x_range_for_pdf[-1], number_of_points).reshape(number_of_points, 1)
     if uncertainty:
         if output_variances is None:
             y, ystd = Polynomial.get_polyfit(Xi,uq=True)
@@ -843,7 +844,7 @@ def plot_polyfit_1D(Polynomial, ax=None, uncertainty=True, output_variances=None
     ax.plot(Xi, y, '-',label='Polynomial fit', color='navy')
     ax.plot(X.flatten(), y_truth.flatten(), 'o', color='dodgerblue', ms=10, markeredgecolor='k',lw=1, alpha=0.6, label='Data')
     if uncertainty:
-        ax.fill_between(Xi.flatten(), y+ystd, y-ystd, alpha=.10, color='deepskyblue',label='Polynomial $\sigma$')
+        ax.fill_between(Xi.flatten(), y+ystd, y-ystd, alpha=.10, color='deepskyblue',label=r'Polynomial $\sigma$')
     ax.legend()
     sns.despine(offset=10, trim=True)
     if show:

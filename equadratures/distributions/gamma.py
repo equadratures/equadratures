@@ -12,15 +12,34 @@ class Gamma(Distribution):
     :param double scale:
 		Scale parameter of the gamma distribution.
     """
-    def __init__(self, shape=None, scale=None):
-        if shape is None:
+    def __init__(self, **kwargs):
+        first_arg = ['shape', 'k', 'shape_parameter_A']
+        second_arg = ['scale', 'theta', 'shape_parameter_B']
+        third_arg = ['order', 'orders', 'degree', 'degrees']
+        fourth_arg = ['endpoints', 'endpoint']
+        fifth_arg = ['variable']
+        self.name = 'gamma'
+        self.shape = None
+        self.scale = None
+        self.order = 2
+        self.endpoints = 'none'
+        self.variable = 'parameter'
+        for key, value in kwargs.items():
+            if first_arg.__contains__(key):
+                self.shape = value
+            if second_arg.__contains__(key):
+                self.scale = value
+            if third_arg.__contains__(key):
+                self.order = value
+            if fourth_arg.__contains__(key):
+                self.endpoints = value
+            if fifth_arg.__contains__(key):
+                self.variable = value
+
+        if self.shape is None:
             self.shape = 1.0
-        else:
-            self.shape = shape
-        if scale is None:
+        if self.scale is None:
             self.scale = 1.0
-        else:
-            self.scale = scale
 
         self.bounds = np.array([0.0, np.inf])
         if self.shape < 0 or self.scale < 0:
@@ -28,7 +47,19 @@ class Gamma(Distribution):
         self.parent = gamma(a=self.shape, scale=self.scale)
         self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
         self.x_range_for_pdf = np.linspace(0, self.scale*10, RECURRENCE_PDF_SAMPLES)
-
+        super().__init__(name=self.name, \
+                        lower=self.bounds[0], \
+                        upper=self.bounds[1], \
+                        scale=self.scale, \
+                        mean=self.mean, \
+                        variance=self.variance, \
+                        skewness=self.skewness, \
+                        kurtosis=self.kurtosis, \
+                        x_range_for_pdf=self.x_range_for_pdf, \
+                        order=self.order, \
+                        endpoints=self.endpoints, \
+                        variable=self.variable, \
+                        scipyparent=self.parent)
     def get_description(self):
         """
         A description of the gamma distribution.
@@ -38,69 +69,6 @@ class Gamma(Distribution):
         :return:
             A string describing the gamma distribution.
         """
-        text = "is a gamma distribution with a shape parameter of "+str(self.shape)+", and a scale parameter of "+str(self.scale)+"."
+        text = ("is a gamma distribution with a shape parameter of " + str(self.shape) + ", and a scale " \
+                "parameter of " + str(self.scale) + ".")
         return text
-
-    def get_pdf(self, points=None):
-        """
-        A gamma probability density function.
-
-        :param Gamma self:
-            An instance of the Gamma class.
-        :param matrix points:
-            Matrix of points for defining the probability density function.
-        :return:
-            An array of N equidistant values over the support of the distribution.
-        :return:
-            Probability density values along the support of the Gamma distribution.
-        """
-        if points is not None:
-            return self.parent.pdf(points)
-        else:
-            raise ValueError( 'Please digit an input for getPDF method')
-
-    def get_cdf(self, points=None):
-        """
-        A gamma cumulative density function.
-
-        :param Gamma self:
-            An instance of the Gamma class.
-        :param matrix points:
-            Matrix of points for defining the gamma cumulative density function.
-        :return:
-            An array of N equidistant values over the support of the gamma distribution.
-        :return:
-            Cumulative density values along the support of the gamma distribution.
-        """
-        if points is not None:
-            return self.parent.cdf(points)
-        else:
-            raise ValueError( 'Please digit an input for getCDF method')
-    def get_icdf(self, xx):
-        """
-        A gamma inverse cumulative density function.
-
-        :param gamma self:
-            An instance of Gamma class.
-        :param xx:
-            An array of points at which the inverse of cumulative density function needs to be evaluated.
-        :return:
-            Inverse cumulative density function values of the Gamma distribution.
-        """
-        return self.parent.ppf(xx)
-    def get_samples(self, m=None):
-        """
-         Generates samples from the Gamma distribution.
-
-         :param Gamma self:
-             An instance of the Gamma class.
-         :param integer m:
-             Number of random samples. If no value is provided, a default of     5e5 is assumed.
-         :return:
-             A N-by-1 vector that contains the samples.
-        """
-        if m is not None:
-           number = m
-        else:
-           number = 500000
-        return self.parent.rvs(size = number)

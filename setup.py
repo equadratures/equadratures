@@ -5,22 +5,24 @@ def readme():
         return f.read()
 
 setup(name='equadratures',
-      version='10',
+      version='10.1.0',
       description='Polynomial approximations',
       long_description=readme(),
       classifiers=[
-	'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Mathematics'
       ],
       keywords='polynomial chaos effective quadratures polynomial approximations gradients',
       url='https://github.com/Effective-Quadratures/equadratures',
       author='Developers',
-      license='MIT',
+      license='LPGL-2.1',
       packages=['equadratures', 'equadratures.distributions', 'equadratures.sampling_methods'],
       install_requires=[
           'numpy',
@@ -35,7 +37,10 @@ setup(name='equadratures',
           "networkx":  ['networkx==2.6.3'],
           "torch" : ['torch>=1.7.0'],
           "tensorflow": ['tensorflow==1.15.2'],
-          "pymanopt": ['pymanopt']
+          "pymanopt": ['pymanopt'],
+          ":python_version == '3.6'": ["tomli<2.3"],
+          ":python_version == '3.6'": ["dataclasses"],
+          ":python_version <= '3.8'": ["typing_extensions<4.14"]
           },
       test_suite='nose.collector',
       tests_require=['nose'],

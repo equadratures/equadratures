@@ -1,4 +1,4 @@
-"""
+r"""
 Solvers for computation of linear systems of the form :math:`\mathbf{A}\mathbf{x}=\mathbf{b}`.
 
 These solvers are used *under-the-hood* by :class:`~equadratures.poly.Poly` when :meth:`~equadratures.poly.Poly.set_model()` is called, with the solver specified by the ``method`` argument. 
@@ -490,7 +490,7 @@ class compressed_sensing(Solver):
         r = np.dot(A, x).flatten() - b.flatten()
         fu1 = x - u
         fu2 = -x - u
-        fe = 0.5*(np.asscalar(np.dot(r.T,r)) - epsilon**2)
+        fe = 0.5*(np.dot(r.T,r).item() - epsilon**2)
         f = np.sum(u) - (1.0/tau) * (np.sum(np.log(-fu1)) + np.sum(np.log(-fu2)) + np.log(-fe))
     
         niter = 0
@@ -531,7 +531,7 @@ class compressed_sensing(Solver):
           # minimum step size that stays in the interior
           aqe = np.dot(Adx.T, Adx)
           bqe = 2.0*np.dot(r.T, Adx)
-          cqe = np.asscalar(np.dot(r.T,r)) - epsilon**2
+          cqe = np.dot(r.T,r).item() - epsilon**2
     
           smax = np.min(np.hstack([ 1.0,np.min(np.hstack([-fu1[(dx-du) > 0] / (dx[(dx-du) > 0] - du[(dx-du) > 0]),\
             -fu2[(-dx-du) > 0] / (-dx[(-dx-du) > 0] - du[(-dx-du) > 0]), \
@@ -585,7 +585,7 @@ class compressed_sensing(Solver):
 # Numerical integration solver subclass.
 ########################################
 class numerical_integration(Solver):
-    """ Numerical integration solver. This solves an orthogonal linear system i.e. simply :math:`\mathbf{x}=\mathbf{A}^T\mathbf{b}`.
+    r""" Numerical integration solver. This solves an orthogonal linear system i.e. simply :math:`\mathbf{x}=\mathbf{A}^T\mathbf{b}`.
 
     Parameters
     ----------
@@ -648,7 +648,7 @@ class least_absolute_residual(Solver):
 # Huber solver subclass.
 ########################
 class huber(Solver):
-    """ Huber regression solver. Minimises the Huber loss function. 
+    r""" Huber regression solver. Minimises the Huber loss function.
 
     This function is identical to the least squares (L2) penalty for small residuals (i.e. :math:`||\mathbf{A}\mathbf{x}-\mathbf{b}||^2\le M`).
     But on large residuals (:math:`||\mathbf{A}\mathbf{x}-\mathbf{b}||^2 > M`), its penalty is lower (L1) and increases linearly rather than quadratically. 
@@ -839,7 +839,7 @@ class constrained_least_squares(Solver):
 # Elastic net solver subclass.
 ##############################
 class elastic_net(Solver):
-    """ Elastic net solver. 
+    r""" Elastic net solver.
 
     The elastic net solver minimises
 
@@ -1119,7 +1119,7 @@ class elastic_net(Solver):
 # Custom solver subclass.
 #########################
 class custom_solver(Solver):
-    """ Custom solver class. 
+    r""" Custom solver class.
 
     This class allows you to enter a custom ``solve()`` function to solve :math:`\mathbf{A}\mathbf{x}=\mathbf{b}`. The ``solve()`` is provided via ``solver_args``, and should accept the numpy.ndarray's :math:`\mathbf{A}` and :math:`\mathbf{b}`, and return a numpy.ndarray containing the coefficients :math:`\mathbf{x}`.   
 

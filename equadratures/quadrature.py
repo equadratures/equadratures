@@ -6,6 +6,7 @@ from equadratures.sampling_methods.userdefined import Userdefined
 from equadratures.sampling_methods.induced import Induced
 from equadratures.sampling_methods.sampling_template import Sampling
 import numpy as np
+from numpy.core.numeric import array_equiv
 class Quadrature(object):
     """ The class defines a Sampling object. It serves as a template for all sampling methodologies.
 
@@ -46,6 +47,15 @@ class Quadrature(object):
         else:
             error_message()
 
+    def __eq__(self, another_quadrature):
+        """Checks whether two quadrature instances are the same.
+        """
+        if np.array_equiv(self.points, another_quadrature.samples.points) and \
+            np.array_equiv(self.samples.weights):
+            return True
+        else:
+            return False
+            
     def get_points(self):
         """ Returns the quadrature points.
 

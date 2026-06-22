@@ -118,6 +118,7 @@ class TestC(TestCase):
         Tests elastic-net regularisation on quadratic (2nd order) synthetic data with irrelevent features. (using coord descent here).
         """
         # Generate friedman dataset with n_observations=200,n_dim=10,noise=0.2,normalise=False,train/test split of 0.8
+        print(os.getcwd())
         data = np.load('./tests/test_data/friedman_data.npz')
         X_train = data['X_train']; y_train = data['y_train']; X_test = data['X_test']; y_test = data['y_test']
 

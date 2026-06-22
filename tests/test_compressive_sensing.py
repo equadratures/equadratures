@@ -1116,7 +1116,7 @@ class TestB(TestCase):
         params = []
         basis_orders = []
         for i in range(25):
-            params.append(Parameter(p_order, distribution = 'Uniform', lower=-1., upper=1.) )
+            params.append(Parameter(order=p_order, distribution = 'Uniform', lower=-1., upper=1.) )
             basis_orders.append(p_order)
         basis = Basis("total-order", orders = basis_orders)
         num_obs = 200
@@ -1154,7 +1154,7 @@ class TestB(TestCase):
         params = []
         basis_orders = []
         for i in range(25):
-            params.append(Parameter(p_order, distribution = 'uniform', lower=-1.0, upper = 1.0))
+            params.append(Parameter(order=p_order, distribution = 'uniform', lower=-1.0, upper = 1.0))
             basis_orders.append(p_order)
 
         basis = Basis("total-order", orders = basis_orders)

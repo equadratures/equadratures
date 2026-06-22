@@ -53,3 +53,7 @@ nosetests.xml
 *.mo
 .eggs
 
+# Test outputs
+effective-quadratures-output.txt
+piston_model.txt
+

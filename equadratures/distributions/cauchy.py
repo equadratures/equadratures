@@ -1,6 +1,5 @@
 """The Cauchy distribution."""
 from equadratures.distributions.template import Distribution
-from equadratures.distributions.recurrence_utils import custom_recurrence_coefficients
 import numpy as np
 from scipy.stats import cauchy
 RECURRENCE_PDF_SAMPLES = 8000
@@ -14,24 +13,58 @@ class Cauchy(Distribution):
     :param double scale:
 		Scale parameter of the Cauchy distribution.
     """
-    def __init__(self, location=None, scale=None):
-        self.location = location
-        if scale is None:
-            self.scale = 1.0
-        else:
-            self.scale = scale
+    def __init__(self, **kwargs):
+        first_arg = ['location', 'loc', 'shape_parameter_A']
+        second_arg = ['scale', 'shape_parameter_B']
+        third_arg = ['order', 'orders', 'degree', 'degrees']
+        fourth_arg = ['endpoints', 'endpoint']
+        fifth_arg = ['variable']
+        self.name = 'cauchy'
+        self.loc = None
+        self.scale = None
+        self.order = 2
+        self.endpoints = 'none'
+        self.variable = 'parameter'
+        for key, value in kwargs.items():
+            if first_arg.__contains__(key):
+                self.loc = value
+            if second_arg.__contains__(key):
+                self.scale = value
+            if third_arg.__contains__(key):
+                self.order = value
+            if fourth_arg.__contains__(key):
+                self.endpoints = value
+            if fifth_arg.__contains__(key):
+                self.variable = value
 
-        self.bounds = np.array([-np.inf, np.inf])
-        self.mean = np.nan
-        self.variance = np.nan
-        self.skewness = np.nan
-        self.kurtosis = np.nan
+        if self.loc is None or self.scale is None:
+            raise ValueError('location or scale have not been specified!')
+        if self.scale <= 0:
+            raise ValueError('invalid Cauchy distribution parameters; scale should be positive.')
+
+        if self.scale is None:
+            self.scale = 1.0
+
+        self.lower = -np.inf
+        self.upper =  np.inf
+        self.bounds = np.array([self.lower, self.upper])
 
         self.x_range_for_pdf = np.linspace(-15*self.scale, 15*self.scale, RECURRENCE_PDF_SAMPLES)
-        self.parent = cauchy(loc=self.location, scale=self.scale)
-        # self.mean = np.mean(self.get_samples(m=1000))
-        # self.variance = np.var(self.get_samples(m=1000))
-
+        self.parent = cauchy(loc=self.loc, scale=self.scale)
+        self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
+        super().__init__(name=self.name, \
+                        lower=self.lower, \
+                        upper=self.upper, \
+                        scale=self.scale, \
+                        mean=self.mean, \
+                        variance=self.variance, \
+                        skewness=self.skewness, \
+                        kurtosis=self.kurtosis, \
+                        x_range_for_pdf=self.x_range_for_pdf, \
+                        order=self.order, \
+                        endpoints=self.endpoints, \
+                        variable=self.variable, \
+                        scipyparent=self.parent)
     def get_description(self):
         """
         A description of the Cauchy distribution.
@@ -41,67 +74,6 @@ class Cauchy(Distribution):
         :return:
             A string describing the Cauchy distribution.
         """
-        text = "is a Cauchy distribution that by definition has an undefined mean and variance; its location parameter is "+str(self.location)+", and its scale parameter is "+str(self.scale)+"."
+        text = ("is a Cauchy distribution that by definition has an undefined mean and variance; its " \
+                "location parameter is " + str(self.loc) + ", and its scale parameter is " + str(self.scale) + ".")
         return text
-
-    def get_pdf(self, points=None):
-        """
-        A Cauchy probability density function.
-
-        :param Cauchy self:
-            An instance of the Cauchy class.
-        :param array points:
-            Array of points for defining the probability density function.
-        :return:
-            An array of N values over the support of the distribution.
-        :return:
-            Probability density values along the support of the Cauchy distribution.
-        """
-        if points is not None:
-            return self.parent.pdf(points)
-        else:
-            raise ValueError( 'Please digit an input for getPDF method')
-    def get_cdf(self, points=None):
-        """
-        A Cauchy cumulative density function.
-
-        :param Cauchy self:
-            An instance of the Cauchy class.
-        :param array points:
-            Array of points for defining the cumulative density function.
-        :return:
-            An array of N equidistant values over the support of the distribution.
-        :return:
-            Cumulative density values along the support of the Cauchy distribution.
-        """
-        if points is not None:
-            return self.parent.cdf(points)
-        else:
-            raise ValueError( 'Please digit an input for getCDF method')
-    def get_icdf(self, xx):
-        """
-        An inverse Cauchy cumulative density function.
-
-        :param Cauchy self:
-            An instance of the Cauchy class.
-        :param array xx:
-            A numpy array of uniformly distributed samples between [0, 1].
-        :return:
-            Inverse CDF samples associated with the Cauchy distribution.
-        """
-        return self.parent.ppf(xx)
-    def get_samples(self, m):
-        """
-         Generates samples from the Gaussian distribution.
-        :param Gaussian self:
-            An instance of the Gaussian class.
-        :param integer m:
-            Number of random samples. If no value is provided, a default of     5e5 is assumed.
-        :return:
-            A N-by-1 vector that contains the samples.
-        """
-        if m is not None:
-            number = m
-        else:
-            number = 500000
-        return self.parent.rvs(size=number)

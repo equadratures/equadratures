@@ -31,5 +31,4 @@ class Montecarlo(Sampling):
             for i in range(0, self.dimensions):
                 univariate_samples = self.parameters[i].get_samples(number_of_samples)
                 self.points[:, i] = univariate_samples[:]
-
         return self.points

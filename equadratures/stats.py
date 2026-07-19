@@ -132,11 +132,11 @@ class Statistics(object):
                 TSI[p] += all_sobols[i]
         return TSI
 def private_get_mean(coefficients):
-    return float(coefficients[0])
+    return float(np.asarray(coefficients[0]).item())
 def private_get_variance(coefficients):
     result = 0.
     for i in range(1, len(coefficients)):
-        variance = result + float(coefficients[i]**2)
+        variance = result + float(np.asarray(coefficients[i]).item())**2
         result = variance
     return variance
 def private_get_all_sobol_indices(coefficients, basis, max_order):
@@ -162,7 +162,7 @@ def private_get_all_sobol_indices(coefficients, basis, max_order):
                 non_zero_entries = np.nonzero(row)[0]
                 non_zero_entries.sort()    #just in case
                 if len(non_zero_entries) == order: #neglect entries that should actually be zero (what constitutes as zero?)
-                    combo_index[tuple(non_zero_entries)] = float(combo_index[tuple(non_zero_entries)] + coefficients[i]**2 / variance)
+                    combo_index[tuple(non_zero_entries)] = float(combo_index[tuple(non_zero_entries)] + np.asarray(coefficients[i]).item()**2 / variance)
         check_sum = sum(combo_index.values())
         if (abs(check_sum - 1.0) >= 1e-2):
             print("Possible discrepancy in calculation, sum of indices = " + str(check_sum))

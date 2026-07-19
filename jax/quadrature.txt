@@ -1,0 +1,5 @@
+Gauss quadrature
+==================
+
+.. automodule:: equadratures.jax.quadrature
+    :members:

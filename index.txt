@@ -41,5 +41,6 @@ Code documentation for :code:`equadratures` can be found by clicking on the link
 
    Core classes <core/index>
    Secondary classes <secondary/index>
+   Auto-differentiable (JAX) <jax/index>
    Theory <theory/index>
    Tutorials <tutorials/index>

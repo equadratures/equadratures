@@ -1,0 +1,5 @@
+Polynomial model
+==================
+
+.. automodule:: equadratures.jax.poly
+    :members:

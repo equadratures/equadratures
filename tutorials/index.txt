@@ -46,6 +46,15 @@ Advanced applications
    tutorials/Machine_Learning_Airfoil
 
 
+Auto-differentiable (JAX)
+"""""""""""""""""""""""""
+.. nbgallery::
+   :caption: Auto-differentiable (JAX)
+   :name: jax-gallery
+
+   tutorials/Auto_Differentiable_Equadratures
+
+
 |
 
 

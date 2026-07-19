@@ -1,0 +1,5 @@
+Basis and design matrix
+==================
+
+.. automodule:: equadratures.jax.basis
+    :members:

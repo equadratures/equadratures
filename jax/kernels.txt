@@ -1,0 +1,5 @@
+Learnable polynomial kernels
+==================
+
+.. automodule:: equadratures.jax.kernel
+    :members:

@@ -1,0 +1,39 @@
+:orphan:
+
+.. _jax:
+
+============================
+Auto-differentiable (JAX)
+============================
+
+The :code:`equadratures.jax` namespace is a JAX-native, differentiable backend for
+``equadratures``. Quadrature, orthogonal-polynomial approximation, uncertainty
+quantification and learnable polynomial kernels are all ``jax.grad``-able,
+``jax.jit``-able and ``jax.vmap``-able, so models and kernels can be trained by
+gradient descent. It is a *parallel namespace*: the classic NumPy API is
+unchanged.
+
+Install the optional dependency with ``pip install equadratures[jax]`` (add
+``equadratures[jax-learn]`` for the Optax-based kernel training). See the
+:doc:`tutorial <../tutorials/tutorials/Auto_Differentiable_Equadratures>` for a
+worked introduction.
+
+Code documentation for the individual modules is linked below.
+
+
+.. toctree::
+   :maxdepth: 1
+
+   parameter
+   recurrence
+   quadrature
+   polynomials
+   basis
+   poly
+   kernels
+
+
+.. toctree:
+   :hidden:
+
+   ../documentation

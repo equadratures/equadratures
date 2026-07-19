@@ -10,3 +10,7 @@ sphinx-gallery
 sphinxcontrib-applehelp==1.0.2
 sphinxcontrib-bibtex
 sphinxcontrib-devhelp==1.0.2
+
+# for the equadratures.jax (auto-differentiable) docs + tutorial
+jax
+optax

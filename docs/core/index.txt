@@ -1,6 +1,6 @@
 :orphan:
 
-.. _user:
+.. _core-classes:
 
 ===============
 Core classes

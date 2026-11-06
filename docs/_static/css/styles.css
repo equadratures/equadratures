@@ -267,3 +267,8 @@ div.math:hover a.headerlink {
 .iframe-box-slideshare {
     padding-bottom: 75.5%;  /* derived experimentally */
 }
+
+/* Toctree captions group the sidebar; the section heading already titles them in the page */
+.bd-article .toctree-wrapper > p.caption {
+    display: none;
+}

@@ -65,3 +65,6 @@ virtualenv/
 effective-quadratures-output.txt
 piston_model.txt
 
+
+# Sphinx build output
+docs/_build/

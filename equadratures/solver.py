@@ -864,7 +864,7 @@ class elastic_net(Solver):
         - **lambda_max** (float): Maximum lambda value (if ``path=True``). If not ``None`` this overrides the automatically calculated value. Default: ``lambda_max=None``.
         - **tol** (float): Convergence tolerance criterion for coordinate descent solver (if ``path=True``). Default: ``tol=1e-6``.
         - **crit** (str): Information criterion to select optimal lambda from regularisation path. ``'AIC'`` is Akaike information criterion, ``'BIC'`` is Bayesian information criterion, ``'CV'`` is 5-fold cross-validated RSS error (if ``path=True``). Default: ``crit='CV'``.
-        - **lambda** (float): The penalty scaling parameter (if ``path=False``). Default: ``lambda=0.01`.
+        - **lambda** (float): The penalty scaling parameter (if ``path=False``). Default: ``lambda=0.01``.
 
     References
     ----------

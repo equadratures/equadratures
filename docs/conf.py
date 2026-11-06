@@ -1,41 +1,35 @@
 import os
-import sys
+
+import equadratures
 
 # Misc Sphinx settings
 #########################
 project = u' '
-copyright = u'2016-2021 by equadratures'
+copyright = u'2016-2026 by equadratures'
 author = u'equadratures'
 land_page = "equadratures.org"
-outdir = sys.argv[-1]   #Bryn: Assuming last system argument is output directory
-version = u'9.1'
-release = u'v9.1.0'
+version = equadratures.__version__
+release = version
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
     'sphinxcontrib.mermaid',
-    'sphinx_panels',
     'sphinx_copybutton',
     'nbsphinx',
     'sphinx_gallery.load_style',
     'sphinxcontrib.bibtex',
-] #TODO - prune unused extensions
+]
 master_doc = 'index'
 html_title = 'Documentation | equadratures'
 html_theme = 'pydata_sphinx_theme'
 html_logo = 'equadraturesLockupHorizontalMain.png'
 html_favicon = 'eq-logo-favicon.png'
-language = None
-exclude_patterns = [u'_docsbuild', 'Thumbs.db', '.DS_Store']
-source_suffix = '.txt'
+language = 'en'
+exclude_patterns = [u'_build', u'_docsbuild', 'Thumbs.db', '.DS_Store']
+source_suffix = {'.txt': 'restructuredtext'}
 htmlhelp_basename = 'equadraturesdoc'
 latex_elements = {
     'papersize': 'a4paper',
@@ -61,30 +55,21 @@ html_static_path = ['_static']
 html_css_files = [
         'css/styles.css',
         'css/footer.css',
-        'css/fonts.css'
 ]
 
 # Intersphinx mapping
 intersphinx_mapping = {
-        'https://docs.python.org/': None,
+        'python': ('https://docs.python.org/3', None),
         'numpy': ('https://numpy.org/doc/stable/', None),
         'matplotlib': ('https://matplotlib.org/stable/', None),
-        'scipy': ('https://docs.scipy.org/doc/scipy/reference/',None),
-        'sklearn': ('http://scikit-learn.org/stable',
-            (None, './_intersphinx/sklearn-objects.inv'))
+        'scipy': ('https://docs.scipy.org/doc/scipy/', None),
+        'sklearn': ('https://scikit-learn.org/stable/', None),
         }
-
-
-# Sphinx panels
-#########################
-panels_add_bootstrap_css = False # sphinx-panels shouldn't add bootstrap css since the pydata-sphinx-theme already loads it
 
 # nbsphinx setting
 #########################
-nbsphinx_execute_arguments = [
-    "--InlineBackend.figure_formats={'svg', 'pdf'}",
-    "--InlineBackend.rc=figure.dpi=96",
-]
+nbsphinx_execute = 'never'
+nbsphinx_widgets_path = ''
 nbsphinx_input_prompt = 'In [%s]:'
 nbsphinx_output_prompt = 'Out[%s]:'
 nbsphinx_thumbnails = {
@@ -108,4 +93,11 @@ bibtex_bibfiles = ['references.bib']
 html_theme_options = {
     "show_prev_next": False,
     "search_bar_text": "Search documentation",
+    "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
+    "switcher": {
+        "json_url": "https://equadratures.org/switcher.json",
+        "version_match": os.environ.get("DOCS_VERSION", "dev"),
+    },
+    # switcher.json lives in the website repo, so don't fail the build when it can't be fetched
+    "check_switcher": False,
 }

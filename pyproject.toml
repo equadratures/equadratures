@@ -38,6 +38,17 @@ dependencies = [
 [project.optional-dependencies]
 cvxpy = ["cvxpy>=1.1"]
 pymanopt = ["pymanopt>=2"]
+docs = [
+    "sphinx>=8",
+    "pydata-sphinx-theme>=0.16",
+    "nbsphinx",
+    "ipython",
+    "sphinx-copybutton",
+    "sphinxcontrib-bibtex",
+    "sphinxcontrib-mermaid",
+    "sphinx-gallery",
+    "pymanopt>=2",
+]
 
 [project.urls]
 Homepage = "https://github.com/Effective-Quadratures/equadratures"

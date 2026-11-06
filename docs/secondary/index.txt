@@ -1,6 +1,6 @@
 :orphan:
 
-.. _user:
+.. _secondary-classes:
 
 ===================
 Secondary classes
@@ -13,6 +13,7 @@ Code details for the secondary classes are given below.
    :maxdepth: 1
 
    correlated
+   logistic
    optimisation
    polytree 
    quadrature

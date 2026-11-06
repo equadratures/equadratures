@@ -12,20 +12,50 @@ class Exponential(Distribution):
     :param double rate:
 		Rate parameter of the Exponential distribution.
     """
-    def __init__(self, rate=None):
-        if rate is None:
+    def __init__(self, **kwargs):
+        first_arg = ['rate', 'lamda', 'shape_parameter_A']
+        second_arg = ['order', 'orders', 'degree', 'degrees']
+        third_arg = ['endpoints', 'endpoint']
+        fourth_arg = ['variable']
+        self.name = 'exponential'
+        self.rate = None
+        self.order = 2
+        self.endpoints = 'none'
+        self.variable = 'parameter'
+        for key, value in kwargs.items():
+            if first_arg.__contains__(key):
+                self.rate = value
+                self.shape_parameter_A = value
+            if second_arg.__contains__(key):
+                self.order = value
+            if third_arg.__contains__(key):
+                self.endpoints = value
+            if fourth_arg.__contains__(key):
+                self.variable = value
+
+        if self.rate is None:
             self.rate = 1.0
-        else:
-            self.rate = rate
 
         if (self.rate is not None) and (self.rate > 0.0):
-            self.parent = expon(scale=1.0 / rate)
+            self.parent = expon(scale=1.0 / self.rate)
             self.mean, self.variance, self.skewness, self.kurtosis = self.parent.stats(moments='mvsk')
             self.bounds = np.array([0.0, np.inf])
             self.x_range_for_pdf = np.linspace(0.0, 20*self.rate, RECURRENCE_PDF_SAMPLES)
+            super().__init__(name=self.name, \
+                            lower=self.bounds[0], \
+                            upper=self.bounds[1], \
+                            rate=self.rate, \
+                            mean=self.mean, \
+                            variance=self.variance, \
+                            skewness=self.skewness, \
+                            kurtosis=self.kurtosis, \
+                            x_range_for_pdf=self.x_range_for_pdf, \
+                            order=self.order, \
+                            endpoints=self.endpoints, \
+                            variable=self.variable, \
+                            scipyparent=self.parent)
         else:
             raise ValueError('Invalid parameters in exponential distribution. Rate should be positive.')
-
     def get_description(self):
         """
         A description of the Exponential distribution.
@@ -35,67 +65,5 @@ class Exponential(Distribution):
         :return:
             A string describing the Exponential distribution.
         """
-        text = "is an exponential distribution with a rate parameter of"+str(self.rate)+"."
+        text = "is an exponential distribution with a rate parameter of " + str(self.rate) + "."
         return text
-    def get_pdf(self, points=None):
-        """
-        An exponential probability density function.
-
-        :param Exponential self:
-            An instance of the Exponential class.
-        :param matrix points:
-            Matrix of points for defining the probability density function.
-        :return:
-            An array of N values over the support of the distribution.
-        :return:
-            Probability density values along the support of the exponential distribution.
-        """
-        if points is not None:
-            return self.parent.pdf(points)
-        else:
-            raise ValueError( 'Please digit an input for getPDF method')
-    def get_icdf(self, xx):
-        """
-        An inverse exponential cumulative density function.
-
-        :param Exponential self:
-            An instance of the Exponential class.
-        :param array xx:
-            A numpy array of uniformly distributed samples between [0,1].
-        :return:
-            Inverse CDF samples associated with the exponential distribution.
-        """
-        return self.parent.ppf(xx)
-    def get_cdf(self, points=None):
-        """
-        An exponential cumulative density function.
-
-        :param Exponential self:
-            An instance of the Exponential class.
-        :param matrix points:
-            Matrix of points for defining the cumulative density function.
-        :return:
-            An array of N values over the support of the distribution.
-        :return:
-            Cumulative density values along the support of the exponential distribution.
-        """
-        if points is not None:
-            return self.parent.cdf(points)
-        else:
-            raise ValueError( 'Please digit an input for getCDF method')
-    def get_samples(self, m=None):
-        """
-        Generates samples from the Exponential distribution.
-
-         :param Expon self:
-             An instance of the Exponential class.
-         :param integer m:
-              Number of random samples. If no value is provided, a default of 5e05 is assumed
-         :return:
-             A N-by-1 vector that contains the samples.
-        """
-        if m is not None:
-            number = m
-        else:
-            number = 500000
-        return self.parent.rvs(size= number)

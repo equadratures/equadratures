@@ -9,7 +9,7 @@ except ImportError as e:
 if manopt:
     from pymanopt.manifolds import Stiefel
     from pymanopt import Problem
-    from pymanopt.solvers import ConjugateGradient
+    from pymanopt.optimizers import ConjugateGradient
 
 class LogisticPoly(object):
     """
@@ -159,16 +159,21 @@ class LogisticPoly(object):
                 if self.verbosity == 2:
                     print('residual = %f' % residual)
                 residual_history.append(residual)
-                # Minimize over M
-                func_M = lambda M_var: self._cost(f, X, M_var, c)
-                grad_M = lambda M_var: self._dcostdM(f, X, M_var, c)
 
                 manifold = Stiefel(d, n)
-                solver = ConjugateGradient(maxiter=self.max_M_iters)
+                solver = ConjugateGradient(max_iterations=self.max_M_iters)
 
-                problem = Problem(manifold=manifold, cost=func_M, egrad=grad_M, verbosity=0)
+                # Minimize over M
+                @pymanopt.function.numpy(manifold)
+                def func_M(M_var):
+                    return self._cost(f, X, M_var, c)
+                @pymanopt.function.numpy(manifold)
+                def grad_M(M_var):
+                    return self._dcostdM(f, X, M_var, c)
 
-                M = solver.solve(problem, x=M)
+                problem = Problem(manifold=manifold, cost=func_M, euclidean_gradient=grad_M)
+
+                M = solver.run(problem, initial_point=M).point
 
                 # Minimize over c
                 func_c = lambda c_var: self._cost(f, X, M, c_var)

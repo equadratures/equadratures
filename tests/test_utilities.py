@@ -17,7 +17,7 @@ class Test_Utilities(TestCase):
         """
         Tests the scaler classes.
         """
-        from equadratures.scalers import scaler_minmax, scaler_meanvar
+        from equadratures.datasets import scaler_minmax, scaler_meanvar
     
         # Generate X data
         Xorig,_ = datasets.gen_linear(n_observations=500,n_dim=10,random_seed=42)

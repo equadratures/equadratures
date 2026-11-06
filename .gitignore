@@ -49,7 +49,22 @@ pip-log.txt
 .tox
 nosetests.xml
 
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.virtualenv/
+virtualenv/
+
 # Translations
 *.mo
 .eggs
 
+# Test outputs
+effective-quadratures-output.txt
+piston_model.txt
+
+
+# Sphinx build output
+docs/_build/

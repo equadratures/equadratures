@@ -1,0 +1,6 @@
+Scalers
+===========
+
+.. automodule:: equadratures.scalers
+    :members:
+ 

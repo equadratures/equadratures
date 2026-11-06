@@ -1,4 +1,4 @@
-from equadratures.parameter import Parameter
+from equadratures import Parameter
 from equadratures.basis import Basis
 from equadratures.poly import Poly, evaluate_model
 from scipy import stats
@@ -86,7 +86,7 @@ class Weight(object):
         x = np.array(x)
         pdf_values = np.zeros((x.shape[0]))
         for i in range(0, x.shape[0]):
-            pdf_values[i] = self.weight_function(x[i])
+            pdf_values[i] = np.asarray(self.weight_function(x[i])).item()
         return pdf_values
 
     def get_pdf(self, points=None):
@@ -135,7 +135,7 @@ class Weight(object):
         while quadrature_error >= 1e-6:
             quadrature_order += QUADRATURE_ORDER_INCREMENT
             pts, wts = self._get_quadrature_points_and_weights(quadrature_order)
-            integral = float(np.dot(wts, evaluate_model(pts, integrand)))
+            integral = np.dot(wts, evaluate_model(pts, integrand)).item()
             quadrature_error = np.abs(integral - integral_before)
             integral_before = integral
             if quadrature_order >= ORDER_LIMIT:

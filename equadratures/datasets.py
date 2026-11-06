@@ -156,7 +156,7 @@ def load_eq_dataset(dataset,data_dir=None,verbose=True):
         # .npz file
         git_url = posixpath.join('https://github.com/Effective-Quadratures/data-sets/raw/main/',dataset,dataset+'.npz')
         try:
-            r = requests.get(git_url,stream=True)
+            r = requests.get(git_url, stream=True, timeout=30)
             r.raise_for_status()
             data = np.load(BytesIO(r.raw.read()))
         except requests.exceptions.RequestException as e:  
@@ -164,7 +164,7 @@ def load_eq_dataset(dataset,data_dir=None,verbose=True):
         # .md file
         git_url = posixpath.join('https://raw.githubusercontent.com/Effective-Quadratures/data-sets/main',dataset,'README.md')
         try:
-            r = requests.get(git_url)
+            r = requests.get(git_url, timeout=30)
             r.raise_for_status()
             if verbose: print('\n',r.text)
         except requests.exceptions.RequestException as e:  

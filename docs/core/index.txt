@@ -1,0 +1,25 @@
+:orphan:
+
+.. _user:
+
+===============
+Core classes
+===============
+
+Code documentation for :code:`equadratures` can be found by clicking on the links below.
+
+
+.. toctree::
+   :maxdepth: 1
+
+   weight
+   parameter
+   basis 
+   poly
+   
+	
+.. toctree:
+   :hidden:
+
+   ../documentation
+	

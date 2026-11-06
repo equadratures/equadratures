@@ -1,0 +1,28 @@
+:orphan:
+
+.. _user:
+
+===================
+Secondary classes
+===================
+
+Code details for the secondary classes are given below.
+
+
+.. toctree::
+   :maxdepth: 1
+
+   correlated
+   optimisation
+   polytree 
+   quadrature
+   scalers
+   solver 
+   subspaces
+   
+	
+.. toctree:
+   :hidden:
+
+   ../documentation
+	

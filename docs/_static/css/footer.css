@@ -1,0 +1,268 @@
+
+/*******************************/
+/********* Footer 4 CSS ********/
+/*******************************/
+
+.row {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  padding: 4px 4px;
+  margin-left: 2em;
+  margin-right: 2em;
+}
+
+.smallerr{
+  color: #FFFFFF;
+  line-height: 120%;
+  font-size: 14px;
+}
+
+.footer {
+  position: relative;
+  padding-top: 45px;
+  background: #02bec4;
+}
+
+.footercontainer {
+  max-width:1140px;
+}
+
+.shift{
+  margin-left: 50px;
+}
+
+.footer .footer-about,
+.footer .footer-contact,
+.footer .footer-links,
+.footer .footer-project {
+  position: relative;
+  margin-bottom: 45px;
+  color: white;
+  font-size: 18px;
+  line-height: 120%;
+  max-width: 700px;
+  font-family: DinPro;
+}
+
+.footer .footer-about h3,
+.footer .footer-contact h3,
+.footer .footer-links h3,
+.footer .footer-project h3 {
+  position: relative;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  font-size: 18px;
+  line-height: 120%;
+  text-decoration: none;
+}
+.footer .footer-contact a {
+  color: white;
+  text-decoration: none;
+}
+
+
+
+.footer .footer-about h3::after,
+.footer .footer-contact h3::after,
+.footer .footer-links h3::after,
+.footer .footer-project h3::after {
+  position: absolute;
+  content: "";
+  width: 80px;
+  height: 2px;
+  left: 0;
+  bottom: 0;
+  font-size: 18px;
+  background: #eeeeee;
+}
+
+.footer .footer-social {
+  position: relative;
+  color: white;
+  font-size:18px;
+  line-height: 100%;
+}
+
+.footer .footer-social a {
+  display: inline-block;
+  width: 35px;
+  height: 35px;
+  padding: 6px 0;
+  text-align: center;
+  font-size: 18px;
+  line-height: 100%;
+  border-radius: 35px;
+  color: white;
+}
+
+.footer .footer-social a:hover {
+
+}
+
+.footer .footer-contact p {
+  margin-bottom: 15px;
+  font-size: 18px;
+  line-height: 110%;
+  color: white;
+}
+
+.footer .footer-contact i {
+  margin-right: 15px;
+  font-size: 18px;
+  color: white;
+}
+
+.footer .footer-contact a:last-child i {
+  margin: 0;
+}
+
+.footer .footer-contact a:hover i {
+  color: white;
+}
+
+.footer .footer-links a {
+  color: white;
+}
+
+.footer .footer-links a:last-child {
+  margin: 0;
+  text-decoration: none;
+}
+
+.footer .footer-links a:hover {
+  color: white;
+  text-decoration: none;
+}
+
+.footer .footer-links a::before {
+  position: absolute;
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  left: 0;
+}
+
+.footer .footer-project {
+  float: left;
+  font-size: 0;
+}
+
+.footer .footer-project a {
+  padding: 0 8px 8px 0;
+  display: block;
+  width: 55%;
+  float: left;
+}
+
+.footer .footer-project a img {
+  width: 120%;
+}
+
+.footer .footer-newsletter {
+  margin-bottom: 35px;
+  max-width: 700px;
+  text-align: center;
+  color: #999999;
+}
+
+.footer .footer-newsletter input {
+  height: 35px;
+  border: none;
+  border-radius: 5px;
+  background: rgba(256, 256, 256, .15);
+  margin-bottom: 15px;
+}
+
+.footer .footer-newsletter .btn {
+  display: block;
+  width: 120%;
+  height: 35px;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: #999999;
+  border-radius: 5px;
+  border: none;
+  transition: .3s;
+}
+
+.footer .footer-newsletter .btn:hover {
+  color: #999999;
+  background: #ffffff;
+}
+
+.footer .footer-newsletter .btn:focus {
+  box-shadow: none;
+}
+
+
+.footer .copyright {
+  position: relative;
+  padding: 25px 0;
+  background: #000000;
+}
+
+.footer .copyright .copy-text p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 400;
+  color: #999999;
+  font-family: DinPro;
+}
+
+.footer .copyright .copy-text p a {
+  color: #0085ff;
+  text-decoration: none;
+  font-family: DinPro;
+}
+
+.footer .copyright .copy-text p a:hover {
+  color: #FFFFFF;
+  font-family: DinPro;
+}
+
+.footer .copyright .copy-menu {
+  position: relative;
+  font-size: 0;
+  text-align: right;
+}
+
+.footer .copyright .copy-menu a {
+  color: #999999;
+  font-size: 16px;
+  font-weight: 400;
+  margin-right: 15px;
+  padding-right: 15px;
+  font-family: DinPro;
+  border-right: 1px solid rgba(255, 255, 255, .3);
+}
+
+.footer .copyright .copy-menu a:hover {
+  color: #0085ff;
+}
+
+.footer .copyright .copy-menu a:last-child {
+  margin-right: 0;
+  padding-right: 0;
+  border-right: none;
+}
+
+aaa {
+  text-decoration: none;
+  color: #B41C64;
+  text-decoration-color: red;
+  font-size: 18px;
+  font-family: DinPro;
+}
+
+@media (max-width: 767.98px) {
+  .footer .copyright .copy-text,
+  .footer .copyright .copy-menu {
+      text-align: center;
+  }
+
+  .footer .copyright .copy-text p {
+      margin-bottom: 5px;
+  }

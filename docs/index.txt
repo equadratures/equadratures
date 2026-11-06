@@ -1,0 +1,45 @@
+.. meta::
+   :description lang=en: equadratures is a model development platform. The models built in equadratures are explainable, robust, and do not require large cloud infrastructure to train. Additionally, equadratures’ models can audit themselves as well as audit models built from other platforms - ushering a new era in artificial intelligence.
+   :og:title: Documentation | equadratures
+   :
+	
+
+===============
+Documentation
+===============
+
+This page has everything you need to get started with ``equadratures``.
+
+.. figure:: equadratures_laptop.jpg
+   :width: 100%
+
+Download
+"""""""""""
+
+To download and install the code please use the python package index command:
+
+.. code::
+
+	pip3 install equadratures
+
+or ``pip3`` can be replaced with ``python -m pip``, where ``python`` is the python version you wish to install *equadratures* for. Use of a virtual enviroment such as `virtualenv <https://pypi.org/project/virtualenv/>`__ or `pyenv <https://pypi.org/project/pipenv/>`__ is also encouraged. Alternatively you can click either on the **Fork Code** button or **Clone** on `Github <https://github.com/equadratures/equadratures>`__, and install from your local version of the code.
+
+For issues with the code, please do *raise an issue* on our Github page; do make sure to add the relevant bits of code and specifics on package version numbers. We welcome contributions and suggestions from both users and folks interested in developing the code further.
+
+Our code is designed to require minimal dependencies; current package requirements include ``numpy``, ``scipy`` and ``matplotlib``.
+
+
+Docs
+"""""""""""
+
+Code documentation for :code:`equadratures` can be found by clicking on the links below.
+
+
+
+.. toctree::
+   :maxdepth: 1
+
+   Core classes <core/index>
+   Secondary classes <secondary/index>
+   Theory <theory/index>
+   Tutorials <tutorials/index>

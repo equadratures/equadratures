@@ -642,7 +642,8 @@ class least_absolute_residual(Solver):
             A2 = np.hstack([-A, -np.eye(N)])
             AA = np.vstack([A1, A2])
             bb = np.hstack([b.reshape(-1), -b.reshape(-1)])
-            res = linprog(c, A_ub=AA, b_ub=bb)
+            bounds = [(None, None)]*d + [(0, None)]*N
+            res = linprog(c, A_ub=AA, b_ub=bb, bounds=bounds)
             self.coefficients = res.x[:d]
 
 # Huber solver subclass.

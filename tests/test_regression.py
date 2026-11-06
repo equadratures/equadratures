@@ -63,7 +63,7 @@ class TestC(TestCase):
         # Test Poly regressions
         for method in methods:
             for opt in opts:
-                if method != 'huber' and opt != 'scipy': # TODO - remove this if statement once scipy huber regression implemented
+                if not (method == 'huber' and opt == 'scipy'): # TODO - remove this if statement once scipy huber regression implemented
                     poly = Poly(parameters=param, basis=basis, method=method,
                             sampling_args= {'mesh': 'user-defined', 'sample-points':x.reshape(-1,1), 'sample-outputs': y.reshape(-1,1)},
                             solver_args={'M':0.2**2,'verbose':False,'optimiser':opt})

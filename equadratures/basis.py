@@ -160,7 +160,7 @@ class Basis(object):
        # Create a new index set with the sorted entries
         for i in range(0, number_of_elements):
             for j in range(0, self.dimensions):
-                row_index = sorted_indices[i]
+                row_index = sorted_indices[i].item()
                 sorted_elements[i,j] = elements[row_index, j]
         self.elements = sorted_elements
 

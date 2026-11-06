@@ -503,8 +503,8 @@ class Induced(Sampling):
             bcorrect[i] = (1.0 * temp1[i+1]) / (1.0*temp1[i])
         bcorrect[0] = (1.0 + C[1]**2) * 1.0/(C[0]**2)
         for i in range(0, N-2):
-            ab[i, 1] = beta[i+1] * bcorrect[i]
-            ab[i, 0] = alpha[i+1] + acorrect[i]
+            ab[i, 1] = (beta[i+1] * bcorrect[i]).item()
+            ab[i, 0] = (alpha[i+1] + acorrect[i]).item()
         return ab
 
     def _polynomial_ratios(self, a, b, x, N):
@@ -590,6 +590,7 @@ class Induced(Sampling):
             raise ValueError(
                 "No. of Christoffels evaluations must be less than len(b)")
 
+        x = np.asarray(x).item()
         C = np.zeros(N+1)
         # Initialize the polynomials
         C[0] = 1.0/(1.0 * np.sqrt(b[0]))

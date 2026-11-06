@@ -142,9 +142,9 @@ def custom_recurrence_coefficients(x, w, order):
         p1 = p2
         p2 = ( x - ab[j,0] ) * p1 - ab[j,1] * p0
         p2_squared = p2**2
-        s1 = np.dot(w, p2_squared.T)
+        s1 = np.dot(w, p2_squared.T).item()
         inner = w * p2_squared
-        s2 = np.dot(x, inner.T)
+        s2 = np.dot(x, inner.T).item()
         ab[j+1,0] = s2/s1
         ab[j+1,1] = s1/s
         s = s1

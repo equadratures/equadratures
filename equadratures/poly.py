@@ -1127,7 +1127,7 @@ def evaluate_model(points, function):
     """
     function_values = np.zeros((len(points), 1))
     for i in range(0, len(points)):
-        function_values[i,0] = function(points[i,:])
+        function_values[i,0] = np.asarray(function(points[i,:])).item()
     return function_values
 
 def vector_to_2D_grid(coefficients, index_set):

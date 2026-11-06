@@ -1,5 +1,0 @@
-Recurrence coefficients
-==================
-
-.. automodule:: equadratures.jax.recurrence
-    :members:

@@ -1,5 +1,0 @@
-Orthonormal polynomials
-==================
-
-.. automodule:: equadratures.jax.polynomial
-    :members:

@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "equadratures"
+version = "10.1.0"
+description = "Polynomial approximations"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.9,<3.13"
+authors = [{ name = "Developers" }]
+keywords = [
+    "polynomial chaos",
+    "effective quadratures",
+    "polynomial approximations",
+    "gradients",
+]
+classifiers = [
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+    "numpy",
+    "scipy>=0.15.0",
+    "matplotlib",
+    "seaborn",
+    "requests>=2.11.1",
+    "graphviz",
+]
+
+[project.optional-dependencies]
+cvxpy = ["cvxpy>=1.1"]
+networkx = ["networkx==2.6.3"]
+torch = ["torch>=1.7.0"]
+tensorflow = ["tensorflow==1.15.2"]
+pymanopt = ["pymanopt"]
+
+[project.urls]
+Homepage = "https://github.com/Effective-Quadratures/equadratures"
+
+[tool.setuptools]
+packages = [
+    "equadratures",
+    "equadratures.distributions",
+    "equadratures.sampling_methods",
+]
+include-package-data = true

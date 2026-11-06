@@ -8,7 +8,7 @@ _equadratures_ is an open-source library for _uncertainty quantification_, _mach
 
 The latest version of the code is accessible on [PyPI](https://pypi.org/project/equadratures/).
 
-[![](https://coveralls.io/repos/github/equadratures/equadratures/badge.svg?branch=master)](https://coveralls.io/github/equadratures/equadratures)
+[![](https://coveralls.io/repos/github/equadratures/equadratures/badge.svg?branch=main)](https://coveralls.io/github/equadratures/equadratures?branch=main)
 [![](https://badge.fury.io/py/equadratures.svg)](https://pypi.org/project/equadratures/)
 [![](https://joss.theoj.org/papers/10.21105/joss.00166/status.svg)](https://joss.theoj.org/papers/10.21105/joss.00166)
 [![](https://img.shields.io/pypi/pyversions/equadratures.svg)](https://pypi.python.org/pypi/equadratures)

@@ -456,6 +456,12 @@ class Test_Distributions(TestCase):
         np.testing.assert_almost_equal(mean, param.mean, decimal=2)
         np.testing.assert_almost_equal(variance, param.variance, decimal=2)
         myPoly.get_summary()
+    def test_weight(self):
+      data = np.random.RandomState(0).normal(2., 0.3, 2000)
+      for weight_function in [data, lambda x: np.exp(-(x - 2.)**2 / (2. * 0.3**2))]:
+        w = Weight(weight_function, support=[0., 4.])
+        np.testing.assert_almost_equal(np.trapezoid(w.get_pdf(), w.x_range_for_pdf), 1., decimal=2)
+        np.testing.assert_almost_equal(w.mean, 2., decimal=1)
     # def test_custom(self):
     #   paramtest = Parameter(order=1, distribution='gaussian', shape_parameter_A=3, shape_parameter_B=0.5)
     #   stest_samples = paramtest.get_samples(6000)

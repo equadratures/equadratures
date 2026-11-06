@@ -211,7 +211,7 @@ class Analytical(Distribution):
         x = np.array(x)
         pdf_values = np.zeros((x.shape[0]))
         for i in range(0, x.shape[0]):
-            pdf_values[i] = self.weight_function(x[i])
+            pdf_values[i] = np.asarray(self.weight_function(x[i])).item()
         return pdf_values
 
     def get_pdf(self, points=None):
@@ -260,7 +260,7 @@ class Analytical(Distribution):
         while quadrature_error >= 1e-6:
             quadrature_order += QUADRATURE_ORDER_INCREMENT
             pts, wts = self._get_quadrature_points_and_weights(quadrature_order)
-            integral = float(np.dot(wts, evaluate_model(pts, integrand)))
+            integral = np.dot(wts, evaluate_model(pts, integrand)).item()
             quadrature_error = np.abs(integral - integral_before)
             integral_before = integral
             if quadrature_order >= ORDER_LIMIT:

@@ -166,7 +166,7 @@ class Test_optimisation(TestCase):
         n = 2
         N = 20
         bounds = [0.0,np.inf]
-        X = np.random.uniform(-1.0, 1.0, (N, n))
+        X = np.random.RandomState(0).uniform(-1.0, 1.0, (N, n))
         f = self.ObjFun1(X)
         fparam = eq.Parameter(distribution='uniform', lower=-1., upper=1., order=self.degf)
         fParameters = [fparam for i in range(n)]

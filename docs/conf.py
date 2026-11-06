@@ -53,8 +53,7 @@ texinfo_documents = [
 templates_path = ['_templates']
 html_static_path = ['_static']
 html_css_files = [
-        'css/styles.css',
-        'css/footer.css',
+        'css/docs.css',
 ]
 
 # Intersphinx mapping

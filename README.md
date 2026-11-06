@@ -50,7 +50,7 @@ Specific goals of this code include:
 
 ## Get in touch
 
-Feel free to follow us via [Twitter](https://twitter.com/EQuadratures) or email us at mail@equadratures.org.
+Feel free to follow us via [Twitter](https://x.com/equadratures) or email us at mail@equadratures.org.
 
 ## Community guidelines
 

@@ -215,7 +215,7 @@ class Distribution(object):
             order = order + 1
         gridPoints = np.array(points, copy=False).ravel()
 
-        if (self.ab is None):
+        if self.ab is None or len(self.ab) < order:
             self.ab = self.get_recurrence_coefficients(order)
         ab = self.ab
 

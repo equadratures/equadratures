@@ -66,7 +66,9 @@ class Parameter(Distribution):
             return Weibull(**kwargs)
         if distribution.lower() == 'uniform' :
             return Uniform(**kwargs)
-        if distribution.lower() == 'data' :
-            return Data(**kwargs)
+        if distribution.lower() == 'data':
+            if 'data' in kwargs:
+                return Data(**kwargs)
+            return Analytical(**kwargs)
         else:
             raise ValueError('Unknown distribution specified:', distribution.lower())

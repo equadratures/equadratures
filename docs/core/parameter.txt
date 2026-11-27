@@ -1,0 +1,6 @@
+Parameter
+===========
+
+.. automodule:: equadratures.parentparameter
+    :members:
+ 

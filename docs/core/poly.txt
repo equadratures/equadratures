@@ -1,0 +1,7 @@
+Polynomial
+==================
+
+.. automodule:: equadratures.poly
+    :members:
+
+

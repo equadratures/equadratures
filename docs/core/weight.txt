@@ -1,0 +1,6 @@
+Prescribing probability functions
+==================================
+
+.. automodule:: equadratures.weight
+    :members:
+ 

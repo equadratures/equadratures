@@ -1,0 +1,20 @@
+==================
+Theory
+==================
+
+Below we provide some background theory relevant to using equadratures.
+
+
+Fundamentals
+""""""""""""
+
+The three key fundamental building blocks in equadratures are classes by the names of *Parameter*, *Basis* and *Polynomial*. In this section we detail their mathematical definitions and the role their namesake classes play in equadratures. 
+
+.. nbgallery::
+   :caption: Fundamentals
+   :name: fundamentals-gallery
+
+   notebooks/1_Introduction
+   notebooks/2_Parameter
+   notebooks/3_Basis
+   notebooks/4_Polynomial

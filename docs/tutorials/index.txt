@@ -1,0 +1,51 @@
+==================
+Tutorials
+==================
+
+Below we provide some introductory tutorials to give you an idea of what ``equadratures`` can do. The tutorials are organised by complexity, so if you are new to the notion of learning through polynomials, consider starting from the first tutorial.
+
+
+Foundations
+"""""""""""
+.. nbgallery::
+   :caption: Foundations
+   :name: foundations-gallery
+
+   tutorials/1_Defining_a_Parameter
+   tutorials/2_Orthogonal_Polynomials
+   tutorials/3_Model_Fitting
+   tutorials/Object_Persistence
+
+
+Uncertainty quantification and sensitivity analysis
+"""""""""""""""""""""""""""""""""""""""""""""""""""
+.. nbgallery::
+   :caption: Uncertainty quantification and sensitivity analysis
+   :name: uq-gallery
+
+   tutorials/Computing_Moments_for_CFD
+   tutorials/Sensitivity_Analysis_Probe
+
+
+Dimension reduction
+"""""""""""""""""""
+.. nbgallery::
+   :caption: Dimension reduction
+   :name: dr-gallery
+
+   tutorials/Dimension_Reduction
+   tutorials/Dimension_Reduction_Turbomachinery
+
+
+Advanced applications
+"""""""""""""""""""""
+.. nbgallery::
+   :caption: Advanced applications
+   :name: advanced-gallery
+
+   tutorials/Machine_Learning_Airfoil
+
+
+|
+
+

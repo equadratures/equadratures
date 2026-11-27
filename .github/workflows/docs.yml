@@ -1,0 +1,29 @@
+name: docs
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build docs
+        run: |
+          sudo apt-get update && sudo apt-get install -y pandoc
+          pip install ".[docs]"
+          sphinx-build -b html -W --keep-going docs docs/_build/html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docs-html
+          path: docs/_build/html

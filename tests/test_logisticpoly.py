@@ -2,9 +2,12 @@ from unittest import TestCase
 import unittest
 from equadratures import *
 import numpy as np
-import sys
+try:
+    import pymanopt
+except ImportError:
+    pymanopt = None
 
-@unittest.skipIf(sys.version_info >= (3, 8), "Tensorflow v1 is not available for python >= 3.8.")
+@unittest.skipIf(pymanopt is None, "pymanopt is not installed.")
 class TestLogisticPoly(TestCase):
     def test_simple_poly(self):
         true_M = np.array([[-8.72517794e-01,  4.47658531e-01],

@@ -1,4 +1,4 @@
-"""
+r"""
 Solvers for computation of linear systems of the form :math:`\mathbf{A}\mathbf{x}=\mathbf{b}`.
 
 These solvers are used *under-the-hood* by :class:`~equadratures.poly.Poly` when :meth:`~equadratures.poly.Poly.set_model()` is called, with the solver specified by the ``method`` argument. 
@@ -490,7 +490,7 @@ class compressed_sensing(Solver):
         r = np.dot(A, x).flatten() - b.flatten()
         fu1 = x - u
         fu2 = -x - u
-        fe = 0.5*(np.asscalar(np.dot(r.T,r)) - epsilon**2)
+        fe = 0.5*(np.dot(r.T,r).item() - epsilon**2)
         f = np.sum(u) - (1.0/tau) * (np.sum(np.log(-fu1)) + np.sum(np.log(-fu2)) + np.log(-fe))
     
         niter = 0
@@ -531,7 +531,7 @@ class compressed_sensing(Solver):
           # minimum step size that stays in the interior
           aqe = np.dot(Adx.T, Adx)
           bqe = 2.0*np.dot(r.T, Adx)
-          cqe = np.asscalar(np.dot(r.T,r)) - epsilon**2
+          cqe = np.dot(r.T,r).item() - epsilon**2
     
           smax = np.min(np.hstack([ 1.0,np.min(np.hstack([-fu1[(dx-du) > 0] / (dx[(dx-du) > 0] - du[(dx-du) > 0]),\
             -fu2[(-dx-du) > 0] / (-dx[(-dx-du) > 0] - du[(-dx-du) > 0]), \
@@ -585,7 +585,7 @@ class compressed_sensing(Solver):
 # Numerical integration solver subclass.
 ########################################
 class numerical_integration(Solver):
-    """ Numerical integration solver. This solves an orthogonal linear system i.e. simply :math:`\mathbf{x}=\mathbf{A}^T\mathbf{b}`.
+    r""" Numerical integration solver. This solves an orthogonal linear system i.e. simply :math:`\mathbf{x}=\mathbf{A}^T\mathbf{b}`.
 
     Parameters
     ----------
@@ -642,13 +642,14 @@ class least_absolute_residual(Solver):
             A2 = np.hstack([-A, -np.eye(N)])
             AA = np.vstack([A1, A2])
             bb = np.hstack([b.reshape(-1), -b.reshape(-1)])
-            res = linprog(c, A_ub=AA, b_ub=bb)
+            bounds = [(None, None)]*d + [(0, None)]*N
+            res = linprog(c, A_ub=AA, b_ub=bb, bounds=bounds)
             self.coefficients = res.x[:d]
 
 # Huber solver subclass.
 ########################
 class huber(Solver):
-    """ Huber regression solver. Minimises the Huber loss function. 
+    r""" Huber regression solver. Minimises the Huber loss function.
 
     This function is identical to the least squares (L2) penalty for small residuals (i.e. :math:`||\mathbf{A}\mathbf{x}-\mathbf{b}||^2\le M`).
     But on large residuals (:math:`||\mathbf{A}\mathbf{x}-\mathbf{b}||^2 > M`), its penalty is lower (L1) and increases linearly rather than quadratically. 
@@ -839,7 +840,7 @@ class constrained_least_squares(Solver):
 # Elastic net solver subclass.
 ##############################
 class elastic_net(Solver):
-    """ Elastic net solver. 
+    r""" Elastic net solver.
 
     The elastic net solver minimises
 
@@ -863,7 +864,7 @@ class elastic_net(Solver):
         - **lambda_max** (float): Maximum lambda value (if ``path=True``). If not ``None`` this overrides the automatically calculated value. Default: ``lambda_max=None``.
         - **tol** (float): Convergence tolerance criterion for coordinate descent solver (if ``path=True``). Default: ``tol=1e-6``.
         - **crit** (str): Information criterion to select optimal lambda from regularisation path. ``'AIC'`` is Akaike information criterion, ``'BIC'`` is Bayesian information criterion, ``'CV'`` is 5-fold cross-validated RSS error (if ``path=True``). Default: ``crit='CV'``.
-        - **lambda** (float): The penalty scaling parameter (if ``path=False``). Default: ``lambda=0.01`.
+        - **lambda** (float): The penalty scaling parameter (if ``path=False``). Default: ``lambda=0.01``.
 
     References
     ----------
@@ -1119,7 +1120,7 @@ class elastic_net(Solver):
 # Custom solver subclass.
 #########################
 class custom_solver(Solver):
-    """ Custom solver class. 
+    r""" Custom solver class.
 
     This class allows you to enter a custom ``solve()`` function to solve :math:`\mathbf{A}\mathbf{x}=\mathbf{b}`. The ``solve()`` is provided via ``solver_args``, and should accept the numpy.ndarray's :math:`\mathbf{A}` and :math:`\mathbf{b}`, and return a numpy.ndarray containing the coefficients :math:`\mathbf{x}`.   
 

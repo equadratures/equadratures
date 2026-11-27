@@ -1,7 +1,7 @@
-from equadratures.parameter import Parameter
+from equadratures import Parameter
 from equadratures.poly import Poly
 from equadratures.basis import Basis
-from equadratures.scalers import scaler_minmax, scaler_meanvar, scaler_custom
+from equadratures.datasets import scaler_minmax, scaler_meanvar, scaler_custom
 import equadratures.plot as plot
 import numpy as np
 import scipy
@@ -526,11 +526,11 @@ class Subspaces(object):
             f, g = b - np.dot(A, z0), np.dot(A, d)
 
             # find an upper bound on the step
-            min_ind = np.logical_and(g <= 0, f < -np.sqrt(np.finfo(np.float).eps))
+            min_ind = np.logical_and(g <= 0, f < -np.sqrt(np.finfo(np.float64).eps))
             eps_max = np.amin(f[min_ind] / g[min_ind])
 
             # find a lower bound on the step
-            max_ind = np.logical_and(g > 0, f < -np.sqrt(np.finfo(np.float).eps))
+            max_ind = np.logical_and(g > 0, f < -np.sqrt(np.finfo(np.float64).eps))
             eps_min = np.amax(f[max_ind] / g[max_ind])
 
             # randomly sample eps
@@ -551,7 +551,7 @@ class Subspaces(object):
         See :meth:`~equadratures.plot.plot_sufficient_summary` for full description. """
         return plot.plot_sufficient_summary(self, ax, X_test, y_test, show, poly, uncertainty, legend, scatter_kwargs, plot_kwargs)
 
-    def plot_2D_contour_zonotope(self, mysubspace, minmax=[- 3.5, 3.5], grid_pts=180, show=True, ax=None):
+    def plot_2D_contour_zonotope(self, minmax=[- 3.5, 3.5], grid_pts=180, show=True, ax=None):
         """ Generates a 2D contour plot of the polynomial ridge approximation.
         See :meth:`~equadratures.plot.plot_2D_contour_zonotope` for full description. """
         return plot.plot_2D_contour_zonotope(self,minmax,grid_pts,show,ax)
@@ -662,7 +662,7 @@ def jacobian_vp(V, V_plus, U, f, Polybasis, eta, minmax, X):
             current = Gradient[l].T
             if n == 1:
                 current = Gradient.T
-            dV[:,l,:,j] = np.asscalar(vectord[l])*(X.T*current[:,j])
+            dV[:,l,:,j] = vectord[l].item()*(X.T*current[:,j])
 
     # Get the P matrix
     P = np.identity(M)-np.matmul(V,V_plus)
